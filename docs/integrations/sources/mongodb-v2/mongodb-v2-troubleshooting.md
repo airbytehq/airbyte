@@ -14,6 +14,14 @@ If a sync fails with "Saved offset is not valid", the change stream position sav
 2. Increase the Oplog size.
 3. Increase the Airbyte sync frequency.
 
+Every incremental sync logs the oplog's size and time window before it reads the change stream, and where the saved position stands in that window, for example:
+
+```text
+Oplog: 1.2 GB used of 40.0 GB, 1,203,400 entries, 2026-10-18T06:00:12Z to 2026-10-19T07:20:29Z (window 25.3 h). Saved position 2026-10-19T02:00:00Z is 20.0 h inside the window.
+```
+
+A saved position reported as "OLDER than the oldest entry" is the sign that the next sync will fail with "Saved offset is not valid". The line needs read access to the `local` database (for example the `clusterMonitor` role); without it the sync logs a warning and continues. Sharded clusters reached through `mongos` have one oplog per shard, which the connector does not read.
+
 You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to verify the current of your Oplog. The expect output is:
 
 ```yaml

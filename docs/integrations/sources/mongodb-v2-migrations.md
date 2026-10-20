@@ -29,10 +29,13 @@ What changes for you:
 - **Removed settings.** "Initial Waiting Time in Seconds" and "Size of the queue" only existed for Debezium and are
   gone, and "Capture mode" is removed: update events always read the document's current state (the former "Lookup"
   default). Saved values are ignored.
+- **"Schema Enforced" moved to the Advanced settings.** It no longer sits under the cluster type. Your saved value is
+  kept; the setting defaults to on for new sources.
 - **Views are no longer synced.** Earlier versions discovered views as streams by mistake; views cannot be read incrementally or resumed. A view stream that is still in your connection makes the sync fail ("could not be read due to catalog validation errors") until you refresh the source schema, which removes it. Sync the underlying collection instead.
 - **Time series collections are no longer synced.** Earlier versions discovered them by mistake; they have no `_id` index to resume a snapshot from and MongoDB provides no change streams for them, so changes were never delivered. Their streams disappear from the catalog when you refresh the source schema.
 - **Booleans are typed as `boolean`.** Boolean fields were previously declared as `string` in the schema while the records already carried true JSON booleans. Refresh the source schema to pick up the new type; the values themselves do not change.
 - **Decimals keep their full precision.** `Decimal128` values were previously converted through a double and could lose digits; they are now emitted exactly. Values in your destination may differ in the last digits after the upgrade.
+- **JavaScript values with a scope keep their scope.** A `CodeWithScope` value was previously emitted with an empty `scope` object; it now carries the scope's variables.
 
 ## Upgrading to 2.0.0
 

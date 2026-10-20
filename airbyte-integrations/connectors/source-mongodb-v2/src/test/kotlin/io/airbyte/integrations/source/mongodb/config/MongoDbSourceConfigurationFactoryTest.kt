@@ -117,26 +117,7 @@ class MongoDbSourceConfigurationFactoryTest {
         )
     }
 
-    @Test
-    fun testEmptyDatabasesIsRejected() {
-        val exception: ConfigErrorException =
-            Assertions.assertThrows(ConfigErrorException::class.java) {
-                make(
-                    """
-{
-  "database_config": {
-    "cluster_type": "SELF_MANAGED_REPLICA_SET",
-    "connection_string": "mongodb://localhost:27017/",
-    "databases": []
-  }
-}
-""",
-                )
-            }
-        Assertions.assertEquals("No databases specified in the configuration.", exception.message)
-    }
-
-    /** [MongoDbSourceConfigurationFactory.make] must not hide the user-facing message. */
+    /** `make` keeps the message of a configuration error rather than the generic wrap. */
     @Test
     fun testMakePreservesConfigErrorMessages() {
         val exception: ConfigErrorException =
@@ -144,11 +125,33 @@ class MongoDbSourceConfigurationFactoryTest {
                 MongoDbSourceConfigurationFactory()
                     .make(
                         parse(
-                            """{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": []}}"""
+                            """{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": ["db1"]}, "update_capture_mode": "x", "invalid_cdc_cursor_position_behavior": "Maybe"}"""
                         )
                     )
             }
-        Assertions.assertEquals("No databases specified in the configuration.", exception.message)
+        Assertions.assertEquals(
+            "Invalid value 'Maybe' for invalid_cdc_cursor_position_behavior, expected one of [Fail sync, Re-sync data].",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testRootSchemaEnforcedWinsOverTheLegacyNestedValue() {
+        val config: MongoDbSourceConfiguration =
+            make(
+                """
+{
+  "database_config": {
+    "cluster_type": "SELF_MANAGED_REPLICA_SET",
+    "connection_string": "mongodb://localhost:27017/",
+    "databases": ["db1"],
+    "schema_enforced": true
+  },
+  "schema_enforced": false
+}
+""",
+            )
+        Assertions.assertFalse(config.schemaEnforced)
     }
 
     @Test

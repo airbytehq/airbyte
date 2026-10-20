@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mongodb.read.partition
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.CreateNoPartitions
 import io.airbyte.cdk.read.FeedBootstrap
@@ -18,6 +19,7 @@ import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuer
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcPartitionReader
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
+import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbSchemaModePartitionReader
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
@@ -53,15 +55,17 @@ class MongoDbPartitionsCreatorFactory(
         }
         return when (feedBootstrap) {
             is GlobalFeedBootstrap ->
-                if (feedBootstrap.feed.streams.isEmpty()) {
-                    log.info { "No incremental stream: the change stream is not read." }
+                if (!cdcStarted.compareAndSet(false, true)) {
                     CreateNoPartitions
-                } else if (cdcStarted.compareAndSet(false, true)) {
+                } else if (feedBootstrap.feed.streams.isEmpty()) {
+                    log.info { "No incremental stream: the change stream is not read." }
+                    MongoDbPartitionsCreator(sharedState) {
+                        MongoDbSchemaModePartitionReader(sharedState, feedBootstrap)
+                    }
+                } else {
                     MongoDbPartitionsCreator(sharedState) {
                         MongoDbCdcPartitionReader(sharedState, feedBootstrap)
                     }
-                } else {
-                    CreateNoPartitions
                 }
             is StreamFeedBootstrap -> {
                 validateSyncModeAgainstState(feedBootstrap)
@@ -152,8 +156,13 @@ class MongoDbPartitionsCreatorFactory(
     /** The saved snapshot status must be one the configured sync mode can produce. */
     private fun validateSyncModeAgainstState(feedBootstrap: StreamFeedBootstrap) {
         val stream: Stream = feedBootstrap.feed
+        val current: OpaqueStateValue? =
+            feedBootstrap.currentState
+                ?: if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH)
+                    sharedState.fullRefreshInputState(stream.id)
+                else null
         val saved: MongoDbSnapshotStatus =
-            MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState)?.status ?: return
+            MongoDbStreamStateValue.fromCurrentState(current)?.status ?: return
         val allowed: Set<MongoDbSnapshotStatus> =
             when (stream.configuredSyncMode) {
                 ConfiguredSyncMode.INCREMENTAL ->

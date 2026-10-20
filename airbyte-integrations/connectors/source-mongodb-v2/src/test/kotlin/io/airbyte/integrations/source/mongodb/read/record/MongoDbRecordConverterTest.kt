@@ -30,17 +30,19 @@ import org.junit.jupiter.api.Test
 /** Verifies the documented BSON -> JSON conversions and the legacy state `_id` encoding. */
 class MongoDbRecordConverterTest {
 
-    /**
-     * Converts with a schema of every field in [document] (all `string`: the codec is identity).
-     */
+    /** Converts with a schema of every field in [document] (all `string`). */
     private fun json(document: Document): JsonNode =
-        MongoDbRecordConverter(
-                schemaEnforced = true,
-                schemaFieldTypes = document.keys.associateWith { MongoDbFieldType.STRING },
-            )
-            .toPayloadWithId(document)
-            .first
-            .toJson()
+        json(
+            MongoDbRecordConverter(
+                    schemaEnforced = true,
+                    schemaFieldTypes = document.keys.associateWith { MongoDbFieldType.STRING },
+                )
+                .toPayload(document.toBsonDocument())
+        )
+
+    /** The payload as the JSON channel writes it (nested values are raw JSON text nodes). */
+    private fun json(payload: NativeRecordPayload): JsonNode =
+        Jsons.readTree(Jsons.writeValueAsBytes(payload.toJson()))
 
     @Test
     fun testScalarConversions() {
@@ -111,19 +113,23 @@ class MongoDbRecordConverterTest {
                     mapOf("_id" to MongoDbFieldType.NUMBER, "tags" to MongoDbFieldType.ARRAY),
             )
         val node =
-            converter.toPayloadWithId(Document("_id", 1).append("tags", "solo")).first.toJson()
+            json(converter.toPayload((Document("_id", 1).append("tags", "solo")).toBsonDocument()))
         Assertions.assertTrue(node["tags"].isArray)
         Assertions.assertEquals(listOf("solo"), node["tags"].map { it.asText() })
 
         // A real array is left alone; an absent field stays null (there is nothing to wrap)...
         val real =
-            converter.toPayloadWithId(Document("_id", 1).append("tags", listOf("a"))).first.toJson()
+            json(
+                converter.toPayload(
+                    (Document("_id", 1).append("tags", listOf("a"))).toBsonDocument()
+                )
+            )
         Assertions.assertEquals(listOf("a"), real["tags"].map { it.asText() })
-        val absent = converter.toPayloadWithId(Document("_id", 1)).first.toJson()
+        val absent = json(converter.toPayload(Document("_id", 1).toBsonDocument()))
         Assertions.assertTrue(absent["tags"].isNull)
         // ...but a field *present* with a BSON null is a value, and v2 wrapped it too: [null].
         val presentNull =
-            converter.toPayloadWithId(Document("_id", 1).append("tags", null)).first.toJson()
+            json(converter.toPayload((Document("_id", 1).append("tags", null)).toBsonDocument()))
         Assertions.assertTrue(presentNull["tags"].isArray)
         Assertions.assertEquals(1, presentNull["tags"].size())
         Assertions.assertTrue(presentNull["tags"][0].isNull)
@@ -146,14 +152,14 @@ class MongoDbRecordConverterTest {
                     ),
             )
         val node =
-            converter
-                .toPayloadWithId(
+            json(
+                converter.toPayload(
                     Document("_id", 1)
                         .append("addr", Document("city", "Paris").append("zip", 75001))
-                        .append("name", "alice"),
+                        .append("name", "alice")
+                        .toBsonDocument()
                 )
-                .first
-                .toJson()
+            )
         // Objects become compact JSON; strings are emitted as-is (asText, not re-quoted).
         Assertions.assertEquals(
             """{"city":"Paris","zip":75001}""",
@@ -164,7 +170,7 @@ class MongoDbRecordConverterTest {
         Assertions.assertTrue(node["name"].isNull)
 
         // An absent source field yields a null transform.
-        val absent = converter.toPayloadWithId(Document("_id", 1)).first.toJson()
+        val absent = json(converter.toPayload(Document("_id", 1).toBsonDocument()))
         Assertions.assertTrue(absent["addr_aibyte_transform"].isNull)
     }
 
@@ -176,10 +182,10 @@ class MongoDbRecordConverterTest {
         Assertions.assertTrue(typed["lo"].isNull)
         Assertions.assertTrue(typed["hi"].isNull)
         val schemaless =
-            MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
-                .toPayloadWithId(document)
-                .first
-                .toJson()
+            json(
+                MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
+                    .toPayload(document.toBsonDocument())
+            )
         Assertions.assertFalse(schemaless["data"].has("lo"))
         Assertions.assertFalse(schemaless["data"].has("hi"))
     }
@@ -199,9 +205,7 @@ class MongoDbRecordConverterTest {
     @Test
     fun testSchemalessEmitsIdAndDataObject() {
         val schemaless = MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
-        val payload: NativeRecordPayload =
-            schemaless.toPayloadWithId(Document("_id", "k1").append("v", 2)).first
-        val node = payload.toJson()
+        val node = json(schemaless.toPayload(Document("_id", "k1").append("v", 2).toBsonDocument()))
         Assertions.assertEquals("k1", node["_id"].asText())
         Assertions.assertEquals(2, node["data"]["v"].asInt())
     }
@@ -258,7 +262,7 @@ class MongoDbRecordConverterTest {
     fun testDocumentIdRoundTripsAsExtendedJson() {
         // v2 2.1.0: an `_id` that is itself a document is stored as extended JSON (lossless BSON
         // types) and parsed back for the `_id > lastSeen` resume filter.
-        val id = Document("tenant", "acme").append("seq", 9007199254740993L)
+        val id = Document("tenant", "acme").append("seq", 9007199254740993L).toBsonDocument()
         val state = MongoDbStreamStateValue.fromLastId(id, MongoDbSnapshotStatus.IN_PROGRESS)
         Assertions.assertEquals(MongoDbIdType.OBJECT, state.idType)
         Assertions.assertTrue(state.id!!.contains("\"\$numberLong\""), state.id)

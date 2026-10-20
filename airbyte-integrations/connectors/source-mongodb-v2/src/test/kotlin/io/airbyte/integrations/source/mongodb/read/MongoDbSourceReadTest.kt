@@ -13,6 +13,7 @@ import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
@@ -70,7 +71,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.MongoDBContainer
-import org.testcontainers.utility.DockerImageName
 
 /**
  * Stage 3/4 (initial sync) gate: runs a full-refresh READ against a seeded replica set and checks
@@ -106,11 +106,11 @@ class MongoDbSourceReadTest {
         Assertions.assertEquals(listOf("a", "b"), alice["tags"])
         Assertions.assertEquals(12.34, (alice["dec"] as Number).toDouble())
 
-        // A per-stream FULL_REFRESH checkpoint pointing at the last _id read.
+        // A per-stream FULL_REFRESH checkpoint; finished, so with no _id: the next sync starts
+        // over (an interrupted one keeps its last _id so a retry resumes).
         val peopleState: MongoDbStreamStateValue = lastStreamStateFor(result, PEOPLE)
         Assertions.assertEquals(MongoDbSnapshotStatus.FULL_REFRESH, peopleState.status)
-        Assertions.assertEquals(MongoDbIdType.OBJECT_ID, peopleState.idType)
-        Assertions.assertEquals("650000000000000000000003", peopleState.id)
+        Assertions.assertNull(peopleState.id)
     }
 
     @Test
@@ -125,23 +125,17 @@ class MongoDbSourceReadTest {
 
     @Test
     fun testSnapshotResumesFromCheckpoint() {
-        // Force a checkpoint every 2 records so the 3-document people collection needs two rounds.
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
-        try {
-            val result: BufferingOutputConsumer = read(fullRefreshCatalog())
-            Assertions.assertEquals(3, recordCountFor(result, PEOPLE))
-            val peopleState: MongoDbStreamStateValue = lastStreamStateFor(result, PEOPLE)
-            Assertions.assertEquals(MongoDbSnapshotStatus.FULL_REFRESH, peopleState.status)
-            Assertions.assertEquals("650000000000000000000003", peopleState.id)
-            // An intermediate checkpoint at the 2nd _id proves the read resumed rather than
-            // restarted.
-            Assertions.assertTrue(
-                allStreamStateIdsFor(result, PEOPLE).contains("650000000000000000000002"),
-                "expected an intermediate checkpoint at the 2nd _id",
-            )
-        } finally {
-            System.clearProperty(MAX_RECORDS_PROPERTY)
-        }
+        // The first round is cut after 2 of the 3 people, so a second round resumes after them.
+        val result: BufferingOutputConsumer = readCutAfter(2, fullRefreshCatalog())
+        Assertions.assertEquals(3, recordCountFor(result, PEOPLE))
+        val peopleState: MongoDbStreamStateValue = lastStreamStateFor(result, PEOPLE)
+        Assertions.assertEquals(MongoDbSnapshotStatus.FULL_REFRESH, peopleState.status)
+        Assertions.assertNull(peopleState.id, "finished: start over next sync")
+        // An intermediate checkpoint at the 2nd _id proves the read resumed rather than restarted.
+        Assertions.assertTrue(
+            allStreamStateIdsFor(result, PEOPLE).contains("650000000000000000000002"),
+            "expected an intermediate checkpoint at the 2nd _id",
+        )
     }
 
     @Test
@@ -408,64 +402,67 @@ class MongoDbSourceReadTest {
                 }
             )
         }
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
-        try {
-            val result: BufferingOutputConsumer = read(incrementalCatalog(setOf(CODE_ID)))
-            Assertions.assertEquals(
-                listOf("a", "b", "c"),
-                recordDataFor(result, CODE_ID).map { it["v"] as String },
-            )
-            val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, CODE_ID)
-            Assertions.assertEquals(MongoDbIdType.BSON, checkpoints.first().idType)
-            Assertions.assertEquals(
-                BsonJavaScript("function b() {}"),
-                checkpoints.first().resumeIdValue(),
-            )
-            Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, checkpoints.last().status)
-        } finally {
-            System.clearProperty(MAX_RECORDS_PROPERTY)
-        }
+        val result: BufferingOutputConsumer =
+            readCutAfter(2, incrementalCatalog(setOf(CODE_ID)), cursors = 2)
+        Assertions.assertEquals(
+            listOf("a", "b", "c"),
+            recordDataFor(result, CODE_ID).map { it["v"] as String },
+        )
+        val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, CODE_ID)
+        Assertions.assertEquals(MongoDbIdType.BSON, checkpoints.first().idType)
+        Assertions.assertEquals(
+            BsonJavaScript("function b() {}"),
+            checkpoints.first().resumeIdValue(),
+        )
+        Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, checkpoints.last().status)
     }
 
     /**
-     * A collection whose size is a multiple of the chunk ends on a full chunk: the next round reads
-     * nothing and is what completes the snapshot — no document repeated or lost.
+     * A snapshot resumed after a checkpoint that no document follows anymore (deleted since) reads
+     * nothing: that round is what completes the snapshot, keeping the checkpoint's `_id`.
      */
     @Test
-    fun testSnapshotEndingOnAChunkBoundaryCompletes() {
+    fun testResumedRoundWithNothingLeftCompletes() {
         MongoClients.create(replicaSet.connectionString).use { client ->
-            val coll = client.getDatabase(TEST_DB).getCollection(CHUNK_BOUNDARY)
+            val coll = client.getDatabase(TEST_DB).getCollection(NOTHING_LEFT)
             coll.drop()
-            coll.insertMany((1..4).map { Document("_id", it).append("v", it) })
+            coll.insertMany((1..3).map { Document("_id", it).append("v", it) })
         }
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
-        try {
-            val result: BufferingOutputConsumer = read(incrementalCatalog(setOf(CHUNK_BOUNDARY)))
-            Assertions.assertEquals(
-                listOf(1, 2, 3, 4),
-                recordDataFor(result, CHUNK_BOUNDARY).map { it["v"] as Int },
-            )
-            val checkpoints: List<MongoDbStreamStateValue> =
-                allStreamStatesFor(result, CHUNK_BOUNDARY)
-            Assertions.assertEquals(
-                listOf(
-                    MongoDbSnapshotStatus.IN_PROGRESS,
-                    MongoDbSnapshotStatus.IN_PROGRESS,
-                    MongoDbSnapshotStatus.COMPLETE,
-                ),
-                checkpoints.map { it.status },
-            )
-            Assertions.assertEquals(listOf(2, 4, 4), checkpoints.map { it.resumeIdValue() })
-        } finally {
-            System.clearProperty(MAX_RECORDS_PROPERTY)
+        val catalog: ConfiguredAirbyteCatalog = incrementalCatalog(setOf(NOTHING_LEFT))
+        // An expired WASS budget: the first sync yields right after its first record.
+        val yielded: BufferingOutputConsumer = run {
+            val runnable: CliRunnable =
+                CliRunner.source("read", config().apply { initialLoadTimeoutHours = 0 }, catalog)
+            Assertions.assertThrows(ConnectorUncleanExitException::class.java) { runnable.run() }
+            runnable.results
         }
+        val read: Int = recordCountFor(yielded, NOTHING_LEFT)
+        Assertions.assertTrue(read in 1..2, "yielded after its first record(s): $read")
+        val checkpoint: MongoDbStreamStateValue = lastStreamStateFor(yielded, NOTHING_LEFT)
+        Assertions.assertEquals(MongoDbSnapshotStatus.IN_PROGRESS, checkpoint.status)
+        Assertions.assertEquals(read, checkpoint.resumeIdValue())
+
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            client
+                .getDatabase(TEST_DB)
+                .getCollection(NOTHING_LEFT)
+                .deleteMany(Filters.gt("_id", read))
+        }
+        val resumed: BufferingOutputConsumer = read(catalog, yielded.states())
+        // The deletions come back through the change stream; the snapshot itself emits nothing.
+        Assertions.assertTrue(
+            recordDataFor(resumed, NOTHING_LEFT).all { it["_ab_cdc_deleted_at"] != null },
+            "no snapshot row: ${recordDataFor(resumed, NOTHING_LEFT)}",
+        )
+        val completed: MongoDbStreamStateValue = lastStreamStateFor(resumed, NOTHING_LEFT)
+        Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, completed.status)
+        Assertions.assertEquals(read, completed.resumeIdValue())
     }
 
     @Test
     fun testDocumentIdCollectionResumesMidSnapshot() {
-        // v2 2.1.0: `_id` values that are embedded documents are supported. Force a checkpoint
-        // after
-        // 2 of 3 documents so the resume filter `_id > <document>` runs against the server.
+        // v2 2.1.0: `_id` values that are embedded documents are supported. The first round is cut
+        // after 2 of 3 documents so the resume filter `_id > <document>` runs against the server.
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(DOC_ID)
             coll.drop()
@@ -476,25 +473,22 @@ class MongoDbSourceReadTest {
                 },
             )
         }
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
         val result: BufferingOutputConsumer =
-            try {
-                read(
-                    configuredCatalog(
-                        SyncMode.FULL_REFRESH,
-                        DestinationSyncMode.OVERWRITE,
-                        setOf(DOC_ID),
-                        includeEmpty = false,
-                    ),
-                )
-            } finally {
-                System.clearProperty(MAX_RECORDS_PROPERTY)
-            }
+            readCutAfter(
+                2,
+                configuredCatalog(
+                    SyncMode.FULL_REFRESH,
+                    DestinationSyncMode.OVERWRITE,
+                    setOf(DOC_ID),
+                    includeEmpty = false,
+                ),
+            )
         val records = result.records().filter { it.stream == DOC_ID }
         Assertions.assertEquals(3, records.size)
         Assertions.assertEquals(listOf(1, 2, 3), records.map { it.data["v"].asInt() })
         Assertions.assertEquals(listOf(1L, 2L, 3L), records.map { it.data["_id"]["seq"].asLong() })
-        val state: MongoDbStreamStateValue = lastStreamStateFor(result, DOC_ID)
+        // The mid-collection checkpoint (after 2 of 3): a document `_id` as extended JSON.
+        val state: MongoDbStreamStateValue = allStreamStatesFor(result, DOC_ID).first()
         Assertions.assertEquals(MongoDbIdType.OBJECT, state.idType)
         Assertions.assertTrue(state.id!!.contains("\"seq\""), state.id)
     }
@@ -572,20 +566,17 @@ class MongoDbSourceReadTest {
                 )
             }
         }
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
         val result: BufferingOutputConsumer =
-            try {
-                read(
-                    configuredCatalog(
-                        SyncMode.FULL_REFRESH,
-                        DestinationSyncMode.OVERWRITE,
-                        collections.keys,
-                        includeEmpty = false,
-                    ),
-                )
-            } finally {
-                System.clearProperty(MAX_RECORDS_PROPERTY)
-            }
+            readCutAfter(
+                2,
+                configuredCatalog(
+                    SyncMode.FULL_REFRESH,
+                    DestinationSyncMode.OVERWRITE,
+                    collections.keys,
+                    includeEmpty = false,
+                ),
+                cursors = collections.size,
+            )
         collections.forEach { (name, idsAndType) ->
             val (ids, idType) = idsAndType
             val records = result.records().filter { it.stream == name }
@@ -595,7 +586,7 @@ class MongoDbSourceReadTest {
             val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, name)
             Assertions.assertEquals(idType, checkpoints.first().idType, name)
             Assertions.assertEquals(ids[1], checkpoints.first().resumeIdValue(), name)
-            Assertions.assertEquals(ids[2], checkpoints.last().resumeIdValue(), name)
+            Assertions.assertNull(checkpoints.last().id, "$name finished: no _id")
         }
     }
 
@@ -653,30 +644,31 @@ class MongoDbSourceReadTest {
             coll.drop()
             coll.insertMany(ids.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) })
         }
-        System.setProperty(MAX_RECORDS_PROPERTY, "2")
         val result: BufferingOutputConsumer =
-            try {
-                read(
-                    configuredCatalog(
-                        SyncMode.FULL_REFRESH,
-                        DestinationSyncMode.OVERWRITE,
-                        setOf(NUMERIC_ID),
-                        includeEmpty = false,
-                    ),
-                )
-            } finally {
-                System.clearProperty(MAX_RECORDS_PROPERTY)
-            }
+            readCutAfter(
+                2,
+                configuredCatalog(
+                    SyncMode.FULL_REFRESH,
+                    DestinationSyncMode.OVERWRITE,
+                    setOf(NUMERIC_ID),
+                    includeEmpty = false,
+                ),
+            )
         val records = result.records().filter { it.stream == NUMERIC_ID }
         Assertions.assertEquals((1..4).toList(), records.map { it.data["v"].asInt() })
+        // Resumed after the double 2.5, the round read the long and the decimal.
         val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, NUMERIC_ID)
         Assertions.assertEquals(MongoDbIdType.DOUBLE, checkpoints.first().idType)
-        Assertions.assertEquals(MongoDbIdType.DECIMAL, checkpoints.last().idType)
+        Assertions.assertEquals(2.5, checkpoints.first().resumeIdValue())
     }
 
-    /** `_id` values of different BSON types in one collection are a configuration error. */
+    /**
+     * A collection mixing `_id` kinds is read whole by an uncut round (the scan has no filter), but
+     * a resume filter `_id > x` only matches x's kind, so a round resumed after a checkpoint reads
+     * the checkpointed kind only — the documented limit of such collections.
+     */
     @Test
-    fun testMixedIdTypesFailTheSync() {
+    fun testMixedIdKindsReadWholeUncutAndOneKindAfterACheckpoint() {
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(MIXED_ID)
             coll.drop()
@@ -686,16 +678,20 @@ class MongoDbSourceReadTest {
                 }
             )
         }
-        assertReadFails(
+        val catalog: ConfiguredAirbyteCatalog =
             configuredCatalog(
                 SyncMode.FULL_REFRESH,
                 DestinationSyncMode.OVERWRITE,
                 setOf(MIXED_ID),
                 includeEmpty = false,
-            ),
-            emptyList(),
-            "Collection $TEST_DB.$MIXED_ID has _id values of more than one type (number and date)",
+            )
+        Assertions.assertEquals(
+            (1..5).toList(),
+            recordDataFor(read(catalog), MIXED_ID).map { it["v"] as Int },
         )
+        val cut: BufferingOutputConsumer = readCutAfter(2, catalog)
+        Assertions.assertEquals(listOf(1, 2), recordDataFor(cut, MIXED_ID).map { it["v"] as Int })
+        Assertions.assertEquals(2, allStreamStatesFor(cut, MIXED_ID).first().resumeIdValue())
     }
 
     /**
@@ -833,8 +829,8 @@ class MongoDbSourceReadTest {
         // A UUID representation in the connection string must not change how binaries are emitted.
         val standardUuidConfig: MongoDbSourceConfigurationSpecification =
             MongoDbTestConfigs.config(
-                replicaSet.connectionString + "?uuidRepresentation=standard",
-                listOf(TEST_DB),
+                "$connectionString&uuidRepresentation=standard",
+                listOf(TEST_DB)
             )
         val withUuidRepresentation: JsonNode =
             read(
@@ -964,7 +960,7 @@ class MongoDbSourceReadTest {
     fun testInvalidResumeTokenResyncsWhenConfigured() {
         val resync =
             MongoDbTestConfigs.config(
-                replicaSet.connectionString,
+                connectionString,
                 listOf(TEST_DB),
                 extraRootProperties =
                     mapOf("invalid_cdc_cursor_position_behavior" to "Re-sync data"),
@@ -988,6 +984,14 @@ class MongoDbSourceReadTest {
         state: List<AirbyteStateMessage> = emptyList(),
         config: MongoDbSourceConfigurationSpecification = config(),
     ): BufferingOutputConsumer = CliRunner.source("read", config, catalog, state).run()
+
+    /** [MongoDbReadTestSupport.readCutAfter] on this class's replica set and config. */
+    private fun readCutAfter(
+        after: Int,
+        catalog: ConfiguredAirbyteCatalog,
+        cursors: Int = 1,
+    ): BufferingOutputConsumer =
+        MongoDbReadTestSupport.readCutAfter(replicaSet, after, config(), catalog, cursors = cursors)
 
     /** Runs a read expected to fail and asserts the error trace contains [expectedMessage]. */
     private fun assertReadFails(
@@ -1217,7 +1221,7 @@ class MongoDbSourceReadTest {
         const val CODE_ID = "code_id_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
-        const val CHUNK_BOUNDARY = "chunk_boundary_coll"
+        const val NOTHING_LEFT = "nothing_left_coll"
         const val OBJECT_MATRIX_ID = "object_matrix_id_coll"
         const val ALL_TYPES = "all_types_coll"
         const val STRING_ID = "string_id_coll"
@@ -1238,15 +1242,18 @@ class MongoDbSourceReadTest {
          * the only way to exercise the invalid-token path against a live replica set.
          */
         const val BOGUS_RESUME_TOKEN = "garbage"
-        const val MAX_RECORDS_PROPERTY = "airbyte.connector.extract.mongodb.max-records-per-run"
 
         lateinit var replicaSet: MongoDBContainer
 
+        /** The connection string the connector is given (failpoints target its `appName`). */
+        val connectionString: String
+            get() = MongoDbReadTestSupport.connectorConnectionString(replicaSet)
+
         fun config(schemaEnforced: Boolean = true): MongoDbSourceConfigurationSpecification =
             MongoDbTestConfigs.config(
-                replicaSet.connectionString,
+                connectionString,
                 listOf(TEST_DB),
-                schemaEnforced = schemaEnforced,
+                schemaEnforced = schemaEnforced
             )
 
         /** The 16 bytes of a UUID whose last byte is [n]. */
@@ -1255,7 +1262,7 @@ class MongoDbSourceReadTest {
         @JvmStatic
         @BeforeAll
         fun startContainer() {
-            replicaSet = MongoDBContainer(DockerImageName.parse("mongo:7.0")).also { it.start() }
+            replicaSet = MongoDbReadTestSupport.replicaSet().also { it.start() }
             MongoClients.create(replicaSet.connectionString).use(::seed)
         }
 

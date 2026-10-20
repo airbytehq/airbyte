@@ -6,12 +6,13 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.integrations.source.mongodb.discover.MongoDbFieldType
 import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
@@ -24,16 +25,15 @@ import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.BsonTimestamp
-import org.bson.Document
+import org.bson.RawBsonDocument
 
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads a collection ordered by `_id`, one chunk of [MongoDbSharedState.chunkSize] documents per
- * round, resuming after the checkpointed `_id`. A short chunk is the end: it checkpoints the
- * terminal status (`COMPLETE` / `FULL_REFRESH`) and marks the stream complete for this READ; a full
- * chunk, or being cut short (timeout, WASS budget), checkpoints `IN_PROGRESS` / `FULL_REFRESH` so
- * the next round continues.
+ * Reads a collection ordered by `_id` in one query per round, resuming after the checkpointed
+ * `_id`. Exhausting the collection checkpoints the terminal status (`COMPLETE` / `FULL_REFRESH`)
+ * and marks the stream complete for this READ; a round cut short (checkpoint interval, WASS budget)
+ * checkpoints `IN_PROGRESS` / `FULL_REFRESH` so the next one continues.
  */
 class MongoDbSnapshotPartitionReader(
     sharedState: MongoDbSharedState,
@@ -43,11 +43,12 @@ class MongoDbSnapshotPartitionReader(
     private val stream: Stream = feedBootstrap.feed
     private val isFullRefresh: Boolean =
         stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH
-    private val schemaFieldTypes: Map<String, MongoDbFieldType> = schemaFieldTypesOf(stream)
     private val converter =
-        MongoDbRecordConverter(sharedState.configuration.schemaEnforced, schemaFieldTypes)
-    private val collection: MongoCollection<Document> by lazy {
-        sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
+        MongoDbRecordConverter(sharedState.configuration.schemaEnforced, schemaFieldTypesOf(stream))
+    private val collection: MongoCollection<RawBsonDocument> by lazy {
+        sharedState.client
+            .getDatabase(stream.namespace!!)
+            .getCollection(stream.name, RawBsonDocument::class.java)
     }
     /**
      * `_ab_cdc_cursor` for this snapshot: the time of the resume token the `Global` feed saved
@@ -70,52 +71,47 @@ class MongoDbSnapshotPartitionReader(
     override suspend fun run() {
         val emit: RecordAcceptor =
             checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
-        sharedState.checkUniformIdKind(stream.id)
+        sharedState.logStreamStart(stream.id)
         val startId: Any? = resumeFromId()
         lastId = startId
-        val chunkSize: Int = sharedState.chunkSize(stream.id)
-        log.info {
-            "Reading ${stream.namespace}.${stream.name} after _id=$startId, up to $chunkSize documents."
-        }
+        log.info { "Reading ${stream.namespace}.${stream.name} after _id=$startId." }
 
-        query(startId, chunkSize).cursor().use { cursor ->
+        query(startId).cursor().use { cursor ->
             while (cursor.hasNext()) {
                 currentCoroutineContext().ensureActive()
                 if (shouldYieldToCdc()) {
                     sharedState.snapshotYielded.add(stream.id)
                     return
                 }
-                val (payload, rawId) = converter.toPayloadWithId(cursor.next())
+                val document: RawBsonDocument = cursor.next()
+                val payload: NativeRecordPayload = converter.toPayload(document)
                 stampCursor(payload, snapshotCursor)
                 emit(payload, null)
-                lastId = rawId
+                lastId = document[ID_FIELD]
                 numRecords++
             }
         }
-        if (numRecords < chunkSize) {
-            finished = true
-            sharedState.completedSnapshots.add(stream.id)
-            log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
-        } else {
-            log.info {
-                "Read a full chunk of ${stream.namespace}.${stream.name}; $numRecords records. " +
-                    "the next round continues after _id=$lastId."
-            }
-        }
+        finished = true
+        sharedState.completedSnapshots.add(stream.id)
+        log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
     }
 
     /**
-     * Ordered `_id` scan of one chunk after [startId], as the legacy connector queried (sort on
-     * `_id` may spill to disk). Under `schema_enforced` only the catalog's fields are projected
+     * Ordered `_id` scan after [startId] (the sort on `_id` may spill to disk), in batches bounded
+     * by the 16MB message size only; one query runs until the collection is exhausted or the round
+     * is cut short. Under `schema_enforced` only the fields a record is built from are projected
      * (extra fields would be dropped anyway); schemaless needs the whole document.
      */
-    private fun query(startId: Any?, chunkSize: Int): FindIterable<Document> {
-        val find: FindIterable<Document> = collection.find()
+    private fun query(startId: Any?): FindIterable<RawBsonDocument> {
+        val find: FindIterable<RawBsonDocument> = collection.find()
         startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
         if (sharedState.configuration.schemaEnforced) {
-            find.projection(Projections.include(schemaFieldTypes.keys.toList()))
+            find.projection(Projections.include(converter.readFields.toList()))
         }
-        return find.sort(Sorts.ascending(ID_FIELD)).limit(chunkSize).allowDiskUse(true)
+        return find
+            .sort(Sorts.ascending(ID_FIELD))
+            .batchSize(sharedState.snapshotBatchSize)
+            .allowDiskUse(true)
     }
 
     /**
@@ -127,11 +123,20 @@ class MongoDbSnapshotPartitionReader(
 
     /** The `_id` to resume after; null for a fresh read (no state, or already complete). */
     private fun resumeFromId(): Any? =
-        MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState)
+        MongoDbStreamStateValue.fromCurrentState(currentState())
             ?.takeUnless { it.status == MongoDbSnapshotStatus.COMPLETE }
             ?.resumeIdValue()
 
-    /** Full-refresh streams never become `COMPLETE`: their snapshot is re-read every sync. */
+    /** The feed's current checkpoint; for a full refresh the READ's input until one is written. */
+    private fun currentState(): OpaqueStateValue? =
+        feedBootstrap.currentState
+            ?: if (isFullRefresh) sharedState.fullRefreshInputState(stream.id) else null
+
+    /**
+     * Full-refresh streams never become `COMPLETE`: their snapshot is re-read every sync. A
+     * finished full refresh checkpoints no `_id` so the next sync starts over, while an interrupted
+     * one keeps its last `_id` so a retry resumes.
+     */
     override fun checkpoint(): PartitionReadCheckpoint {
         val status: MongoDbSnapshotStatus =
             when {
@@ -139,8 +144,9 @@ class MongoDbSnapshotPartitionReader(
                 finished -> MongoDbSnapshotStatus.COMPLETE
                 else -> MongoDbSnapshotStatus.IN_PROGRESS
             }
+        val checkpointId: Any? = if (isFullRefresh && finished) null else lastId
         return PartitionReadCheckpoint(
-            MongoDbStreamStateValue.fromLastId(lastId, status).toOpaqueStateValue(),
+            MongoDbStreamStateValue.fromLastId(checkpointId, status).toOpaqueStateValue(),
             numRecords,
             checkpointPartitionId,
         )

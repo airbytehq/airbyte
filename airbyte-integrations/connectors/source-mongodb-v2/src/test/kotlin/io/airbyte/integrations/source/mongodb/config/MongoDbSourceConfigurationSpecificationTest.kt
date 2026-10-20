@@ -17,29 +17,19 @@ class MongoDbSourceConfigurationSpecificationTest {
     lateinit var supplier:
         ConfigurationSpecificationSupplier<MongoDbSourceConfigurationSpecification>
 
-    /**
-     * With no config JSON at all the supplier falls back to a default instance (the CDK parses
-     * without schema validation); the factory is what rejects the absent `database_config`.
-     */
+    /** `database_config` is required by the schema; without it there is no configuration at all. */
     @Test
-    fun testNoConfigIsRejectedByTheFactory() {
-        val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        Assertions.assertNull(pojo.databaseConfig)
-        val exception: ConfigErrorException =
-            Assertions.assertThrows(ConfigErrorException::class.java) {
-                MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
-            }
-        Assertions.assertEquals(
-            "Database configuration is missing required 'database_config' property.",
-            exception.message,
-        )
+    fun testNoConfigIsAConfigurationError() {
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            MongoDbSourceConfigurationFactory().make(supplier.get())
+        }
     }
 
     @Test
     @Property(name = "airbyte.connector.config.json", value = ATLAS_CONFIG_JSON)
     fun testAtlasConfig() {
         val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        val databaseConfig: DatabaseConfigSpecification = checkNotNull(pojo.databaseConfig)
+        val databaseConfig: DatabaseConfigSpecification = pojo.databaseConfig
         Assertions.assertTrue(
             databaseConfig is AtlasReplicaSetSpecification,
             databaseConfig::class.toString(),
@@ -52,7 +42,13 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertEquals("user", databaseConfig.username)
         Assertions.assertEquals("secret", databaseConfig.password)
         Assertions.assertEquals("admin", databaseConfig.authSource)
+        // `schema_enforced` used to live inside `database_config`: a saved configuration's value
+        // is still read from there and wins while the root property is absent.
+        Assertions.assertNull(pojo.schemaEnforced)
         Assertions.assertEquals(false, databaseConfig.schemaEnforced)
+        Assertions.assertFalse(
+            MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo).schemaEnforced
+        )
 
         // The fixture still carries the dropped legacy `initial_waiting_seconds`/`queue_size`;
         // they are ignored, proving saved v2 configurations keep deserializing.
@@ -66,7 +62,7 @@ class MongoDbSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.json", value = SELF_MANAGED_MINIMAL_CONFIG_JSON)
     fun testSelfManagedMinimalConfigDefaults() {
         val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        val databaseConfig: DatabaseConfigSpecification = checkNotNull(pojo.databaseConfig)
+        val databaseConfig: DatabaseConfigSpecification = pojo.databaseConfig
         Assertions.assertTrue(
             databaseConfig is SelfManagedReplicaSetSpecification,
             databaseConfig::class.toString(),
@@ -77,26 +73,15 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertNull(databaseConfig.password)
         // Defaults advertised by the spec.
         Assertions.assertEquals("admin", databaseConfig.authSource)
-        Assertions.assertEquals(true, databaseConfig.schemaEnforced)
+        Assertions.assertNull(pojo.schemaEnforced)
+        Assertions.assertTrue(
+            MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo).schemaEnforced,
+            "schema_enforced defaults to true",
+        )
         Assertions.assertEquals(10000, pojo.discoverSampleSize)
         Assertions.assertEquals(600, pojo.discoverTimeoutSeconds)
         Assertions.assertEquals("Fail sync", pojo.invalidCdcCursorPositionBehavior)
         Assertions.assertEquals(8, pojo.initialLoadTimeoutHours)
-    }
-
-    @Test
-    @Property(name = "airbyte.connector.config.json", value = MISSING_DATABASE_CONFIG_JSON)
-    fun testMissingDatabaseConfig() {
-        val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        Assertions.assertNull(pojo.databaseConfig)
-        val exception: ConfigErrorException =
-            Assertions.assertThrows(ConfigErrorException::class.java) {
-                MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
-            }
-        Assertions.assertEquals(
-            "Database configuration is missing required 'database_config' property.",
-            exception.message,
-        )
     }
 
     @Test
@@ -136,13 +121,6 @@ class MongoDbSourceConfigurationSpecificationTest {
     "connection_string": "mongodb://localhost:27017/",
     "databases": ["db1"]
   }
-}
-"""
-
-        const val MISSING_DATABASE_CONFIG_JSON: String =
-            """
-{
-  "initial_waiting_seconds": 300
 }
 """
 

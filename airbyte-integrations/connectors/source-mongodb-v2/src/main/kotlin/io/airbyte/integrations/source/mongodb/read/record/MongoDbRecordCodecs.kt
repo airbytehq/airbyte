@@ -3,46 +3,52 @@ package io.airbyte.integrations.source.mongodb.read.record
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
-import io.airbyte.cdk.util.Jsons
 
 /**
- * Record-value codecs: pass a pre-built [JsonNode] through on the JSONL channel, but coerce it to
- * the Java type the schema-driven protobuf encoder expects for the field's `airbyteSchemaType`. A
- * value that cannot be coerced (the discovered type is only a sampling hint) is nulled on protobuf.
+ * Record-value codecs: a [MongoDbValue] goes to the JSON channel as it is, and to the protobuf
+ * channel coerced to the Java type the schema-driven encoder expects for the field's
+ * `airbyteSchemaType`. A value that cannot be coerced (the discovered type is only a sampling hint)
+ * is nulled on protobuf.
  */
-sealed class MongoDbValueCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
-    final override fun encode(decoded: JsonNode): JsonNode = decoded
+sealed class MongoDbValueCodec : ProtobufAwareCustomConnectorJsonCodec<MongoDbValue> {
+    final override fun encode(decoded: MongoDbValue): JsonNode = decoded.toJsonNode()
 
-    final override fun decode(encoded: JsonNode): JsonNode = encoded
+    final override fun decode(encoded: JsonNode): MongoDbValue =
+        when {
+            encoded.isNull -> MongoDbValue.Null
+            encoded.isTextual -> MongoDbValue.Text(encoded.textValue())
+            encoded.isBoolean -> MongoDbValue.Bool(encoded.booleanValue())
+            encoded.isIntegralNumber -> MongoDbValue.Num(encoded.longValue())
+            encoded.isNumber -> MongoDbValue.Num(encoded.decimalValue())
+            else -> MongoDbValue.Json(encoded.toString(), encoded.isArray)
+        }
 }
 
-/** For `{"type":"string"}` fields: any non-null value renders as text. */
+/** `{"type":"string"}`: any value as text, a document or array as its JSON. */
 object MongoStringValueCodec : MongoDbValueCodec() {
-    override fun valueForProtobufEncoding(v: JsonNode): Any? = if (v.isNull) null else v.asText()
+    override fun valueForProtobufEncoding(v: MongoDbValue): Any? =
+        when (v) {
+            is MongoDbValue.Null -> null
+            is MongoDbValue.Text -> v.value
+            else -> v.toJsonText()
+        }
 }
 
-/** `{"type":"number"}`: only a JSON number coerces; anything else is nulled on protobuf. */
 object MongoNumberValueCodec : MongoDbValueCodec() {
-    override fun valueForProtobufEncoding(v: JsonNode): Any? =
-        if (v.isNumber) v.decimalValue() else null
+    override fun valueForProtobufEncoding(v: MongoDbValue): Any? =
+        (v as? MongoDbValue.Num)?.toBigDecimal()
 }
 
-/** For `{"type":"boolean"}` fields. */
 object MongoBooleanValueCodec : MongoDbValueCodec() {
-    override fun valueForProtobufEncoding(v: JsonNode): Any? =
-        if (v.isBoolean) v.booleanValue() else null
+    override fun valueForProtobufEncoding(v: MongoDbValue): Any? = (v as? MongoDbValue.Bool)?.value
 }
 
-/**
- * `{"type":"object"}` / `{"type":"array"}` and the schemaless `data` field: serialize to a JSON
- * string (via `Jsons`, which keeps decimals unexponentiated like the JSONL channel).
- */
+/** `{"type":"object"}` / `{"type":"array"}` and the schemaless `data` field: the JSON text. */
 object MongoJsonbValueCodec : MongoDbValueCodec() {
-    override fun valueForProtobufEncoding(v: JsonNode): Any? =
-        if (v.isNull) null else Jsons.writeValueAsString(v)
+    override fun valueForProtobufEncoding(v: MongoDbValue): Any? =
+        if (v is MongoDbValue.Null) null else v.toJsonText()
 }
 
-/** For `{"type":"null"}` fields. */
 object MongoNullValueCodec : MongoDbValueCodec() {
-    override fun valueForProtobufEncoding(v: JsonNode): Any? = null
+    override fun valueForProtobufEncoding(v: MongoDbValue): Any? = null
 }

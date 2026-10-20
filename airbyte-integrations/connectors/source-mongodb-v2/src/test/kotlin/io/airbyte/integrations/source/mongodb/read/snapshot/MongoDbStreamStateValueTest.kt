@@ -41,7 +41,7 @@ class MongoDbStreamStateValueTest {
 
     @Test
     fun testDocumentIdRoundTrip() {
-        val lastId = Document("tenant", "acme").append("seq", 2L)
+        val lastId = Document("tenant", "acme").append("seq", 2L).toBsonDocument()
         val checkpoint: MongoDbStreamStateValue =
             MongoDbStreamStateValue.fromLastId(lastId, MongoDbSnapshotStatus.IN_PROGRESS)
         Assertions.assertEquals(MongoDbIdType.OBJECT, checkpoint.idType)
@@ -51,7 +51,7 @@ class MongoDbStreamStateValueTest {
         )
         val restored: MongoDbStreamStateValue =
             MongoDbStreamStateValue.fromOpaqueStateValue(checkpoint.toOpaqueStateValue())
-        Assertions.assertEquals(lastId.toBsonDocument(), restored.resumeIdValue() as BsonDocument)
+        Assertions.assertEquals(lastId, restored.resumeIdValue() as BsonDocument)
     }
 
     @Test

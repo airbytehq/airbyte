@@ -38,7 +38,9 @@ data class MongoDbCdcState(
 
     /** The resume token as a [BsonDocument] the driver can resume from, or null on cold start. */
     fun resumeTokenBson(): BsonDocument? =
-        resumeToken?.let { BsonDocument.parse(Jsons.writeValueAsString(it)) }
+        resumeToken
+            ?.takeUnless { it.isNull }
+            ?.let { BsonDocument.parse(Jsons.writeValueAsString(it)) }
 
     companion object {
         private const val DEBEZIUM_STATE = "state"

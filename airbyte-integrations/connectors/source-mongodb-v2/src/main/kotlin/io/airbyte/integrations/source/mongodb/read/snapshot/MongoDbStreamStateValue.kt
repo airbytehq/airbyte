@@ -9,9 +9,17 @@ import java.util.Base64
 import java.util.Date
 import java.util.UUID
 import org.bson.BsonBinary
-import org.bson.BsonBinarySubType
+import org.bson.BsonDateTime
+import org.bson.BsonDecimal128
 import org.bson.BsonDocument
+import org.bson.BsonDouble
+import org.bson.BsonInt32
+import org.bson.BsonInt64
+import org.bson.BsonNull
+import org.bson.BsonObjectId
+import org.bson.BsonString
 import org.bson.BsonTimestamp
+import org.bson.BsonValue
 import org.bson.Document
 import org.bson.json.JsonMode
 import org.bson.json.JsonWriterSettings
@@ -117,52 +125,57 @@ data class MongoDbStreamStateValue(
         fun fromCurrentState(state: OpaqueStateValue?): MongoDbStreamStateValue? =
             state?.takeUnless { it.isNull || it.isEmpty }?.let(::fromOpaqueStateValue)
 
-        /** Checkpoint for the last `_id` (null if none); a document `_id` is extended JSON. */
+        /**
+         * Checkpoint for the last `_id` (null if none), as the driver decodes it or as a
+         * [BsonValue]; a document `_id` is extended JSON.
+         */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
-            when (lastId) {
+            when (val id: Any? = if (lastId is BsonValue) javaValue(lastId) else lastId) {
                 null -> MongoDbStreamStateValue(null, status, MongoDbIdType.STRING)
                 is ObjectId ->
-                    MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
-                is String -> MongoDbStreamStateValue(lastId, status, MongoDbIdType.STRING)
-                is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
-                is Long -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.LONG)
-                is Double ->
-                    MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.DOUBLE)
+                    MongoDbStreamStateValue(id.toHexString(), status, MongoDbIdType.OBJECT_ID)
+                is String -> MongoDbStreamStateValue(id, status, MongoDbIdType.STRING)
+                is Int -> MongoDbStreamStateValue(id.toString(), status, MongoDbIdType.INT)
+                is Long -> MongoDbStreamStateValue(id.toString(), status, MongoDbIdType.LONG)
+                is Double -> MongoDbStreamStateValue(id.toString(), status, MongoDbIdType.DOUBLE)
                 is Decimal128 ->
-                    MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.DECIMAL)
-                is Date ->
-                    MongoDbStreamStateValue(lastId.time.toString(), status, MongoDbIdType.DATE)
+                    MongoDbStreamStateValue(id.toString(), status, MongoDbIdType.DECIMAL)
+                is Date -> MongoDbStreamStateValue(id.time.toString(), status, MongoDbIdType.DATE)
                 is BsonTimestamp ->
-                    MongoDbStreamStateValue(
-                        lastId.value.toString(),
-                        status,
-                        MongoDbIdType.TIMESTAMP
-                    )
+                    MongoDbStreamStateValue(id.value.toString(), status, MongoDbIdType.TIMESTAMP)
                 is Binary ->
                     MongoDbStreamStateValue(
-                        id = binaryIdToString(lastId),
+                        id = binaryIdToString(id),
                         status = status,
                         idType = MongoDbIdType.BINARY,
-                        binarySubType = lastId.type.toInt(),
-                    )
-                is Document ->
-                    MongoDbStreamStateValue(
-                        lastId.toBsonDocument().toJson(EXTENDED_JSON),
-                        status,
-                        MongoDbIdType.OBJECT,
+                        binarySubType = id.type.toInt(),
                     )
                 is BsonDocument ->
-                    MongoDbStreamStateValue(
-                        lastId.toJson(EXTENDED_JSON),
-                        status,
-                        MongoDbIdType.OBJECT
-                    )
+                    MongoDbStreamStateValue(id.toJson(EXTENDED_JSON), status, MongoDbIdType.OBJECT)
                 else ->
                     MongoDbStreamStateValue(
-                        Document(BSON_WRAPPER_FIELD, lastId).toBsonDocument().toJson(EXTENDED_JSON),
+                        Document(BSON_WRAPPER_FIELD, id).toBsonDocument().toJson(EXTENDED_JSON),
                         status,
                         MongoDbIdType.BSON,
                     )
+            }
+
+        /**
+         * A raw document's `_id` as the JVM type the resume filter and the checkpoint take; a
+         * timestamp or document checkpoints as it is, any other kind through the wrapper.
+         */
+        private fun javaValue(value: BsonValue): Any? =
+            when (value) {
+                is BsonNull -> null
+                is BsonObjectId -> value.value
+                is BsonString -> value.value
+                is BsonInt32 -> value.value
+                is BsonInt64 -> value.value
+                is BsonDouble -> value.value
+                is BsonDecimal128 -> value.value
+                is BsonDateTime -> Date(value.value)
+                is BsonBinary -> Binary(value.type, value.data)
+                else -> value
             }
 
         private const val BSON_WRAPPER_FIELD = "v"
@@ -187,7 +200,8 @@ data class MongoDbStreamStateValue(
                 Base64.getEncoder().encodeToString(binary.data)
             }
 
-        private val UUID_SUBTYPE: Int = BsonBinarySubType.UUID_STANDARD.value.toInt()
+        /** `BsonBinarySubType.UUID_STANDARD`. */
+        private const val UUID_SUBTYPE = 4
         private const val UUID_BYTE_LENGTH = 16
     }
 }

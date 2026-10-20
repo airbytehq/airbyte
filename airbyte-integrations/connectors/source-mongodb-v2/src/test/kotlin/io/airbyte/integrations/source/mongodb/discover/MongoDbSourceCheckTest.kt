@@ -68,7 +68,7 @@ class MongoDbSourceCheckTest {
     fun testCheckFailsWithoutDatabases() {
         SyncsTestFixture.testCheck(
             config(replicaSet.connectionString, emptyList()),
-            expectedFailure = "No databases specified in the configuration.",
+            expectedFailure = "Discovered zero tables.",
         )
     }
 

@@ -66,7 +66,7 @@ data class MongoDbSourceConfiguration(
     /** MongoDB incremental syncs are CDC-only: READ always produces GLOBAL state. */
     override val global: Boolean = true,
     /** A collection scan is checkpointed and resumed every 10 minutes. */
-    override val checkpointTargetInterval: Duration = Duration.ofMinutes(10),
+    override val checkpointTargetInterval: Duration = DEFAULT_CHECKPOINT_TARGET_INTERVAL,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     /** SSH tunnels are not part of the MongoDB spec. */
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
@@ -77,6 +77,13 @@ data class MongoDbSourceConfiguration(
     /** `(username, password)` when both are configured, else null (no authentication). */
     val credential: Pair<String, String>?
         get() = if (username != null && password != null) username to password else null
+
+    companion object {
+        /**
+         * The CDK cancels a snapshot round past this and resumes it after the checkpointed `_id`.
+         */
+        val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(10)
+    }
 
     /** Required to inject [MongoDbSourceConfiguration] directly. */
     @Factory
@@ -96,6 +103,9 @@ constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
+    /** Test hook: a shorter checkpoint target interval than the default (`0` = default). */
+    @Value("\${airbyte.connector.extract.mongodb.checkpoint-target-interval-ms:0}")
+    val checkpointTargetIntervalMs: Long = 0,
 ) : SourceConfigurationFactory<Spec, MongoDbSourceConfiguration> {
 
     private val log = KotlinLogging.logger {}
@@ -111,14 +121,7 @@ constructor(
         }
 
     override fun makeWithoutExceptionHandling(pojo: Spec): MongoDbSourceConfiguration {
-        val databaseConfig: DatabaseConfigSpecification =
-            pojo.databaseConfig
-                ?: throw ConfigErrorException(
-                    "Database configuration is missing required 'database_config' property.",
-                )
-        if (databaseConfig.databases.isEmpty()) {
-            throw ConfigErrorException("No databases specified in the configuration.")
-        }
+        val databaseConfig: DatabaseConfigSpecification = pojo.databaseConfig
         val connectionString: String = sanitizeConnectionString(databaseConfig.connectionString)
         val parsed: ConnectionString =
             try {
@@ -147,7 +150,7 @@ constructor(
             username = databaseConfig.username,
             password = databaseConfig.password,
             authSource = databaseConfig.authSource ?: Spec.DEFAULT_AUTH_SOURCE,
-            schemaEnforced = databaseConfig.schemaEnforced ?: true,
+            schemaEnforced = pojo.schemaEnforced ?: databaseConfig.schemaEnforced ?: true,
             discoverSampleSize = pojo.discoverSampleSize ?: Spec.DEFAULT_DISCOVER_SAMPLE_SIZE,
             discoverTimeout =
                 Duration.ofSeconds(
@@ -167,6 +170,9 @@ constructor(
             maxConcurrency = maxConcurrency,
             realHost = firstHost.host,
             realPort = firstHost.port,
+            checkpointTargetInterval =
+                if (checkpointTargetIntervalMs > 0) Duration.ofMillis(checkpointTargetIntervalMs)
+                else MongoDbSourceConfiguration.DEFAULT_CHECKPOINT_TARGET_INTERVAL,
         )
     }
 

@@ -57,20 +57,6 @@ object SpeedModeTestSupport {
     fun decode(value: AirbyteValueProtobuf): Any? = decoder.decode(value)
 
     /**
-     * The text a protobuf value carries on the wire: the string, the plain decimal digits of a
-     * number, `true`/`false`, the JSON text of a JSON value, or null for a null.
-     */
-    fun wireText(value: AirbyteValueProtobuf): String? =
-        when (val decoded: Any? = decoder.decode(value)) {
-            null -> null
-            is BigDecimal -> decoded.toPlainString()
-            else -> decoded.toString()
-        }
-
-    /** `1E+5`, `-1E-7`: the notations a plain number must never be written in. */
-    val SCIENTIFIC_NOTATION = Regex("""\d[eE][+-]?\d""")
-
-    /**
      * Makes JSON values comparable across channels: every number becomes its plain decimal text
      * (the STDIO channel holds Jackson number nodes of various classes, the socket channels are
      * parsed from text), binary nodes become their base64 text, and object keys are sorted (the

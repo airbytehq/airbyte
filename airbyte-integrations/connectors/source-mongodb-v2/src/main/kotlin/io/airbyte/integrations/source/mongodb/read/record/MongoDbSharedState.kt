@@ -2,27 +2,26 @@
 package io.airbyte.integrations.source.mongodb.read.record
 
 import com.mongodb.client.MongoClient
-import com.mongodb.client.MongoCollection
-import com.mongodb.client.model.Projections
-import com.mongodb.client.model.Sorts
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.GlobalInputState
+import io.airbyte.cdk.command.InputState
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.StreamInputState
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
+import io.airbyte.integrations.source.mongodb.MongoDbDiagnostics
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
-import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier
-import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdKind
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.annotation.PreDestroy
 import jakarta.inject.Singleton
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import org.bson.BsonDocument
 import org.bson.Document
-import org.bson.conversions.Bson
 
 private val log = KotlinLogging.logger {}
 
@@ -32,12 +31,36 @@ class MongoDbSharedState(
     val configuration: MongoDbSourceConfiguration,
     private val concurrencyResource: ConcurrencyResource,
     private val resourceAcquirer: ResourceAcquirer,
-    /** Test hook: caps [chunkSize] so a resume can be exercised on a few documents (`0` = off). */
-    @Value("\${airbyte.connector.extract.mongodb.max-records-per-run:0}")
-    private val maxRecordsPerRun: Long = 0,
+    private val inputState: InputState,
+    /** Test hook: a snapshot batch size below the driver's maximum (`0` = maximum). */
+    @Value("\${airbyte.connector.extract.mongodb.snapshot-batch-size:0}")
+    private val snapshotBatchSizeHook: Int = 0,
 ) {
+    /**
+     * Documents per snapshot batch: as many as fit the 16MB reply unless the test hook says less.
+     */
+    val snapshotBatchSize: Int =
+        if (snapshotBatchSizeHook > 0) snapshotBatchSizeHook else Int.MAX_VALUE
+
     /** One client for the whole READ; MongoDB pools connections internally. */
-    val client: MongoClient by lazy { MongoDbClientFactory.create(configuration) }
+    val client: MongoClient by lazy {
+        MongoDbClientFactory.create(configuration).also {
+            MongoDbDiagnostics.logConnection(it, configuration)
+        }
+    }
+
+    /**
+     * The checkpoint the READ was given for a full-refresh stream. Every checkpoint is written
+     * inside the GLOBAL state message, but the CDK seeds a full-refresh stream's current state from
+     * STREAM messages only, so the `Stream` feed starts with none; this reads it from where it was
+     * written, so an interrupted full refresh continues after its last `_id`.
+     */
+    fun fullRefreshInputState(streamId: StreamIdentifier): OpaqueStateValue? =
+        when (val state: InputState = inputState) {
+            is GlobalInputState -> state.globalStreams[streamId] ?: state.nonGlobalStreams[streamId]
+            is StreamInputState -> state.streams[streamId]
+            else -> null
+        }
 
     /**
      * Whether the server accepts `fullDocumentBeforeChange` (MongoDB 6.0+): a change stream opened
@@ -49,90 +72,26 @@ class MongoDbSharedState(
         major >= 6
     }
 
-    private val chunkSizeByStream = ConcurrentHashMap<StreamIdentifier, Int>()
+    private val diagnosed: MutableSet<Any> = ConcurrentHashMap.newKeySet()
 
-    /**
-     * Documents per snapshot query, sized as the legacy connector did: about [QUERY_TARGET_BYTES]
-     * worth, from `$collStats` (`storageStats.size / count`, summed over the shards a `mongos`
-     * reports), [DEFAULT_CHUNK_SIZE] when the stats are unavailable or degenerate. Each round is
-     * one `find().sort(_id).limit(chunk)`, so no cursor outlives about a gigabyte of results and
-     * every chunk ends with a checkpoint.
-     */
-    fun chunkSize(streamId: StreamIdentifier): Int =
-        chunkSizeByStream.computeIfAbsent(streamId) { id ->
-            val chunk: Int = chunkSizeFromStats(id)
-            if (maxRecordsPerRun in 1 until chunk.toLong()) maxRecordsPerRun.toInt() else chunk
-        }
-
-    private fun chunkSizeFromStats(id: StreamIdentifier): Int {
-        val name = "${id.namespace}.${id.name}"
-        try {
-            var count = 0L
-            var size = 0L
-            client
-                .getDatabase(id.namespace!!)
-                .getCollection(id.name)
-                .aggregate(listOf(Document("\$collStats", Document("storageStats", Document()))))
-                .forEach { stats: Document ->
-                    val storage: Document =
-                        stats.get("storageStats", Document::class.java) ?: return@forEach
-                    count += (storage["count"] as? Number)?.toLong() ?: 0L
-                    size += (storage["size"] as? Number)?.toLong() ?: 0L
-                }
-            val bytesPerDocument: Long = if (count > 0) size / count else 0L
-            val chunk: Long =
-                if (bytesPerDocument > 0) QUERY_TARGET_BYTES / bytesPerDocument else 0L
-            if (chunk in 1..Int.MAX_VALUE.toLong()) {
-                log.info {
-                    "Snapshot chunk size for $name: $chunk documents (~$bytesPerDocument bytes each)."
-                }
-                return chunk.toInt()
-            }
-            log.info {
-                "Snapshot chunk size for $name could not be determined; using $DEFAULT_CHUNK_SIZE."
-            }
-        } catch (e: Exception) {
-            log.warn(e) {
-                "Could not read the statistics of $name; using a chunk of $DEFAULT_CHUNK_SIZE."
+    /** Logs [MongoDbDiagnostics.oplogLine] once per READ, before the change stream is read. */
+    fun logOplog(savedToken: BsonDocument?) {
+        if (diagnosed.add(OPLOG_DIAGNOSTIC)) {
+            MongoDbDiagnostics.logGuarded("the oplog statistics") {
+                MongoDbDiagnostics.oplogLine(client, savedToken)
             }
         }
-        return DEFAULT_CHUNK_SIZE
     }
 
-    private val uniformIdKindStreams: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
-
     /**
-     * Fails the sync when the collection mixes `_id` kinds ([MongoDbIdKind]). The `_id` index
-     * orders values by BSON type before value, and a resume filter `_id > x` only matches `_id`s of
-     * x's type, so a collection mixing types would lose every later type after a checkpoint: the
-     * smallest and largest `_id` sharing a kind means every `_id` does (two index seeks). Numbers
-     * of any width are one kind, as they are for the comparison. Checked once per stream per READ.
+     * Logs [MongoDbDiagnostics.collectionLine] once per stream per READ, as its snapshot starts.
      */
-    fun checkUniformIdKind(streamId: StreamIdentifier) {
-        if (streamId in uniformIdKindStreams) return
-        val collection: MongoCollection<Document> =
-            client.getDatabase(streamId.namespace!!).getCollection(streamId.name)
-        fun endpointKind(sort: Bson): String =
-            MongoDbIdKind.of(
-                collection
-                    .find()
-                    .projection(Projections.include(MongoDbSourceMetadataQuerier.ID_FIELD))
-                    .sort(sort)
-                    .limit(1)
-                    .first()
-                    ?.get(MongoDbSourceMetadataQuerier.ID_FIELD)
-            )
-        val first: String = endpointKind(Sorts.ascending(MongoDbSourceMetadataQuerier.ID_FIELD))
-        val last: String = endpointKind(Sorts.descending(MongoDbSourceMetadataQuerier.ID_FIELD))
-        if (first != last) {
-            throw ConfigErrorException(
-                "Collection ${streamId.namespace}.${streamId.name} has _id values of more than " +
-                    "one type ($first and $last). The _id type must be the same for every " +
-                    "document in a collection; make it consistent or exclude the collection " +
-                    "from the sync.",
-            )
+    fun logStreamStart(streamId: StreamIdentifier) {
+        if (diagnosed.add(streamId)) {
+            MongoDbDiagnostics.logGuarded(
+                "the statistics of ${streamId.namespace}.${streamId.name}"
+            ) { MongoDbDiagnostics.collectionLine(client, streamId) }
         }
-        uniformIdKindStreams.add(streamId)
     }
 
     /** Snapshot streams that finished in this READ, so the factory stops re-planning them. */
@@ -157,10 +116,7 @@ class MongoDbSharedState(
         client.close()
     }
 
-    companion object {
-        /** Documents per snapshot query when the collection's statistics give no better figure. */
-        const val DEFAULT_CHUNK_SIZE: Int = 1_000_000
-        /** About how many bytes one snapshot query should return. */
-        const val QUERY_TARGET_BYTES: Long = 1L shl 30
+    private companion object {
+        const val OPLOG_DIAGNOSTIC = "oplog"
     }
 }

@@ -7,26 +7,27 @@ Airbyte's certified MongoDB connector offers the following features:
 - Reliable replication of collections of any size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing): an interrupted sync resumes from the last document it checkpointed instead of starting over.
 - A choice between a discovered schema (fields sampled from your documents) and a schemaless mode that syncs each document as one JSON object.
 
-The contents below include a Quick Start guide, replication details, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, see the [migration guide](mongodb-v2-migrations.md).
+This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](mongodb-v2-migrations.md) first.
 
 ## Quick Start
 
-Here is an outline of the minimum required steps to configure a MongoDB source:
+Setting up a MongoDB source takes four steps:
 
-1. Create a dedicated read-only MongoDB user.
-2. Find the connection string of your [replica set](https://www.mongodb.com/docs/manual/replication/) or [sharded cluster](https://www.mongodb.com/docs/manual/sharding/), hosted on [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
-3. Create a new MongoDB source in the Airbyte UI.
-4. (Airbyte Cloud only) Allow inbound traffic from Airbyte IPs.
+1. [Create a dedicated read-only MongoDB user](#step-1-create-a-dedicated-read-only-mongodb-user).
+2. [Find the connection string](#step-2-find-the-mongodb-cluster-connection-string) of your [replica set](https://www.mongodb.com/docs/manual/replication/) or [sharded cluster](https://www.mongodb.com/docs/manual/sharding/), hosted on [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
+3. [Create the MongoDB source](#step-3-configure-the-airbyte-mongodb-source) in Airbyte.
+4. [Allow inbound traffic from Airbyte](#step-4-allow-inbound-traffic-from-airbyte) if your cluster restricts incoming connections.
 
 ### Requirements
 
-- A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams; the connection test fails with a message saying so.
-- MongoDB 4.0 or later. The connector is tested against MongoDB 7.0.
-- On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers may fail during connection setup.
+- A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams; the connection test fails with a message saying so. A single-node replica set is fine for development: see [Convert a Standalone to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/).
+- MongoDB 4.4 or later. The connector is tested against MongoDB 7.0. Deletes carry the deleted document only on MongoDB 6.0 or later with [pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images) enabled on the collection.
+- On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers (M0, M2, M5) do not support the operations the connector relies on and may fail during connection setup.
+- An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams).
 
 ### Step 1: Create a dedicated read-only MongoDB user
 
-These steps create a dedicated, read-only user for replicating data. Alternatively, you can use an existing MongoDB user with the privileges described below.
+These steps create a dedicated, read-only user for replicating data. You can also use an existing MongoDB user, as long as it has the privileges described below. A dedicated user makes the connector's activity easy to tell apart in your logs and lets you revoke access without affecting anything else.
 
 The privileges the connector needs depend on how many databases you configure:
 
@@ -35,11 +36,11 @@ The privileges the connector needs depend on how many databases you configure:
 | One                  | The built-in [`read`](https://www.mongodb.com/docs/manual/reference/built-in-roles/#mongodb-authrole-read) role on that database. The change stream is opened on the database itself, so no cluster-wide privilege is needed.                                                                                   |
 | Several              | [`readAnyDatabase`](https://www.mongodb.com/docs/manual/reference/built-in-roles/#mongodb-authrole-readAnyDatabase) (on Atlas: the **Only read any database** built-in role). Changes from several databases are read through one cluster-wide change stream, which requires read privileges on every database. |
 
-The connector never reads the `local` or `config` databases.
+Either way, read access is all the connector needs: it never writes to your cluster and never reads the `local` or `config` databases.
 
 #### MongoDB Atlas
 
-1. Log in to the MongoDB Atlas dashboard.
+1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on "Database Access" under "Security".
 
    ![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
@@ -52,19 +53,25 @@ The connector never reads the `local` or `config` databases.
 
    ![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
-5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
+5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` (or a name of your choice) in the first text box and set a password in the second text box. You will enter both in the Airbyte source in Step 3.
 
    ![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
-6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
+6. Under "Database User Privileges", grant read access in one of two ways:
 
-   ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+   - Under "Built-in Role", click "Select one built-in role for this user" and choose "Only read any database".
+
+     ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+
+   - Or, under "Specific Privileges", click "Add Specific Privilege" and add `readAnyDatabase`.
+
+     ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
 
    :::info
-   "Only read any database" grants `readAnyDatabase`, which is required when you configure more than one database. If you sync a single database and prefer narrower privileges, use a [custom role](https://www.mongodb.com/docs/atlas/security-add-mongodb-roles/) with the `read` role on that database instead.
+   Both grant `readAnyDatabase`, which is required when you configure more than one database. If you sync a single database and prefer narrower privileges, use a [custom role](https://www.mongodb.com/docs/atlas/security-add-mongodb-roles/) with the `read` role on that database instead.
    :::
 
-7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and select only the cluster you want to replicate.
 
    ![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
@@ -74,12 +81,12 @@ The connector never reads the `local` or `config` databases.
 
 #### Self-hosted
 
-These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed. To install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
+These instructions use the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) (`mongosh`). To install it, follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
 
-1. From a terminal window, launch the MongoDB shell:
+1. From a terminal window, connect to the cluster as a user who can create users (for example one with the `userAdminAnyDatabase` role):
 
    ```shell
-   > mongosh <connection string to cluster> --username <user with admin permissions>;
+   > mongosh "<connection string to cluster>" --username <user with admin permissions>
    ```
 
 2. Switch to the `admin` database:
@@ -89,7 +96,7 @@ These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/
    switched to db admin
    ```
 
-3. Create the `READ_ONLY_USER` user. To sync one database, grant the `read` role on it:
+3. Create the `READ_ONLY_USER` user (or a name of your choice). To sync one database, grant the `read` role on it:
 
    ```shell
    admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
@@ -102,28 +109,28 @@ These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/
    ```
 
    :::note
-   Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated.
+   Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. The user is created in the `admin` database, which is the connector's default **Authentication Source**; if you create it elsewhere, set that field accordingly in Step 3.
    :::
 
-4. Next, enable authentication, if not already enabled. Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
+4. Make sure every member of the replica set (or every `mongos`) requires authentication and accepts connections from the network Airbyte runs on. In each member's [configuration file](https://www.mongodb.com/docs/manual/reference/configuration-options/) (`/etc/mongod.conf` on most Linux distributions), check these keys and restart the process after changing them:
 
    ```yaml
    net:
-     bindIp: 0.0.0.0
+     bindIp: localhost,<the interface Airbyte reaches this member on>
 
    security:
      authorization: enabled
    ```
 
    :::note
-   Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address. Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database.
+   `net.bindIp` lists the interfaces the member listens on; `0.0.0.0` accepts connections from any interface, so if you use it, restrict access with a firewall or the IP allow list of Step 4. `security.authorization: enabled` makes the member reject unauthenticated clients. On a replica set, members also need to authenticate with each other (a keyfile or x.509 certificates); see [Internal/Membership Authentication](https://www.mongodb.com/docs/manual/core/security-internal-authentication/).
    :::
 
 ### Step 2: Find the MongoDB cluster connection string
 
 #### MongoDB Atlas
 
-Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database). Below are the steps to find the connection string of an Atlas-hosted cluster:
+Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database). To find the connection string of an Atlas-hosted cluster:
 
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
@@ -138,24 +145,39 @@ Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/databas
 
    ![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
-You can paste the string as Atlas shows it: surrounding quotation marks and the `<username>:<password>@` placeholder are removed by the connector. Enter the credentials in the **Username** and **Password** fields of the source instead. Connections to Atlas always use TLS.
+The string looks like `mongodb+srv://cluster0.abcde.mongodb.net/`. You can paste it as Atlas shows it: surrounding quotation marks and the `<username>:<password>@` placeholder are removed by the connector. Enter the credentials in the **Username** and **Password** fields of the source instead, where the password is stored as a secret. Connections to Atlas always use TLS.
 
 #### Self-hosted cluster
 
-Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions on finding a self-hosted deployment's connection string. List every member of the replica set, or the `mongos` routers of a sharded cluster, for example `mongodb://host1:27017,host2:27017,host3:27017/?replicaSet=rs0`.
+Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions on finding a self-hosted deployment's connection string. List every member of the replica set, or the `mongos` routers of a sharded cluster, so the connector can fail over when a member is down — for example `mongodb://host1:27017,host2:27017,host3:27017/?replicaSet=rs0`. DNS seed lists (`mongodb+srv://`) work too.
 
 Connection string options are honored. In particular:
 
 - Add `tls=true` to connect over TLS. See [Configure mongod and mongos for TLS/SSL](https://www.mongodb.com/docs/manual/tutorial/configure-ssl/).
-- Set `readPreference` to choose which members serve the reads. When the connection string does not set one, the connector uses `secondaryPreferred`, so reads go to a secondary when one is available.
+- Set `readPreference` to choose which members serve the reads. When the connection string does not set one, the connector uses `secondaryPreferred`, so the initial snapshot and the change stream are read from a secondary when one is available and the primary is left to your application.
+- Set `compressors` to choose how traffic from the cluster is compressed. When the connection string does not set it, the connector asks for `snappy`, then `zlib`, and uses the first one the cluster supports. An empty `compressors=` turns compression off.
+- Credentials may be embedded (`mongodb://user:password@host…`), but the **Username** and **Password** fields are preferred: the connection string is stored in clear, the password field as a secret. When both are set, the fields win.
 
 ### Step 3: Configure the Airbyte MongoDB source
 
-Create the source with the cluster type, the connection string from Step 2, the names of the databases to sync, and the credentials from Step 1. The source tests the connection when it is created: it checks that the credentials can list collections in the configured databases and that the deployment supports change streams.
+In Airbyte, go to **Sources**, click **+ New source** and choose **MongoDB**. Then fill in:
 
-### Step 4: (Airbyte Cloud only) Allow inbound traffic from Airbyte IPs
+1. **Cluster Type**: MongoDB Atlas or self-hosted.
+2. **Connection String**: the string from Step 2.
+3. **Database Names**: the databases that contain the collections to sync. Add one name per entry; several databases need the `readAnyDatabase` privilege from Step 1.
+4. **Username** and **Password**: the user from Step 1. Required for Atlas; on a self-hosted cluster, leave them empty only if the cluster does not require authentication.
+5. **Authentication Source**: the database the user was created in. Leave the default, `admin`, unless you created the user elsewhere (Atlas users are always in `admin`).
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+Leave the other advanced settings at their defaults unless you have a reason to change them; they are described under [Configuration Parameters](#configuration-parameters).
+
+Click **Set up source**. Airbyte tests the connection before saving: it checks that the cluster can be reached with the credentials, that it is a replica set or sharded cluster rather than a standalone server, and that the user can list the collections of the configured databases (a database the user cannot read is named in the error). Airbyte then discovers the collections and, when **Schema Enforced** is on, samples their documents to build the schema (see [Schema Enforcement](#schema-enforcement)); on a cluster with many collections this can take a few minutes.
+
+### Step 4: Allow inbound traffic from Airbyte
+
+If your cluster only accepts connections from known addresses, allow Airbyte's:
+
+- **Airbyte Cloud**: add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list. On Atlas, that is **Network Access** under **Security**.
+- **Self-managed Airbyte**: allow the addresses of the machines or Kubernetes nodes that run your Airbyte workers.
 
 ## Replication Methods
 
@@ -163,7 +185,7 @@ Each collection is a stream that can be synced in **Full Refresh** or **Incremen
 
 ### Full Refresh
 
-A full refresh reads the whole collection, ordered by `_id`, on every sync. The read is checkpointed as it goes: a sync that fails part way through (because of a network error, for example) continues from the last checkpointed `_id` instead of starting over.
+A full refresh reads the whole collection, ordered by `_id`, on every sync. The read is checkpointed as it goes, about every gigabyte of documents: a sync that fails part way through (because of a network error, for example) continues from the last checkpointed `_id` instead of starting over.
 
 ### Incremental (CDC)
 
@@ -198,8 +220,8 @@ row, so a later change always supersedes the row it replaces).
 
 The connector orders and resumes reads by `_id`, so:
 
-- **All documents in a collection must use the same BSON type for `_id`.** Integers, longs, doubles and decimals count as one type. A collection that mixes types — for example integer and string `_id`s — fails the sync with an error naming both types, because a resume could otherwise miss every document of the other type.
-- Checkpoints are exact for `_id`s of type `ObjectId`, string, integer, long, double, decimal, date, timestamp, binary (UUIDs included) and embedded document. Collections with other `_id` types are synced in a single pass without intermediate checkpoints: a sync interrupted part way through re-reads the collection from the start.
+- **Use one BSON type for `_id` throughout a collection.** Integers, longs, doubles and decimals count as one type. MongoDB sorts `_id`s by type before value, and a read resumed from a checkpoint would continue with the checkpointed type only, so a collection that mixes types — for example integer and string `_id`s — fails the sync with a message naming the two types found. Make the `_id` type consistent or exclude the collection from the connection.
+- Checkpoints are exact for every `_id` type: `ObjectId`, string, integer, long, double, decimal, date, timestamp, binary (UUIDs included), embedded document and the remaining BSON types.
 
 ## Schema Enforcement
 
@@ -211,7 +233,6 @@ The schema is inferred, not declared, so keep in mind:
 - When a field holds different types in different documents, the schema uses the type seen first. Values are emitted in their own type regardless (a string stays a string even in a field typed `number`), but typed destinations may not accept such a value, in which case it arrives as `null`. Collections like this are better synced in schemaless mode.
 - Empty collections have no fields to sample and are not discovered. Views are not discovered or synced; sync the underlying collection.
 - [Time series collections](https://www.mongodb.com/docs/manual/core/timeseries-collections/) are not supported and are not discovered: they have no `_id` index, so a snapshot cannot be checkpointed and resumed, and MongoDB does not provide change streams for them.
-  synced in **Full Refresh** mode only: MongoDB does not support change streams on them, so Incremental is not offered.
 
 When **Schema Enforced** is off, collections are read in schemaless mode, which does not assume documents share a structure. Each document produces a record with exactly two top-level fields:
 
@@ -253,8 +274,8 @@ BSON types are mapped to the following Airbyte types in the discovered schema, a
 | `string`                                     | string         |                                                                                                                                                                                                                                                        |
 | `bool`                                       | boolean        |                                                                                                                                                                                                                                                        |
 | `int`, `long`                                | number         | Emitted as JSON numbers without a fractional part                                                                                                                                                                                                      |
-| `double`                                     | number         |                                                                                                                                                                                                                                                        |
-| `decimal`                                    | number         | Emitted with its full precision                                                                                                                                                                                                                        |
+| `double`                                     | number         | Emitted as a JSON number; `NaN` and the infinities, which JSON has no number for, as the strings `NaN`, `Infinity` and `-Infinity`                                                                                                                     |
+| `decimal`                                    | number         | Emitted with its full precision; `NaN` and the infinities as the strings `NaN`, `Infinity` and `-Infinity`                                                                                                                                             |
 | `date`                                       | string         | ISO 8601 in UTC with milliseconds, e.g. `2024-01-01T00:00:00.000Z`                                                                                                                                                                                     |
 | `timestamp`                                  | string         | MongoDB's internal timestamp. Its 64-bit value is rendered as an ISO 8601 date-time as if it were milliseconds since the epoch, which produces a far-future date; this is kept for backward compatibility. Use a `date` field to store points in time. |
 | `binData`                                    | string         | Base64 encoding of the bytes, for every subtype (UUIDs included)                                                                                                                                                                                       |
@@ -297,7 +318,7 @@ MongoDB has a 16MB maximum document size limit for BSON documents. During CDC sy
 | Username                                  | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Password                                  | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Authentication Source                     | The database that the supplied credentials are validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                                                                                                                           |
-| Schema Enforced                           | Controls whether a schema is discovered and enforced. See [Schema Enforcement](#schema-enforcement).                                                                                                                                                                                                                                                                                                                                                                                        |
+| Schema Enforced (Advanced)                | Controls whether a schema is discovered and enforced. Defaults to on. See [Schema Enforcement](#schema-enforcement).                                                                                                                                                                                                                                                                                                                                                                        |
 | Document discovery sample size (Advanced) | The maximum number of documents to sample per collection when discovering its fields. Default is 10,000 with a valid range of 10 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                                                                                                    |
 | Invalid CDC position behavior (Advanced)  | What to do when the saved change stream position is no longer valid, usually because the oplog no longer contains it. If "Fail sync" is chosen, the sync fails and you need to reset the connection before syncing again. If "Re-sync data" is chosen, the connector discards the saved position and snapshot progress and takes a new initial snapshot, which increases cost and misses the changes that occurred while the position was invalid. Default is "Fail sync".                  |
 

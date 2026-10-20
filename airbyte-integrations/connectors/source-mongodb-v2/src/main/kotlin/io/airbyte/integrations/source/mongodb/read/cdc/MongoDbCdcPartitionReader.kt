@@ -3,22 +3,19 @@ package io.airbyte.integrations.source.mongodb.read.cdc
 
 import com.mongodb.MongoChangeStreamException
 import com.mongodb.MongoCommandException
+import com.mongodb.MongoNamespace
 import com.mongodb.client.ChangeStreamIterable
-import com.mongodb.client.model.Aggregates
-import com.mongodb.client.model.Filters
 import com.mongodb.client.model.changestream.ChangeStreamDocument
 import com.mongodb.client.model.changestream.FullDocument
 import com.mongodb.client.model.changestream.FullDocumentBeforeChange
 import com.mongodb.client.model.changestream.OperationType
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodb.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
@@ -26,17 +23,15 @@ import io.airbyte.integrations.source.mongodb.read.partition.MongoDbPartitionRea
 import io.airbyte.integrations.source.mongodb.read.partition.RecordAcceptor
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbRecordConverter
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
+import io.airbyte.integrations.source.mongodb.read.record.MongoDbValue
 import io.airbyte.integrations.source.mongodb.read.record.MongoStringValueCodec
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.BsonDocument
 import org.bson.BsonTimestamp
-import org.bson.Document
-import org.bson.codecs.DecoderContext
-import org.bson.codecs.DocumentCodec
+import org.bson.RawBsonDocument
 import org.bson.conversions.Bson
 
 private val log = KotlinLogging.logger {}
@@ -53,12 +48,23 @@ class MongoDbCdcPartitionReader(
 ) : MongoDbPartitionReaderBase(sharedState, feedBootstrap), UnlimitedTimePartitionReader {
 
     private val configuration: MongoDbSourceConfiguration = sharedState.configuration
-    private val documentCodec = DocumentCodec()
-    /** One converter per stream, each carrying that stream's schema for typed protobuf encoding. */
-    private val convertersByStream: Map<StreamIdentifier, MongoDbRecordConverter> =
-        feedBootstrap.feed.streams.associate {
-            it.id to MongoDbRecordConverter(configuration.schemaEnforced, schemaFieldTypesOf(it))
-        }
+
+    private class Target(val accept: RecordAcceptor, val converter: MongoDbRecordConverter)
+
+    /**
+     * Where each collection's events go, keyed as the events name it; one lookup per event. Built
+     * on first use, once the output router exists.
+     */
+    private val targets: Map<MongoNamespace, Target> by lazy {
+        feedBootstrap.feed.streams
+            .mapNotNull { stream ->
+                val accept: RecordAcceptor = recordAcceptorFor(stream.id) ?: return@mapNotNull null
+                val converter =
+                    MongoDbRecordConverter(configuration.schemaEnforced, schemaFieldTypesOf(stream))
+                MongoNamespace(stream.id.namespace!!, stream.id.name) to Target(accept, converter)
+            }
+            .toMap()
+    }
 
     @Volatile private var numRecords = 0L
     @Volatile private var resumeToken: BsonDocument? = null
@@ -68,6 +74,7 @@ class MongoDbCdcPartitionReader(
     override suspend fun run() {
         val priorToken: BsonDocument? =
             MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState)?.resumeTokenBson()
+        sharedState.logOplog(priorToken)
         try {
             drain(resumeAfter = priorToken)
         } catch (e: Exception) {
@@ -105,12 +112,12 @@ class MongoDbCdcPartitionReader(
             resumeToken = currentPosition()
         } else {
             val target: BsonTimestamp = MongoDbResumeTokens.timestamp(currentPosition())
-            val changeStream: ChangeStreamIterable<Document> =
+            val changeStream: ChangeStreamIterable<RawBsonDocument> =
                 openChangeStream().resumeAfter(resumeAfter)
             changeStream.cursor().use { cursor ->
                 while (true) {
                     currentCoroutineContext().ensureActive()
-                    val event: ChangeStreamDocument<Document>? = cursor.tryNext()
+                    val event: ChangeStreamDocument<RawBsonDocument>? = cursor.tryNext()
                     if (event == null) {
                         // Drained: the post-batch token is at or past the last event.
                         resumeToken = cursor.resumeToken
@@ -133,8 +140,8 @@ class MongoDbCdcPartitionReader(
         }
     }
 
-    private fun openChangeStream(): ChangeStreamIterable<Document> {
-        val changeStream: ChangeStreamIterable<Document> =
+    private fun openChangeStream(): ChangeStreamIterable<RawBsonDocument> {
+        val changeStream: ChangeStreamIterable<RawBsonDocument> =
             watch()
                 .fullDocument(FullDocument.UPDATE_LOOKUP)
                 .batchSize(Int.MAX_VALUE)
@@ -179,20 +186,13 @@ class MongoDbCdcPartitionReader(
      * only. An update or replace whose `fullDocument` is null (the document was deleted before the
      * lookup) is emitted as a delete, as the legacy connector did.
      */
-    private fun emit(event: ChangeStreamDocument<Document>): Boolean {
-        val namespace = event.namespace ?: return false
-        val streamId =
-            StreamIdentifier.from(
-                StreamDescriptor()
-                    .withName(namespace.collectionName)
-                    .withNamespace(namespace.databaseName),
-            )
-        val accept: RecordAcceptor = recordAcceptorFor(streamId) ?: return false
-        val converter: MongoDbRecordConverter = convertersByStream[streamId] ?: return false
+    private fun emit(event: ChangeStreamDocument<RawBsonDocument>): Boolean {
+        val target: Target = targets[event.namespace ?: return false] ?: return false
+        val converter: MongoDbRecordConverter = target.converter
         val changedAt: String = clusterTime(event)
         fun deleted(): NativeRecordPayload =
             converter.changePayload(
-                event.fullDocumentBeforeChange ?: toDocument(event.documentKey),
+                event.fullDocumentBeforeChange ?: event.documentKey ?: BsonDocument(),
                 deletedAt = changedAt,
             )
         val payload: NativeRecordPayload =
@@ -207,9 +207,9 @@ class MongoDbCdcPartitionReader(
                 else -> return false
             }
         payload[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(Jsons.textNode(changedAt), MongoStringValueCodec)
+            FieldValueEncoder(MongoDbValue.Text(changedAt), MongoStringValueCodec)
         stampCursor(payload, event.clusterTime)
-        accept(payload, null)
+        target.accept(payload, null)
         return true
     }
 
@@ -217,40 +217,21 @@ class MongoDbCdcPartitionReader(
      * A single configured database is watched by itself, which the `read` role on that database
      * allows; several need a cluster-wide stream (`readAnyDatabase`).
      */
-    private fun watch(): ChangeStreamIterable<Document> =
-        configuration.databases.singleOrNull()?.let {
-            sharedState.client.getDatabase(it).watch(pipeline())
+    private fun watch(): ChangeStreamIterable<RawBsonDocument> {
+        val pipeline: List<Bson> =
+            MongoDbChangeStreamPipeline.build(
+                feedBootstrap.feed.streams.map { it.id },
+                preImages = sharedState.supportsPreImages,
+            )
+        return configuration.databases.singleOrNull()?.let {
+            sharedState.client.getDatabase(it).watch(pipeline, RawBsonDocument::class.java)
         }
-            ?: sharedState.client.watch(pipeline())
+            ?: sharedState.client.watch(pipeline, RawBsonDocument::class.java)
+    }
 
-    /**
-     * Restrict the change stream, server-side, to the configured streams' collections and to
-     * data-changing operations: events of unselected collections never leave the server.
-     */
-    private fun pipeline(): List<Bson> =
-        listOf(
-            Aggregates.match(
-                Filters.and(
-                    Filters.or(
-                        feedBootstrap.feed.streams.map {
-                            Filters.and(
-                                Filters.eq("ns.db", it.id.namespace),
-                                Filters.eq("ns.coll", it.id.name),
-                            )
-                        },
-                    ),
-                    Filters.`in`("operationType", listOf("insert", "update", "replace", "delete")),
-                ),
-            ),
-        )
-
-    private fun clusterTime(event: ChangeStreamDocument<Document>): String =
+    private fun clusterTime(event: ChangeStreamDocument<RawBsonDocument>): String =
         (event.clusterTime?.let { Instant.ofEpochSecond(it.time.toLong()) } ?: Instant.now())
             .toString()
-
-    private fun toDocument(bson: BsonDocument?): Document =
-        bson?.let { documentCodec.decode(it.asBsonReader(), DecoderContext.builder().build()) }
-            ?: Document()
 
     override fun checkpoint(): PartitionReadCheckpoint =
         PartitionReadCheckpoint(

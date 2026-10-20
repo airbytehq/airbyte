@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mongodb.config
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import com.mongodb.MongoCompressor
 import com.mongodb.MongoCredential
 import com.mongodb.MongoDriverInformation
 import com.mongodb.ReadPreference
@@ -16,7 +17,26 @@ import org.bson.UuidRepresentation
 object MongoDbClientFactory {
     const val DRIVER_NAME = "Airbyte"
 
-    fun create(configuration: MongoDbSourceConfiguration): MongoClient {
+    /**
+     * Snappy where the server offers it (cheap for the server, documents compress well), zlib
+     * otherwise; a `compressors` connection-string option replaces this, an empty one turns
+     * compression off.
+     */
+    val DEFAULT_COMPRESSORS: List<MongoCompressor> =
+        listOf(MongoCompressor.createSnappyCompressor(), MongoCompressor.createZlibCompressor())
+
+    private val COMPRESSORS_OPTION = Regex("[?&]compressors=", RegexOption.IGNORE_CASE)
+
+    fun create(configuration: MongoDbSourceConfiguration): MongoClient =
+        MongoClients.create(
+            settings(configuration),
+            MongoDriverInformation.builder().driverName(DRIVER_NAME).build(),
+        )
+
+    /**
+     * The client settings [create] uses, built from the configuration and its connection string.
+     */
+    fun settings(configuration: MongoDbSourceConfiguration): MongoClientSettings {
         val connectionString = ConnectionString(configuration.connectionString)
         val settings: MongoClientSettings.Builder =
             MongoClientSettings.builder()
@@ -27,6 +47,10 @@ object MongoDbClientFactory {
                 .uuidRepresentation(UuidRepresentation.UNSPECIFIED)
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
+        }
+        // The driver parses an absent `compressors` as an empty list, like `compressors=` (none).
+        if (!COMPRESSORS_OPTION.containsMatchIn(configuration.connectionString)) {
+            settings.compressorList(DEFAULT_COMPRESSORS)
         }
         // Atlas requires TLS; self-managed clusters honour the connection string (`tls=true`).
         if (configuration.clusterType == MongoDbClusterType.ATLAS_REPLICA_SET) {
@@ -42,8 +66,6 @@ object MongoDbClientFactory {
                 ),
             )
         }
-        val driverInformation: MongoDriverInformation =
-            MongoDriverInformation.builder().driverName(DRIVER_NAME).build()
-        return MongoClients.create(settings.build(), driverInformation)
+        return settings.build()
     }
 }

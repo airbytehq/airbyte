@@ -25,31 +25,78 @@ class MongoDbProtobufEncodingTest {
     @Test
     fun testCodecCoercionForProtobuf() {
         Assertions.assertEquals("hi", MongoStringValueCodec.valueForProtobufEncoding(text("hi")))
-        Assertions.assertEquals("30", MongoStringValueCodec.valueForProtobufEncoding(int(30)))
-        Assertions.assertNull(MongoStringValueCodec.valueForProtobufEncoding(Jsons.nullNode()))
+        Assertions.assertEquals("30", MongoStringValueCodec.valueForProtobufEncoding(num(30)))
+        Assertions.assertEquals(
+            "12.34",
+            MongoStringValueCodec.valueForProtobufEncoding(num(BigDecimal("12.34"))),
+        )
+        // A document in a `string` field is its JSON on both channels.
+        Assertions.assertEquals(
+            """{"x":1}""",
+            MongoStringValueCodec.valueForProtobufEncoding(OBJECT),
+        )
+        Assertions.assertNull(MongoStringValueCodec.valueForProtobufEncoding(MongoDbValue.Null))
 
         Assertions.assertEquals(
             BigDecimal("12.34"),
-            MongoNumberValueCodec.valueForProtobufEncoding(Jsons.numberNode(BigDecimal("12.34"))),
+            MongoNumberValueCodec.valueForProtobufEncoding(num(BigDecimal("12.34"))),
+        )
+        Assertions.assertEquals(
+            BigDecimal("30"),
+            MongoNumberValueCodec.valueForProtobufEncoding(num(30)),
+        )
+        Assertions.assertEquals(
+            BigDecimal("1.5"),
+            MongoNumberValueCodec.valueForProtobufEncoding(num(1.5)),
         )
         // A non-number value for a NUMBER field is nulled on the protobuf channel.
         Assertions.assertNull(MongoNumberValueCodec.valueForProtobufEncoding(text("nope")))
 
         Assertions.assertEquals(
             true,
-            MongoBooleanValueCodec.valueForProtobufEncoding(Jsons.booleanNode(true)),
+            MongoBooleanValueCodec.valueForProtobufEncoding(MongoDbValue.Bool(true)),
         )
         Assertions.assertNull(MongoBooleanValueCodec.valueForProtobufEncoding(text("true")))
 
-        val obj = Jsons.objectNode().put("x", 1)
         Assertions.assertEquals(
             """{"x":1}""",
-            MongoJsonbValueCodec.valueForProtobufEncoding(obj),
+            MongoJsonbValueCodec.valueForProtobufEncoding(OBJECT)
         )
+        // A scalar in a `object` field is its JSON text, as the legacy connector sent it.
+        Assertions.assertEquals("\"hi\"", MongoJsonbValueCodec.valueForProtobufEncoding(text("hi")))
+        Assertions.assertNull(MongoJsonbValueCodec.valueForProtobufEncoding(MongoDbValue.Null))
         Assertions.assertNull(MongoNullValueCodec.valueForProtobufEncoding(text("x")))
 
-        // encode() is the identity on every codec (JSONL channel keeps the raw node).
-        Assertions.assertEquals(text("hi"), MongoStringValueCodec.encode(text("hi")))
+        // The JSON channel takes every value as it is; a document as a raw JSON text node.
+        Assertions.assertEquals(Jsons.textNode("hi"), MongoStringValueCodec.encode(text("hi")))
+        Assertions.assertEquals(
+            Jsons.readTree("""{"x":1}"""),
+            Jsons.readTree(Jsons.writeValueAsString(MongoJsonbValueCodec.encode(OBJECT))),
+        )
+    }
+
+    /** The codecs' `decode` is the inverse of `encode` on the JSON channel. */
+    @Test
+    fun testCodecDecodeInvertsEncode() {
+        for (value in
+            listOf(
+                text("hi"),
+                num(30),
+                num(9_007_199_254_740_993L),
+                num(1.5),
+                num(BigDecimal("12.34")),
+                MongoDbValue.Bool(true),
+                MongoDbValue.Null,
+                OBJECT,
+                MongoDbValue.Json("[1,2]", isArray = true),
+            )) {
+            val roundTripped: MongoDbValue =
+                MongoStringValueCodec.decode(
+                    Jsons.readTree(Jsons.writeValueAsString(MongoStringValueCodec.encode(value)))
+                )
+            Assertions.assertEquals(value.toJsonText(), roundTripped.toJsonText())
+            Assertions.assertEquals(value::class, roundTripped::class)
+        }
     }
 
     @Test
@@ -79,7 +126,7 @@ class MongoDbProtobufEncodingTest {
                 .append("b", true)
                 .append("obj", Document("x", 1))
         val record: AirbyteRecordMessageProtobuf =
-            encode(converter.toPayloadWithId(document).first, schema)
+            encode(converter.toPayload(document.toBsonDocument()), schema)
 
         // Fields are encoded positionally in sorted-id order: b, n, obj, s.
         Assertions.assertTrue(record.getData(0).getBoolean())
@@ -94,7 +141,7 @@ class MongoDbProtobufEncodingTest {
         val converter = MongoDbRecordConverter(true, mapOf("n" to MongoDbFieldType.NUMBER))
         // `n` is discovered as NUMBER but this document holds a string.
         val document = Document("_id", 1).append("n", "not-a-number")
-        val record = encode(converter.toPayloadWithId(document).first, schema)
+        val record = encode(converter.toPayload(document.toBsonDocument()), schema)
         Assertions.assertTrue(record.getData(0).hasNull())
     }
 
@@ -113,7 +160,11 @@ class MongoDbProtobufEncodingTest {
         return builder.build()
     }
 
-    private fun text(value: String) = Jsons.textNode(value)
+    private fun text(value: String) = MongoDbValue.Text(value)
 
-    private fun int(value: Int) = Jsons.numberNode(value)
+    private fun num(value: Number) = MongoDbValue.Num(value)
+
+    companion object {
+        val OBJECT = MongoDbValue.Json("""{"x":1}""", isArray = false)
+    }
 }

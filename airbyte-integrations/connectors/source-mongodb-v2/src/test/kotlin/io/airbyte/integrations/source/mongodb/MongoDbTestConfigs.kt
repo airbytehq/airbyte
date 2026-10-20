@@ -26,11 +26,11 @@ object MongoDbTestConfigs {
             )
         username?.let { databaseConfig["username"] = it }
         password?.let { databaseConfig["password"] = it }
-        schemaEnforced?.let { databaseConfig["schema_enforced"] = it }
-        val json: String =
-            Jsons.writeValueAsString(
-                mapOf("database_config" to databaseConfig) + extraRootProperties
-            )
+        val root: Map<String, Any> =
+            mapOf("database_config" to databaseConfig) +
+                (schemaEnforced?.let { mapOf("schema_enforced" to it) } ?: emptyMap()) +
+                extraRootProperties
+        val json: String = Jsons.writeValueAsString(root)
         return Jsons.readValue(json, MongoDbSourceConfigurationSpecification::class.java)
     }
 }

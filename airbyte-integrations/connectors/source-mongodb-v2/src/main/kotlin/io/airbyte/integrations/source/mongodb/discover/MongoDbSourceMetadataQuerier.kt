@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodb.discover
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.mongodb.MongoCommandException
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Aggregates
@@ -13,6 +14,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.integrations.source.mongodb.MongoDbDiagnostics
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -96,20 +98,45 @@ class MongoDbSourceMetadataQuerier(
      * Names of the collections in [databaseName] the credentials may read. Views are not streams,
      * nor are time-series collections: they have no `_id` index to resume a snapshot from and no
      * change stream.
+     *
+     * Two commands, because `listCollections` only lets a user *without* the `listCollections`
+     * privilege list what they can read (`authorizedCollections`) when the filter is on `name`
+     * alone: the names come from that relaxed form, and the views and time-series collections to
+     * drop from a filtered form that needs the privilege — a user who lacks it has no views to read
+     * through this connector anyway.
      */
     fun authorizedCollections(databaseName: String): Set<String> {
+        val names: Set<String> = listCollectionNames(databaseName, filter = null)
+        if (names.isEmpty()) return emptySet()
+        val notCollections: Set<String> =
+            try {
+                listCollectionNames(
+                    databaseName,
+                    filter = Document("type", Document("\$ne", COLLECTION_TYPE)),
+                )
+            } catch (e: MongoCommandException) {
+                if (e.errorCode != UNAUTHORIZED_ERROR_CODE) throw e
+                log.info {
+                    "No listCollections privilege on $databaseName: views cannot be told apart " +
+                        "from collections there."
+                }
+                emptySet()
+            }
+        return (names - notCollections).filter(::isSupportedCollection).toSet()
+    }
+
+    private fun listCollectionNames(databaseName: String, filter: Document?): Set<String> {
         val command =
             Document("listCollections", 1)
                 .append("authorizedCollections", true)
                 .append("nameOnly", true)
-                .append("filter", Document("type", COLLECTION_TYPE))
+        filter?.let { command.append("filter", it) }
         val result: BsonDocument =
             client.getDatabase(databaseName).runCommand(command).toBsonDocument()
         return result
             .getDocument("cursor")
             .getArray("firstBatch")
             .map { it.asDocument().getString("name").value }
-            .filter(::isSupportedCollection)
             .toSet()
     }
 
@@ -286,7 +313,9 @@ class MongoDbSourceMetadataQuerier(
         override fun session(config: MongoDbSourceConfiguration): MetadataQuerier =
             MongoDbSourceMetadataQuerier(
                 config,
-                MongoDbClientFactory.create(config),
+                MongoDbClientFactory.create(config).also {
+                    MongoDbDiagnostics.logConnection(it, config)
+                },
                 skipFieldDiscovery = operation == CHECK_OPERATION,
                 readModeCatalog = if (operation == READ_OPERATION) configuredCatalog else null,
             )
@@ -297,6 +326,7 @@ class MongoDbSourceMetadataQuerier(
         /** Name of the field holding the whole document in schemaless mode. */
         const val DATA_FIELD = "data"
         const val COLLECTION_TYPE = "collection"
+        private const val UNAUTHORIZED_ERROR_CODE = 13
         private const val CHECK_OPERATION = "check"
         private const val READ_OPERATION = "read"
 

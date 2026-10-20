@@ -5,7 +5,6 @@
     "title": "MongoDb Source Spec",
     "type": "object",
     "additionalProperties": true,
-    "required": ["database_config"],
     "groups": [
       {
         "id": "connection"
@@ -65,14 +64,6 @@
                 "default": "admin",
                 "examples": ["admin"],
                 "order": 6
-              },
-              "schema_enforced": {
-                "type": "boolean",
-                "description": "When enabled, syncs will validate and structure records against the stream's schema.",
-                "title": "Schema Enforced",
-                "default": true,
-                "always_show": true,
-                "order": 7
               }
             },
             "required": [
@@ -134,14 +125,6 @@
                 "default": "admin",
                 "examples": ["admin"],
                 "order": 6
-              },
-              "schema_enforced": {
-                "type": "boolean",
-                "description": "When enabled, syncs will validate and structure records against the stream's schema.",
-                "title": "Schema Enforced",
-                "default": true,
-                "always_show": true,
-                "order": 7
               }
             },
             "required": ["cluster_type", "connection_string", "databases"]
@@ -153,6 +136,15 @@
         "group": "connection",
         "display_type": "radio",
         "type": "object"
+      },
+      "schema_enforced": {
+        "type": "boolean",
+        "description": "When enabled, syncs will validate and structure records against the stream's schema.",
+        "title": "Schema Enforced (Advanced)",
+        "default": true,
+        "always_show": true,
+        "order": 9,
+        "group": "advanced"
       },
       "discover_sample_size": {
         "type": "integer",
@@ -195,7 +187,8 @@
         "group": "advanced",
         "airbyte_hidden": true
       }
-    }
+    },
+    "required": ["database_config"]
   },
   "supportsNormalization": false,
   "supportsDBT": false,
