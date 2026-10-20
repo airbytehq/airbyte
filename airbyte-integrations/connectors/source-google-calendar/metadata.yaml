@@ -20,7 +20,7 @@ data:
       enabled: false
       packageName: airbyte-source-google-calendar
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post5.dev38982817656@sha256:7bdb3e378aa3ad3905725344f381675675a8851452769ed3ba98a3cbda982cb6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post8.dev39371221940@sha256:cd404547b5590b2babace1c7a1f841ad238e752573c7dc085b937e393d2d9291
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b

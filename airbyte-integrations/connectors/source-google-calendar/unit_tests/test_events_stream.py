@@ -96,12 +96,12 @@ def _catalog(sync_mode: SyncMode) -> Any:
     return CatalogBuilder().with_stream("events", sync_mode).build()
 
 
-def _opaque_state(token: str):
+def _sync_token_state(token: str):
     return (
         StateBuilder()
         .with_stream_state(
             "events",
-            {"state_type": "opaque_token", "token": token, "committed_at": _COMMITTED_AT},
+            {"state_type": "sync_token", "token": token, "committed_at": _COMMITTED_AT},
         )
         .build()
     )
@@ -151,7 +151,7 @@ def test_cold_read_commits_next_sync_token_only_after_the_last_page():
         assert _record_ids(output) == ["a", "b"]
         assert {message.record.data["calendar_id"] for message in output.records} == {"primary"}
         states = _emitted_stream_states(output)
-        assert states[-1]["state_type"] == "opaque_token"
+        assert states[-1]["state_type"] == "sync_token"
         assert states[-1]["token"] == "tok1"
         assert "committed_at" in states[-1]
         assert all(state.get("token") != "tok1" for state in states[:-1])
@@ -162,7 +162,7 @@ def test_cold_read_commits_next_sync_token_only_after_the_last_page():
 def test_warm_read_replays_sync_token_on_every_page_without_updated_min():
     first_page = _events_request(sync_token="tok0")
     second_page = _events_request(sync_token="tok0", page_token="page-2")
-    state = _opaque_state("tok0")
+    state = _sync_token_state("tok0")
     first, second = {"id": "a", "updated": _days_ago(3)}, {"id": "b", "updated": _days_ago(2)}
     with HttpMocker() as http_mocker:
         http_mocker.get(first_page, _items_response(first, next_page_token="page-2"))
@@ -361,7 +361,7 @@ def test_410_full_sync_required_resets_token_and_commits_the_new_token():
         http_mocker.get(rejected_request, _error_response(410, "fullSyncRequired"))
         http_mocker.get(restarted_request, _items_response(_RECORD, next_sync_token="tok1"))
 
-        output = _read_events(http_mocker, SyncMode.incremental, state=_opaque_state("tok0"))
+        output = _read_events(http_mocker, SyncMode.incremental, state=_sync_token_state("tok0"))
 
         assert output.errors == []
         assert _record_ids(output) == ["e1"]
@@ -378,7 +378,7 @@ def test_410_deleted_is_a_config_error():
         output = _read_events(
             http_mocker,
             SyncMode.incremental,
-            state=_opaque_state("tok0"),
+            state=_sync_token_state("tok0"),
             expecting_exception=True,
         )
 

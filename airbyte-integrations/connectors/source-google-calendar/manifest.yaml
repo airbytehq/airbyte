@@ -131,7 +131,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: OpaqueTokenCursor
+        type: SyncTokenCursor
         token_path:
           - nextSyncToken
         cursor_field: updated
@@ -307,7 +307,7 @@ definitions:
           - type: HttpResponseFilter
             # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
             predicate: "{{ response.get('error', {}).get('code') in (410, '410') and 'fullSyncRequired' in response.get('error', {}) | string }}"
-            action: RESET_OPAQUE_TOKEN
+            action: RESET_SYNC_TOKEN
             error_message: "Google Calendar rejected the saved events sync token and requires a full re-read."
           - type: HttpResponseFilter
             predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string }}"
