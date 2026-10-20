@@ -2847,8 +2847,9 @@ definitions:
           - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
-        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        # One slice per report. Each partition is a single settlement report and the slice window is never sent to
+        # Amazon, so splitting it by `period_in_days` would only download the same document once per window.
+        step: "P10Y"
         cursor_granularity: "PT1S"
         # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
         # otherwise it will throw a 400 error. Using 89 days as a buffer to prevent race conditions
@@ -2858,7 +2859,7 @@ definitions:
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
-        type: SimpleRetriever
+        $ref: "#/definitions/basic_async_retriever"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2867,17 +2868,25 @@ definitions:
               parent_key: "reportId"
               partition_field: "reportId"
               incremental_dependency: true
-        requester:
-          type: HttpRequester
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/polling_requester"
           path: "reports/2021-06-30/reports/{{ stream_slice['reportId'] }}"
+        download_requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.PresignedUrlDownloadRequester
+          path: "{{ download_target }}"
           url_base: "{{ config['endpoint'] }}"
           http_method: GET
-          authenticator: "#/definitions/authenticator"
-          request_headers:
-            content-type: "application/json"
-        decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipCsvDecoder
+          authenticator:
+            type: NoAuth
+          download_target_requester: "#/definitions/basic_async_retriever/download_target_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
         record_selector:
           type: RecordSelector
           schema_normalization:
@@ -3261,7 +3270,11 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          # Amazon publishes the vendor retail analytics reports ~72h after the close of the
+          # period, and asking for an unpublished day makes the report FATAL, so the cursor ends
+          # four days back (a day D closes at D 23:59:59 and is published 72h after that). An
+          # explicit replication_end_date is used as-is.
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
@@ -3302,6 +3315,27 @@ definitions:
       type: DeclarativeStream
       name: GET_VENDOR_INVENTORY_REPORT
       primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          # Amazon publishes the vendor retail analytics reports ~72h after the close of the
+          # period, and asking for an unpublished day makes the report FATAL, so the cursor ends
+          # four days back (a day D closes at D 23:59:59 and is published 72h after that). An
+          # explicit replication_end_date is used as-is.
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -3310,6 +3344,8 @@ definitions:
             report_type: GET_VENDOR_INVENTORY_REPORT
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               $ref: "#/definitions/report_options_from_config"
@@ -3319,6 +3355,12 @@ definitions:
         download_extractor:
           type: DpathExtractor
           field_path: ["inventoryByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
+            - path: ["endDate"]
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3343,7 +3385,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
@@ -3399,7 +3441,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
@@ -3555,7 +3597,10 @@ definitions:
                 default_backoff_time: 60
 
     polling_requester:
-      type: HttpRequester
+      # CustomRequester (not HttpRequester) so a FATAL report surfaces Amazon's own reason instead of
+      # the CDK's generic "Async job failed after exhausting all retry attempts." system error.
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportPollingRequester
       path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -3620,7 +3665,10 @@ definitions:
     primary_key: []
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: dataEndTime
+      # Up to 6.1.0 this checkpoint was `dataEndTime` (which also overwrote the report's own `dataEndTime`), and those
+      # versions checkpointed the listing without ever downloading a report. The rename is what makes their state list the
+      # full window again: the cursor ignores a checkpoint stored under the old key. Do not rename it back.
+      cursor_field: listedUntil
       cursor_datetime_formats:
         - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -3628,6 +3676,7 @@ definitions:
       # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
       step: "P10Y"
       cursor_granularity: "PT1S"
+      # No lookback window: a re-listed report is downloaded and emitted again in full, and this stream has no primary key.
       # Using 89 days as a buffer to prevent race conditions caused by network latency
       # between computing the timestamp and the API receiving the request.
       start_datetime:
@@ -3644,9 +3693,9 @@ definitions:
       end_time_option:
         field_name: "createdUntil"
         inject_into: "request_parameter"
-    ignore_stream_slicer_parameters_on_paginated_requests: true
     retriever:
       type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/base_requester"
         path: "reports/2021-06-30/reports"
@@ -3654,32 +3703,36 @@ definitions:
         request_headers:
           content-type: "application/json"
         request_parameters:
-          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+          reportTypes: "{{ '' if next_page_token else 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE' }}"
+          pageSize: "{{ '' if next_page_token else 100 }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["reports"]
+        # Keep IN_QUEUE and IN_PROGRESS reports: the async retriever polls them until DONE. Filtering them out would let the
+        # listing checkpoint move past them, and they would never be listed again. CANCELLED and FATAL reports have no
+        # document, and polling a FATAL report Amazon generated itself would fail every sync.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('processingStatus') not in ['CANCELLED', 'FATAL'] }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
           field_name: nextToken
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: pageSize
         pagination_strategy:
           type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.NextToken }}"
-    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+          cursor_value: "{{ response.get('nextToken') }}"
+    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint.
+    # Keep the full timestamp: the next sync lists from exactly this value, so a date would re-list every report created
+    # earlier that day.
     transformations:
       - type: AddFields
         fields:
-          - path: ["dataEndTime"]
-            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+          - path: ["listedUntil"]
+            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
 
 api_budget:
   type: HTTPAPIBudget

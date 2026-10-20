@@ -12,7 +12,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 08361b9d-8d84-40fc-bdbb-ee497691b3e8
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-ragie
   githubIssueLabel: destination-ragie
   icon: icon.svg
