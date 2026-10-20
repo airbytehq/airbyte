@@ -25,7 +25,7 @@ object ClickhouseExpectedRecordMapper : ExpectedRecordMapper {
             ObjectValue(
                 expectedRecord.data.values
                     .mapValuesTo(linkedMapOf()) { (_, value) -> mapAirbyteValue(value) }
-                    .mapKeysTo(linkedMapOf()) { it.key.toClickHouseCompatibleName() }
+                    .mapKeysTo(linkedMapOf()) { it.key.toClickHouseCompatibleName() },
             )
         return expectedRecord.copy(data = mappedData)
     }
@@ -40,7 +40,7 @@ object ClickhouseExpectedRecordMapper : ExpectedRecordMapper {
                 TimestampWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
             is ObjectValue ->
                 ObjectValue(
-                    values = value.values.mapValuesTo(linkedMapOf()) { mapAirbyteValue(it.value) }
+                    values = value.values.mapValuesTo(linkedMapOf()) { mapAirbyteValue(it.value) },
                 )
             is NumberValue -> NumberValue(value.value.setScale(1, RoundingMode.HALF_UP))
             else -> value

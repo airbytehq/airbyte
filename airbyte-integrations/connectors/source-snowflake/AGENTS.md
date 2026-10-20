@@ -4,9 +4,9 @@
 
 ## 1. Snowflake timestamps round up to microseconds
 
-Snowflake timestamps can have nanosecond precision, but Airbyte timestamps support microseconds. The field converters round values up to the next microsecond when discarded nanoseconds are nonzero; the converted value is also used as an incremental cursor bound.
+Snowflake timestamps can have nanosecond precision, but Airbyte timestamps support microseconds. The field converters round values up to the next microsecond when discarded nanoseconds are nonzero, except that the maximum `9999-12-31 23:59:59.999999999` sentinel is capped at `9999-12-31 23:59:59.999999` to avoid overflowing into year 10000. The converted value is also used as an incremental cursor bound.
 
-**Why this matters:** Rounding down a cursor can make it compare below a source row and omit that row from the next sync. Preserve round-up behavior for `TIMESTAMP_NTZ`, `TIMESTAMP_TZ`, and `TIMESTAMP_LTZ` when changing conversion or cursor handling.
+**Why this matters:** Rounding down a cursor can make it compare below a source row and omit that row from the next sync, while rounding the maximum sentinel past year 9999 produces an invalid timestamp. Preserve round-up behavior and maximum-sentinel clamping for `TIMESTAMP_NTZ`, `TIMESTAMP_TZ`, and `TIMESTAMP_LTZ` when changing conversion or cursor handling.
 
 ## 2. Programmatic access-token authentication omits the JDBC username
 
