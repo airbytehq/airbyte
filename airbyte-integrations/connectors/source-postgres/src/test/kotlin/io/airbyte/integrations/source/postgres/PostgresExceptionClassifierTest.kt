@@ -2,6 +2,8 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.output.ConfigError
 import io.airbyte.cdk.output.ConnectorError
 import io.airbyte.cdk.output.ExceptionHandler
@@ -9,6 +11,7 @@ import io.airbyte.cdk.output.RegexExceptionClassifier
 import io.airbyte.cdk.output.TransientError
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import java.net.ConnectException
@@ -18,6 +21,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
+import org.postgresql.util.ServerErrorMessage
 
 /**
  * Exercises the regex rules in `src/main/resources/application.yml`, in particular the
@@ -35,6 +39,9 @@ class PostgresExceptionClassifierTest {
     @Inject lateinit var classifier: RegexExceptionClassifier
 
     @Inject lateinit var handler: ExceptionHandler
+
+    private val streamId =
+        StreamIdentifier.from(StreamDescriptor().withNamespace("public").withName("users"))
 
     @Test
     fun testConnectionAttemptFailedOnUnknownHost() {
@@ -170,6 +177,49 @@ class PostgresExceptionClassifierTest {
             trace.failureType,
         )
         Assertions.assertEquals(message, trace.message)
+    }
+
+    @Test
+    fun testFilenodeLookupSystemErrorKeepsItsContextualMessage() {
+        val message = PostgresSourceJdbcPartitionFactory.filenodeLookupErrorMessage(streamId)
+        val driverException =
+            PSQLException(
+                ServerErrorMessage(
+                    "SERROR\u0000VERROR\u0000CXX000\u0000Minternal server error\u0000",
+                ),
+            )
+        Assertions.assertEquals("XX000", driverException.sqlState)
+
+        val trace: AirbyteErrorTraceMessage =
+            handler.handle(SystemErrorException(message, driverException))
+
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
+            trace.failureType,
+        )
+        Assertions.assertEquals(message, trace.message)
+    }
+
+    @Test
+    fun testTransientRuleMatchesCauseWrappedInSystemError() {
+        val message = PostgresSourceJdbcPartitionFactory.filenodeLookupErrorMessage(streamId)
+        val driverException =
+            PSQLException(
+                "This connection has been closed.",
+                PSQLState.CONNECTION_DOES_NOT_EXIST,
+            )
+
+        val trace: AirbyteErrorTraceMessage =
+            handler.handle(SystemErrorException(message, driverException))
+
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR,
+            trace.failureType,
+        )
+        Assertions.assertEquals(
+            "Postgres SQL Exception: The connection to the Postgres server was unexpectedly closed, will retry.",
+            trace.message,
+        )
     }
 
     @Test
