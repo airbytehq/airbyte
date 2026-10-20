@@ -49,11 +49,11 @@ class KYVEStream(HttpStream, IncrementalMixin):
     name = None
 
     def __init__(self, config: Mapping[str, Any], pool_data: Mapping[str, Any], **kwargs):
-        super().__init__(**kwargs)
         # Here's where we set the variable from our input to pass it down to the source.
         self.pool_id = pool_data.get("id")
-
         self.name = f"pool_{self.pool_id}"
+
+        super().__init__(**kwargs)
         self.runtime = pool_data.get("runtime")
 
         self.url_base = config["url_base"]
@@ -185,4 +185,4 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        self._cursor_value = value.get(self.cursor_field)
