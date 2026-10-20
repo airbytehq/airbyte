@@ -1673,7 +1673,7 @@ schemas:
               - "null"
           sentry:replay_rage_click_issues:
             type:
-              - integer
+              - boolean
               - "null"
           quotas:spike-protection-disabled:
             type:
