@@ -189,6 +189,74 @@ jobs:
             echo "changed=true" | tee -a "${GITHUB_OUTPUT}"
           fi
 
+      - name: Find stale progressive rollout gate comment
+        if: >
+          matrix.connector &&
+          steps.version-change.outputs.changed == 'false' &&
+          env.PR_NUMBER != ''
+        id: stale-rollout-comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: github-actions[bot]
+          body-includes: "<!-- progressive-rollout-gate:${{ matrix.connector }} -->"
+
+      - name: Mark stale progressive rollout gate comment as skipped
+        if: >
+          matrix.connector &&
+          steps.version-change.outputs.changed == 'false' &&
+          env.PR_NUMBER != '' &&
+          steps.stale-rollout-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.stale-rollout-comment.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          edit-mode: replace
+          body: |
+            <!-- progressive-rollout-gate:${{ matrix.connector }} -->
+            > **Progressive rollout gate for `${{ matrix.connector }}`: skipped**
+            >
+            > The `${{ matrix.connector }}` version is unchanged from master (`${{ steps.version-change.outputs.pr-version }}`), so merging publishes no new version. No rollout acknowledgement is needed.
+            >
+            > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Remove stale rollout bypass checkbox from PR description
+        if: matrix.connector && steps.version-change.outputs.changed == 'false' && env.PR_NUMBER != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONNECTOR_NAME: ${{ matrix.connector }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.body // ""' > "${RUNNER_TEMP}/pr-body.md"
+          python3 - "${RUNNER_TEMP}/pr-body.md" "${RUNNER_TEMP}/pr-body-new.md" <<'PY'
+          import os
+          import re
+          import sys
+
+          src, dst = sys.argv[1], sys.argv[2]
+          checkbox = os.environ["ROLLOUT_ACK_CHECKBOX_TEXT"]
+          warning = f"> Active progressive rollout warning for {os.environ['CONNECTOR_NAME']}."
+          body = open(src, encoding="utf-8").read()
+          kept = []
+          for line in body.splitlines():
+              if checkbox in line:
+                  continue
+              if line.strip() == warning:
+                  if kept and kept[-1].strip() == "> [!IMPORTANT]":
+                      kept.pop()
+                  continue
+              kept.append(line)
+          new_body = re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).rstrip()
+          if new_body != body.rstrip():
+              open(dst, "w", encoding="utf-8").write(new_body + "\n")
+          PY
+          if [[ -f "${RUNNER_TEMP}/pr-body-new.md" ]]; then
+            gh api -X PATCH "repos/${REPOSITORY}/pulls/${PR_NUMBER}" -F "body=@${RUNNER_TEMP}/pr-body-new.md" > /dev/null
+            echo "Removed stale rollout bypass checkbox for ${CONNECTOR_NAME}."
+          else
+            echo "No stale rollout bypass checkbox found."
+          fi
+
       - name: Install Cloud SQL Proxy
         if: >
           matrix.connector &&
