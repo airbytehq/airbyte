@@ -69,9 +69,9 @@ class AssigneesTest(TestCase):
                 HttpResponse(json.dumps({"id": 1, "full_name": repository, "default_branch": "master"}), 200),
             )
 
-    def teardown(self):
+    def tearDown(self):
         """Stops and resets HttpMocker instance."""
-        self.r_mock.__exit__()
+        self.r_mock.__exit__(None, None, None)
 
     def _mock_assignees(self):
         for repository in _CONFIG.get("repositories"):

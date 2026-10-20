@@ -77,7 +77,7 @@ class GitHubFiller:
             response = self.session.post(url=url, data=json.dumps(create_pr_data))
             yield response
 
-            if response.status_code == 200 or 201:
+            if response.status_code in (200, 201):
                 # create review for PR
                 create_review_data = {
                     "body": f"Review commit for branch {branch.get('name')}",

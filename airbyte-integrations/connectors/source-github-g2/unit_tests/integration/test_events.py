@@ -70,9 +70,9 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps([{"repository": "airbytehq/integration-test", "name": "master"}]), 200),
         )
 
-    def teardown(self):
+    def tearDown(self):
         """Stops and resets HttpMocker instance."""
-        self.r_mock.__exit__()
+        self.r_mock.__exit__(None, None, None)
 
     def test_read_full_refresh_no_pagination(self):
         """Ensure http integration and record extraction"""
