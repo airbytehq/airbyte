@@ -254,7 +254,7 @@ class ParquetSerializedBufferTest {
         minExpectedByte: Long,
         maxExpectedByte: Long,
         config: S3DestinationConfig,
-        expectedData: String
+        expectedData: String,
     ) {
         val tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet").toFile()
         try {

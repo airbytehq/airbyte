@@ -37,7 +37,7 @@ class PostgresConfigurationFactory :
 
     fun makeWithOverrides(
         spec: PostgresSpecification,
-        overrides: Map<String, String> = emptyMap()
+        overrides: Map<String, String> = emptyMap(),
     ): PostgresConfiguration {
         return PostgresConfiguration(
             host = overrides.getOrDefault("host", spec.host),
@@ -63,7 +63,7 @@ class PostgresConfigurationFactory :
                 },
             dropCascade = spec.dropCascade ?: false,
             unconstrainedNumber = spec.unconstrainedNumber ?: false,
-            tunnelMethod = spec.getTunnelMethodValue()
+            tunnelMethod = spec.getTunnelMethodValue(),
         )
     }
 }

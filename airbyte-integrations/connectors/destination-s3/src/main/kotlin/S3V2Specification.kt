@@ -32,19 +32,19 @@ class S3V2Specification :
 
     @get:JsonSchemaInject(
         json =
-            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true,"order":0}"""
+            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true,"order":0}""",
     )
     override val accessKeyId: String? = null
 
     @get:JsonSchemaInject(
         json =
-            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true,"order":1}"""
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true,"order":1}""",
     )
     override val secretAccessKey: String? = null
 
     @get:JsonSchemaInject(
         json =
-            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":2}"""
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":2}""",
     )
     override val roleArn: String? = null
 
@@ -66,13 +66,13 @@ class S3V2Specification :
 
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"],\"order\":8}"
+            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"],\"order\":8}",
     )
     override val s3PathFormat: String? = null
 
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}"
+            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}",
     )
     override val fileNamePattern: String? = null
 }

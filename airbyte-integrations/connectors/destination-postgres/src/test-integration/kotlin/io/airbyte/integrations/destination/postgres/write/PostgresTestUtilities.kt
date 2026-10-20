@@ -39,7 +39,7 @@ object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
             is ArrayValue -> ArrayValue(value.values.map { removeNullCharacters(it) })
             is ObjectValue ->
                 ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> removeNullCharacters(v) }
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> removeNullCharacters(v) },
                 )
             else -> value
         }
@@ -53,7 +53,7 @@ object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
                 ObjectValue(
                     value.values.mapValuesTo(linkedMapOf()) { (_, v) ->
                         normalizeTimestampsToUtc(v)
-                    }
+                    },
                 )
             else -> value
         }
@@ -73,7 +73,7 @@ fun buildConfigOverridesForTestContainer(): MutableMap<String, String> {
         "port" to PostgresContainerHelper.getPort().toString(),
         "database" to PostgresContainerHelper.getDatabaseName(),
         "username" to PostgresContainerHelper.getUsername(),
-        "password" to PostgresContainerHelper.getPassword()
+        "password" to PostgresContainerHelper.getPassword(),
     )
 }
 
@@ -90,12 +90,12 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
                 field = changeNode["field"].textValue(),
                 change =
                     AirbyteRecordMessageMetaChange.Change.fromValue(
-                        changeNode["change"].textValue()
+                        changeNode["change"].textValue(),
                     ),
                 reason =
                     AirbyteRecordMessageMetaChange.Reason.fromValue(
-                        changeNode["reason"].textValue()
-                    )
+                        changeNode["reason"].textValue(),
+                    ),
             )
         }
 
