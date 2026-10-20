@@ -82,6 +82,7 @@ This stream returns one record per month of RCS consumption, starting 365 days b
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.6 | 2026-10-20 | [89425](https://github.com/airbytehq/airbyte/pull/89425) | Update dependencies |
 | 0.0.5 | 2026-10-13 | [88777](https://github.com/airbytehq/airbyte/pull/88777) | Update dependencies |
 | 0.0.4 | 2026-10-06 | [88065](https://github.com/airbytehq/airbyte/pull/88065) | Update dependencies |
 | 0.0.3 | 2026-09-29 | [87384](https://github.com/airbytehq/airbyte/pull/87384) | Update dependencies |
