@@ -19,7 +19,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("value", RedisFieldType.STRING),
-            RedisField("ttl", RedisFieldType.INTEGER)
+            RedisField("ttl", RedisFieldType.INTEGER),
         ),
         listOf(listOf("key")),
     ),
@@ -28,7 +28,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("value", RedisFieldType.JSONB),
-            RedisField("ttl", RedisFieldType.INTEGER)
+            RedisField("ttl", RedisFieldType.INTEGER),
         ),
         listOf(listOf("key")),
     ),
@@ -37,7 +37,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("value", RedisFieldType.ARRAY_STRING),
-            RedisField("ttl", RedisFieldType.INTEGER)
+            RedisField("ttl", RedisFieldType.INTEGER),
         ),
         listOf(listOf("key")),
     ),
@@ -46,7 +46,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("value", RedisFieldType.ARRAY_STRING),
-            RedisField("ttl", RedisFieldType.INTEGER)
+            RedisField("ttl", RedisFieldType.INTEGER),
         ),
         listOf(listOf("key")),
     ),
@@ -55,7 +55,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("value", RedisFieldType.ARRAY_JSONB),
-            RedisField("ttl", RedisFieldType.INTEGER)
+            RedisField("ttl", RedisFieldType.INTEGER),
         ),
         listOf(listOf("key")),
     ),
@@ -64,7 +64,7 @@ enum class RedisKeyType(
         listOf(
             RedisField("key", RedisFieldType.STRING),
             RedisField("id", RedisFieldType.STRING),
-            RedisField("fields", RedisFieldType.JSONB)
+            RedisField("fields", RedisFieldType.JSONB),
         ),
         listOf(listOf("key"), listOf("id")),
         incremental = true,
@@ -83,8 +83,7 @@ enum class RedisFieldType(
     INTEGER(LeafAirbyteSchemaType.INTEGER),
     JSONB(LeafAirbyteSchemaType.JSONB),
     ARRAY_STRING(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING)),
-    ARRAY_JSONB(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB)),
-    ;
+    ARRAY_JSONB(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB));
 
     override val jsonEncoder: JsonEncoder<JsonNode> = JsonEncoder { it }
 }

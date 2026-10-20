@@ -20,7 +20,10 @@
         "type": "object",
         "properties": {
           "key": { "type": "string" },
-          "value": { "type": "object", "additionalProperties": { "type": "string" } },
+          "value": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
           "ttl": { "type": "number", "airbyte_type": "integer" }
         }
       },
@@ -86,7 +89,10 @@
         "properties": {
           "key": { "type": "string" },
           "id": { "type": "string" },
-          "fields": { "type": "object", "additionalProperties": { "type": "string" } }
+          "fields": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
         }
       },
       "supported_sync_modes": ["full_refresh", "incremental"],

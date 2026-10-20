@@ -65,7 +65,7 @@ object RedisClientFactory {
                     mode.caCertificate,
                     mode.clientCertificate,
                     mode.clientKey,
-                    mode.clientKeyPassword
+                    mode.clientKeyPassword,
                 )
             is RedisSslVerifyFull ->
                 configureCertificates(
@@ -73,7 +73,7 @@ object RedisClientFactory {
                     mode.caCertificate,
                     mode.clientCertificate,
                     mode.clientKey,
-                    mode.clientKeyPassword
+                    mode.clientKeyPassword,
                 )
         }
     }

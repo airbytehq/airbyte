@@ -44,8 +44,7 @@ class RedisSourceMetadataQuerier(
         RedisKeyType.entries
             .firstOrNull { it.streamName == streamID.name }
             ?.fields
-            ?.map { EmittedField(it.name, it.type) }
-            ?: emptyList()
+            ?.map { EmittedField(it.name, it.type) } ?: emptyList()
 
     override fun primaryKey(streamID: StreamIdentifier): List<List<String>> =
         RedisKeyType.entries.firstOrNull { it.streamName == streamID.name }?.primaryKey

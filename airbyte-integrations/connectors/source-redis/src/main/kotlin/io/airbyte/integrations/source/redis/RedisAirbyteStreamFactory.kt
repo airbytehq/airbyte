@@ -59,7 +59,7 @@ class RedisAirbyteStreamFactory : AirbyteStreamFactory {
                     .put("type", "object")
                     .set<ObjectNode>(
                         "additionalProperties",
-                        Jsons.objectNode().put("type", "string")
+                        Jsons.objectNode().put("type", "string"),
                     )
             RedisFieldType.ARRAY_STRING ->
                 Jsons.objectNode()
@@ -77,11 +77,11 @@ class RedisAirbyteStreamFactory : AirbyteStreamFactory {
                                 Jsons.objectNode()
                                     .set<ObjectNode>(
                                         "member",
-                                        Jsons.objectNode().put("type", "string")
+                                        Jsons.objectNode().put("type", "string"),
                                     )
                                     .set<ObjectNode>(
                                         "score",
-                                        Jsons.objectNode().put("type", "number")
+                                        Jsons.objectNode().put("type", "number"),
                                     ),
                             ),
                     )

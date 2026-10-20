@@ -90,7 +90,7 @@ class RedisSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("key_pattern")
     @JsonSchemaTitle("Key Pattern")
     @JsonPropertyDescription(
-        "The Redis glob pattern to include. Discovery is static and does not scan keys."
+        "The Redis glob pattern to include. Discovery is static and does not scan keys.",
     )
     @JsonSchemaInject(json = """{"order":6,"default":"*","examples":["*","app:*"]}""")
     var keyPattern: String? = null

@@ -54,7 +54,9 @@ data class RedisSourceConfiguration(
         fun redisSourceConfiguration(
             factory:
                 SourceConfigurationFactory<
-                    RedisSourceConfigurationSpecification, RedisSourceConfiguration>,
+                    RedisSourceConfigurationSpecification,
+                    RedisSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<RedisSourceConfigurationSpecification>,
         ): RedisSourceConfiguration = factory.make(supplier.get())
     }
@@ -111,7 +113,7 @@ constructor(
         val maxDbConnections = pojo.maxDbConnections
         if (maxDbConnections != null && maxDbConnections < 1) {
             throw ConfigErrorException(
-                "'max_db_connections' must be at least 1, got $maxDbConnections."
+                "'max_db_connections' must be at least 1, got $maxDbConnections.",
             )
         }
         val tunnelMethod = pojo.getTunnelMethodValue() ?: pojo.tunnelMethod.asSshTunnelMethod()
@@ -168,8 +170,8 @@ constructor(
             password = pojo.password?.takeIf(String::isNotBlank),
             database = database,
             sslMode = sslMode,
-            keyPattern = pojo.keyPattern
-                    ?: RedisSourceConfigurationSpecification.DEFAULT_KEY_PATTERN,
+            keyPattern =
+                pojo.keyPattern ?: RedisSourceConfigurationSpecification.DEFAULT_KEY_PATTERN,
             scanBatchSize = scanBatchSize,
             maxDbConnections = maxDbConnections,
             maxConcurrency = maxConcurrency,

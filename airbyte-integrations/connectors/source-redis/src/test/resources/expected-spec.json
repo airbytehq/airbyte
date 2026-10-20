@@ -11,9 +11,7 @@
         "description": "The hostname or IP address of the Redis server.",
         "title": "Host",
         "order": 0,
-        "examples": [
-          "redis.example.com"
-        ]
+        "examples": ["redis.example.com"]
       },
       "port": {
         "type": "integer",
@@ -55,15 +53,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "disable"
-                ],
+                "enum": ["disable"],
                 "default": "disable"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "Require",
@@ -73,15 +67,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "require"
-                ],
+                "enum": ["require"],
                 "default": "require"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "Verify CA",
@@ -91,9 +81,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "verify-ca"
-                ],
+                "enum": ["verify-ca"],
                 "default": "verify-ca"
               },
               "ca_certificate": {
@@ -122,9 +110,7 @@
                 "airbyte_secret": true
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "Verify Full",
@@ -134,9 +120,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "verify-full"
-                ],
+                "enum": ["verify-full"],
                 "default": "verify-full"
               },
               "ca_certificate": {
@@ -165,9 +149,7 @@
                 "airbyte_secret": true
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           }
         ],
         "description": "The TLS mode used to connect to Redis.",
@@ -181,10 +163,7 @@
         "title": "Key Pattern",
         "order": 6,
         "default": "*",
-        "examples": [
-          "*",
-          "app:*"
-        ]
+        "examples": ["*", "app:*"]
       },
       "tunnel_method": {
         "oneOf": [
@@ -196,15 +175,11 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "NO_TUNNEL"
-                ],
+                "enum": ["NO_TUNNEL"],
                 "default": "NO_TUNNEL"
               }
             },
-            "required": [
-              "tunnel_method"
-            ]
+            "required": ["tunnel_method"]
           },
           {
             "title": "SSH Key Authentication",
@@ -214,9 +189,7 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "SSH_KEY_AUTH"
-                ],
+                "enum": ["SSH_KEY_AUTH"],
                 "default": "SSH_KEY_AUTH"
               },
               "tunnel_host": {
@@ -265,9 +238,7 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "SSH_PASSWORD_AUTH"
-                ],
+                "enum": ["SSH_PASSWORD_AUTH"],
                 "default": "SSH_PASSWORD_AUTH"
               },
               "tunnel_host": {
@@ -337,10 +308,7 @@
         "minimum": 1
       }
     },
-    "required": [
-      "host",
-      "port"
-    ]
+    "required": ["host", "port"]
   },
   "supportsNormalization": false,
   "supportsDBT": false,
