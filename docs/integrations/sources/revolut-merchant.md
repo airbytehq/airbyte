@@ -39,6 +39,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-20 | [89381](https://github.com/airbytehq/airbyte/pull/89381) | Update dependencies |
 | 0.0.67 | 2026-10-13 | [88772](https://github.com/airbytehq/airbyte/pull/88772) | Update dependencies |
 | 0.0.66 | 2026-10-07 | [88338](https://github.com/airbytehq/airbyte/pull/88338) | Fix `orders` pagination: page with `created_before` cursor instead of an unsupported offset |
 | 0.0.65 | 2026-10-06 | [88000](https://github.com/airbytehq/airbyte/pull/88000) | Update dependencies |
