@@ -117,6 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.27 | 2026-10-20 | [78804](https://github.com/airbytehq/airbyte/pull/78804) | Update dependencies |
 | 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
 | 1.1.24 | 2025-05-10 | [59786](https://github.com/airbytehq/airbyte/pull/59786) | Update dependencies |
