@@ -1749,16 +1749,31 @@ Classes
     `date_created: str | None`
     :   The type of the None singleton.
 
+    `date_updated: str | None`
+    :   The type of the None singleton.
+
     `description: str | None`
     :   The type of the None singleton.
 
     `due_date: str | None`
     :   The type of the None singleton.
 
+    `folder_id: str | None`
+    :   The type of the None singleton.
+
+    `folder_name: str | None`
+    :   The type of the None singleton.
+
+    `group_members: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `history: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `id: str | None`
+    :   The type of the None singleton.
+
+    `key_result_count: int | None`
     :   The type of the None singleton.
 
     `key_results: list[dict[str, typing.Any]] | None`
@@ -1779,6 +1794,9 @@ Classes
     `owner: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+    `owners: list[airbyte_agent_sdk.connectors.clickup_api.models.GoalOwnersItem] | None`
+    :   The type of the None singleton.
+
     `percent_completed: int | None`
     :   The type of the None singleton.
 
@@ -1791,11 +1809,53 @@ Classes
     `private: bool | None`
     :   The type of the None singleton.
 
+    `role_subtype: int | None`
+    :   The type of the None singleton.
+
     `start_date: str | None`
     :   The type of the None singleton.
 
     `team_id: str | None`
     :   The type of the None singleton.
+
+<a id="GoalOwnersItem"></a>
+
+`GoalOwnersItem(**data: Any)`
+:   Nested schema for Goal.owners_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `color: str | None`
+    :   User color
+
+    `email: str | None`
+    :   User email
+
+    `id: int | None`
+    :   User ID
+
+    `initials: str | None`
+    :   User initials
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `profile_picture: str | None`
+    :   Profile picture URL
+
+    `username: str | None`
+    :   Username
 
 <a id="GoalResponse"></a>
 
@@ -3048,6 +3108,9 @@ Classes
     `status: airbyte_agent_sdk.connectors.clickup_api.models.TaskStatus | None`
     :   The type of the None singleton.
 
+    `subtasks_count: int | None`
+    :   The type of the None singleton.
+
     `tags: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
@@ -3519,6 +3582,9 @@ Classes
 
     ### Class variables
 
+    `approval_id: str | None`
+    :   The type of the None singleton.
+
     `at: str | None`
     :   The type of the None singleton.
 
@@ -3537,7 +3603,13 @@ Classes
     `id: str | None`
     :   The type of the None singleton.
 
+    `is_locked: bool | None`
+    :   The type of the None singleton.
+
     `model_config`
+    :   The type of the None singleton.
+
+    `source: str | None`
     :   The type of the None singleton.
 
     `start: str | None`
@@ -3549,7 +3621,13 @@ Classes
     `task: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `user: dict[str, typing.Any] | None`
+    `task_location: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `task_url: str | None`
+    :   The type of the None singleton.
+
+    `user: airbyte_agent_sdk.connectors.clickup_api.models.TimeEntryUser | None`
     :   The type of the None singleton.
 
     `wid: str | None`
@@ -3578,6 +3656,45 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeEntryUser"></a>
+
+`TimeEntryUser(**data: Any)`
+:   User who tracked time
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `color: str | None`
+    :   User color
+
+    `email: str | None`
+    :   User email
+
+    `id: int | None`
+    :   User ID
+
+    `initials: str | None`
+    :   User initials
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `profile_picture: str | None`
+    :   Profile picture URL
+
+    `username: str | None`
+    :   Username
 
 <a id="TimeTrackingSearchData"></a>
 
