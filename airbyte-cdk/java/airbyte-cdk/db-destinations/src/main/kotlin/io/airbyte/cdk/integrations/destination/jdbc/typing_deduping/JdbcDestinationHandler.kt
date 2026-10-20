@@ -70,7 +70,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     protected open fun getRawTableFromMetadata(
         dbmetadata: DatabaseMetaData,
         id: StreamId,
-        suffix: String
+        suffix: String,
     ): ResultSet = dbmetadata.getTables(catalogName, id.rawNamespace, id.rawName + suffix, null)
 
     @Throws(Exception::class)
@@ -80,30 +80,31 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 .select(
                     field(
                         DSL.exists(
-                            DSL.selectOne().from(DSL.name(id.finalNamespace, id.finalName)).limit(1)
-                        )
-                    )
+                            DSL.selectOne()
+                                .from(DSL.name(id.finalNamespace, id.finalName))
+                                .limit(1),
+                        ),
+                    ),
                 )
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
     @Throws(Exception::class)
     private fun getInitialRawTableState(id: StreamId, suffix: String): InitialRawTableStatus {
-        val tableExists =
-            jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
-                LOGGER.info {
-                    "Retrieving table from Db metadata: $catalogName ${id.rawNamespace} ${id.rawName}"
-                }
-                try {
-                    getRawTableFromMetadata(dbmetadata, id, suffix).use { table ->
-                        return@executeMetadataQuery table.next()
-                    }
-                } catch (e: SQLException) {
-                    LOGGER.error(e) { "Failed to retrieve table info from metadata" }
-                    throw SQLRuntimeException(e)
-                }
+        val tableExists = jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
+            LOGGER.info {
+                "Retrieving table from Db metadata: $catalogName ${id.rawNamespace} ${id.rawName}"
             }
+            try {
+                getRawTableFromMetadata(dbmetadata, id, suffix).use { table ->
+                    return@executeMetadataQuery table.next()
+                }
+            } catch (e: SQLException) {
+                LOGGER.error(e) { "Failed to retrieve table info from metadata" }
+                throw SQLRuntimeException(e)
+            }
+        }
         if (!tableExists) {
             // There's no raw table at all. Therefore there are no unprocessed raw records, and this
             // sync
@@ -119,10 +120,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             .select(field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName + suffix))
                             .where(DSL.condition("_airbyte_loaded_at IS NULL"))
-                            .sql
+                            .sql,
                     )
                 },
-                { record: ResultSet -> record.getTimestamp("min_timestamp") }
+                { record: ResultSet -> record.getTimestamp("min_timestamp") },
             )
             .use { timestampStream ->
                 // Filter for nonNull values in case the query returned NULL (i.e. no unloaded
@@ -145,10 +146,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         dslContext
                             .select(field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName + suffix))
-                            .sql
+                            .sql,
                     )
                 },
-                { record: ResultSet -> record.getTimestamp("min_timestamp") }
+                { record: ResultSet -> record.getTimestamp("min_timestamp") },
             )
             .use { timestampStream ->
                 // Filter for nonNull values in case the query returned NULL (i.e. no raw records at
@@ -158,7 +159,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 return InitialRawTableStatus(
                     true,
                     false,
-                    minUnloadedTimestamp.map { obj: Timestamp -> obj.toInstant() }
+                    minUnloadedTimestamp.map { obj: Timestamp -> obj.toInstant() },
                 )
             }
     }
@@ -189,22 +190,20 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     @Throws(Exception::class)
     override fun gatherInitialState(
-        streamConfigs: List<StreamConfig>
+        streamConfigs: List<StreamConfig>,
     ): List<DestinationInitialStatus<DestinationState>> {
         // Use stream n/ns pair because we don't want to build the full StreamId here
-        val destinationStatesFuture =
-            CompletableFuture.supplyAsync {
-                try {
-                    return@supplyAsync getAllDestinationStates()
-                } catch (e: SQLException) {
-                    throw RuntimeException(e)
-                }
+        val destinationStatesFuture = CompletableFuture.supplyAsync {
+            try {
+                return@supplyAsync getAllDestinationStates()
+            } catch (e: SQLException) {
+                throw RuntimeException(e)
             }
+        }
 
-        val initialStates =
-            streamConfigs.map { streamConfig: StreamConfig ->
-                retrieveState(destinationStatesFuture, streamConfig)
-            }
+        val initialStates = streamConfigs.map { streamConfig: StreamConfig ->
+            retrieveState(destinationStatesFuture, streamConfig)
+        }
 
         val states = CompletableFutures.allOf(initialStates).toCompletableFuture().join()
         return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
@@ -306,7 +305,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     private fun retrieveState(
         destinationStatesFuture:
             CompletableFuture<Map<AirbyteStreamNameNamespacePair, DestinationState>>,
-        streamConfig: StreamConfig?
+        streamConfig: StreamConfig?,
     ): CompletionStage<DestinationInitialStatus<DestinationState>> {
         return destinationStatesFuture.thenApply {
             destinationStates: Map<AirbyteStreamNameNamespacePair, DestinationState> ->
@@ -330,7 +329,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 val destinationState =
                     destinationStates.getOrDefault(
                         streamConfig.id.asPair(),
-                        toDestinationState(Jsons.emptyObject())
+                        toDestinationState(Jsons.emptyObject()),
                     )
                 return@thenApply DestinationInitialStatus<DestinationState>(
                     streamConfig,
@@ -338,7 +337,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     initialRawTableState,
                     getInitialRawTableState(
                         streamConfig.id,
-                        AbstractStreamOperation.TMP_TABLE_SUFFIX
+                        AbstractStreamOperation.TMP_TABLE_SUFFIX,
                     ),
                     isSchemaMismatch,
                     isFinalTableEmpty,
@@ -347,13 +346,13 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         generationHandler.getGenerationIdInTable(
                             jdbcDatabase,
                             streamConfig.id.rawNamespace,
-                            streamConfig.id.rawName
+                            streamConfig.id.rawName,
                         ),
                     finalTempTableGenerationId =
                         generationHandler.getGenerationIdInTable(
                             jdbcDatabase,
                             streamConfig.id.rawNamespace,
-                            streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
+                            streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX,
                         ),
                 )
             } catch (e: Exception) {
@@ -396,20 +395,20 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
     ): Boolean {
         // Check that the columns match, with special handling for the metadata columns.
         if (
             !(existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID) &&
                 isAirbyteRawIdColumnMatch(existingTable)) ||
                 !(existingTable.columns.containsKey(
-                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                 ) && isAirbyteExtractedAtColumnMatch(existingTable)) ||
                 !(existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_META) &&
                     isAirbyteMetaColumnMatch(existingTable)) ||
                 (columns == DestinationColumns.V2_WITH_GENERATION &&
                     !(existingTable.columns.containsKey(
-                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                     ) && isAirbyteGenerationColumnMatch(existingTable)))
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
@@ -418,7 +417,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
         }
         val intendedColumns =
             LinkedHashMap(
-                stream!!.columns.entries.associate { it.key.name to toJdbcTypeName(it.value) }
+                stream!!.columns.entries.associate { it.key.name to toJdbcTypeName(it.value) },
             )
 
         // Filter out Meta columns since they don't exist in stream config.
@@ -433,7 +432,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     }
 
     protected open fun getDeleteStatesSql(
-        destinationStates: Map<StreamId, DestinationState>
+        destinationStates: Map<StreamId, DestinationState>,
     ): String {
         return dslContext
             .deleteFrom(table(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)))
@@ -444,10 +443,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             .eq(streamId.originalName)
                             .and(
                                 field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE))
-                                    .eq(streamId.originalNamespace)
+                                    .eq(streamId.originalNamespace),
                             )
                     }
-                    .reduce { obj: Condition, arg2: Condition? -> obj.or(arg2) }
+                    .reduce { obj: Condition, arg2: Condition? -> obj.or(arg2) },
             )
             .getSQL(ParamType.INLINED)
     }
@@ -470,18 +469,18 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME), String::class.java),
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
-                            String::class.java
+                            String::class.java,
                         ),
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                            String::class.java
+                            String::class.java,
                         ), // This field is a timestamptz, but it's easier to just insert a string
                         // and assume the destination can cast it appropriately.
                         // Destination-specific timestamp syntax is weird and annoying.
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                            String::class.java
-                        )
+                            String::class.java,
+                        ),
                     )
             for ((streamId, value) in destinationStates) {
                 val stateJson = Jsons.serialize(value)
@@ -490,7 +489,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         streamId.originalName,
                         streamId.originalNamespace,
                         stateJson,
-                        OffsetDateTime.now().toString()
+                        OffsetDateTime.now().toString(),
                     )
             }
             val insertStates = insertStatesStep.getSQL(ParamType.INLINED)
@@ -529,7 +528,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             jdbcDatabase: JdbcDatabase,
             catalogName: String?,
             schemaName: String?,
-            tableName: String?
+            tableName: String?,
         ): Optional<TableDefinition> {
             val retrievedColumnDefns =
                 jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData ->
@@ -554,7 +553,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                                         columnName,
                                         typeName,
                                         columnSize,
-                                        fromIsNullableIsoString(isNullable)
+                                        fromIsNullableIsoString(isNullable),
                                     )
                             }
                         }

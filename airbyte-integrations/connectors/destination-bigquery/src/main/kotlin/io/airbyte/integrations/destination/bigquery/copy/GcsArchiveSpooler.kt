@@ -102,8 +102,7 @@ class GcsArchiveSpooler(
                     withTimeoutOrNull(cleanupTimeoutMillis) {
                         while (!download.drained()) delay(10)
                         true
-                    }
-                        ?: false
+                    } ?: false
                 }
             if (!drained) {
                 val unsafe = GcsArchiveReaderStillActiveException(path, failure)

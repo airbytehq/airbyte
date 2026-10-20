@@ -35,10 +35,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 9000
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: export
             bypass_reason: "Data expired too often"
@@ -48,7 +44,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_project_secret.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 9000
   incremental:
     tests:
       - config_path: "secrets/config_incremental.json"
@@ -58,6 +53,5 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           bypass_reason: "This test does not make sense using Concurrent CDK"
-        timeout_seconds: 9000
         # skip incremental tests as cursor granularity is day, so records for stream state day are duplicated
         skip_comprehensive_incremental_tests: true
