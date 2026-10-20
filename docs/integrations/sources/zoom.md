@@ -4,7 +4,7 @@
 
 The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
 
-Please note that currently, it only supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. The `report_user_meetings` stream also supports Incremental syncs. The `report_daily` stream performs a Full Refresh on each sync and re-reads the last six months of daily reports.
 
 ### Output schema
 
@@ -29,15 +29,23 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
+- [Report User Meetings](https://developers.zoom.us/docs/api/meetings/#tag/Reports/GET/report/users/%7BuserId%7D/meetings)
+- [Report Daily](https://developers.zoom.us/docs/api/meetings/#tag/Reports/GET/report/daily)
+- [Chat Channels](https://developers.zoom.us/docs/api/team-chat/#tag/Chat-Channels/GET/chat/users/%7BuserId%7D/channels)
+- [Zoom Events](https://developers.zoom.us/docs/api/events/#tag/Events/GET/zoom_events/events)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+
+### Required scopes and plans
+
+`report_user_meetings` and `report_daily` require the `report:read:admin` scope and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires `chat_channel:read:admin`. `zoom_events` requires `zoom_events_basic:read:admin` and a Webinars Plus or Zoom Events license.
 
 ### Features
 
 | Feature                       | Supported?  |
 | :---------------------------- | :---------- |
 | Full Refresh Sync             | Yes         |
-| Incremental Sync              | Coming soon |
+| Incremental Sync              | Yes (`report_user_meetings`) |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection                | Yes         |
 | Namespaces                    | No          |
@@ -75,6 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.4.0 | 2026-10-20 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams |
 | 1.3.2 | 2026-10-20 | [89459](https://github.com/airbytehq/airbyte/pull/89459) | Update dependencies |
 | 1.3.1 | 2026-10-13 | [88881](https://github.com/airbytehq/airbyte/pull/88881) | Update dependencies |
 | 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |

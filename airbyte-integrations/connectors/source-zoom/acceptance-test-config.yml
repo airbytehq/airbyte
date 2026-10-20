@@ -41,6 +41,8 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinars.py"
           - name: "report_webinar_participants"
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinar_participants.py"
+          - name: "zoom_events"
+            bypass_reason: "Needs a Zoom Webinars Plus or Zoom Events licence to populate data; covered by mock-server tests in unit_tests/integration/test_zoom_events.py"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
