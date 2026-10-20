@@ -6,13 +6,15 @@ from abc import ABC
 from datetime import date, datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import backoff
 import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
@@ -22,13 +24,31 @@ class KyribaClient:
         self.password = password
         self.url = f"{gateway_url}/oauth/token"
 
-    def login(self) -> TokenAuthenticator:
+    def get_access_token(self) -> str:
         data = {"grant_type": "client_credentials"}
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         response = requests.post(self.url, auth=auth, data=data)
         response.raise_for_status()
         self.access_token = response.json()["access_token"]
-        return TokenAuthenticator(self.access_token)
+        return self.access_token
+
+    def login(self) -> TokenAuthenticator:
+        return KyribaAuthenticator(self)
+
+
+class KyribaAuthenticator(TokenAuthenticator):
+    """
+    Kyriba uses basic auth to generate an expiring bearer token and there is no refresh token,
+    so the token is refreshed by logging in again. The CDK HttpClient calls
+    `refresh_and_set_access_token` when the error handler returns REFRESH_TOKEN_THEN_RETRY.
+    """
+
+    def __init__(self, client: KyribaClient):
+        self._client = client
+        super().__init__(client.get_access_token())
+
+    def refresh_and_set_access_token(self) -> None:
+        self._token = self._client.get_access_token()
 
 
 # Basic full refresh stream
@@ -63,18 +83,16 @@ class KyribaStream(HttpStream):
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3)
-    def should_retry(self, response: requests.Response) -> bool:
-        # Kyriba uses basic auth to generate an expiring bearer token
-        # There is no refresh token, so users need to log in again when the token expires
-        if response.status_code == 401:
-            self._session.auth = self.client.login()
-            response.request.headers["Authorization"] = f"Bearer {self.client.access_token}"
-            # change the response status code to 571, so should_give_up in rate_limiting.py
-            # does not evaluate to true
-            response.status_code = 571
-            return True
-        return response.status_code == 429 or 500 <= response.status_code < 600
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        error_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            401: ErrorResolution(
+                response_action=ResponseAction.REFRESH_TOKEN_THEN_RETRY,
+                failure_type=FailureType.config_error,
+                error_message="Kyriba rejected the access token. Please check your `username` and `password`.",
+            ),
+        }
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
         """

@@ -9,6 +9,7 @@ import pytest
 import requests
 from source_kyriba.source import KyribaClient, KyribaStream
 
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
@@ -80,39 +81,28 @@ def test_http_method(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.UNAUTHORIZED, ResponseAction.REFRESH_TOKEN_THEN_RETRY),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
+        (HTTPStatus.GATEWAY_TIMEOUT, ResponseAction.RETRY),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
+def test_error_handler(patch_base_class, http_status, expected_action):
+    response = requests.Response()
+    response.status_code = http_status
     stream = KyribaStream(**config())
-    assert stream.should_retry(response_mock) == should_retry
+    assert stream.get_error_handler().interpret_response(response).response_action == expected_action
 
 
-def test_should_retry_401(patch_base_class):
-    response_mock = MagicMock()
-    response_mock.status_code = HTTPStatus.UNAUTHORIZED
+def test_login_on_init(patch_base_class):
     cfg = config()
-    client = KyribaClient("username", "password", "https://gateway.url")
-    client.login = MagicMock(return_value=TokenAuthenticator("token"))
-    client.access_token = "token"
-    cfg["client"] = client
     stream = KyribaStream(**cfg)
-    client.login.assert_called_once()
-    assert stream.should_retry(response_mock)
-
-
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = KyribaStream(**config())
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    cfg["client"].login.assert_called_once()
+    assert stream._http_client._session.auth is cfg["client"].login.return_value
 
 
 def test_unnest(patch_base_class):

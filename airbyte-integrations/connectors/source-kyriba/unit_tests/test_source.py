@@ -17,12 +17,13 @@ config = {
 
 def test_check_connection(mocker):
     source = SourceKyriba()
-    KyribaClient.login = MagicMock()
+    mocker.patch.object(KyribaClient, "login")
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
 def test_streams(mocker):
+    mocker.patch.object(KyribaClient, "login")
     source = SourceKyriba()
     streams = source.streams(config)
     expected_streams_number = 6
