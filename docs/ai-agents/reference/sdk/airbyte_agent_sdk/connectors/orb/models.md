@@ -105,6 +105,7 @@ Classes
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[InvoicesSearchData]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[PlansSearchData]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[SubscriptionsSearchData]
+    * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -920,7 +921,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `OrbExecuteResultWithMeta[list[Customer], CustomersListResultMeta](**data: Any)`

@@ -7,20 +7,145 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                   | Subject                                                                                         |
-|---------|------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| 1.0.11  | 2026-04-28 | [#77539](https://github.com/airbytehq/airbyte/pull/77539)      | Mainline fast timestamp coercion. Fast date time coercion is now the only path. |
-| 1.0.10  | 2026-04-23 | [#76966](https://github.com/airbytehq/airbyte/pull/76966/)     | Bump bulk-cdk-core-base from 1.0.1 to 1.0.3: picks up fix to use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for cloud feature flag (base 1.0.3). |
-| 1.0.9   | 2026-04-15 | [#76246](https://github.com/airbytehq/airbyte/pull/76246)      | Perf: fix timestamp coercion using exception-as-control-flow. Use ethlo/itu for ISO-8601 fast path (~25x faster), JDK TemporalQueries fallback for exotic formats. Eliminates ~56% destination CPU on timestamp-heavy workloads. |
-| 1.0.8   | 2026-04-14 | [#74728](https://github.com/airbytehq/airbyte/pull/74728)      | Fix OAuthAuthenticator to track token expiry via `expires_in` and refresh expired tokens. |
-| 1.0.7   | 2026-03-27 |                                                                | Fix: update Iceberg sort order before schema evolution to prevent ValidationException when deleting columns referenced by the sort order. Handles Dedupe-to-Append mode switches and PK changes. |
-| 1.0.6   | 2026-03-12 | [#74715](https://github.com/airbytehq/airbyte/pull/74715)      | Fix: drop temp table after successful upsert to prevent duplicate records across syncs. |
-| 1.0.5   | 2026-03-10 | [#74723](https://github.com/airbytehq/airbyte/pull/74723)      | Fix schema evolution: defer identifier field update when replacing columns to avoid Iceberg conflict. |
-| 1.0.4   | 2026-03-05 | [#74328](https://github.com/airbytehq/airbyte/pull/74328)      | Fix iceberg dedup: map PK NumberType to StringType instead of DecimalType for identifier field compatibility. |
-| 1.0.3   | 2026-03-05 | [#74272](https://github.com/airbytehq/airbyte/pull/74272)      | Fix iceberg dedup.                                                                              |
-| 1.0.2   | 2026-02-24 |                                                                | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).         |
-| 1.0.1   | 2026-02-09 | [#72959](https://github.com/airbytehq/airbyte/pull/72959)      | Fix: CVE-2026-25526 (Jinjava dependency bump).                                                  |
-| 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376)      | Initial independent release of bulk-cdk-core-load. Separate versioning for load package begins. |
+### 1.1.8 — 2026-10-16
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
+### 1.1.7 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
+### 1.1.6 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and extract 1.1.20; no runtime behaviour change in load.
+
+### 1.1.5 — 2026-10-15
+
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. `ReservingDeserializingInputFlow`, `DestinationMessageFactory`, `ObjectLoaderPartFormatter` and `DefaultTempTableNameGenerator` get `@Inject` constructors without Kotlin default values on primitive parameters: inject-kotlin 4.8+ emits unverifiable bytecode for such constructors and Micronaut silently dropped the beans (`NoSuchBeanException` in dependants). Runtime behaviour is unchanged.
+
+### 1.1.4 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), and K2-lint cleanups that also compile on Kotlin 1.9. No behaviour change.
+
+### 1.1.3 — 2026-10-12
+
+[#88497](https://github.com/airbytehq/airbyte/pull/88497) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.
+
+### 1.1.2 — 2026-10-08
+
+Fix: Iceberg toolkit no longer emits NOT NULL constraints nested inside list types (e.g. _airbyte_meta.changes), which Databricks/Delta rejects; existing tables are relaxed in place via schema evolution.
+
+### 1.1.1 — 2026-09-24
+
+Add the Fusion archive toolkit to the published bulk load CDK toolkits.
+
+### 1.1.0 — 2026-09-10
+
+[#82231](https://github.com/airbytehq/airbyte/pull/82231) - Feat: Add `tableIsEmpty` to `TableOperationsClient` and use existence checks (instead of `COUNT(*)`) when gathering direct-load initial status.
+
+### 1.0.25 — 2026-08-20
+
+Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.
+
+### 1.0.24 — 2026-08-10
+
+[#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host.
+
+### 1.0.23 — 2026-08-06
+
+[#83766](https://github.com/airbytehq/airbyte/pull/83766) — Fix: lowercase random suffix in `generateRandomNamespace()` to prevent case-sensitive schema name mismatch on destinations.
+
+### 1.0.22 — 2026-08-05
+
+[#83201](https://github.com/airbytehq/airbyte/pull/83201) — Bump Testcontainers to 1.21.4 for Docker API v1.44 negotiation.
+
+### 1.0.21 — 2026-08-05
+
+[#83739](https://github.com/airbytehq/airbyte/pull/83739) - Add generation ID logging to DirectLoadTable stream loaders for improved sync debugging.                                                                                                                                        |
+
+### 1.0.20 — 2026-07-28
+
+[#83220](https://github.com/airbytehq/airbyte/pull/83220) - Fix: use date-based namespace format in component test `generateTestNamespace()` so stale test schemas are automatically cleaned up by `DestinationCleaner`.                                                                    |
+
+### 1.0.19 — 2026-07-21
+
+[#82687](https://github.com/airbytehq/airbyte/pull/82687) — Add `ColumnDropBehavior` enum for configurable column drop during schema evolution.
+
+### 1.0.18 — 2026-07-21
+
+[#82296](https://github.com/airbytehq/airbyte/pull/82296) — Fix: use strict equality (`==`) for generation ID comparison in truncate stream loaders.
+
+### 1.0.17 — 2026-07-20
+
+Remove `columnsToDrop` from `ColumnChangeset.isNoop()` check to support disabling column drops during schema evolution.
+
+### 1.0.16 — 2026-07-09
+
+[#81549](https://github.com/airbytehq/airbyte/pull/81549) — Fix: use `replace=false` for real table creation in `DirectLoadTableStreamLoader` to prevent accidental data loss.
+
+### 1.0.15 — 2026-06-17
+
+[#80220](https://github.com/airbytehq/airbyte/pull/80220) — Add `createTempTable` to `TableOperationsClient` for connector-specific temp table handling.
+
+### 1.0.14 — 2026-06-09
+
+[#79123](https://github.com/airbytehq/airbyte/pull/79123) — Uodate Apache Iceberg dependencies to the latest.
+
+### 1.0.13 — 2026-05-19
+
+[#78211](https://github.com/airbytehq/airbyte/pull/78211) — Fix: drop INCOMPLETE stream status in legacy task-loader to prevent destructive overwrites on partial data.
+
+### 1.0.12 — 2026-05-11
+
+[#77866](https://github.com/airbytehq/airbyte/pull/77866) — Destination accepts INCOMPLETE stream status without crashing, preserving source failure.
+
+### 1.0.11 — 2026-04-28
+
+[#77539](https://github.com/airbytehq/airbyte/pull/77539) — Mainline fast timestamp coercion. Fast date time coercion is now the only path.
+
+### 1.0.10 — 2026-04-23
+
+[#76966](https://github.com/airbytehq/airbyte/pull/76966/) — Bump bulk-cdk-core-base from 1.0.1 to 1.0.3: picks up fix to use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for cloud feature flag (base 1.0.3).
+
+### 1.0.9 — 2026-04-15
+
+[#76246](https://github.com/airbytehq/airbyte/pull/76246) — Perf: fix timestamp coercion using exception-as-control-flow. Use ethlo/itu for ISO-8601 fast path (~25x faster), JDK TemporalQueries fallback for exotic formats. Eliminates ~56% destination CPU on timestamp-heavy workloads.
+
+### 1.0.8 — 2026-04-14
+
+[#74728](https://github.com/airbytehq/airbyte/pull/74728) — Fix OAuthAuthenticator to track token expiry via `expires_in` and refresh expired tokens.
+
+### 1.0.7 — 2026-03-27
+
+Fix: update Iceberg sort order before schema evolution to prevent ValidationException when deleting columns referenced by the sort order. Handles Dedupe-to-Append mode switches and PK changes.
+
+### 1.0.6 — 2026-03-12
+
+[#74715](https://github.com/airbytehq/airbyte/pull/74715) — Fix: drop temp table after successful upsert to prevent duplicate records across syncs.
+
+### 1.0.5 — 2026-03-10
+
+[#74723](https://github.com/airbytehq/airbyte/pull/74723) — Fix schema evolution: defer identifier field update when replacing columns to avoid Iceberg conflict.
+
+### 1.0.4 — 2026-03-05
+
+[#74328](https://github.com/airbytehq/airbyte/pull/74328) — Fix iceberg dedup: map PK NumberType to StringType instead of DecimalType for identifier field compatibility.
+
+### 1.0.3 — 2026-03-05
+
+[#74272](https://github.com/airbytehq/airbyte/pull/74272) — Fix iceberg dedup.
+
+### 1.0.2 — 2026-02-24
+
+Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).
+
+### 1.0.1 — 2026-02-09
+
+[#72959](https://github.com/airbytehq/airbyte/pull/72959) — Fix: CVE-2026-25526 (Jinjava dependency bump).
+
+### 1.0.0 — 2026-02-02
+
+[#72376](https://github.com/airbytehq/airbyte/pull/72376) — Initial independent release of bulk-cdk-core-load. Separate versioning for load package begins.
 
 </details>
 

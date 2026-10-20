@@ -10,7 +10,6 @@ Multiple tests suites compose the Airbyte connector testing pyramid
 - [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/): Connector-agnostic tests that verify that a connector adheres to the [Airbyte protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol). Credentials to a source/destination sandbox account are **required**.
 - Regression Tests (deprecated): Connector-agnostic tests that verified the behavior of a connector between versions. Previously available for API source connectors.
 
-
 ## 🤖 CI
 
 CI will run all the tests that are available for a connector. This can include all of the tests listed above, if we have the appropriate credentials. At a minimum, it will include the Connector QA checks and any tests that exist in a connector's `unit_tests` and `integration_tests` directories.
@@ -18,6 +17,8 @@ To run Connector Acceptance tests locally, you must provide connector configurat
 
 Connector tests are automatically and remotely triggered on your branch according to the changes made in your branch.
 **Passing tests are required to merge a connector pull request.**
+
+Community connector pull requests have one exception: if Airbyte's CI can successfully fetch connector secrets and finds no sandbox or test credentials, integration tests and non-Java container tests are allowed to be non-blocking. Unit tests remain blocking. For all other connector pull requests, available connector tests must pass before merge.
 
 ## Connector specific tests
 
@@ -46,4 +47,3 @@ We run Java connector tests with gradle.
 ```
 
 Please note that according to the test implementation you might have to provide connector configurations as a `config.json` file in a `.secrets` folder in the connector code directory.
-

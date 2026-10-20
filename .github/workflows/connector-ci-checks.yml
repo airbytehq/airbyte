@@ -36,6 +36,9 @@ on:
         description: "The commit SHA of the current branch, used to report test results."
         value: ${{ jobs.generate-matrix.outputs.commit-sha }}
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions:
   # Allow the workflow to read contents
   # and to read/write checks and PR comments.
@@ -85,6 +88,23 @@ jobs:
             java-cdk:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
+              - 'airbyte-cdk/**/build.gradle'
+              - 'airbyte-cdk/**/build.gradle.kts'
+            # Shared JVM build configuration (Kotlin/KSP/SpotBugs plugins, compiler flags,
+            # Gradle wrapper, Micronaut version). Every JVM connector is compiled with it,
+            # so a change here must build the connectors even when none of their files changed.
+            jvm-toolchain:
+              - 'build.gradle'
+              - 'settings.gradle'
+              - 'gradle.properties'
+              - 'gradle/wrapper/**'
+              - 'buildSrc/**'
+              - 'spotbugs-exclude-filter-file.xml'
+              - 'airbyte-cdk/bulk/build.gradle'
+              - 'airbyte-cdk/bulk/gradle.properties'
+              # airbyte-enterprise: its build files are symlinks into this submodule, so a
+              # submodule bump is the only thing that shows up in its diff (inert in this repo).
+              - 'airbyte-submodule'
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
@@ -92,15 +112,37 @@ jobs:
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
-          # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
-          # Otherwise, get modified Java connectors
-          if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+          # A `skip-jvm-toolchain-matrix` label on the PR opts out of the expanded matrices below
+          # (labels are read when the run starts: add the label before pushing, or re-run the workflow).
+          toolchain_matrix="${{ steps.cdk-changes.outputs.jvm-toolchain }}"
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-jvm-toolchain-matrix') }}" == "true" ]]; then
+            echo "skip-jvm-toolchain-matrix label present: not expanding the JVM matrices" >&2
+            toolchain_matrix="false"
+          fi
+
+          # JVM matrix, broadest trigger first:
+          # - shared JVM toolchain changed: modified Java connectors + every Bulk CDK connector
+          #   + legacy-CDK connectors with Kotlin sources
+          # - Java CDK changed: modified Java connectors + connectors pinned to cdkVersion=local
+          # - otherwise: modified Java connectors
+          if [[ "$toolchain_matrix" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
+          elif [[ "${{ steps.cdk-changes.outputs.java-cdk }}" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
           fi
 
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+
+          # Lint matrix: modified connectors, plus every JVM connector when the shared JVM toolchain
+          # changed. Lint runs `gradle check -x test` (compile + spotbugs, no secrets), so it is the
+          # cheap way to cover the pure-Java legacy connectors that the test matrix leaves out.
+          if [[ "$toolchain_matrix" == "true" ]]; then
+            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --all-jvm)" | tee -a $GITHUB_OUTPUT
+          else
+            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          fi
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
@@ -112,11 +154,24 @@ jobs:
             echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
           fi
 
+      # Connector jobs install ruff at the ruff-pre-commit rev from .pre-commit-config.yaml
+      # so `poe format-check` agrees with the required Format Check. Formatter output
+      # differs between ruff versions, so the two must not drift.
+      - name: Resolve Ruff Version
+        id: resolve-ruff-version
+        run: |
+          rev=$(yq -r '.repos[] | select(.repo == "https://github.com/astral-sh/ruff-pre-commit") | .rev' .pre-commit-config.yaml)
+          [[ "$rev" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::Expected one ruff-pre-commit rev in .pre-commit-config.yaml, got '${rev}'."; exit 1; }
+          echo "ruff-version=${rev#v}" | tee -a "$GITHUB_OUTPUT"
+
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
+      lint-connectors-matrix: ${{ steps.generate-matrix.outputs.lint_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      ruff-version: ${{ steps.resolve-ruff-version.outputs.ruff-version }}
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
@@ -159,7 +214,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
@@ -186,12 +241,44 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
+        id: fetch-secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
           airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Resolve connector test policy
+        id: connector-test-policy
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
+        run: |
+          set -euo pipefail
+
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
+          SECRET_COUNT=0
+          if [[ -d secrets ]]; then
+            SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
+          fi
+
+          if [[ "${FETCH_SECRETS_OUTCOME:-skipped}" != "success" ]]; then
+            SECRET_COUNT=unknown
+          fi
+
+          ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
+          if [[ "$SUPPORT_LEVEL" == "community" &&
+                "$FETCH_SECRETS_OUTCOME" == "success" &&
+                "$SECRET_COUNT" == "0" ]]; then
+            ALLOW_TEST_FAILURES=true
+          fi
+
+          echo "support-level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          echo "secret-count=${SECRET_COUNT}" | tee -a $GITHUB_OUTPUT
+          echo "allow-test-failures=${ALLOW_TEST_FAILURES}" | tee -a $GITHUB_OUTPUT
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
@@ -200,6 +287,7 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
@@ -237,19 +325,6 @@ jobs:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
-      - name: Get connector support level
-        if: matrix.connector
-        id: support-level
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "community"' metadata.yaml 2>/dev/null || echo "community")
-          echo "support_level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
-          if [[ "$SUPPORT_LEVEL" != "certified" ]]; then
-            echo "is_community=true" | tee -a $GITHUB_OUTPUT
-          else
-            echo "is_community=false" | tee -a $GITHUB_OUTPUT
-          fi
-
       # Python deps
       - name: Set up Python
         if: matrix.connector
@@ -281,13 +356,16 @@ jobs:
 
       - name: Install Poe and Dev Dependencies
         if: matrix.connector
+        env:
+          # The ruff-pre-commit rev, resolved once in generate-matrix:
+          RUFF_VERSION: ${{ needs.generate-matrix.outputs.ruff-version }}
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          uv tool install ruff
+          uv tool install "ruff==${RUFF_VERSION}"
           uv tool install pytest
           uv tool install mypy
 
@@ -301,10 +379,40 @@ jobs:
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
-        continue-on-error: true
         run: |
           airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Resolve connector test policy
+        id: connector-test-policy
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
+        run: |
+          set -euo pipefail
+
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
+          SECRET_COUNT=0
+          if [[ -d secrets ]]; then
+            SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
+          fi
+
+          if [[ "${FETCH_SECRETS_OUTCOME:-skipped}" != "success" ]]; then
+            SECRET_COUNT=unknown
+          fi
+
+          ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
+          if [[ "$SUPPORT_LEVEL" == "community" &&
+                "$FETCH_SECRETS_OUTCOME" == "success" &&
+                "$SECRET_COUNT" == "0" ]]; then
+            ALLOW_TEST_FAILURES=true
+          fi
+
+          echo "support-level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          echo "secret-count=${SECRET_COUNT}" | tee -a $GITHUB_OUTPUT
+          echo "allow-test-failures=${ALLOW_TEST_FAILURES}" | tee -a $GITHUB_OUTPUT
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
@@ -313,13 +421,18 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
-        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.fetch-secrets.outcome != 'success' }}
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Build connector image
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: airbyte-cdk image build
+
       - name: Container Tests
         if: matrix.connector
-        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.fetch-secrets.outcome != 'success' }}
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test
@@ -340,10 +453,11 @@ jobs:
   connectors-lint:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
-    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+    if: ${{ needs.generate-matrix.outputs.lint-connectors-matrix }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.lint-connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
     name: Lint ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no connectors modified)' || '' }}
     steps:
       - name: Checkout Airbyte
@@ -368,7 +482,7 @@ jobs:
         with:
           cache-read-only: false
           cache-write-only: false
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       # Python deps
       - name: Set up Python
@@ -400,13 +514,16 @@ jobs:
 
       - name: Install Poe and Dev Dependencies
         if: matrix.connector
+        env:
+          # The ruff-pre-commit rev, resolved once in generate-matrix:
+          RUFF_VERSION: ${{ needs.generate-matrix.outputs.ruff-version }}
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          uv tool install ruff
+          uv tool install "ruff==${RUFF_VERSION}"
           uv tool install pytest
           uv tool install mypy
 
@@ -424,7 +541,10 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe lint-check
-        # Most connectors can't pass lint checks, so this is non-blocking for now
+        # Non-blocking on purpose: most connectors don't yet pass `ruff check` and
+        # `mypy`, so making this required would block unrelated connector PRs until
+        # those backlogs are cleared. `continue-on-error` still surfaces failures as
+        # a red step with annotations in the run summary, so regressions stay visible.
         continue-on-error: true
 
   pre-release-checks:
@@ -519,7 +639,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       - name: Install Poe
         if: matrix.connector

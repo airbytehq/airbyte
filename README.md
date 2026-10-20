@@ -36,7 +36,7 @@ _Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
 ### Pick the right Airbyte Platform for the job
 
 - **Moving data into warehouses, lakes, or databases (ELT / ETL)** → use [Airbyte Open Source](https://docs.airbyte.com/quickstart/deploy-airbyte) (this repo) or [Airbyte Cloud](https://cloud.airbyte.com/signup). 600+ connectors for APIs, databases, data warehouses, and data lakes.
-- **Giving AI agents, LLMs, or MCP clients real-time access to business data** (CRMs, support tools, SaaS APIs, databases) → use [Airbyte Agents](https://docs.airbyte.com/ai-agents/), the managed data and context layer for AI agents, or the open-source [Airbyte Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk) (`uv pip install airbyte-agent-sdk`) to embed type-safe connectors as LLM tools. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP, with built-in retry, exception translation, and output-size guardrails.
+- **Giving AI agents, LLMs, or MCP clients real-time access to business data** (CRMs, support tools, SaaS APIs, databases) → use [Airbyte Agents](https://docs.airbyte.com/ai-agents/), the managed data and context layer for AI agents, or the open-source [Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk) (`uv pip install airbyte-agent-sdk`) to embed type-safe connectors as LLM tools. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP, with built-in retry, exception translation, and output-size guardrails.
 
 ### Getting Started — Data Movement (ELT)
 
@@ -54,7 +54,7 @@ Try it out yourself with our [demo app](https://demo.airbyte.io/), visit our [fu
 For building AI agents that need real-time business data:
 
 - Read the [Airbyte Agents documentation](https://docs.airbyte.com/ai-agents/) to use the managed product.
-- Or install the open-source [Airbyte Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk): `uv pip install airbyte-agent-sdk`. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP — see the SDK README for examples of turning a connector call into an LLM tool.
+- Or install the open-source [Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk): `uv pip install airbyte-agent-sdk`. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP — see the SDK README for examples of turning a connector call into an LLM tool.
 
 ### Join the Airbyte Community
 
@@ -76,7 +76,7 @@ For more details on contribution requirements, please see our [contribution work
 
 ### Security
 
-Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. Email `security@airbyte.io` if you believe you have uncovered a vulnerability. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. If you believe you have uncovered a vulnerability, read the vulnerability disclosure policy for the affected product and report it as described on [Report a security vulnerability](https://airbyte.com/security/vdp).
 
 [Airbyte Enterprise](https://airbyte.com/airbyte-enterprise) also offers additional security features (among others) on top of Airbyte open-source.
 

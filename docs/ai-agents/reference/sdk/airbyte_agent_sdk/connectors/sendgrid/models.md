@@ -75,6 +75,7 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupMembersSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupsSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[TemplatesSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1785,7 +1786,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `SendgridExecuteResultWithMeta[list[Block], BlocksListResultMeta](**data: Any)`

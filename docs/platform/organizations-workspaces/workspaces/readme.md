@@ -1,5 +1,5 @@
 ---
-products: cloud, oss-enterprise
+products: cloud
 ---
 
 import DocCardList from '@theme/DocCardList';
@@ -20,10 +20,10 @@ You can use workspaces for the following purposes.
 
     - If you use Cloud, you can choose between Airbyte's managed regions.
 
-    - If you use [Enterprise Flex](../../enterprise-flex) or [Self-Managed Enterprise](../../enterprise-setup), you can also self-manage your own regions and data planes on your own infrastructure.
+    - If you use [Enterprise Flex](../../enterprise-flex/readme.md), you can also self-manage your own regions and data planes on your own infrastructure.
 
 - Set up notifications.
 
-If you use Core, you only have one workspace. If you use Cloud Standard, each organization is limited to one workspace. You can upgrade to Pro or Enterprise Flex to access multiple workspaces per organization.
+If you use Core, you only have one workspace. If you use Cloud Standard, each organization is limited to one workspace. Plus includes two workspaces, and Pro and Enterprise Flex include more. See [Airbyte's pricing page](https://airbyte.com/pricing) to compare plans.
 
 <DocCardList />

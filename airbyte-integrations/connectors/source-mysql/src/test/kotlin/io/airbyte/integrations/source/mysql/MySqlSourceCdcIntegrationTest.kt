@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -40,7 +40,7 @@ class MySqlSourceCdcIntegrationTest {
         assertEquals(1, run1.messages().size)
         assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,
-            run1.messages().first().connectionStatus.status
+            run1.messages().first().connectionStatus.status,
         )
 
         MySqlContainerFactory.exclusive(
@@ -70,7 +70,7 @@ class MySqlSourceCdcIntegrationTest {
 
                     assertEquals(
                         AirbyteConnectionStatus.Status.FAILED,
-                        messageInRun2.connectionStatus.status
+                        messageInRun2.connectionStatus.status,
                     )
                 }
             }
@@ -93,8 +93,9 @@ class MySqlSourceCdcIntegrationTest {
 
     @Test
     fun testFullRefresh() {
-        val fullRefreshCatalog =
-            configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
+        val fullRefreshCatalog = configuredCatalog.apply {
+            streams.forEach { it.syncMode = SyncMode.FULL_REFRESH }
+        }
         CliRunner.source("read", config(), fullRefreshCatalog).run()
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -120,7 +121,8 @@ class MySqlSourceCdcIntegrationTest {
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
-                    columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
+                    columns =
+                        listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
@@ -151,7 +153,7 @@ class MySqlSourceCdcIntegrationTest {
 
         fun provisionTestContainer(
             targetContainer: MySQLContainer<*>,
-            targetConnectionFactory: JdbcConnectionFactory
+            targetConnectionFactory: JdbcConnectionFactory,
         ) {
             val gtidOn =
                 "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +

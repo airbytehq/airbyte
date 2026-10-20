@@ -10,510 +10,6 @@ Type definitions for facebook-marketing connector.
 Classes
 -------
 
-<a id="AdAccountAndCondition"></a>
-
-`AdAccountAndCondition(*args, **kwargs)`
-:   dict() -> new empty dictionary
-    dict(mapping) -> new dictionary initialized from a mapping object's
-        (key, value) pairs
-    dict(iterable) -> new dictionary initialized as if via:
-        d = \{\}
-        for k, v in iterable:
-            d[k] = v
-    dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        in the keyword argument list.  For example:  dict(one=1, two=2)
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyCondition]`
-    :   The type of the None singleton.
-
-<a id="AdAccountAnyCondition"></a>
-
-`AdAccountAnyCondition(*args, **kwargs)`
-:   dict() -> new empty dictionary
-    dict(mapping) -> new dictionary initialized from a mapping object's
-        (key, value) pairs
-    dict(iterable) -> new dictionary initialized as if via:
-        d = \{\}
-        for k, v in iterable:
-            d[k] = v
-    dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        in the keyword argument list.  For example:  dict(one=1, two=2)
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `any: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyValueFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountAnyValueFilter"></a>
-
-`AdAccountAnyValueFilter(*args, **kwargs)`
-:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: Any`
-    :   Ad account ID (numeric)
-
-    `account_status: Any`
-    :   Account status
-
-    `amount_spent: Any`
-    :   Total amount spent
-
-    `balance: Any`
-    :   Current balance of the ad account
-
-    `business_name: Any`
-    :   Business name
-
-    `created_time: Any`
-    :   Account creation time
-
-    `currency: Any`
-    :   Currency used by the ad account
-
-    `id: Any`
-    :   Ad account ID
-
-    `name: Any`
-    :   Ad account name
-
-    `spend_cap: Any`
-    :   Spend cap
-
-    `timezone_name: Any`
-    :   Timezone name
-
-<a id="AdAccountContainsCondition"></a>
-
-`AdAccountContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyValueFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountEqCondition"></a>
-
-`AdAccountEqCondition(*args, **kwargs)`
-:   Equal to: field equals value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `eq: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountFuzzyCondition"></a>
-
-`AdAccountFuzzyCondition(*args, **kwargs)`
-:   Ordered word text match (case-insensitive).
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `fuzzy: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountStringFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountGetParams"></a>
-
-`AdAccountGetParams(*args, **kwargs)`
-:   Parameters for ad_account.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: str`
-    :   The type of the None singleton.
-
-    `fields: str`
-    :   The type of the None singleton.
-
-<a id="AdAccountGtCondition"></a>
-
-`AdAccountGtCondition(*args, **kwargs)`
-:   Greater than: field > value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `gt: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountGteCondition"></a>
-
-`AdAccountGteCondition(*args, **kwargs)`
-:   Greater than or equal: field >= value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `gte: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountInCondition"></a>
-
-`AdAccountInCondition(*args, **kwargs)`
-:   dict() -> new empty dictionary
-    dict(mapping) -> new dictionary initialized from a mapping object's
-        (key, value) pairs
-    dict(iterable) -> new dictionary initialized as if via:
-        d = \{\}
-        for k, v in iterable:
-            d[k] = v
-    dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        in the keyword argument list.  For example:  dict(one=1, two=2)
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `in: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountInFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountInFilter"></a>
-
-`AdAccountInFilter(*args, **kwargs)`
-:   Available fields for 'in' condition (values are lists).
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: list[str]`
-    :   Ad account ID (numeric)
-
-    `account_status: list[int]`
-    :   Account status
-
-    `amount_spent: list[str]`
-    :   Total amount spent
-
-    `balance: list[str]`
-    :   Current balance of the ad account
-
-    `business_name: list[str]`
-    :   Business name
-
-    `created_time: list[str]`
-    :   Account creation time
-
-    `currency: list[str]`
-    :   Currency used by the ad account
-
-    `id: list[str]`
-    :   Ad account ID
-
-    `name: list[str]`
-    :   Ad account name
-
-    `spend_cap: list[str]`
-    :   Spend cap
-
-    `timezone_name: list[str]`
-    :   Timezone name
-
-<a id="AdAccountKeywordCondition"></a>
-
-`AdAccountKeywordCondition(*args, **kwargs)`
-:   Keyword text match (any word present).
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountStringFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountLikeCondition"></a>
-
-`AdAccountLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountStringFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountLtCondition"></a>
-
-`AdAccountLtCondition(*args, **kwargs)`
-:   Less than: field &lt; value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `lt: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountLteCondition"></a>
-
-`AdAccountLteCondition(*args, **kwargs)`
-:   Less than or equal: field &lt;= value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `lte: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountNeqCondition"></a>
-
-`AdAccountNeqCondition(*args, **kwargs)`
-:   Not equal to: field does not equal value.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `neq: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSearchFilter`
-    :   The type of the None singleton.
-
-<a id="AdAccountNotCondition"></a>
-
-`AdAccountNotCondition(*args, **kwargs)`
-:   dict() -> new empty dictionary
-    dict(mapping) -> new dictionary initialized from a mapping object's
-        (key, value) pairs
-    dict(iterable) -> new dictionary initialized as if via:
-        d = \{\}
-        for k, v in iterable:
-            d[k] = v
-    dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        in the keyword argument list.  For example:  dict(one=1, two=2)
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyCondition`
-    :   The type of the None singleton.
-
-<a id="AdAccountOrCondition"></a>
-
-`AdAccountOrCondition(*args, **kwargs)`
-:   dict() -> new empty dictionary
-    dict(mapping) -> new dictionary initialized from a mapping object's
-        (key, value) pairs
-    dict(iterable) -> new dictionary initialized as if via:
-        d = \{\}
-        for k, v in iterable:
-            d[k] = v
-    dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        in the keyword argument list.  For example:  dict(one=1, two=2)
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyCondition]`
-    :   The type of the None singleton.
-
-<a id="AdAccountSearchFilter"></a>
-
-`AdAccountSearchFilter(*args, **kwargs)`
-:   Available fields for filtering ad_account search queries.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: str | None`
-    :   Ad account ID (numeric)
-
-    `account_status: int | None`
-    :   Account status
-
-    `amount_spent: str | None`
-    :   Total amount spent
-
-    `balance: str | None`
-    :   Current balance of the ad account
-
-    `business_name: str | None`
-    :   Business name
-
-    `created_time: str | None`
-    :   Account creation time
-
-    `currency: str | None`
-    :   Currency used by the ad account
-
-    `id: str | None`
-    :   Ad account ID
-
-    `name: str | None`
-    :   Ad account name
-
-    `spend_cap: str | None`
-    :   Spend cap
-
-    `timezone_name: str | None`
-    :   Timezone name
-
-<a id="AdAccountSearchQuery"></a>
-
-`AdAccountSearchQuery(*args, **kwargs)`
-:   Search query for ad_account entity.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountAnyCondition`
-    :   The type of the None singleton.
-
-    `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountSortFilter]`
-    :   The type of the None singleton.
-
-<a id="AdAccountSortFilter"></a>
-
-`AdAccountSortFilter(*args, **kwargs)`
-:   Available fields for sorting ad_account search results.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: Literal['asc', 'desc']`
-    :   Ad account ID (numeric)
-
-    `account_status: Literal['asc', 'desc']`
-    :   Account status
-
-    `amount_spent: Literal['asc', 'desc']`
-    :   Total amount spent
-
-    `balance: Literal['asc', 'desc']`
-    :   Current balance of the ad account
-
-    `business_name: Literal['asc', 'desc']`
-    :   Business name
-
-    `created_time: Literal['asc', 'desc']`
-    :   Account creation time
-
-    `currency: Literal['asc', 'desc']`
-    :   Currency used by the ad account
-
-    `id: Literal['asc', 'desc']`
-    :   Ad account ID
-
-    `name: Literal['asc', 'desc']`
-    :   Ad account name
-
-    `spend_cap: Literal['asc', 'desc']`
-    :   Spend cap
-
-    `timezone_name: Literal['asc', 'desc']`
-    :   Timezone name
-
-<a id="AdAccountStringFilter"></a>
-
-`AdAccountStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: str`
-    :   Ad account ID (numeric)
-
-    `account_status: str`
-    :   Account status
-
-    `amount_spent: str`
-    :   Total amount spent
-
-    `balance: str`
-    :   Current balance of the ad account
-
-    `business_name: str`
-    :   Business name
-
-    `created_time: str`
-    :   Account creation time
-
-    `currency: str`
-    :   Currency used by the ad account
-
-    `id: str`
-    :   Ad account ID
-
-    `name: str`
-    :   Ad account name
-
-    `spend_cap: str`
-    :   Spend cap
-
-    `timezone_name: str`
-    :   Timezone name
-
 <a id="AdAccountsAndCondition"></a>
 
 `AdAccountsAndCondition(*args, **kwargs)`
@@ -533,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdAccountsAnyCondition"></a>
@@ -602,10 +98,24 @@ Classes
     `timezone_name: Any`
     :   Timezone name
 
+<a id="AdAccountsArrayContainsCondition"></a>
+
+`AdAccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdAccountsContainsCondition"></a>
 
 `AdAccountsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -614,6 +124,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdAccountsEndswithCondition"></a>
+
+`AdAccountsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdAccountsEqCondition"></a>
@@ -642,6 +166,23 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdAccountsGetParams"></a>
+
+`AdAccountsGetParams(*args, **kwargs)`
+:   Parameters for ad_accounts.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `fields: str`
     :   The type of the None singleton.
 
 <a id="AdAccountsGtCondition"></a>
@@ -752,20 +293,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdAccountsLikeCondition"></a>
-
-`AdAccountsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdAccountsListParams"></a>
 
 `AdAccountsListParams(*args, **kwargs)`
@@ -847,7 +374,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdAccountsOrCondition"></a>
@@ -869,7 +396,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdAccountsSearchFilter"></a>
@@ -927,7 +454,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsSortFilter]`
@@ -977,10 +504,24 @@ Classes
     `timezone_name: Literal['asc', 'desc']`
     :   Timezone name
 
+<a id="AdAccountsStartswithCondition"></a>
+
+`AdAccountsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdAccountsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdAccountsStringFilter"></a>
 
 `AdAccountsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1040,7 +581,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCreativesAnyCondition"></a>
@@ -1106,10 +647,24 @@ Classes
     `title: Any`
     :   Ad title
 
+<a id="AdCreativesArrayContainsCondition"></a>
+
+`AdCreativesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdCreativesContainsCondition"></a>
 
 `AdCreativesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1118,6 +673,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdCreativesEndswithCondition"></a>
+
+`AdCreativesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStringFilter`
     :   The type of the None singleton.
 
 <a id="AdCreativesEqCondition"></a>
@@ -1253,20 +822,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStringFilter`
     :   The type of the None singleton.
 
-<a id="AdCreativesLikeCondition"></a>
-
-`AdCreativesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdCreativesListParams"></a>
 
 `AdCreativesListParams(*args, **kwargs)`
@@ -1351,7 +906,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdCreativesOrCondition"></a>
@@ -1373,7 +928,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCreativesSearchFilter"></a>
@@ -1428,7 +983,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesSortFilter]`
@@ -1475,10 +1030,24 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Ad title
 
+<a id="AdCreativesStartswithCondition"></a>
+
+`AdCreativesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdCreativesStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdCreativesStringFilter"></a>
 
 `AdCreativesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1594,7 +1163,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdSetsAnyCondition"></a>
@@ -1672,10 +1241,24 @@ Classes
     `updated_time: Any`
     :   Last update time
 
+<a id="AdSetsArrayContainsCondition"></a>
+
+`AdSetsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdSetsContainsCondition"></a>
 
 `AdSetsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1698,6 +1281,20 @@ Classes
     ### Class variables
 
     `account_id: str`
+    :   The type of the None singleton.
+
+<a id="AdSetsEndswithCondition"></a>
+
+`AdSetsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdSetsEqCondition"></a>
@@ -1862,20 +1459,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdSetsLikeCondition"></a>
-
-`AdSetsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdSetsListParams"></a>
 
 `AdSetsListParams(*args, **kwargs)`
@@ -1960,7 +1543,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdSetsOrCondition"></a>
@@ -1982,7 +1565,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdSetsSearchFilter"></a>
@@ -2049,7 +1632,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsSortFilter]`
@@ -2108,10 +1691,24 @@ Classes
     `updated_time: Literal['asc', 'desc']`
     :   Last update time
 
+<a id="AdSetsStartswithCondition"></a>
+
+`AdSetsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdSetsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdSetsStringFilter"></a>
 
 `AdSetsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2194,7 +1791,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsAnyCondition"></a>
@@ -2257,10 +1854,24 @@ Classes
     `updated_time: Any`
     :   Last update time
 
+<a id="AdsArrayContainsCondition"></a>
+
+`AdsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdsContainsCondition"></a>
 
 `AdsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2283,6 +1894,20 @@ Classes
     ### Class variables
 
     `account_id: str`
+    :   The type of the None singleton.
+
+<a id="AdsEndswithCondition"></a>
+
+`AdsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdsEqCondition"></a>
@@ -2437,7 +2062,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsInsightsAnyCondition"></a>
@@ -2530,10 +2155,24 @@ Classes
     `spend: Any`
     :   Amount spent
 
+<a id="AdsInsightsArrayContainsCondition"></a>
+
+`AdsInsightsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdsInsightsContainsCondition"></a>
 
 `AdsInsightsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2542,6 +2181,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsInsightsEndswithCondition"></a>
+
+`AdsInsightsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdsInsightsEqCondition"></a>
@@ -2704,20 +2357,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdsInsightsLikeCondition"></a>
-
-`AdsInsightsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdsInsightsListParams"></a>
 
 `AdsInsightsListParams(*args, **kwargs)`
@@ -2814,7 +2453,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdsInsightsOrCondition"></a>
@@ -2836,7 +2475,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsInsightsSearchFilter"></a>
@@ -2918,7 +2557,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsSortFilter]`
@@ -2992,10 +2631,24 @@ Classes
     `spend: Literal['asc', 'desc']`
     :   Amount spent
 
+<a id="AdsInsightsStartswithCondition"></a>
+
+`AdsInsightsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInsightsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdsInsightsStringFilter"></a>
 
 `AdsInsightsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3072,20 +2725,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStringFilter`
-    :   The type of the None singleton.
-
-<a id="AdsLikeCondition"></a>
-
-`AdsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdsListParams"></a>
@@ -3172,7 +2811,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdsOrCondition"></a>
@@ -3194,7 +2833,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsSearchFilter"></a>
@@ -3246,7 +2885,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.AdsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.AdsSortFilter]`
@@ -3290,10 +2929,24 @@ Classes
     `updated_time: Literal['asc', 'desc']`
     :   Last update time
 
+<a id="AdsStartswithCondition"></a>
+
+`AdsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.AdsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdsStringFilter"></a>
 
 `AdsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3384,7 +3037,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -3459,10 +3112,24 @@ Classes
     `updated_time: Any`
     :   Last update time
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3485,6 +3152,20 @@ Classes
     ### Class variables
 
     `account_id: str`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -3646,20 +3327,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -3744,7 +3411,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -3766,7 +3433,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -3830,7 +3497,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsSortFilter]`
@@ -3886,10 +3553,24 @@ Classes
     `updated_time: Literal['asc', 'desc']`
     :   Last update time
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3983,7 +3664,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomConversionsAnyCondition"></a>
@@ -4046,10 +3727,24 @@ Classes
     `name: Any`
     :   Custom Conversion name
 
+<a id="CustomConversionsArrayContainsCondition"></a>
+
+`CustomConversionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomConversionsContainsCondition"></a>
 
 `CustomConversionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4058,6 +3753,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomConversionsEndswithCondition"></a>
+
+`CustomConversionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomConversionsEqCondition"></a>
@@ -4190,20 +3899,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomConversionsLikeCondition"></a>
-
-`CustomConversionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomConversionsListParams"></a>
 
 `CustomConversionsListParams(*args, **kwargs)`
@@ -4288,7 +3983,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomConversionsOrCondition"></a>
@@ -4310,7 +4005,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomConversionsSearchFilter"></a>
@@ -4362,7 +4057,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsSortFilter]`
@@ -4406,10 +4101,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Custom Conversion name
 
+<a id="CustomConversionsStartswithCondition"></a>
+
+`CustomConversionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.CustomConversionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomConversionsStringFilter"></a>
 
 `CustomConversionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4463,7 +4172,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ImagesAnyCondition"></a>
@@ -4532,10 +4241,24 @@ Classes
     `width: Any`
     :   Image width
 
+<a id="ImagesArrayContainsCondition"></a>
+
+`ImagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ImagesContainsCondition"></a>
 
 `ImagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4544,6 +4267,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ImagesEndswithCondition"></a>
+
+`ImagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStringFilter`
     :   The type of the None singleton.
 
 <a id="ImagesEqCondition"></a>
@@ -4682,20 +4419,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStringFilter`
     :   The type of the None singleton.
 
-<a id="ImagesLikeCondition"></a>
-
-`ImagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ImagesListParams"></a>
 
 `ImagesListParams(*args, **kwargs)`
@@ -4780,7 +4503,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ImagesOrCondition"></a>
@@ -4802,7 +4525,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ImagesSearchFilter"></a>
@@ -4860,7 +4583,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesSortFilter]`
@@ -4910,10 +4633,24 @@ Classes
     `width: Literal['asc', 'desc']`
     :   Image width
 
+<a id="ImagesStartswithCondition"></a>
+
+`ImagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.ImagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ImagesStringFilter"></a>
 
 `ImagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5036,7 +4773,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="VideosAnyCondition"></a>
@@ -5102,10 +4839,24 @@ Classes
     `views: Any`
     :   Number of views
 
+<a id="VideosArrayContainsCondition"></a>
+
+`VideosArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="VideosContainsCondition"></a>
 
 `VideosContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5114,6 +4865,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="VideosEndswithCondition"></a>
+
+`VideosEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStringFilter`
     :   The type of the None singleton.
 
 <a id="VideosEqCondition"></a>
@@ -5249,20 +5014,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStringFilter`
     :   The type of the None singleton.
 
-<a id="VideosLikeCondition"></a>
-
-`VideosLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStringFilter`
-    :   The type of the None singleton.
-
 <a id="VideosListParams"></a>
 
 `VideosListParams(*args, **kwargs)`
@@ -5347,7 +5098,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition`
+    `not: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition`
     :   The type of the None singleton.
 
 <a id="VideosOrCondition"></a>
@@ -5369,7 +5120,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="VideosSearchFilter"></a>
@@ -5424,7 +5175,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLikeCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNeqCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosGteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLtCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosLteCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosInCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStartswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosEndswithCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosFuzzyCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosKeywordCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosArrayContainsCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosNotCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAndCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosOrCondition | airbyte_agent_sdk.connectors.facebook_marketing.types.VideosAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.facebook_marketing.types.VideosSortFilter]`
@@ -5471,10 +5222,24 @@ Classes
     `views: Literal['asc', 'desc']`
     :   Number of views
 
+<a id="VideosStartswithCondition"></a>
+
+`VideosStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.facebook_marketing.types.VideosStringFilter`
+    :   The type of the None singleton.
+
 <a id="VideosStringFilter"></a>
 
 `VideosStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

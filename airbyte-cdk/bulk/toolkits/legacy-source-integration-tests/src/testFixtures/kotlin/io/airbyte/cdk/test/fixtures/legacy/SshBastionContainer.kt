@@ -21,7 +21,7 @@ class SshBastionContainer : AutoCloseable {
             val container: GenericContainer<*> =
                 GenericContainer<Nothing>(
                         ImageFromDockerfile("bastion-test")
-                            .withFileFromClasspath("Dockerfile", "bastion/Dockerfile")
+                            .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"),
                     )
                     .withExposedPorts(22)
             return container
@@ -61,7 +61,7 @@ class SshBastionContainer : AutoCloseable {
                     if (tunnelMethod == SshTunnel.TunnelMethod.SSH_KEY_AUTH)
                         container!!.execInContainer("cat", "var/bastion/id_rsa").stdout
                     else "",
-            )
+            ),
         )
     }
 
@@ -69,7 +69,7 @@ class SshBastionContainer : AutoCloseable {
     fun getTunnelConfig(
         tunnelMethod: SshTunnel.TunnelMethod,
         builderWithSchema: MutableMap<String, Any?>,
-        innerAddress: Boolean
+        innerAddress: Boolean,
     ): JsonNode? {
         builderWithSchema["tunnel_method"] = getTunnelMethod(tunnelMethod, innerAddress)
         return Jsons.jsonNode(builderWithSchema)
@@ -81,14 +81,14 @@ class SshBastionContainer : AutoCloseable {
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
-        schemas: MutableList<String>
+        schemas: MutableList<String>,
     ): MutableMap<String, Any?> {
         return getBasicDbConfigBuider(db, db.databaseName).also { it["schemas"] = schemas }
     }
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
-        schemaName: String
+        schemaName: String,
     ): MutableMap<String, Any?> {
         return mutableMapOf(
             "host" to Objects.requireNonNull(HostPortResolver.resolveHost(db)),
@@ -132,7 +132,7 @@ class SshBastionContainer : AutoCloseable {
         fun getInnerContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(
                 container.containerInfo.networkSettings.networks.entries.first().value.ipAddress,
-                container.exposedPorts.first()
+                container.exposedPorts.first(),
             )
         }
 

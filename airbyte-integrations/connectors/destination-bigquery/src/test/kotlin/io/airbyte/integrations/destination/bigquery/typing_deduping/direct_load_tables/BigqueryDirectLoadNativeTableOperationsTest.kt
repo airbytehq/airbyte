@@ -3,9 +3,12 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TimePartitioning
@@ -23,12 +26,14 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -45,7 +50,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         Assertions.assertEquals(StandardSQLTypeName.JSON, toDialectType(a))
         Assertions.assertEquals(
             StandardSQLTypeName.JSON,
-            toDialectType(UnionType(emptySet(), isLegacyUnion = false))
+            toDialectType(UnionType(emptySet(), isLegacyUnion = false)),
         )
 
         var u = UnionType(setOf(s), isLegacyUnion = true)
@@ -67,7 +72,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -86,14 +91,14 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     emptyList<Pair<String, StandardSQLTypeName>>(),
-                    alterTableReport.columnsToAdd
+                    alterTableReport.columnsToAdd,
                 )
             },
             { Assertions.assertEquals(emptyList<String>(), alterTableReport.columnsToRemove) },
             {
                 Assertions.assertEquals(
                     emptyList<ColumnChange<StandardSQLTypeName>>(),
-                    alterTableReport.columnsToChangeType
+                    alterTableReport.columnsToChangeType,
                 )
             },
             // NB: column names in AlterTableReport are all _after_ destination name transform
@@ -112,12 +117,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     linkedMapOf(
                         "a1" to FieldType(IntegerType, nullable = true),
                         "c1" to FieldType(IntegerType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2", "c1" to "c2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -126,9 +131,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 FieldList.of(
                     listOf(
                         Field.of("a2", StandardSQLTypeName.STRING),
-                        Field.of("b2", StandardSQLTypeName.INT64)
-                    )
-                )
+                        Field.of("b2", StandardSQLTypeName.INT64),
+                    ),
+                ),
             )
         val alterTableReport =
             BigqueryDirectLoadNativeTableOperations(
@@ -144,7 +149,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     listOf(ColumnAdd("c2", StandardSQLTypeName.INT64)),
-                    alterTableReport.columnsToAdd
+                    alterTableReport.columnsToAdd,
                 )
             },
             { Assertions.assertEquals(listOf("b2"), alterTableReport.columnsToRemove) },
@@ -155,7 +160,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                             name = "a2",
                             originalType = StandardSQLTypeName.STRING,
                             newType = StandardSQLTypeName.INT64,
-                        )
+                        ),
                     ),
                     alterTableReport.columnsToChangeType,
                 )
@@ -163,9 +168,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     emptyList<ColumnChange<StandardSQLTypeName>>(),
-                    alterTableReport.columnsToRetain
+                    alterTableReport.columnsToRetain,
                 )
-            }
+            },
         )
     }
 
@@ -183,7 +188,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         var columnNameMapping = ColumnNameMapping(mapOf("bar" to "foo"))
 
@@ -207,7 +212,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
 
@@ -217,7 +222,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 Clustering.newBuilder()
                     .setFields(listOf("a2", "b2", "c2", "_airbyte_extracted_at"))
-                    .build()
+                    .build(),
             )
         stream =
             DestinationStream(
@@ -225,7 +230,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 "bar",
                 Dedupe(
                     listOf(listOf("a1"), listOf("b1"), listOf("c1"), listOf("d1"), listOf("e1")),
-                    emptyList()
+                    emptyList(),
                 ),
                 ObjectType(
                     linkedMapOf(
@@ -234,12 +239,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                         "c1" to FieldType(IntegerType, nullable = true),
                         "d1" to FieldType(IntegerType, nullable = true),
                         "e1" to FieldType(IntegerType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         columnNameMapping =
             ColumnNameMapping(
@@ -249,7 +254,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     "c1" to "c2",
                     "d1" to "d2",
                     "e1" to "e2",
-                )
+                ),
             )
         Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
     }
@@ -263,7 +268,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         // incorrect field
         Mockito.`when`(existingTable.timePartitioning)
             .thenReturn(
-                TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build()
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build(),
             )
         Assertions.assertFalse(partitioningMatches(existingTable))
         // incorrect partitioning scheme
@@ -271,7 +276,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.YEAR)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
         Assertions.assertFalse(partitioningMatches(existingTable))
 
@@ -280,8 +285,29 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    @Test
+    fun testGetGenerationIdReturnZeroOnBigQueryException() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.query(Mockito.any(QueryJobConfiguration::class.java)))
+            .thenThrow(BigQueryException(400, "Unrecognized name: _airbyte_generation_id"))
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        val result = runBlocking {
+            operations.getGenerationId(TableName("test_namespace", "test_table"))
+        }
+        Assertions.assertEquals(0L, result)
     }
 }

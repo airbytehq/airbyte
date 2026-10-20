@@ -78,7 +78,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("table_filters")
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
-        "Optional filters to include only specific tables from the specified database."
+        "Optional filters to include only specific tables from the specified database.",
     )
     @JsonSchemaInject(json = """{"order":7}""")
     var tableFilters: List<TableFilter>? = null
@@ -170,7 +170,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaInject(json = """{"order":13}""")
     @JsonPropertyDescription(
-        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
     var max_db_connections: Int? = null
 
@@ -187,16 +187,25 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonProperty("treat_tinyint1_as_integer")
+    @JsonSchemaTitle("Treat TINYINT(1) Columns as Integers")
+    @JsonSchemaInject(json = """{"order":14}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans.",
+    )
+    var treatTinyint1AsInteger: Boolean? = false
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
+
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
@@ -209,7 +218,7 @@ class TableFilter {
     @JsonSchemaTitle("Database Name")
     @JsonPropertyDescription(
         "The name of the database to apply this filter to. " +
-            "Should match the database defined in the \"Database\" field above."
+            "Should match the database defined in the \"Database\" field above.",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     lateinit var databaseName: String
@@ -217,7 +226,7 @@ class TableFilter {
     @JsonProperty("table_name_patterns", required = true)
     @JsonSchemaTitle("Table Filter Patterns")
     @JsonPropertyDescription(
-        "List of table name patterns to include. Should be a SQL LIKE pattern."
+        "List of table name patterns to include. Should be a SQL LIKE pattern.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
     lateinit var patterns: List<String>
@@ -236,7 +245,8 @@ sealed interface EncryptionSpecification
 
 @JsonSchemaTitle("preferred")
 @JsonSchemaDescription(
-    "To allow unencrypted communication only when the source doesn't support encryption.",
+    "To allow unencrypted communication only when the source doesn't support encryption. " +
+        "On Airbyte Cloud this requires an SSH tunnel.",
 )
 data object EncryptionPreferred : EncryptionSpecification
 
@@ -248,7 +258,7 @@ data object EncryptionRequired : EncryptionSpecification
 
 @JsonSchemaTitle("verify_ca")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
@@ -287,7 +297,7 @@ class SslVerifyCertificate : EncryptionSpecification {
 
 @JsonSchemaTitle("verify_identity")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyIdentity : EncryptionSpecification {
@@ -343,7 +353,7 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
-    JsonSubTypes.Type(value = Cdc::class, name = "CDC")
+    JsonSubTypes.Type(value = Cdc::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -362,7 +372,7 @@ data object UserDefinedCursor : IncrementalConfigurationSpecification
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using MySQL's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/sources/mysql#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class Cdc : IncrementalConfigurationSpecification {
@@ -381,7 +391,7 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
-        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}""",
     )
     var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 

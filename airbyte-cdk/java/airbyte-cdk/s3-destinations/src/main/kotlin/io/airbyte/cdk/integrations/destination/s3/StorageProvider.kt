@@ -7,5 +7,5 @@ package io.airbyte.cdk.integrations.destination.s3
 /** Represents storage provider type */
 enum class StorageProvider {
     AWS_S3,
-    CF_R2
+    CF_R2,
 }

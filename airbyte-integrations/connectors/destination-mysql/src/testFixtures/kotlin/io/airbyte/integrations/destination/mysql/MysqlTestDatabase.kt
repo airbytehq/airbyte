@@ -26,7 +26,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
         ROOT_AND_SERVER_CERTIFICATES("withRootAndServerCertificates"),
         CLIENT_CERTITICATE("withClientCertificate"),
         NETWORK("withNetwork"),
-        CUSTOM_NAME("withCustomName")
+        CUSTOM_NAME("withCustomName"),
     }
 
     override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
@@ -57,7 +57,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
                     ),
                     "set global local_infile=true",
                     "REVOKE ALL PRIVILEGES, GRANT OPTION FROM $userName@'%'",
-                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'"
+                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'",
                 ),
             ),
         )

@@ -106,6 +106,10 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 | users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -113,6 +117,7 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 4.3.20 | 2026-10-09 | Mark `api_key` as `airbyte_secret` |
 | 4.3.1 | 2025-11-30 | Fix travel insurance products record selector path |
 | 4.3.0 | 2025-09-30 | Improve 404 err handling for units pricing, drop unneeded parent streams, rename units pricing parent streams |
 | 4.2.0 | 2025-07-20 | Improved reservations & reservations_v2 scroll index handling; add folios_transactions stream |

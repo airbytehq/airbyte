@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -27,8 +26,10 @@ import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -61,7 +62,6 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
 // Thanks, spotbugs.
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
 @ExtendWith(SystemStubsExtension::class)
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,
@@ -75,7 +75,7 @@ abstract class IntegrationTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val micronautProperties: Map<Property, String> = emptyMap(),
     val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -125,7 +125,8 @@ abstract class IntegrationTest(
                 Cleaners detected:
                   $destinationCleaner
                   ${cleanerSeen.get()}
-                """.trimIndent()
+                """
+                    .trimIndent(),
             )
         }
     }
@@ -141,8 +142,9 @@ abstract class IntegrationTest(
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it, schema) }
+        val expectedRecords: List<OutputRecord> = canonicalExpectedRecords.map {
+            recordMangler.mapRecord(it, schema)
+        }
         val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
@@ -221,6 +223,7 @@ abstract class IntegrationTest(
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
          * in a loop until it acks the state message, e.g.
+         *
          * ```
          * while (true) {
          *   val e = assertThrows<DestinationUncleanExitException> {
@@ -259,9 +262,17 @@ abstract class IntegrationTest(
 
     enum class UncleanSyncEndBehavior {
         /**
-         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         * End the sync normally (i.e. by signaling end-of-input on the data channel), but don't
+         * send a COMPLETE status message.
          */
         TERMINATE_WITH_NO_STREAM_STATUS,
+
+        /**
+         * Emit a STREAM_STATUS: INCOMPLETE trace for the stream, then signal end-of-input on the
+         * data channel. Simulates a source that failed mid-sync; in SOCKET mode this trace reaches
+         * the destination directly (the orchestrator does not filter it).
+         */
+        EMIT_STREAM_INCOMPLETE,
 
         // TODO no test actually uses this right now, should we just remove it?
         UNPARSEABLE_MESSAGE,
@@ -316,9 +327,9 @@ abstract class IntegrationTest(
                             AirbyteTraceMessage()
                                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
                                 .withAnalytics(
-                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar"),
                                 )
-                                .withEmittedAt(System.currentTimeMillis().toDouble())
+                                .withEmittedAt(System.currentTimeMillis().toDouble()),
                         )
 
                 while (true) {
@@ -338,6 +349,30 @@ abstract class IntegrationTest(
                 }
                 when (syncEndBehavior) {
                     UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                    UncleanSyncEndBehavior.EMIT_STREAM_INCOMPLETE -> {
+                        val incompleteTrace =
+                            AirbyteMessage()
+                                .withType(AirbyteMessage.Type.TRACE)
+                                .withTrace(
+                                    AirbyteTraceMessage()
+                                        .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                        .withEmittedAt(System.currentTimeMillis().toDouble())
+                                        .withStreamStatus(
+                                            AirbyteStreamStatusTraceMessage()
+                                                .withStreamDescriptor(
+                                                    StreamDescriptor()
+                                                        .withNamespace(stream.unmappedNamespace)
+                                                        .withName(stream.unmappedName),
+                                                )
+                                                .withStatus(AirbyteStreamStatus.INCOMPLETE),
+                                        ),
+                                )
+                        destination.sendMessage(
+                            InputMessageOther(incompleteTrace),
+                            broadcast = true,
+                        )
+                        destination.shutdown()
+                    }
                     UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
                         destination.sendMessage("{\"unparseable")
                         destination.shutdown()
@@ -372,7 +407,8 @@ abstract class IntegrationTest(
             DateTimeFormatter.ofPattern("yyyyMMdd")
 
         fun generateRandomNamespace(): String {
-            @Suppress("DEPRECATION") val randomSuffix = RandomStringUtils.randomAlphabetic(4)
+            @Suppress("DEPRECATION")
+            val randomSuffix = RandomStringUtils.randomAlphabetic(4).lowercase()
             val timestampString =
                 LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
                     .format(randomizedNamespaceDateFormatter)

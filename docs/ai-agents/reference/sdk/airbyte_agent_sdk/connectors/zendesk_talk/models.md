@@ -913,6 +913,7 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[GreetingsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[IvrsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[PhoneNumbersSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -3121,7 +3122,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `ZendeskTalkExecuteResultWithMeta[list[Address], AddressesListResultMeta](**data: Any)`

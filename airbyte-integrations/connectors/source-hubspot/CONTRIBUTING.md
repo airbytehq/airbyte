@@ -131,9 +131,9 @@ into character-bounded chunks.
 
 ---
 
-## 6. Per-Record API Enrichment (Campaigns and Marketing Emails)
+## 6. Per-Record API Enrichment (Campaigns, Marketing Emails and Flows)
 
-Two streams make **additional API calls during record transformation** to enrich each record:
+Three streams make **additional API calls during record transformation** to enrich each record:
 
 - **Campaigns:** HubSpot's campaign list endpoint (`/email/public/v1/campaigns`) only returns a
   summary with `id`, `appId`, `appName`, and `lastUpdatedTime`. To get full campaign details
@@ -143,8 +143,26 @@ Two streams make **additional API calls during record transformation** to enrich
 - **Marketing Emails:** HubSpot's v3 email API separates content data and performance statistics into
   different endpoints. For every email record, the connector makes a GET request to
   `/marketing/v3/emails/{emailId}/statistics` to fetch performance metrics.
+- **Flows:** HubSpot's Flows v4 list endpoint (`/automation/v4/flows`) returns only summaries
+  (`id`, `name`, `flowType`, `isEnabled`, `objectTypeId`, `revisionId`, `createdAt`, `updatedAt`,
+  `uuid`). The action graph and enrollment criteria require a GET to `/automation/v4/flows/{flowId}`
+  per record, performed by `HubspotFlowDetailsTransformation`.
 
 **Why this matters:** Unlike the association extractor (which batches per page), these enrichments make one extra HTTP call per individual record. A sync of 50,000 campaigns means 50,000 additional API calls on top of the pagination calls. This is the most API-intensive pattern in the connector and the most likely to hit rate limits on large accounts.
+
+Two details of the `flows` implementation are worth preserving if you touch it:
+
+- Its record selector sets `transform_before_filtering: false` so the client-side incremental filter
+  runs **before** the enrichment. Flipping this to `true` would silently issue a detail request for
+  every flow in the portal on every sync, not just the changed ones.
+- Unlike `AddFieldsFromEndpointTransformation`, a failed detail request logs a warning and emits the
+  summary record instead of failing the stream. HubSpot requires extra `*.sensitive.read` scopes for
+  flows referencing sensitive data, so a single restricted flow would otherwise break the sync.
+
+HubSpot also offers `POST /automation/v4/flows/batch/read`, which would collapse the per-record calls
+into one request per page. It is not used: the batch size limit is undocumented, it returns HTTP 207
+for partial failures (requiring separate partial-error handling), and flow counts are low enough
+(hundreds per portal) that the simpler per-record pattern is adequate.
 
 ---
 
@@ -207,3 +225,15 @@ two separate rate limit policies:
 The error handler uses dual backoff on 429 responses: first the `Retry-After` header, then exponential
 backoff as fallback. This dual approach is necessary because HubSpot does not always include the
 `Retry-After` header on 429 responses.
+
+## Incremental Stream Considerations
+
+The HubSpot API supports incremental data access via the CRM Search API with `lastmodifieddate` filtering and dedicated incremental endpoints. The connector uses Python custom components referenced from the manifest. The connector already supports incremental sync for most high-volume CRM streams (contacts, companies, deals, tickets, etc.).
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. The connector is mature with extensive incremental support already in place.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.

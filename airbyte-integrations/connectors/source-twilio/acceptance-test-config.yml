@@ -40,6 +40,12 @@ acceptance_tests:
             bypass_reason: "very volatile data"
           - name: "usage_records"
             bypass_reason: "very volatile data"
+          - name: "voice_pricing_countries"
+            bypass_reason: "pricing reference data is volatile and large"
+          - name: "messaging_pricing_countries"
+            bypass_reason: "pricing reference data is volatile and large"
+          - name: "phone_number_pricing_countries"
+            bypass_reason: "pricing reference data is volatile and large"
           - name: step
             bypass_reason: "No data for this stream currently"
           - name: executions

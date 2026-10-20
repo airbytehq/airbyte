@@ -69,6 +69,7 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[ListsSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[MetricsSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[ProfilesSearchData]
+    * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1325,7 +1326,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `KlaviyoExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta](**data: Any)`

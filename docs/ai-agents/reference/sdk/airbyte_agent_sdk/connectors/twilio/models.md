@@ -442,6 +442,7 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[RecordingsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[TranscriptionsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[UsageRecordsSearchData]
+    * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2320,7 +2321,7 @@ Classes
     `encryption_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `error_code: str | None`
+    `error_code: int | None`
     :   The type of the None singleton.
 
     `media_url: str | None`
@@ -2791,7 +2792,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `TwilioExecuteResultWithMeta[list[Account], AccountsListResultMeta](**data: Any)`

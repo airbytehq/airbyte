@@ -68,6 +68,7 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssuesSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -120,29 +121,6 @@ Classes
     * typing.Generic
 
 `AirbyteSearchResult[IssueFieldsSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="IssueFieldsSearchResult"></a>
-
-`IssueFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -213,29 +191,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="IssuesSearchResult"></a>
-
-`IssuesSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[ProjectsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -252,53 +207,7 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="ProjectsSearchResult"></a>
-
-`ProjectsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[UsersSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="UsersSearchResult"></a>
-
-`UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -2855,36 +2764,6 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   Details about any restrictions in the visibility of the worklog
 
-<a id="IssuesApiSearchResultMeta"></a>
-
-`IssuesApiSearchResultMeta(**data: Any)`
-:   Metadata for issues.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `is_last: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_page_token: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="IssuesList"></a>
 
 `IssuesList(**data: Any)`
@@ -3002,10 +2881,10 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
-<a id="JiraAuthConfig"></a>
+<a id="IssuesSearchResultMeta"></a>
 
-`JiraAuthConfig(**data: Any)`
-:   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
+`IssuesSearchResultMeta(**data: Any)`
+:   Metadata for issues.Action.SEARCH operation
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -3020,14 +2899,17 @@ Classes
 
     ### Class variables
 
+    `is_last: bool | None`
+    :   The type of the None singleton.
+
     `model_config`
     :   The type of the None singleton.
 
-    `password: str`
-    :   Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens
+    `next_page_token: str | None`
+    :   The type of the None singleton.
 
-    `username: str`
-    :   Your Atlassian account email address
+    `total: int | None`
+    :   The type of the None singleton.
 
 <a id="JiraCheckResult"></a>
 
@@ -3122,13 +3004,13 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[IssueComment], IssueCommentsListResultMeta]
-    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[Issue], IssuesApiSearchResultMeta]
-    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[Project], ProjectsApiSearchResultMeta]
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[Issue], IssuesSearchResultMeta]
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[Project], ProjectsSearchResultMeta]
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta[list[Worklog], IssueWorklogsListResultMeta]
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `JiraExecuteResultWithMeta[list[IssueComment], IssueCommentsListResultMeta](**data: Any)`
@@ -3176,7 +3058,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`JiraExecuteResultWithMeta[list[Issue], IssuesApiSearchResultMeta](**data: Any)`
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3200,9 +3084,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="IssuesApiSearchResult"></a>
-
-`IssuesApiSearchResult(**data: Any)`
+`JiraExecuteResultWithMeta[list[Issue], IssuesSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3221,7 +3103,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`JiraExecuteResultWithMeta[list[Project], ProjectsApiSearchResultMeta](**data: Any)`
+<a id="ProjectsSearchResult"></a>
+
+`ProjectsSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3245,9 +3129,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="ProjectsApiSearchResult"></a>
-
-`ProjectsApiSearchResult(**data: Any)`
+`JiraExecuteResultWithMeta[list[Project], ProjectsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3311,7 +3193,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`JiraExecuteResult[IssueFieldSearchResults](**data: Any)`
+<a id="IssueFieldsSearchResult"></a>
+
+`IssueFieldsSearchResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -3334,9 +3218,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="IssueFieldsApiSearchResult"></a>
-
-`IssueFieldsApiSearchResult(**data: Any)`
+`JiraExecuteResult[IssueFieldSearchResults](**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -3440,6 +3322,31 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
 `JiraExecuteResult[list[User]](**data: Any)`
 :   Response envelope with data only.
     
@@ -3483,17 +3390,10 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
+<a id="JiraJiraApiTokenAuthenticationAuthConfig"></a>
 
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="UsersApiSearchResult"></a>
-
-`UsersApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
+`JiraJiraApiTokenAuthenticationAuthConfig(**data: Any)`
+:   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -3504,9 +3404,78 @@ Classes
 
     ### Ancestors (in MRO)
 
-    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
     * pydantic.main.BaseModel
-    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `password: str`
+    :   Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens
+
+    `username: str`
+    :   Your Atlassian account email address
+
+<a id="JiraOAuthCredentials"></a>
+
+`JiraOAuthCredentials(**data: Any)`
+:   Jira OAuth App Credentials - Provide your own Jira OAuth app credentials to override the default Airbyte-managed ones.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   Your Jira OAuth app's client ID
+
+    `client_secret: str`
+    :   Your Jira OAuth app's client secret
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="JiraOauth20AuthenticationAuthConfig"></a>
+
+`JiraOauth20AuthenticationAuthConfig(**data: Any)`
+:   OAuth 2.0 Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `access_token: str | None`
+    :   Your Jira Cloud OAuth 2.0 access token
+
+    `client_id: str | None`
+    :   Your Jira OAuth App Client ID from the Atlassian Developer Console
+
+    `client_secret: str | None`
+    :   Your Jira OAuth App Client Secret from the Atlassian Developer Console
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `refresh_token: str`
+    :   Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope)
 
 <a id="Project"></a>
 
@@ -3871,33 +3840,6 @@ Classes
     `user_start_date: str | None`
     :   The type of the None singleton.
 
-<a id="ProjectsApiSearchResultMeta"></a>
-
-`ProjectsApiSearchResultMeta(**data: Any)`
-:   Metadata for projects.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_page: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="ProjectsList"></a>
 
 `ProjectsList(**data: Any)`
@@ -4062,6 +4004,33 @@ Classes
 
     `versions: list[typing.Any]`
     :   The versions defined in the project
+
+<a id="ProjectsSearchResultMeta"></a>
+
+`ProjectsSearchResultMeta(**data: Any)`
+:   Metadata for projects.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_page: str | None`
+    :   The type of the None singleton.
+
+    `total: int | None`
+    :   The type of the None singleton.
 
 <a id="User"></a>
 

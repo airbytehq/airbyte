@@ -88,6 +88,10 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The Railz connector should gracefully handle Railz API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -95,6 +99,8 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.2.13 | 2026-10-13 | [78922](https://github.com/airbytehq/airbyte/pull/78922) | Update dependencies |
+| 0.2.12 | 2026-10-07 | [88276](https://github.com/airbytehq/airbyte/pull/88276) | Fix all substreams failing with `StreamSlice object has no attribute 'businessName'` and incremental record filter dropping every record (`stream_interval['start_date']` -> `start_time`); honor `Retry-After` on 429 responses with up to 10 retries |
 | 0.2.11 | 2025-05-24 | [60560](https://github.com/airbytehq/airbyte/pull/60560) | Update dependencies |
 | 0.2.10 | 2025-05-10 | [60145](https://github.com/airbytehq/airbyte/pull/60145) | Update dependencies |
 | 0.2.9 | 2025-05-03 | [59502](https://github.com/airbytehq/airbyte/pull/59502) | Update dependencies |

@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 # Custom components for the Connector Builder
@@ -48,7 +48,7 @@ When enabled, Custom Components bring the full flexibility of the Low-Code CDK i
 Custom Components are currently considered **UNSAFE** and **EXPERIMENTAL**. Airbyte doesn't provide any sandboxing guarantees. This feature could execute arbitrary code in your Airbyte environment. Enable it at your own risk.
 :::
 
-Airbyte disables Custom Components by default due to their experimental nature and security implications. Administrators can enable this feature in Core and Self-Managed Enterprise deployments using one of the following methods:
+Airbyte disables Custom Components by default due to their experimental nature and security implications. Administrators can enable this feature in Core deployments using one of the following methods:
 
 ### Using abctl
 
@@ -61,7 +61,7 @@ If you deploy Airbyte with abctl, follow the steps below to update your values a
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
-    connectorBuilderServer:
+    manifestServer:
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
@@ -84,7 +84,7 @@ If you're deploying Airbyte using public Helm charts without abctl, follow the s
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
-    connectorBuilderServer:
+    manifestServer:
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"

@@ -35,6 +35,10 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 1. Generate an API Key as described [here](https://www.aha.io/api#authentication).
 2. Use the generated `API Key` in the Airbyte connection.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

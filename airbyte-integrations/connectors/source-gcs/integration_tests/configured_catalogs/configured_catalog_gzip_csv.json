@@ -1,0 +1,32 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_gzip_csv",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

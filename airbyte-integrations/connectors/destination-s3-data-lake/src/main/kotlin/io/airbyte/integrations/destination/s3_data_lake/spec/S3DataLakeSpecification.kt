@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -27,14 +28,14 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaTitle("AWS Access Key ID")
     @get:JsonPropertyDescription(
-        "The AWS Access Key ID with permissions for S3 and Glue operations."
+        "The AWS Access Key ID with permissions for S3 and Glue operations.",
     )
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "always_show": true, "order":0}""")
     override val accessKeyId: String? = null
 
     @get:JsonSchemaTitle("AWS Secret Access Key")
     @get:JsonPropertyDescription(
-        "The AWS Secret Access Key paired with the Access Key ID for AWS authentication."
+        "The AWS Secret Access Key paired with the Access Key ID for AWS authentication.",
     )
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "always_show": true, "order":1}""")
     override val secretAccessKey: String? = null
@@ -50,7 +51,7 @@ class S3DataLakeSpecification :
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
     @get:JsonSchemaDescription(
-        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3)."""
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3).""",
     )
     @get:JsonSchemaInject(
         json =
@@ -60,7 +61,7 @@ class S3DataLakeSpecification :
                     "always_show": true,
                     "order":5
                 }
-            """
+            """,
     )
     override val warehouseLocation: String = ""
 
@@ -69,6 +70,32 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
+    @get:JsonSchemaTitle("Flush Batch Size (MB)")
+    @get:JsonPropertyDescription(
+        "The approximate size in megabytes of each batch of data written to Iceberg. " +
+            "Smaller values flush more frequently, improving data freshness and reducing data loss on failure, " +
+            "but will create more small files that require compaction. " +
+            "Must be between 1 and 500 MB. Default is 200 MB.",
+    )
+    @get:JsonProperty("flush_batch_size_mb", required = false)
+    @get:JsonSchemaInject(
+        json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}""",
+    )
+    val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Normalize Column Names")
+    @get:JsonPropertyDescription(
+        "Lowercases column names and replaces non-alphanumeric characters with underscores " +
+            "before writing to Iceberg (e.g. \"Foo.Bar\" -> \"foo_bar\"). " +
+            "Enable this when downstream query engines cannot handle mixed-case or " +
+            "special-character column names. " +
+            "IMPORTANT: toggling this on existing synced streams requires clearing the " +
+            "stream data and running a full refresh.",
+    )
+    @get:JsonProperty("normalize_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val normalizeColumnNames: Boolean? = null
 }
 
 @Singleton
@@ -77,7 +104,7 @@ class S3DataLakeSpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP
+            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
 }

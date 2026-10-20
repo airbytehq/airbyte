@@ -79,6 +79,10 @@ The Outbrain Amplify connector should not run into Outbrain Amplify API limitati
    - conversion_time (default) - Count conversions by the time they occurred
    - click/view_time - Count conversions by the time of the click or view that led to them
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

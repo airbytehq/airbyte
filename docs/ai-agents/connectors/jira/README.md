@@ -10,11 +10,19 @@ The Jira connector is optimized to handle prompts like these.
 
 - Show me all open issues in my Jira instance
 - List recent issues created in the last 7 days
-- List all projects in my Jira instance
 - Show me details for the most recently updated issue
+- List all projects in my Jira instance
+- Show me the details of the first project
 - List all users in my Jira instance
+- Show me the details of the first user
+- Search for a user by name in my Jira instance
 - Show me comments on the most recent issue
+- Show me the details of the first comment on the most recent issue
 - Show me worklogs from the last 7 days
+- Show me the details of the first worklog on the most recent issue
+- List all issue fields in my Jira instance
+- Search for issue fields related to priority
+- What transitions are available for the most recent issue?
 - Assign a recent issue to a teammate
 - Unassign a recent issue
 - Create a new task called 'Sample task' in a project
@@ -25,13 +33,11 @@ The Jira connector is optimized to handle prompts like these.
 - Update my most recent comment
 - Delete a test issue
 - Remove my most recent comment
-- Transition \{issue_key\} to In Progress
-- Move \{issue_key\} to Done
-- What transitions are available for \{issue_key\}?
-- Log 2 hours of work on \{issue_key\}
-- Log 30 minutes on \{issue_key\} with a comment about what I did
-- Link \{issue_key_1\} as blocking \{issue_key_2\}
-- Create a 'relates to' link between \{issue_key_1\} and \{issue_key_2\}
+- Transition the most recent issue to In Progress
+- Move the most recent issue to Done
+- Log 2 hours of work on the most recent issue
+- Link the most recent issue as blocking the next most recent issue
+- Create a 'relates to' link between my two most recent issues
 - What issues are assigned to \{team_member\} this week?
 - Find all high priority bugs in our current sprint
 - Show me overdue issues across all projects
@@ -51,12 +57,12 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
-| Projects | [API Search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [API Search](./REFERENCE.md#issue-fields-api_search), [Context Store Search](./REFERENCE.md#issue-fields-context-store-search) |
-| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Context Store Search](./REFERENCE.md#issue-comments-context-store-search) |
-| Issue Worklogs | [Get](./REFERENCE.md#issue-worklogs-get), [List](./REFERENCE.md#issue-worklogs-list), [Create](./REFERENCE.md#issue-worklogs-create), [Context Store Search](./REFERENCE.md#issue-worklogs-context-store-search) |
+| Issues | [Search](./REFERENCE.md#issues-search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query) |
+| Projects | [Search](./REFERENCE.md#projects-search), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Search](./REFERENCE.md#users-search), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [Search](./REFERENCE.md#issue-fields-search), [Context Store Search](./REFERENCE.md#issue-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-fields-context-store-sql-query) |
+| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Context Store Search](./REFERENCE.md#issue-comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-comments-context-store-sql-query) |
+| Issue Worklogs | [Get](./REFERENCE.md#issue-worklogs-get), [List](./REFERENCE.md#issue-worklogs-list), [Create](./REFERENCE.md#issue-worklogs-create), [Context Store Search](./REFERENCE.md#issue-worklogs-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-worklogs-context-store-sql-query) |
 | Issues Assignee | [Update](./REFERENCE.md#issues-assignee-update) |
 | Issue Transitions | [List](./REFERENCE.md#issue-transitions-list), [Create](./REFERENCE.md#issue-transitions-create) |
 | Issue Links | [Create](./REFERENCE.md#issue-links-create) |
@@ -66,17 +72,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Jira API reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).
 
-## SDK installation
+## Interfaces
+
+Use the Jira connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "search"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -86,6 +141,169 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `JiraConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Jira Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Jira Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `JiraConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@JiraConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="jira_inspect",
+    docs_tool="jira_read_docs",
+)
+async def jira_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@JiraConnector.agent_tool(framework="pydantic_ai")
+async def jira_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@JiraConnector.agent_tool(framework="pydantic_ai")
+async def jira_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+
+connector = connect("jira", workspace_name="<your_workspace_name>")
+
+@JiraConnector.agent_tool(
+    inspect_tool="jira_inspect",
+    docs_tool="jira_read_docs",
+)
+async def jira_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@JiraConnector.agent_tool()
+async def jira_inspect():
+    return await connector.inspect_connector()
+
+@JiraConnector.agent_tool()
+async def jira_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (jira_inspect, jira_read_docs, jira_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `JiraConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `JiraConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -160,12 +378,15 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.jira import JiraConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -179,18 +400,15 @@ connector = JiraConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@JiraConnector.tool_utils
-async def jira_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -203,18 +421,21 @@ connector = JiraConnector(
     )
 )
 
-@tool
-@JiraConnector.tool_utils
-async def jira_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Jira connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -228,21 +449,16 @@ connector = JiraConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@JiraConnector.tool_utils(framework="openai_agents")
-async def jira_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Jira connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Jira Assistant", tools=[jira_execute])
+agent = Agent(name="Jira Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.jira import JiraConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -258,30 +474,227 @@ connector = JiraConnector(
 
 mcp = FastMCP("Jira Agent")
 
-@mcp.tool
-@JiraConnector.tool_utils
-async def jira_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Jira connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
 
-### Open source
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Jira Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+mcp = FastMCP("Jira Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `JiraConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@JiraConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="jira_inspect",
+    docs_tool="jira_read_docs",
+)
+async def jira_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@JiraConnector.agent_tool(framework="pydantic_ai")
+async def jira_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@JiraConnector.agent_tool(framework="pydantic_ai")
+async def jira_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
+        username="<Your Atlassian account email address>",
+        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
+)
+
+@JiraConnector.agent_tool(
+    inspect_tool="jira_inspect",
+    docs_tool="jira_read_docs",
+)
+async def jira_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@JiraConnector.agent_tool()
+async def jira_inspect():
+    return await connector.inspect_connector()
+
+@JiraConnector.agent_tool()
+async def jira_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (jira_inspect, jira_read_docs, jira_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `JiraConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `JiraConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
-    )
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -297,13 +710,14 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
-    )
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
 )
 
 @tool
@@ -320,13 +734,14 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
-    )
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -346,13 +761,14 @@ agent = Agent(name="Jira Assistant", tools=[jira_execute])
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
-    )
+    ),
+    subdomain="<Your Jira Cloud subdomain>"
 )
 
 mcp = FastMCP("Jira Agent")
@@ -364,11 +780,16 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
+
 ## Version information
 
-**Connector version:** 1.1.9
+**Connector version:** 1.2.0

@@ -26,6 +26,8 @@ import jakarta.inject.Singleton
 
 internal const val COUNT_TOTAL_ALIAS = "TOTAL"
 internal const val NOT_NULL = "NOT NULL"
+internal val NUMERIC_SOURCE_TYPES =
+    setOf(SnowflakeDataType.FLOAT.typeName, SnowflakeDataType.NUMBER.typeName)
 
 // Snowflake-compatible (uppercase) versions of the Airbyte meta column names
 internal val SNOWFLAKE_AB_RAW_ID = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
@@ -52,7 +54,8 @@ class SnowflakeDirectLoadSqlGenerator(
     private val columnManager: SnowflakeColumnManager,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)}"
+            .andLog()
     }
 
     fun createNamespace(namespace: String): String {
@@ -62,37 +65,36 @@ class SnowflakeDirectLoadSqlGenerator(
     fun createTable(
         tableName: TableName,
         tableSchema: StreamTableSchema,
-        replace: Boolean
+        replace: Boolean,
     ): String {
         val finalSchema = tableSchema.columnSchema.finalSchema
         val metaColumns = columnManager.getMetaColumns()
 
         // Build column declarations from the meta columns and user schema
-        val columnDeclarations =
-            buildList {
-                    // Add Airbyte meta columns from the column manager
-                    metaColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${columnName.quote()} ${columnType.type}$nullability")
-                    }
+        val columnDeclarations = buildList {
+            // Add Airbyte meta columns from the column manager
+            metaColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${columnName.quote()} ${columnType.type}$nullability")
+            }
 
-                    // Add user columns from the munged schema
-                    finalSchema.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${columnName.quote()} ${columnType.type}$nullability")
-                    }
-                }
-                .joinToString(",\n    ")
+            // Add user columns from the munged schema
+            finalSchema.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${columnName.quote()} ${columnType.type}$nullability")
+            }
+        }
+            .joinToString(",\n    ")
 
-        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val createTableStatement =
             """
-            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |$createPrefix ${fullyQualifiedName(tableName)} (
             |    $columnDeclarations
             |)
-            """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
+            """
+                .trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
 
         return createTableStatement.andLog()
     }
@@ -103,7 +105,7 @@ class SnowflakeDirectLoadSqlGenerator(
     fun copyTable(
         columnNames: Set<String>,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): String {
         val columnList = columnNames.joinToString(", ") { it.quote() }
 
@@ -123,7 +125,7 @@ class SnowflakeDirectLoadSqlGenerator(
     fun upsertTable(
         tableSchema: StreamTableSchema,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): String {
         val finalSchema = tableSchema.columnSchema.finalSchema
 
@@ -171,7 +173,8 @@ class SnowflakeDirectLoadSqlGenerator(
                   OR ($targetTableCursor IS NULL AND $newRecordCursor IS NULL AND target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT")
                   OR ($targetTableCursor IS NULL AND $newRecordCursor IS $NOT_NULL)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
         } else {
             // No cursor - use extraction timestamp only
             cursorComparison =
@@ -220,7 +223,8 @@ class SnowflakeDirectLoadSqlGenerator(
             |) VALUES (
             |  $newRecordColumnList
             |)
-        """.trimMargin()
+        """
+                    .trimMargin()
             } else {
                 """
             |MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
@@ -235,7 +239,8 @@ class SnowflakeDirectLoadSqlGenerator(
             |) VALUES (
             |  $newRecordColumnList
             |)
-        """.trimMargin()
+        """
+                    .trimMargin()
             }
 
         return mergeStatement.andLog()
@@ -247,7 +252,7 @@ class SnowflakeDirectLoadSqlGenerator(
      */
     private fun selectDedupedRecords(
         tableSchema: StreamTableSchema,
-        sourceTableName: TableName
+        sourceTableName: TableName,
     ): String {
         val allColumns = buildList {
             add(SNOWFLAKE_AB_RAW_ID)
@@ -332,7 +337,7 @@ class SnowflakeDirectLoadSqlGenerator(
     fun copyFromStage(
         tableName: TableName,
         filename: String,
-        columnNames: List<String>? = null
+        columnNames: List<String>? = null,
     ): String {
         val stageName = fullyQualifiedStageName(tableName, true)
         val columnList =
@@ -347,7 +352,7 @@ class SnowflakeDirectLoadSqlGenerator(
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            |    TRIM_SPACE = TRUE
+            |    TRIM_SPACE = ${config.trimSpace.toString().uppercase()}
             |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             |    REPLACE_INVALID_CHARACTERS = TRUE
             |    ESCAPE = NONE
@@ -361,13 +366,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
-            fullyQualifiedName(
-                targetTableName,
-            )
-        }
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            fullyQualifiedName(sourceTableName)
+        } COPY GRANTS
         """
             .trimIndent()
             .andLog()
@@ -393,10 +396,25 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String =
         """DESCRIBE TABLE ${fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
 
+    fun addMetaColumns(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): Set<String> {
+        val prettyTableName = fullyQualifiedName(tableName)
+        return columns
+            .map { (name, columnType) ->
+                // Intentionally nullable (no NOT NULL): preexisting records have no value for
+                // these columns, and we don't backfill (matching the pre-4.0
+                // SnowflakeAbMetaAndGenIdMigration and the alterTable() policy below).
+                "ALTER TABLE $prettyTableName ADD COLUMN IF NOT EXISTS ${name.quote()} ${columnType.type};"
+                    .andLog()
+            }
+            .toSet()
+    }
+
     fun alterTable(
         tableName: TableName,
         addedColumns: Map<String, ColumnType>,
-        deletedColumns: Map<String, ColumnType>,
         modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
@@ -407,11 +425,9 @@ class SnowflakeDirectLoadSqlGenerator(
                 // We're adding a new column, and we don't know what constitutes a reasonable
                 // default value for preexisting records.
                 // So we add the column as nullable.
-                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog(),
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};"
+                    .andLog(),
             )
-        }
-        deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
         modifiedColumns.forEach { (name, typeChange) ->
             if (typeChange.originalType.type != typeChange.newType.type) {
@@ -421,23 +437,39 @@ class SnowflakeDirectLoadSqlGenerator(
                 val tempColumn = "${name}_${uuidGenerator.v4()}"
                 clauses.add(
                     // As above: we add the column as nullable.
-                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};"
+                        .andLog(),
                 )
+                val castExpression =
+                    // ABS() errors on non-numeric columns, so only guard numeric sources.
+                    if (
+                        typeChange.originalType.type in NUMERIC_SOURCE_TYPES &&
+                            typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName
+                    ) {
+                        // Nullify values over 29 digits that would abort CAST.
+                        // Snowflake orders NaN above all values, so this also catches NaN and
+                        // infinity.
+                        "IFF(ABS(${name.quote()}) >= 1e29, NULL, CAST(${name.quote()} AS ${typeChange.newType.type}))"
+                    } else {
+                        "CAST(${name.quote()} AS ${typeChange.newType.type})"
+                    }
                 clauses.add(
-                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog(),
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = $castExpression;".andLog(),
                 )
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
                     """
                     ALTER TABLE $prettyTableName
                     RENAME COLUMN "$name" TO "$backupColumn";
-                    """.trimIndent(),
+                    """
+                        .trimIndent(),
                 )
                 clauses.add(
                     """
                     ALTER TABLE $prettyTableName
                     RENAME COLUMN "$tempColumn" TO "$name";
-                    """.trimIndent(),
+                    """
+                        .trimIndent(),
                 )
                 clauses.add(
                     "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog(),

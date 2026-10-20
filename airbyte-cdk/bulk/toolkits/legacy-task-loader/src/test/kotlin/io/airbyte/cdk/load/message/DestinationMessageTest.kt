@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -46,7 +45,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
@@ -58,7 +56,7 @@ internal class DestinationMessageTest {
     private fun factory(
         isFileTransferEnabled: Boolean,
         requireCheckpointKey: Boolean = false,
-        namespaceMapper: NamespaceMapper = NamespaceMapper()
+        namespaceMapper: NamespaceMapper = NamespaceMapper(),
     ) =
         DestinationMessageFactory(
             DestinationCatalog(
@@ -71,9 +69,9 @@ internal class DestinationMessageTest {
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
-                        namespaceMapper = namespaceMapper
-                    )
-                )
+                        namespaceMapper = namespaceMapper,
+                    ),
+                ),
             ),
             isFileTransferEnabled,
             requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
@@ -95,36 +93,28 @@ internal class DestinationMessageTest {
             // as `Int?`.
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
             serialized.deserializeToClass(AirbyteMessage::class.java),
-            serialized.length.toLong()
+            serialized.length.toLong(),
         )
     }
 
     @Test
-    fun testThrowOnIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
+    fun testIgnoreIncompleteStatus() {
+        // INCOMPLETE must not enter the pipeline — drop it at deserialization time,
+        // matching what the orchestrator already does in STDIO mode. The source will
+        // exit non-zero and the orchestrator will shut down the destination.
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
+        }
+        assertEquals(Ignored, converted)
     }
 
     @Test
-    fun testThrowOnFileIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
+    fun testIgnoreIncompleteStatusFileTransfer() {
+        // Same behavior for file transfer mode.
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
+        }
+        assertEquals(Ignored, converted)
     }
 
     @ParameterizedTest
@@ -154,11 +144,11 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
@@ -173,7 +163,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -198,7 +188,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
@@ -210,7 +200,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -225,20 +215,21 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
         val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
@@ -246,7 +237,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -272,15 +263,16 @@ internal class DestinationMessageTest {
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
         val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
@@ -288,7 +280,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -303,11 +295,11 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
@@ -338,7 +330,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
+                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234),
                 )
 
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
@@ -366,9 +358,9 @@ internal class DestinationMessageTest {
                                 // field, so it's not round-trippable
                                 .withStreamDescriptor(descriptor.asProtocolObject())
                                 .withStatus(
-                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
-                                )
-                        )
+                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
+                                ),
+                        ),
                 )
 
         @JvmStatic
@@ -389,15 +381,16 @@ internal class DestinationMessageTest {
                                                     .withField("foo")
                                                     .withReason(
                                                         AirbyteRecordMessageMetaChange.Reason
-                                                            .DESTINATION_FIELD_SIZE_LIMITATION
+                                                            .DESTINATION_FIELD_SIZE_LIMITATION,
                                                     )
                                                     .withChange(
-                                                        AirbyteRecordMessageMetaChange.Change.NULLED
-                                                    )
-                                            )
-                                        )
+                                                        AirbyteRecordMessageMetaChange.Change
+                                                            .NULLED,
+                                                    ),
+                                            ),
+                                        ),
                                 )
-                                .withData(blob1)
+                                .withData(blob1),
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -413,9 +406,9 @@ internal class DestinationMessageTest {
                                         .withStreamDescriptor(descriptor.asProtocolObject())
                                         .withStatus(
                                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
+                                                .COMPLETE,
+                                        ),
+                                ),
                         ),
                 )
                 .map { Arguments.of(it) }
@@ -439,7 +432,7 @@ internal class DestinationMessageTest {
                                 .withStream("name")
                                 .withNamespace("namespace")
                                 .withEmittedAt(1234)
-                                .withAdditionalProperty("file", file)
+                                .withAdditionalProperty("file", file),
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -455,9 +448,9 @@ internal class DestinationMessageTest {
                                         .withStreamDescriptor(descriptor.asProtocolObject())
                                         .withStatus(
                                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
+                                                .COMPLETE,
+                                        ),
+                                ),
                         ),
                 )
                 .map { Arguments.of(it) }
@@ -473,9 +466,10 @@ internal class DestinationMessageTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(descriptor.asProtocolObject())
+                            AirbyteStreamState()
+                                .withStreamDescriptor(descriptor.asProtocolObject()),
                         )
-                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0)),
                 )
 
         assertDoesNotThrow { convert(factory(false), inputMessage) as StreamCheckpoint }
@@ -485,7 +479,7 @@ internal class DestinationMessageTest {
     @CsvSource(
         "/files/test/1.pdf, /assets/test/1.pdf, 30",
         "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
+        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999",
     )
     fun `a file reference can be parsed from a protocol message`(
         stagingFileUrl: String,
@@ -507,7 +501,7 @@ internal class DestinationMessageTest {
     @CsvSource(
         "/files/test/1.pdf, /assets/test/1.pdf, 30",
         "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
+        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999",
     )
     fun `a destination record raw is initialized with a file reference if present on the protocol msg`(
         stagingFileUrl: String,
@@ -532,9 +526,10 @@ internal class DestinationMessageTest {
                 airbyteRawId = uuidGenerator.v7(),
             )
 
-        assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
-        assertEquals(sourceFileRelativePath, internalRecord.fileReference!!.sourceFileRelativePath)
-        assertEquals(fileSizeBytes, internalRecord.fileReference!!.fileSizeBytes)
+        val fileReference = internalRecord.fileReference!!
+        assertEquals(stagingFileUrl, fileReference.stagingFileUrl)
+        assertEquals(sourceFileRelativePath, fileReference.sourceFileRelativePath)
+        assertEquals(fileSizeBytes, fileReference.fileSizeBytes)
     }
 
     @Test
@@ -566,9 +561,9 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
-                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0)),
                 )
 
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -596,14 +591,14 @@ internal class DestinationMessageTest {
                                             .withField("foo")
                                             .withReason(
                                                 AirbyteRecordMessageMetaChange.Reason
-                                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                                                    .DESTINATION_FIELD_SIZE_LIMITATION,
                                             )
                                             .withChange(
-                                                AirbyteRecordMessageMetaChange.Change.NULLED
-                                            )
-                                    )
-                                )
-                        )
+                                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            ),
+                                    ),
+                                ),
+                        ),
                 )
 
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -627,10 +622,10 @@ internal class DestinationMessageTest {
                         properties =
                             linkedMapOf(
                                 "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true)
-                            )
+                                "name" to FieldType(StringType, nullable = true),
+                            ),
                     ),
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
@@ -652,7 +647,7 @@ internal class DestinationMessageTest {
                         .addData(AirbyteValueProtobuf.newBuilder().setInteger(1))
                         .addData(AirbyteValueProtobuf.newBuilder().setString("test"))
                         .setPartitionId("checkpoint_id")
-                        .build()
+                        .build(),
                 )
                 .build()
 
@@ -668,7 +663,7 @@ internal class DestinationMessageTest {
             destinationRecord
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
-                .emittedAtMs
+                .emittedAtMs,
         )
         assertEquals(
             1,
@@ -676,7 +671,7 @@ internal class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
                 .declaredFields["id"]
-                ?.let { (it.abValue as IntegerValue).value.toInt() }
+                ?.let { (it.abValue as IntegerValue).value.toInt() },
         )
         assertEquals(
             "test",
@@ -684,7 +679,7 @@ internal class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
                 .declaredFields["name"]
-                ?.let { (it.abValue as StringValue).value }
+                ?.let { (it.abValue as StringValue).value },
         )
     }
 
@@ -702,13 +697,13 @@ internal class DestinationMessageTest {
                                 .withStream(
                                     AirbyteStreamState()
                                         .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStreamState(blob1)
+                                        .withStreamState(blob1),
                                 )
                                 .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                                 .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                                .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                                .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                         )
-                        .serializeToString()
+                        .serializeToString(),
                 )
                 .build()
 
@@ -750,7 +745,7 @@ internal class DestinationMessageTest {
                                             .withStreamDescriptor(
                                                 StreamDescriptor()
                                                     .withNamespace("potato")
-                                                    .withName("tomato")
+                                                    .withName("tomato"),
                                             )
                                             .withStreamState(blob2),
                                     ),
@@ -758,7 +753,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
@@ -770,7 +765,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 }

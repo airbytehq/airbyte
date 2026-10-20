@@ -39,6 +39,49 @@ If you encounter this error, you have several options to resolve it:
 
 For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
 
+## Update Capture Mode: Lookup vs Post Image
+
+When using CDC (Incremental sync mode), the **Update Capture Mode** setting determines how Airbyte retrieves the full
+document content for update events. The default mode is **Lookup**, but Lookup and Post Image have important behavioral differences:
+
+### **Lookup** (default)
+
+Lookup fetches the document’s latest available state when the update event is processed.
+
+If a document is updated multiple times in rapid succession, or if multiple updates happen between syncs, Airbyte may
+capture the newest available version instead of each intermediate state. When this happens, multiple update events can
+show the same final version of the document, and **the intermediate full-document states are not captured.**
+
+#### Use Lookup when
+
+- Your MongoDB version is earlier than 6.0.
+- You only need the latest version of each document and do not need to capture every intermediate change.
+- Your documents are very large and you want to reduce the size of change stream events.
+
+### Post Image (requires MongoDB 6.0+)
+
+Uses MongoDB's built-in [change stream post-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images), which capture the document state immediately after each
+individual change. This is useful when you need the exact document state after every update, rather than the latest
+available version that **Lookup** may return.
+
+#### When to use Post Image
+
+- If you need accurate per-update document states.
+- If your MongoDB version is `6.0` or later
+
+#### Requirements for Post Image mode
+
+- MongoDB 6.0+
+- Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). If this configuration is not enabled, Airbyte may not be able to retrieve the expected document state for update events.
+
+:::warning
+
+Post Image can increase the size of change stream events because the full document is included in the event. For very
+large documents, change stream events may exceed MongoDB’s 16 MiB BSON limit and fail with BSONObjectTooLarge errors.
+This risk can also apply to Lookup when the full document and change event metadata are large.
+
+:::
+
 ### Supported MongoDB Clusters
 
 - Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
