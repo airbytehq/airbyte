@@ -60,7 +60,7 @@ class Enums {
 
         inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertListTo(
             ies: List<T1>,
-            oe: Class<T2>
+            oe: Class<T2>,
         ): List<T2?> {
             return ies.map { convertTo(it, oe) }
         }

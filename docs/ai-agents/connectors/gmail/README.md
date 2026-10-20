@@ -800,4 +800,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.2.0
+**Connector version:** 0.2.1

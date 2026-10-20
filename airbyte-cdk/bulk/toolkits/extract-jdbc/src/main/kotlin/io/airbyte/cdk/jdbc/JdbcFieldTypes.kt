@@ -97,7 +97,7 @@ abstract class SymmetricJdbcFieldType<T>(
         jdbcAccessor,
         jsonCodec,
         jsonCodec,
-        jdbcAccessor
+        jdbcAccessor,
     )
 
 data object BooleanFieldType :

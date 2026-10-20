@@ -77,8 +77,9 @@ class OAuthCredentials(BaseModel):
     access_token: Optional[str] = Field(
         title="Access Token",
         description="The value of the generated access token. "
-        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
-        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        "We recommend a Meta system user access token: in Meta Business Settings, go to <b>Users</b> > <b>System users</b>, "
+        "assign your ad account(s) to the system user, then click <b>Generate new token</b> for your app and select the "
+        "<b>ads_read</b>, <b>ads_management</b>, and <b>business_management</b> permissions. "
         'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
         airbyte_secret=True,
     )
@@ -93,8 +94,9 @@ class ServiceAccountCredentials(BaseModel):
     access_token: str = Field(
         title="Access Token",
         description="The value of the generated access token. "
-        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
-        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        "We recommend a Meta system user access token: in Meta Business Settings, go to <b>Users</b> > <b>System users</b>, "
+        "assign your ad account(s) to the system user, then click <b>Generate new token</b> for your app and select the "
+        "<b>ads_read</b>, <b>ads_management</b>, and <b>business_management</b> permissions. "
         'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
         airbyte_secret=True,
     )
@@ -259,8 +261,9 @@ class ConnectorConfig(BaseConfig):
         order=1,
         description=(
             "The value of the generated access token. "
-            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
-            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+            "We recommend a Meta system user access token: in Meta Business Settings, go to <b>Users</b> > <b>System users</b>, "
+            "assign your ad account(s) to the system user, then click <b>Generate new token</b> for your app and select the "
+            "<b>ads_read</b>, <b>ads_management</b>, and <b>business_management</b> permissions. "
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
@@ -278,7 +281,7 @@ class ConnectorConfig(BaseConfig):
         order=2,
         description=(
             "The date from which you'd like to replicate data for all incremental streams, "
-            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams."
+            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 37 months for insight streams."
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],

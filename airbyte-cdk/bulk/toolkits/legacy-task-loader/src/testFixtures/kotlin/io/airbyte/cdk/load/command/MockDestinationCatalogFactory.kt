@@ -36,7 +36,7 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val stream2 =
             DestinationStream(
@@ -54,7 +54,7 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
     }
 

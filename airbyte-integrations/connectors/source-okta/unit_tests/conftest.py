@@ -2,7 +2,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import datetime, timezone
+
 from pytest import fixture
 
 
@@ -540,4 +541,4 @@ def error_failed_to_authorize_with_provided_credentials():
 
 @fixture
 def start_date():
-    return pendulum.parse("2021-03-21T20:49:13Z")
+    return datetime(2021, 3, 21, 20, 49, 13, tzinfo=timezone.utc)
