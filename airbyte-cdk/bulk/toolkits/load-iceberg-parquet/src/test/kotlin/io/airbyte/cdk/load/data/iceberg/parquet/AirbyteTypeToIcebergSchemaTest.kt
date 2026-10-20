@@ -23,7 +23,7 @@ class AirbyteTypeToIcebergSchemaTest {
                         Meta.COLUMN_NAME_AB_META to
                             FieldType(Meta.AirbyteMetaFields.META.type, nullable = false),
                         "id" to FieldType(StringType, nullable = false),
-                    )
+                    ),
                 )
                 .toIcebergSchema(emptyList())
 
@@ -48,7 +48,7 @@ class AirbyteTypeToIcebergSchemaTest {
             converter
                 .convert(
                     ArrayType(FieldType(StringType, nullable = false)),
-                    stringifyObjects = false
+                    stringifyObjects = false,
                 )
                 .asListType()
 
@@ -67,9 +67,9 @@ class AirbyteTypeToIcebergSchemaTest {
                                     ObjectType(
                                         linkedMapOf(
                                             "value" to FieldType(StringType, nullable = false),
-                                        )
+                                        ),
                                     ),
-                                    nullable = false
+                                    nullable = false,
                                 ),
                             "nested_array" to
                                 FieldType(
@@ -79,17 +79,17 @@ class AirbyteTypeToIcebergSchemaTest {
                                                 linkedMapOf(
                                                     "nested_value" to
                                                         FieldType(StringType, nullable = false),
-                                                )
+                                                ),
                                             ),
-                                            nullable = false
-                                        )
+                                            nullable = false,
+                                        ),
                                     ),
-                                    nullable = false
+                                    nullable = false,
                                 ),
-                        )
+                        ),
                     ),
-                    nullable = false
-                )
+                    nullable = false,
+                ),
             )
 
         val outerList = converter.convert(arrayType, stringifyObjects = false).asListType()

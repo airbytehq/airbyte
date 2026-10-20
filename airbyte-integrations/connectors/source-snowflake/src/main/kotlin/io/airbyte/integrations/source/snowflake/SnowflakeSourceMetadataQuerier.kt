@@ -50,7 +50,7 @@ private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
 /**
  * SQLSTATE classes:
  * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session
- * variable.
+ *    variable.
  * 2. 42501: insufficient privileges to access the object or column.
  * 3. 02000: object does not exist or is not visible to the current user.
  */
@@ -80,8 +80,9 @@ class SnowflakeSourceMetadataQuerier(
         }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
         log.info { "Querying column names for catalog discovery." }
         try {
@@ -282,8 +283,9 @@ class SnowflakeSourceMetadataQuerier(
 
     fun findTableName(
         streamID: StreamIdentifier,
-    ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+    ): TableName? = memoizedTableNames.find {
+        it.name == streamID.name && it.schema == streamID.namespace
+    }
 
     val memoizedTableNames: List<TableName> by lazy {
         try {
@@ -319,8 +321,9 @@ class SnowflakeSourceMetadataQuerier(
     }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableMapOf<TableName, MutableList<PrimaryKeyRow>>()
         log.info { "Querying primary keys for catalog discovery." }
         try {
@@ -393,7 +396,7 @@ class SnowflakeSourceMetadataQuerier(
                 CloudHostCheck.validateHostSyntax(
                     config.realHost,
                     featureFlags,
-                    HOST_SYNTAX_MESSAGE
+                    HOST_SYNTAX_MESSAGE,
                 )
                 val jdbcConnectionFactory = JdbcConnectionFactory(config)
                 val base =

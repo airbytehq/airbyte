@@ -30,6 +30,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-20 | [89269](https://github.com/airbytehq/airbyte/pull/89269) | Update dependencies |
 | 0.0.67 | 2026-10-13 | [88676](https://github.com/airbytehq/airbyte/pull/88676) | Update dependencies |
 | 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88272) | Add optional Hugging Face API token, honor rate-limit headers with longer 429 backoff, and surface clear 401/404 errors |
 | 0.0.65 | 2026-10-06 | [87904](https://github.com/airbytehq/airbyte/pull/87904) | Update dependencies |

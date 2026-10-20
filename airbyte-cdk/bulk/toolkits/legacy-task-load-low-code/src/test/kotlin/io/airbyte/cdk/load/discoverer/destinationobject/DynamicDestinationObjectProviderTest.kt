@@ -33,7 +33,7 @@ class DynamicDestinationObjectProviderTest {
         every { retriever.getAll() } returns
             listOf(
                 Jsons.objectNode().put("name", "objectname1"),
-                Jsons.objectNode().put("name", "objectname2")
+                Jsons.objectNode().put("name", "objectname2"),
             )
         val objects = provider.get()
         assertEquals(listOf("objectname1", "objectname2"), objects.map { it.name })

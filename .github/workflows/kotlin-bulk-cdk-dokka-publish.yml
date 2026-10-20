@@ -72,14 +72,14 @@ jobs:
           java-version: "21"
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         with:
           gradle-version: wrapper
 
       - name: Generate Dokka Documentation
         run: |
           echo "📚 Generating Dokka documentation for Kotlin Bulk CDK..."
-          ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon
+          ./gradlew :airbyte-cdk:bulk:dokkaGenerate --no-daemon
 
           echo "✅ Documentation generated successfully"
           ls -la airbyte-cdk/bulk/build/dokka/htmlMultiModule/

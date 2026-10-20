@@ -48,7 +48,7 @@ class BigQuerySourceReadTest {
                         configured(catalog.stream("no_rows"), SyncMode.FULL_REFRESH),
                         configured(catalog.stream("with_pk"), SyncMode.FULL_REFRESH),
                         configured(catalog.stream("all_types_view"), SyncMode.FULL_REFRESH),
-                    )
+                    ),
                 )
         val output: BufferingOutputConsumer = read(configured)
 
@@ -80,7 +80,7 @@ class BigQuerySourceReadTest {
         // BigQuery renders WKT as `POINT(1 2)`, the emulator as `POINT (1 2)`.
         Assertions.assertTrue(
             allTypes["geo"].asText().matches(Regex("POINT ?\\(1 2\\)")),
-            allTypes.toString()
+            allTypes.toString(),
         )
         Assertions.assertEquals("YWJj", allTypes["blob"].asText(), allTypes.toString())
         Assertions.assertEquals(1.5, allTypes["price"].asDouble(), 0.0, allTypes.toString())
@@ -89,22 +89,22 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             "2021-10-20T11:22:33.000000",
             allTypes["local_ts"].asText(),
-            allTypes.toString()
+            allTypes.toString(),
         )
         Assertions.assertEquals(
             "2021-10-20T11:22:33.000000Z",
             allTypes["ts"].asText(),
-            allTypes.toString()
+            allTypes.toString(),
         )
         Assertions.assertEquals(
             "2021-10 10 10:10:10",
             allTypes["span"].asText(),
-            allTypes.toString()
+            allTypes.toString(),
         )
         Assertions.assertEquals(Jsons.readTree("""{"a":1}"""), allTypes["doc"], allTypes.toString())
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"city":"Paris","zip":75001,"geo":{"observed_at":"08:00:00.000000"}}"""
+                """{"city":"Paris","zip":75001,"geo":{"observed_at":"08:00:00.000000"}}""",
             ),
             allTypes["address"],
             allTypes.toString(),
@@ -112,11 +112,11 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             Jsons.readTree("""["a","b"]"""),
             allTypes["tags"],
-            allTypes.toString()
+            allTypes.toString(),
         )
         Assertions.assertEquals(
             Jsons.readTree(
-                """[{"sku":"sku-1","qty":2,"discounts":[{"code":"SUMMER","pct":10}]}]"""
+                """[{"sku":"sku-1","qty":2,"discounts":[{"code":"SUMMER","pct":10}]}]""",
             ),
             allTypes["line_items"],
             allTypes.toString(),
@@ -159,7 +159,7 @@ class BigQuerySourceReadTest {
                 .data
         Assertions.assertEquals(
             setOf("id", "name", "address"),
-            view.fieldNames().asSequence().toSet()
+            view.fieldNames().asSequence().toSet(),
         )
 
         // A completed snapshot of a table with a primary key is checkpointed as such.
@@ -192,7 +192,7 @@ class BigQuerySourceReadTest {
                         configured(catalog.stream("all_types"), SyncMode.FULL_REFRESH),
                         configured(catalog.stream("with_pk"), SyncMode.FULL_REFRESH),
                         configured(catalog.stream("all_types_view"), SyncMode.FULL_REFRESH),
-                    )
+                    ),
                 )
         val output: BufferingOutputConsumer =
             CliRunner.source(
@@ -231,9 +231,9 @@ class BigQuerySourceReadTest {
                         configured(
                             catalog.stream("with_pk"),
                             SyncMode.INCREMENTAL,
-                            cursor = listOf("updated_at")
-                        )
-                    )
+                            cursor = listOf("updated_at"),
+                        ),
+                    ),
                 )
         val first: BufferingOutputConsumer = read(configured)
         val firstRecords: List<AirbyteRecordMessage> = first.recordsByStream()["with_pk"].orEmpty()
@@ -242,17 +242,17 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             setOf("cursors"),
             state.fieldNames().asSequence().toSet() - "primary_key",
-            state.toString()
+            state.toString(),
         )
         Assertions.assertTrue(
             state["primary_key"] == null || state["primary_key"].isEmpty,
-            state.toString()
+            state.toString(),
         )
         val checkpoint: JsonNode = state["cursors"]["updated_at"]
         Assertions.assertEquals(
             "2024-01-03T00:00:00.000000Z",
             checkpoint.asText(),
-            state.toString()
+            state.toString(),
         )
 
         // Resuming re-reads the boundary row (inclusive lower bound) and nothing else.
@@ -262,12 +262,12 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             listOf(2L),
             secondRecords.map { it.data["order_id"].asLong() },
-            second.dump()
+            second.dump(),
         )
         Assertions.assertEquals(
             checkpoint,
             second.lastState("with_pk")!!["cursors"]["updated_at"],
-            second.dump()
+            second.dump(),
         )
     }
 
@@ -281,15 +281,15 @@ class BigQuerySourceReadTest {
                         configured(
                             catalog.stream("with_pk"),
                             SyncMode.INCREMENTAL,
-                            cursor = listOf("updated_at")
-                        )
-                    )
+                            cursor = listOf("updated_at"),
+                        ),
+                    ),
                 )
         // What airbyte/source-bigquery 0.4.5 persists after reading the first two rows.
         val legacyState: JsonNode =
             Jsons.readTree(
                 """{"stream_name":"with_pk","stream_namespace":"${BigQueryEmulatorTestFixture.DATASET}",
-                   "cursor_field":["updated_at"],"cursor":"2024-01-02T00:00:00Z","cursor_record_count":1}"""
+                   "cursor_field":["updated_at"],"cursor":"2024-01-02T00:00:00Z","cursor_record_count":1}""",
             )
         val output: BufferingOutputConsumer =
             read(configured, listOf(streamState("with_pk", legacyState)))
@@ -298,11 +298,11 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             listOf(2L),
             records.map { it.data["order_id"].asLong() },
-            output.dump()
+            output.dump(),
         )
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"primary_key":{},"cursors":{"updated_at":"2024-01-03T00:00:00.000000Z"}}"""
+                """{"primary_key":{},"cursors":{"updated_at":"2024-01-03T00:00:00.000000Z"}}""",
             ),
             output.lastState("with_pk"),
             output.dump(),
@@ -317,7 +317,7 @@ class BigQuerySourceReadTest {
         val output: BufferingOutputConsumer =
             readWithPkFromLegacyState(
                 """{"stream_name":"with_pk","stream_namespace":"${BigQueryEmulatorTestFixture.DATASET}",
-                   "cursor_field":["line"],"cursor":"2","cursor_record_count":1}"""
+                   "cursor_field":["line"],"cursor":"2","cursor_record_count":1}""",
             )
         assertFullReadAfterLegacyState(output)
     }
@@ -327,7 +327,7 @@ class BigQuerySourceReadTest {
         val output: BufferingOutputConsumer =
             readWithPkFromLegacyState(
                 """{"stream_name":"with_pk","stream_namespace":"${BigQueryEmulatorTestFixture.DATASET}",
-                   "cursor_field":["updated_at"],"cursor":"not a timestamp","cursor_record_count":1}"""
+                   "cursor_field":["updated_at"],"cursor":"not a timestamp","cursor_record_count":1}""",
             )
         assertFullReadAfterLegacyState(output)
     }
@@ -341,9 +341,9 @@ class BigQuerySourceReadTest {
                         configured(
                             catalog.stream("with_pk"),
                             SyncMode.INCREMENTAL,
-                            cursor = listOf("updated_at")
-                        )
-                    )
+                            cursor = listOf("updated_at"),
+                        ),
+                    ),
                 )
         return read(configured, listOf(streamState("with_pk", Jsons.readTree(legacyState))))
     }
@@ -371,7 +371,7 @@ class BigQuerySourceReadTest {
         Assertions.assertEquals(
             "2024-01-03T00:00:00.000000Z",
             state["cursors"]["updated_at"].asText(),
-            state.toString()
+            state.toString(),
         )
     }
 
@@ -381,7 +381,7 @@ class BigQuerySourceReadTest {
         val missing: AirbyteStream =
             Jsons.readValue(
                     Jsons.writeValueAsString(catalog.stream("all_types")),
-                    AirbyteStream::class.java
+                    AirbyteStream::class.java,
                 )
                 .withName("does_not_exist")
         val configured =
@@ -390,7 +390,7 @@ class BigQuerySourceReadTest {
                     listOf(
                         configured(missing, SyncMode.FULL_REFRESH),
                         configured(catalog.stream("with_pk"), SyncMode.FULL_REFRESH),
-                    )
+                    ),
                 )
         val output: BufferingOutputConsumer = read(configured)
         Assertions.assertEquals(setOf("with_pk"), output.recordsByStream().keys, output.dump())
@@ -423,8 +423,9 @@ class BigQuerySourceReadTest {
         state: List<AirbyteStateMessage> = listOf(),
     ): BufferingOutputConsumer = CliRunner.source("read", config, configured, state).run()
 
-    private fun AirbyteCatalog.stream(name: String): AirbyteStream =
-        streams.first { it.name == name }
+    private fun AirbyteCatalog.stream(name: String): AirbyteStream = streams.first {
+        it.name == name
+    }
 
     private fun configured(
         stream: AirbyteStream,
@@ -446,16 +447,16 @@ class BigQuerySourceReadTest {
                     .withStreamDescriptor(
                         StreamDescriptor()
                             .withName(name)
-                            .withNamespace(BigQueryEmulatorTestFixture.DATASET)
+                            .withNamespace(BigQueryEmulatorTestFixture.DATASET),
                     )
-                    .withStreamState(state)
+                    .withStreamState(state),
             )
 
     private fun BufferingOutputConsumer.recordsByStream(): Map<String, List<AirbyteRecordMessage>> =
         records().groupBy { it.stream }
 
     private fun BufferingOutputConsumer.statuses(
-        stream: String
+        stream: String,
     ): List<AirbyteStreamStatusTraceMessage.AirbyteStreamStatus> =
         traces()
             .filter { it.type == AirbyteTraceMessage.Type.STREAM_STATUS }
