@@ -26,5 +26,9 @@ class ConfigBuilder:
         self._config["project"] = project
         return self
 
+    def with_projects(self, projects: list[str]) -> "ConfigBuilder":
+        self._config["project"] = projects
+        return self
+
     def build(self) -> Dict[str, Any]:
         return self._config

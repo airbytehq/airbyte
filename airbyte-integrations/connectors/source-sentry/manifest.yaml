@@ -8,15 +8,19 @@ check:
     - project_detail
 
 definitions:
+  project_partition_router:
+    type: ListPartitionRouter
+    values: "{{ [config['project']] if config['project'] is string else config['project'] }}"
+    cursor_field: project
   streams:
     events:
       type: DeclarativeStream
       name: events
-      path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+      path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/events/
       retriever:
         type: SimpleRetriever
         name: events
-        path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+        path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/events/
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -31,7 +35,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           name: events
           path: >-
-            projects/{{ config['organization'] }}/{{ config['project']
+            projects/{{ config['organization'] }}/{{ stream_partition['project']
             }}/events/
           http_method: GET
           primary_key: id
@@ -45,6 +49,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       cursor_field: dateCreated
@@ -92,7 +98,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            projects/{{ config['organization'] }}/{{ config['project']
+            projects/{{ config['organization'] }}/{{ stream_partition['project']
             }}/issues/
           http_method: GET
           request_parameters:
@@ -105,6 +111,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       schema_loader:
@@ -232,13 +240,15 @@ definitions:
             stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: projects/{{ config['organization'] }}/{{ config['project'] }}/
+          path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       schema_loader:
@@ -309,10 +319,23 @@ spec:
       - project
     properties:
       project:
-        type: string
-        description: The name (slug) of the Project you want to sync.
         order: 3
         title: Project
+        description: >-
+          The slug(s) of the Sentry project(s) to sync. Enter one project slug,
+          or multiple slugs to sync events, issues, and project details for each.
+        oneOf:
+          - type: string
+            minLength: 1
+            pattern: ^.*\S.*$
+            title: Single project
+          - type: array
+            title: Multiple projects
+            minItems: 1
+            items:
+              type: string
+              minLength: 1
+              pattern: ^.*\S.*$
       hostname:
         type: string
         description: >-

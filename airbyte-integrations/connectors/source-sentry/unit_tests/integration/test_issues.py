@@ -298,3 +298,24 @@ class TestIssuesStream(TestCase):
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["lastSeen"].startswith("2024-01-20T12:00:00"), f"Expected state updated to latest (Page 1), got {new_state}"
+
+    @HttpMocker()
+    def test_multiple_projects(self, http_mocker: HttpMocker):
+        """Configured project list syncs each project partition."""
+        second_project = "other-project"
+        config = ConfigBuilder().with_projects([_PROJECT, second_project]).build()
+
+        http_mocker.get(
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("issues", has_next=False),
+        )
+        http_mocker.get(
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, second_project, _AUTH_TOKEN).build(),
+            create_response("issues", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2, f"Expected one issues page per project, got {len(output.records)}"
