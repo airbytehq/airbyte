@@ -7,18 +7,17 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
-import pendulum
 import requests
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 from .auth import OutbrainAmplifyAuthenticator
 
 
-DEFAULT_END_DATE = pendulum.now()
 DEFAULT_GEO_LOCATION_BREAKDOWN = "region"
 DEFAULT_REPORT_GRANULARITY = "daily"
 DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE = "conversion_time"
@@ -69,11 +68,14 @@ class OutbrainAmplifyStream(HttpStream, ABC):
 
     @staticmethod
     def _get_time_interval(
-        start_date: Union[pendulum.datetime, str], ending_date: Union[pendulum.datetime, str]
-    ) -> Iterable[Tuple[pendulum.datetime, pendulum.datetime]]:
+        start_date: Union[AirbyteDateTime, str], ending_date: Optional[Union[AirbyteDateTime, str]]
+    ) -> Tuple[AirbyteDateTime, AirbyteDateTime]:
         if isinstance(start_date, str):
-            start_date = pendulum.parse(start_date)
-        end_date = pendulum.parse(ending_date) if ending_date else DEFAULT_END_DATE
+            start_date = ab_datetime_parse(start_date)
+        if isinstance(ending_date, str):
+            end_date = ab_datetime_parse(ending_date)
+        else:
+            end_date = ending_date or ab_datetime_now()
         if end_date < start_date:
             raise ValueError(f"Specified start date: {start_date} is later than the end date: {end_date}")
         return start_date, end_date
@@ -92,10 +94,8 @@ class Marketers(OutbrainAmplifyStream):
     primary_key = "id"
 
     def __init__(self, authenticator, config, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -130,10 +130,8 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     @property
     def use_cache(self) -> bool:
@@ -185,10 +183,8 @@ class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
     primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -237,10 +233,8 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
     primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     @property
     def name(self) -> str:
@@ -284,10 +278,8 @@ class PromotedLinksSequenceForCampaigns(OutbrainAmplifyStream, HttpSubStream):
     primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -327,10 +319,8 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     @property
     def name(self) -> str:
@@ -383,10 +373,8 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -448,10 +436,8 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -515,10 +501,8 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -584,10 +568,8 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
     primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     @property
     def name(self) -> str:
@@ -658,10 +640,8 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -723,10 +703,8 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -790,10 +768,8 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -855,10 +831,8 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -922,10 +896,8 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -989,10 +961,8 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -1058,10 +1028,8 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
     primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, authenticator=authenticator, **kwargs)
         self.config = config
-        self._authenticator = authenticator
-        self._session = requests.sessions.Session()
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

@@ -4,12 +4,15 @@
 
 import inspect
 import json
+import logging
 from http import HTTPStatus
-from unittest.mock import MagicMock
 
 import pytest
 import requests
 from source_outbrain_amplify.source import OutbrainAmplifyStream
+
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 @pytest.fixture
@@ -65,26 +68,25 @@ def test_http_method(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
+def test_error_handler_response_action(patch_base_class, http_status, expected_action):
+    response_mock = requests.Response()
     response_mock.status_code = http_status
     stream = OutbrainAmplifyStream()
-    assert stream.should_retry(response_mock) == should_retry
+    error_handler = stream.get_error_handler() or HttpStatusErrorHandler(logger=logging.getLogger(__name__))
+    assert error_handler.interpret_response(response_mock).response_action == expected_action
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+def test_backoff_strategy(patch_base_class):
     stream = OutbrainAmplifyStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.get_backoff_strategy() is None
 
 
 def test_get_time_interval(patch_base_class):
