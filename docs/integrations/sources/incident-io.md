@@ -159,6 +159,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 1.0.4 | 2026-10-20 | [89270](https://github.com/airbytehq/airbyte/pull/89270) | Update dependencies |
 | 1.0.3 | 2026-10-16 | [89010](https://github.com/airbytehq/airbyte/pull/89010) | Promote to Certified (GA) |
 | 1.0.2 | 2026-10-15 | [88989](https://github.com/airbytehq/airbyte/pull/88989) | Declare `auto_run_mode`, `delay`, `folder`, `owning_team_ids` and `shortform` on workflows; restructure the documentation and link to the Incident.io API reference |
 | 1.0.1 | 2026-10-14 | [88962](https://github.com/airbytehq/airbyte/pull/88962) | Declare `filter_by`, `fixed_filter` and `helptext_catalog_attribute_id` on custom fields; update the base image |
