@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -26,6 +27,7 @@ import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.BsonTimestamp
+import org.bson.BsonValue
 import org.bson.RawBsonDocument
 
 private val log = KotlinLogging.logger {}
@@ -85,10 +87,18 @@ class MongoDbSnapshotPartitionReader(
                     return
                 }
                 val document: RawBsonDocument = cursor.next()
+                val id: BsonValue =
+                    document[ID_FIELD]
+                        ?: throw ConfigErrorException(
+                            "${stream.namespace}.${stream.name} has documents without _id, so " +
+                                "the read cannot be ordered and resumed. A view must keep _id " +
+                                "to be synced (project it in the view's pipeline); otherwise " +
+                                "exclude it from the connection.",
+                        )
                 val payload: NativeRecordPayload = converter.toPayload(document)
                 stampCursor(payload, snapshotCursor)
                 emit(payload, null)
-                lastId = document[ID_FIELD]
+                lastId = id
                 numRecords++
             }
         }

@@ -39,14 +39,18 @@ data:
         message:
           "This is a full rewrite of the MongoDB source on the Bulk CDK. Change data
           capture now reads the change stream with the native MongoDB driver instead
-          of Debezium. Existing connections upgrade in place: the saved CDC position,
-          the initial-snapshot state and saved configurations are all read as-is, so
-          no reset is required. The settings 'initial_waiting_seconds', 'queue_size'
-          and 'update_capture_mode' are removed from the spec; update events always
-          read the document's current state. Views are no longer discovered
-          or synced, time series collections are not supported, and boolean
-          fields are now typed as boolean. See the migration guide for details."
+          of Debezium. Most connections need no action: the saved CDC position, the
+          initial-snapshot state and saved configurations are read as-is, so no reset
+          is required. Act if any of these apply to you: Schema Enforced is on and
+          your collections have boolean fields (refresh the source schema to retype
+          them from string to boolean and update downstream queries that compare them
+          to 'true'/'false'), or you had set Capture mode to Post Image (the setting
+          is removed; updates always read the document's current state).
+          'initial_waiting_seconds', 'queue_size' and 'update_capture_mode' are removed
+          from the spec. See
+          https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations#upgrading-to-300"
         upgradeDeadline: "2027-02-01"
+        deadlineAction: "auto_upgrade"
       2.0.0:
         message:
           "**Important: This version introduces multiple database support for MongoDB v2 source connector.**

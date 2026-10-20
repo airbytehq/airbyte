@@ -4,7 +4,9 @@ package io.airbyte.integrations.source.mongodb.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mongodb.client.MongoClients
+import com.mongodb.client.model.CreateCollectionOptions
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.TimeSeriesOptions
 import com.mongodb.client.model.Updates
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -13,13 +15,16 @@ import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.alwaysOn
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.assertFailure
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.configuredCatalog
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.discover
+import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.errors
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.failing
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.read
+import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.readCutAfter
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.readExpectingFailure
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.records
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.statuses
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.withFailPoint
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -409,6 +414,91 @@ class MongoDbSourceReadBehaviorsTest {
         )
     }
 
+    /**
+     * Views and time series collections read like collections, as in the legacy connector: a full
+     * refresh orders by `_id` and resumes mid-way; an incremental stream takes its snapshot and
+     * then never receives a change, because MongoDB has no change stream for either.
+     */
+    @Test
+    fun testViewsAndTimeSeriesCollectionsReadLikeV2() {
+        seed(VIEW_BASE, *(1..3).map { Document("_id", it).append("v", it) }.toTypedArray())
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val db = client.getDatabase(TEST_DB)
+            runCatching { db.getCollection(VIEW).drop() }
+            db.createView(
+                VIEW,
+                VIEW_BASE,
+                listOf(Document("\$match", Document("v", Document("\$gte", 1))))
+            )
+            runCatching { db.getCollection(TIME_SERIES).drop() }
+            db.createCollection(
+                TIME_SERIES,
+                CreateCollectionOptions().timeSeriesOptions(TimeSeriesOptions("ts")),
+            )
+            db.getCollection(TIME_SERIES)
+                .insertMany(
+                    (1..3).map { Document("ts", Date(1_700_000_000_000L + it)).append("v", it) }
+                )
+        }
+        val names = setOf(VIEW, TIME_SERIES)
+        val fullRefresh: BufferingOutputConsumer =
+            read(config(), configuredCatalog(config(), SyncMode.FULL_REFRESH, names))
+        Assertions.assertEquals(listOf(1, 2, 3), records(fullRefresh, VIEW).map { it["v"].asInt() })
+        Assertions.assertEquals(
+            listOf(1, 2, 3),
+            records(fullRefresh, TIME_SERIES).map { it["v"].asInt() }
+        )
+        val cut: BufferingOutputConsumer =
+            readCutAfter(
+                replicaSet,
+                2,
+                config(),
+                configuredCatalog(config(), SyncMode.FULL_REFRESH, names),
+                cursors = 2,
+            )
+        Assertions.assertEquals(listOf(1, 2, 3), records(cut, VIEW).map { it["v"].asInt() })
+        Assertions.assertEquals(listOf(1, 2, 3), records(cut, TIME_SERIES).map { it["v"].asInt() })
+
+        val incremental: ConfiguredAirbyteCatalog =
+            configuredCatalog(config(), SyncMode.INCREMENTAL, setOf(VIEW))
+        val sync1: BufferingOutputConsumer = read(config(), incremental)
+        Assertions.assertEquals(3, records(sync1, VIEW).size)
+        seed(VIEW_BASE, *(1..4).map { Document("_id", it).append("v", it) }.toTypedArray())
+        val sync2: BufferingOutputConsumer = read(config(), incremental, sync1.states())
+        Assertions.assertEquals(
+            emptyList<JsonNode>(),
+            records(sync2, VIEW),
+            "no change stream for a view"
+        )
+        Assertions.assertEquals(emptyList<AirbyteErrorTraceMessage>(), errors(sync2))
+    }
+
+    /**
+     * A view whose pipeline drops `_id` cannot be ordered or resumed: a clear configuration error.
+     */
+    @Test
+    fun testViewWithoutIdIsRejected() {
+        seed(VIEW_BASE, *(1..3).map { Document("_id", it).append("v", it) }.toTypedArray())
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val db = client.getDatabase(TEST_DB)
+            runCatching { db.getCollection(VIEW_NO_ID).drop() }
+            db.createView(
+                VIEW_NO_ID,
+                VIEW_BASE,
+                listOf(Document("\$project", Document("_id", 0).append("v", 1))),
+            )
+        }
+        // Discovery leaves it out; a catalog that still names it (from an older discovery) fails
+        // on the first document.
+        Assertions.assertFalse(VIEW_NO_ID in discover(config()).streams.map { it.name })
+        val stale: ConfiguredAirbyteCatalog =
+            configuredCatalog(config(), SyncMode.FULL_REFRESH, setOf(VIEW_BASE)).also { catalog ->
+                catalog.streams.single().stream.withName(VIEW_NO_ID)
+            }
+        val failed: BufferingOutputConsumer = readExpectingFailure(config(), stale)
+        assertFailure(failed, FailureType.CONFIG_ERROR, "has documents without _id")
+    }
+
     private fun seed(collection: String, vararg documents: Document) {
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(collection)
@@ -433,6 +523,10 @@ class MongoDbSourceReadBehaviorsTest {
         const val MIXED = "mixed"
         const val MIXED_FIELD = "mixed_field"
         const val RARE = "rare"
+        const val VIEW_BASE = "view_base"
+        const val VIEW = "view_of_base"
+        const val VIEW_NO_ID = "view_without_id"
+        const val TIME_SERIES = "readings"
         const val UPDATES = 20
         const val MANY = 150
 

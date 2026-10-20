@@ -74,10 +74,12 @@ class MongoDbCdcPartitionReader(
     @Volatile private var resumeToken: BsonDocument? = null
     /** Oplog time (seconds) of [resumeToken]; see [MongoDbCdcState.cdcSyncedUntil]. */
     @Volatile private var cdcSyncedUntil: Instant? = null
+    /** The state the read started from; its legacy variables are carried into the checkpoint. */
+    @Volatile private var priorState: MongoDbCdcState? = null
 
     override suspend fun run() {
-        val priorToken: BsonDocument? =
-            MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState)?.resumeTokenBson()
+        priorState = MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState)
+        val priorToken: BsonDocument? = priorState?.resumeTokenBson()
         sharedState.logOplog(priorToken)
         try {
             drain(resumeAfter = priorToken)
@@ -98,6 +100,7 @@ class MongoDbCdcPartitionReader(
                     // Clears the token and every incremental snapshot state: re-snapshot from
                     // scratch.
                     feedBootstrap.resetAll()
+                    priorState = null // a reset carries nothing, the legacy variables included
                     drain(resumeAfter = null)
                 }
             }
@@ -251,6 +254,7 @@ class MongoDbCdcPartitionReader(
                     resumeToken,
                     configuration.schemaEnforced,
                     cdcSyncedUntil,
+                    prior = priorState,
                 )
                 .toOpaqueStateValue(),
             numRecords,

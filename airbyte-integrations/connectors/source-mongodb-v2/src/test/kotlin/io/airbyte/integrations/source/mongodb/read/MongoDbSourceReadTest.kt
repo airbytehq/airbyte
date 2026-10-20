@@ -922,10 +922,14 @@ class MongoDbSourceReadTest {
             "expected only the post-token insert, got $changes"
         )
         Assertions.assertEquals("670000000000000000000002", changes.single()["_id"])
-        // ...and v3 writes its native shape going forward.
+        // ...and v3 writes its own position going forward while the legacy variables stay as they
+        // were, so a downgrade to 2.x resumes from the pre-upgrade position.
         val shared2 = sync2.states().mapNotNull { it.global?.sharedState }.last()
         Assertions.assertTrue(shared2.has("resumeToken"), "expected native state, got $shared2")
-        Assertions.assertFalse(shared2.has("state"))
+        Assertions.assertNotEquals(tokenData, shared2["resumeToken"]["_data"].asText())
+        val legacyShared = legacyState.single().global.sharedState
+        Assertions.assertEquals(legacyShared["state"], shared2["state"])
+        Assertions.assertEquals(legacyShared["schema_enforced"], shared2["schema_enforced"])
     }
 
     /** v2's `shared_state`: `MongoDbDebeziumStateUtil.formatState` wrapped in `MongoDbCdcState`. */

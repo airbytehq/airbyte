@@ -15,6 +15,7 @@ import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.SyncMode
 import java.io.File
 import java.math.BigDecimal
 import java.util.*
@@ -46,10 +47,12 @@ import org.testcontainers.utility.DockerImageName
 class MongoDbSourceDiscoverTest {
 
     /**
-     * `listCollections` is filtered to `type: collection` server-side, so views are not streams.
+     * Views and time series collections are streams with both sync modes, as the legacy connector
+     * listed them (its `type` filter never applied); system collections are not. A view whose
+     * pipeline drops `_id` cannot be ordered and is left out.
      */
     @Test
-    fun testDiscoverExcludesViews() {
+    fun testDiscoverIncludesViewsAndTimeSeriesCollectionsLikeV2() {
         val catalog: AirbyteCatalog =
             CliRunner.source(
                     "discover",
@@ -58,26 +61,17 @@ class MongoDbSourceDiscoverTest {
                 .run()
                 .catalogs()
                 .first()
-        val names: Set<String> = catalog.streams.map { it.name }.toSet()
-        Assertions.assertFalse("people_view" in names, "views must not be discovered: $names")
-        Assertions.assertTrue("people" in names, "the view's source collection is: $names")
-    }
-
-    /**
-     * Time-series collections are not supported: no `_id` index to resume from, no change stream.
-     */
-    @Test
-    fun testDiscoverExcludesTimeSeriesCollections() {
-        val catalog: AirbyteCatalog =
-            CliRunner.source(
-                    "discover",
-                    MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB)),
-                )
-                .run()
-                .catalogs()
-                .first()
-        val names: Set<String> = catalog.streams.map { it.name }.toSet()
-        Assertions.assertFalse("readings" in names, "time-series must not be discovered: $names")
+        val byName = catalog.streams.associateBy { it.name }
+        for (name in listOf("people", "people_view", "readings")) {
+            val stream = checkNotNull(byName[name]) { "$name must be discovered: ${byName.keys}" }
+            Assertions.assertEquals(
+                listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                stream.supportedSyncModes,
+                name,
+            )
+        }
+        Assertions.assertFalse("system.buckets.ignored" in byName, byName.keys.toString())
+        Assertions.assertFalse("people_view_no_id" in byName, byName.keys.toString())
     }
 
     @Test
@@ -254,6 +248,11 @@ class MongoDbSourceDiscoverTest {
                 "people_view",
                 "people",
                 listOf(Document("\$project", Document("name", 1)))
+            )
+            testDb.createView(
+                "people_view_no_id",
+                "people",
+                listOf(Document("\$project", Document("_id", 0).append("name", 1)))
             )
             testDb.createCollection("system.buckets.ignored")
             testDb.createCollection(

@@ -55,9 +55,9 @@ that was deleted before the event could be read is emitted as a delete.
 
 ### Supported MongoDB Clusters
 
-- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: the connection test fails with "Target MongoDB instance is a standalone server".
+- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: Full Refresh works, Incremental fails when the change stream is opened ("The $changeStream stage is only supported on replica sets").
 - Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
-- Views are not discovered and cannot be synced; sync the underlying collection. Capped and clustered collections have not been validated with this connector.
+- Views and time series collections can be synced in Full Refresh mode only in practice: MongoDB has no change streams for them, so an Incremental sync never receives changes after its initial snapshot. A view must keep `_id` in its pipeline. Capped and clustered collections have not been validated with this connector.
 - Empty collections are excluded from schema discovery.
 - All documents in a collection should use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types is read in full by an uninterrupted sync, but a sync resuming after a checkpoint on one type does not sync the documents of the other types. The connector warns with "The \_id fields in this collection are not consistently typed, which may lead to data loss" and the types it found; make the type consistent or exclude the collection.
 - Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.

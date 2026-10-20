@@ -48,6 +48,68 @@ class MongoDbCdcStateTest {
         val parsed = MongoDbCdcState.fromOpaqueStateValue(legacy)!!
         Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
         Assertions.assertEquals(false, parsed.schemaEnforced)
+        // The legacy variables ride along unchanged, so a downgrade resumes from them.
+        Assertions.assertEquals(legacy["state"], parsed.legacyState)
+        Assertions.assertEquals(legacy["schema_enforced"], parsed.legacySchemaEnforced)
+    }
+
+    /**
+     * A checkpoint written from a migrated state keeps the legacy `state` and `schema_enforced`
+     * byte-for-byte while `resumeToken` moves on; a state that never had them gets none; a reset
+     * (no prior state) drops them.
+     */
+    @Test
+    fun testLegacyVariablesAreCarriedVerbatimAndNeverUpdated() {
+        val legacy =
+            Jsons.readTree(
+                """
+                {
+                  "state": {
+                    "[\"source-mongodb-v2\",{\"server_id\":\"cluster0.abcd1.mongodb.net\"}]":
+                      "{\"sec\":1727740800,\"ord\":1,\"resume_token\":\"$TOKEN\"}"
+                  },
+                  "schema_enforced": false
+                }
+                """,
+            )
+        val prior = MongoDbCdcState.fromOpaqueStateValue(legacy)!!
+        val newToken = BsonDocument.parse("""{"_data": "$NEWER_TOKEN"}""")
+        val checkpoint =
+            MongoDbCdcState.of(newToken, false, Instant.parse("2026-10-20T00:00:00Z"), prior)
+                .toOpaqueStateValue()
+        Assertions.assertEquals(legacy["state"], checkpoint["state"])
+        Assertions.assertEquals(legacy["schema_enforced"], checkpoint["schema_enforced"])
+        Assertions.assertEquals(NEWER_TOKEN, checkpoint["resumeToken"]["_data"].asText())
+        // Read back: the native token wins over the (older) legacy one.
+        val reread = MongoDbCdcState.fromOpaqueStateValue(checkpoint)!!
+        Assertions.assertEquals(NEWER_TOKEN, reread.resumeTokenBson()!!.getString("_data").value)
+        Assertions.assertEquals(legacy["state"], reread.legacyState)
+
+        val fresh = MongoDbCdcState.of(newToken, true, null).toOpaqueStateValue()
+        Assertions.assertFalse(fresh.has("state"), fresh.toString())
+        Assertions.assertFalse(fresh.has("schema_enforced"), fresh.toString())
+    }
+
+    /** A full-refresh-only sync of a migrated connection: `resumeToken: null` beside the legacy. */
+    @Test
+    fun testNullResumeTokenFallsBackToTheCarriedLegacyState() {
+        val persisted =
+            Jsons.readTree(
+                """
+                {
+                  "resumeToken": null,
+                  "schemaEnforced": true,
+                  "state": {
+                    "[\"source-mongodb-v2\",{\"server_id\":\"x\"}]":
+                      "{\"sec\":1727740800,\"ord\":1,\"resume_token\":\"$TOKEN\"}"
+                  },
+                  "schema_enforced": true
+                }
+                """,
+            )
+        val parsed = MongoDbCdcState.fromOpaqueStateValue(persisted)!!
+        Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
+        Assertions.assertEquals(persisted["state"], parsed.legacyState)
     }
 
     @Test
@@ -183,6 +245,7 @@ class MongoDbCdcStateTest {
     companion object {
         /** A real-looking `_data` (timestamp 1727740800, inc 1, change-stream version 1). */
         const val TOKEN = "826703D5800000000129295A1004"
+        const val NEWER_TOKEN = "8268000000000000000129295A1004"
         /** Same shape, a later timestamp. */
         const val OTHER_TOKEN = "826703D5810000000129295A1004"
     }

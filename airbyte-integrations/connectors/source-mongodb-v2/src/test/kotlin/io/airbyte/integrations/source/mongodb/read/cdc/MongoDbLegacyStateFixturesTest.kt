@@ -45,6 +45,13 @@ class MongoDbLegacyStateFixturesTest {
             MongoDbResumeTokens.timestamp(token)
         )
         Assertions.assertEquals(true, cdc.schemaEnforced)
+        // Written back, the fixture's own variables are still there, unchanged, for a downgrade.
+        val checkpoint = MongoDbCdcState.of(token, true, null, prior = cdc).toOpaqueStateValue()
+        Assertions.assertEquals(message.global.sharedState["state"], checkpoint["state"])
+        Assertions.assertEquals(
+            message.global.sharedState["schema_enforced"],
+            checkpoint["schema_enforced"],
+        )
 
         val streams: Map<String, MongoDbStreamStateValue> =
             message.global.streamStates.associate {

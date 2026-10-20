@@ -19,9 +19,10 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebre
 ```
 
 Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set.
-`check` accepts `REPLICA_SET`, `SHARDED` (a cluster reached through `mongos`) and `LOAD_BALANCED`
-(e.g. Atlas Serverless), all of which support change streams, and **fails** a `STANDALONE`
-`mongod`, which has no oplog and could never sync.
+`check` only logs the cluster type, as the legacy connector did: `REPLICA_SET`, `SHARDED` (a cluster reached
+through `mongos`) and `LOAD_BALANCED` (e.g. Atlas Serverless) support change streams; a `STANDALONE` `mongod`
+has no oplog, so full refresh works there and an incremental sync fails when the change stream is opened
+(`testCheckPassesAgainstStandaloneInstance`).
 
 ## Running the connector locally
 
@@ -94,11 +95,10 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   throws v2's message naming the unreadable databases from the last `streamNames()` call during
   `check`, before the CDK would fall back to its generic "Discovered zero tables.". A user with no
   privilege at all on a configured database gets the server's own `Unauthorized`, as with the
-  legacy connector. **`listCollections` is two commands**: the names come from the form without a
-  filter (`authorizedCollections: true, nameOnly: true`), the only form the server lets a user
-  without the `listCollections` privilege run (it then lists what they can read), and the views and
-  time-series collections to drop from a `type`-filtered form that needs the privilege — tolerated
-  when missing, such a user has no views to read anyway. `MongoDbSourcePermissionsTest` runs these
+  legacy connector. `listCollections` is asked without a filter (`authorizedCollections: true,
+  nameOnly: true`), the only form the server lets a user without the `listCollections` privilege
+  run (it then lists what they can read); views and time series collections are listed like the
+  legacy connector listed them. `MongoDbSourcePermissionsTest` runs these
   against a replica set with authentication (`MongoDbAuthReplicaSet`): `read` on one database,
   `readAnyDatabase`, `find` on one collection only, no privilege, a wrong password.
 - `discover` parity: `src/test/resources/expected-catalog-*.json` started as the `CATALOG` objects
@@ -112,12 +112,15 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   BSON types takes the type of whichever document shape the server returns first, in both
   connectors. Two legacy bugs are fixed rather than reproduced, so the fixtures differ from the
   legacy output there: booleans are declared as `boolean` (`$type` reports `bool`, which the legacy
-  mapping never matched, so it fell through to `string` while the records carried real booleans), and views are not
-  streams (the legacy `listCollections` filter `{type: "collection"}` was appended to the command *result* instead of
-  the command, so it never reached the server). That broken filter also let time-series collections through, which the
-  legacy connector snapshotted thanks to `allowDiskUse` (they have no `_id` index, so a resumed round re-sorts the whole
-  collection) and never received changes for (change streams cannot be opened on them). They are **not supported**:
-  the `type: collection` filter excludes them from discovery, documented as a limitation. Set
+  mapping never matched, so it fell through to `string` while the records carried real booleans) and a view whose
+  pipeline drops `_id` is left out of discovery (the legacy connector listed it and crashed with a
+  `NullPointerException` at read; here the reader also rejects such a document with a config error). Views and
+  time series collections are streams with both sync modes, exactly as the legacy connector listed them (its
+  `listCollections` filter `{type: "collection"}` was appended to the command *result* instead of the command, so it
+  never reached the server): a full refresh snapshots them thanks to `allowDiskUse` (a time series collection has no
+  `_id` index, so every round sorts the whole collection) and an incremental stream never receives a change (change
+  streams cannot be opened on either) — `testViewsAndTimeSeriesCollectionsReadLikeV2`, documented as a limitation.
+  Set
   `MONGODB_REGENERATE_FIXTURES=true` when running `MongoDbSourceDiscoverTest` to rewrite the
   fixtures from the actual output. To diff the Docker images, run `discover` for both on the parity
   replica set and compare the `CATALOG` lines with streams sorted (scripts in the skill's
@@ -263,9 +266,8 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   event's own token — a resume reads strictly after a token, so nothing is lost or repeated and a busy cluster cannot
   keep the sync open
   (`testCdcStopsAtTargetUnderContinuousWrites`). The token is checkpointed once, when the read ends. A catalog without
-  incremental streams gets no CDC partition at all. A view (or dropped collection) left in the
-  catalog fails the CDK's catalog validation until the schema is refreshed — documented in the
-  migration guide. `_ab_cdc_cursor` is a
+  incremental streams gets no CDC partition at all. A dropped collection left in the catalog fails
+  the CDK's catalog validation until the schema is refreshed. `_ab_cdc_cursor` is a
   MongoDB oplog time as a long (`BsonTimestamp.value`), stamped per record by the readers: the
   event's own time on a change, the time of the change-stream position this READ saved
   (`MongoDbCdcState.cdcSyncedUntil`, decoded from the captured or checkpointed token and
@@ -287,7 +289,13 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   and extracts `resume_token`: Debezium stores the server's own token, as the hex `_data` string
   (Debezium 2.x, v2 ≤ 2.0.x) or as the base64-encoded BSON of the token document (Debezium 3.x,
   v2 ≥ 2.1.0) — both are accepted — so an upgraded connection resumes from where v2 left off with
-  no reset or migration. 3.0.0 writes its native shape going forward. A saved token the server rejects
+  no reset or migration. **Downgrade path:** the legacy `state` and `schema_enforced` are carried
+  into every later checkpoint byte-for-byte and never updated (`MongoDbCdcState.of(…, prior)`;
+  `testLegacyVariablesAreCarriedVerbatimAndNeverUpdated`), while `resumeToken` is the only position
+  3.0.0 reads (used when present, created from the legacy offset otherwise). Pinned back to 2.1.1, a
+  connection resumes from its pre-upgrade position and replays what happened since; a reset
+  (`Re-sync data`) or a connection born on 3.0.0 carries no legacy variables, so 2.1.1 would start
+  afresh. Documented in the migration guide. A saved token the server rejects
   (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
   `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
   config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server

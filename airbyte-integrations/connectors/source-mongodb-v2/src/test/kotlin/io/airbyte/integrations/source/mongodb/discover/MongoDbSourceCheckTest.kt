@@ -47,13 +47,13 @@ class MongoDbSourceCheckTest {
         )
     }
 
-    /** A standalone `mongod` has no oplog, so change streams can never work: fail at `check`. */
+    /**
+     * A standalone `mongod` passes `check` with a warning, as it did in the legacy connector: full
+     * refresh works there; an incremental sync fails when the change stream is opened.
+     */
     @Test
-    fun testCheckFailsAgainstStandaloneInstance() {
-        SyncsTestFixture.testCheck(
-            config(standaloneConnectionString(), listOf(DATABASE)),
-            expectedFailure = "standalone server, which has no oplog",
-        )
+    fun testCheckPassesAgainstStandaloneInstance() {
+        SyncsTestFixture.testCheck(config(standaloneConnectionString(), listOf(DATABASE)))
     }
 
     @Test

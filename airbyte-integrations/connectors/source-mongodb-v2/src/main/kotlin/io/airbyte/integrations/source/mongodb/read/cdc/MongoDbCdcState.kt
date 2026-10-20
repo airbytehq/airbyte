@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodb.read.cdc
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -15,9 +16,12 @@ import org.bson.RawBsonDocument
 
 /**
  * `Global` (change-stream) feed state: the resume token, the `schema_enforced` it was captured
- * under and the token's oplog time. Written as `{"resumeToken": {"_data": ..}, "schemaEnforced":
- * .., "cdcSyncedUntil": "2026-..Z"}`; also read from the Debezium offset shape `{"state": {<key>:
- * "{\"sec\":..,\"ord\":..,\"resume_token\":..}"}, "schema_enforced": ..}`.
+ * under and the token's oplog time, written as `{"resumeToken": {"_data": ..}, "schemaEnforced":
+ * .., "cdcSyncedUntil": "2026-..Z"}`. A state migrated from the legacy connector also carries its
+ * Debezium offset verbatim and forever (`{"state": {<key>: "{\"sec\":..,\"ord\":..,
+ * \"resume_token\":..}"}, "schema_enforced": ..}`): [resumeToken] is created from it on the first
+ * read and is the only position this connector reads or updates afterwards, while a downgrade to
+ * 2.x resumes from the legacy variables, i.e. from the position saved before the upgrade.
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
@@ -33,6 +37,14 @@ data class MongoDbCdcState(
     @JsonProperty("cdcSyncedUntil")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     val cdcSyncedUntil: Instant? = null,
+    /** The legacy Debezium offset map, carried as it was migrated; never updated. */
+    @JsonProperty(LEGACY_STATE)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val legacyState: JsonNode? = null,
+    /** The legacy `schema_enforced` flag, carried as it was migrated; never updated. */
+    @JsonProperty(LEGACY_SCHEMA_ENFORCED)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val legacySchemaEnforced: JsonNode? = null,
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
@@ -43,29 +55,42 @@ data class MongoDbCdcState(
             ?.let { BsonDocument.parse(Jsons.writeValueAsString(it)) }
 
     companion object {
-        private const val DEBEZIUM_STATE = "state"
-        private const val DEBEZIUM_SCHEMA_ENFORCED = "schema_enforced"
+        const val LEGACY_STATE = "state"
+        const val LEGACY_SCHEMA_ENFORCED = "schema_enforced"
+        private const val RESUME_TOKEN = "resumeToken"
         private const val DEBEZIUM_RESUME_TOKEN = "resume_token"
 
+        /**
+         * A checkpoint for [resumeToken]; [prior], the state the read started from, lends its
+         * legacy variables so they are carried unchanged (none after a reset, or on a connection
+         * that never ran the legacy connector).
+         */
         fun of(
             resumeToken: BsonDocument?,
             schemaEnforced: Boolean,
             cdcSyncedUntil: Instant?,
+            prior: MongoDbCdcState? = null,
         ): MongoDbCdcState =
             MongoDbCdcState(
                 resumeToken = resumeToken?.let { Jsons.readTree(it.toJson()) },
                 schemaEnforced = schemaEnforced,
                 cdcSyncedUntil = cdcSyncedUntil,
+                legacyState = prior?.legacyState,
+                legacySchemaEnforced = prior?.legacySchemaEnforced,
             )
 
         /**
-         * Parses either persisted shape; null when there is no state at all (first sync, or the
-         * empty object the legacy connector wrote after a full-refresh-only sync).
+         * Parses a persisted state; null when there is none at all (first sync, or the empty object
+         * the legacy connector wrote after a full-refresh-only sync). A `resumeToken` is used as
+         * is; without one, a legacy `state` is migrated into it (a full-refresh-only sync of a
+         * migrated connection writes `resumeToken: null` beside the carried legacy variables).
          */
         fun fromOpaqueStateValue(state: OpaqueStateValue?): MongoDbCdcState? =
             when {
                 state == null || state.isNull || (state.isObject && state.isEmpty) -> null
-                state.has(DEBEZIUM_STATE) -> fromDebeziumOffset(state)
+                state[RESUME_TOKEN]?.isNull == false ->
+                    Jsons.treeToValue(state, MongoDbCdcState::class.java)
+                state.has(LEGACY_STATE) -> fromDebeziumOffset(state)
                 else -> Jsons.treeToValue(state, MongoDbCdcState::class.java)
             }
 
@@ -79,15 +104,24 @@ data class MongoDbCdcState(
          * only when they carry the same token.
          */
         private fun fromDebeziumOffset(persisted: JsonNode): MongoDbCdcState {
-            val schemaEnforcedNode: JsonNode? = persisted[DEBEZIUM_SCHEMA_ENFORCED]
+            val legacySchemaEnforced: JsonNode? = persisted[LEGACY_SCHEMA_ENFORCED]
+            val nativeSchemaEnforced: JsonNode? = persisted["schemaEnforced"]
             val schemaEnforced: Boolean =
-                if (schemaEnforcedNode?.isBoolean == true) schemaEnforcedNode.asBoolean() else true
-            val offsets: JsonNode = persisted[DEBEZIUM_STATE]
+                when {
+                    nativeSchemaEnforced?.isBoolean == true -> nativeSchemaEnforced.asBoolean()
+                    legacySchemaEnforced?.isBoolean == true -> legacySchemaEnforced.asBoolean()
+                    else -> true
+                }
+            val offsets: JsonNode = persisted[LEGACY_STATE]
             if (offsets.isNull) {
-                return MongoDbCdcState(resumeToken = null, schemaEnforced = schemaEnforced)
+                return MongoDbCdcState(
+                    resumeToken = null,
+                    schemaEnforced = schemaEnforced,
+                    legacySchemaEnforced = legacySchemaEnforced,
+                )
             }
             MongoDbStateMigration.require(offsets.isObject && offsets.size() >= 1) {
-                "'$DEBEZIUM_STATE' must be a non-empty offset map, got $offsets"
+                "'$LEGACY_STATE' must be a non-empty offset map, got $offsets"
             }
             val tokens: Set<String> =
                 offsets
@@ -113,11 +147,16 @@ data class MongoDbCdcState(
                     }
                     .toSet()
             MongoDbStateMigration.require(tokens.size == 1) {
-                "'$DEBEZIUM_STATE' holds ${tokens.size} different resume tokens (one per shard, " +
+                "'$LEGACY_STATE' holds ${tokens.size} different resume tokens (one per shard, " +
                     "from a per-replica-set configuration); they cannot resume a cluster-wide " +
                     "change stream"
             }
-            return of(migrateDebeziumResumeToken(tokens.single()), schemaEnforced, null)
+            return MongoDbCdcState(
+                resumeToken = Jsons.readTree(migrateDebeziumResumeToken(tokens.single()).toJson()),
+                schemaEnforced = schemaEnforced,
+                legacyState = offsets,
+                legacySchemaEnforced = legacySchemaEnforced,
+            )
         }
 
         /** The offset's token: hex `_data` (Debezium 2.x) or base64 BSON document (3.x). */
