@@ -1,12 +1,14 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import base64
 import re
 from urllib.parse import parse_qs, urlsplit
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from airbyte_cdk.test.entrypoint_wrapper import read
-
 from source_commercetools.components import CommerceToolsOauth2Authenticator
 from source_commercetools.source import SourceCommercetools
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 CONFIG = {
