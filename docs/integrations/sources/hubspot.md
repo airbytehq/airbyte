@@ -150,8 +150,9 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
 9. (Optional) To sync history for only some properties, list their internal names in **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties**. See [Notes on the `property_history` streams](#notes-on-the-property_history-streams).
 10. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-11. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
-12. Click **Set up source** and wait for the tests to complete.
+11. (Optional) Enable **Prefix custom objects that share a name with a built-in stream** if connection setup fails with a duplicate stream name error. See [Custom objects that share a name with a built-in stream](#custom-objects-that-share-a-name-with-a-built-in-stream).
+12. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+13. Click **Set up source** and wait for the tests to complete.
 
 <!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
@@ -172,8 +173,9 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 7. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
 8. (Optional) To sync history for only some properties, list their internal names in **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties**. See [Notes on the `property_history` streams](#notes-on-the-property_history-streams).
 9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-10. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
-11. Click **Set up source** and wait for the tests to complete.
+10. (Optional) Enable **Prefix custom objects that share a name with a built-in stream** if connection setup fails with a duplicate stream name error. See [Custom objects that share a name with a built-in stream](#custom-objects-that-share-a-name-with-a-built-in-stream).
+11. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+12. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -443,7 +445,6 @@ The `list_memberships` stream reads memberships for every list returned by the `
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
-If a custom object has the same name as a built-in stream (for example, a custom object named `form_submissions`), discover returns two streams with that name and connection setup fails with a duplicate stream name error. To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`) in the source configuration and refresh the source schema. The custom object is then exposed as `custom_object_<name>`. Custom objects with other names are not renamed. If you were already syncing the built-in stream with that name, it may have been receiving the custom object's records. After enabling the setting and refreshing the schema, clear that stream's data so its destination table contains only the built-in stream's records.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
@@ -454,6 +455,18 @@ First you need to give the connector some additional permissions:
 - **If you are using OAuth on OSS, Private App, or Service Key auth** go into the HubSpot UI where you created your Private App, Service Key, or OAuth application and add the `crm.objects.custom.read` scope to its scopes. See [HubSpot's scopes documentation](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes).
 
 Then, go to the schema tab of your connection and click **refresh source schema** to pull in those new streams for syncing.
+
+<FieldAnchor field="prefix_colliding_custom_objects">
+
+#### Custom objects that share a name with a built-in stream
+
+The connector names each custom object stream after the custom object's `name`. If that name matches a built-in stream, such as a custom object named `form_submissions`, the catalog contains two streams with the same name, and connection setup fails with a duplicate stream name error.
+
+To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`), then refresh the source schema. The connector renames each colliding custom object stream to `custom_object_<name>`, for example `custom_object_form_submissions`. Custom objects whose names don't collide keep their names. The setting is off by default, so existing stream names don't change when you upgrade.
+
+If a connection was already syncing a built-in stream whose name collides with a custom object, that stream was syncing the custom object's records instead of the built-in data. After you enable the setting, the stream with the built-in name syncs the built-in data, and the custom object's records move to `custom_object_<name>`. Clear the data for the stream with the built-in name so its destination table doesn't mix records from both sources, and select `custom_object_<name>` if you still want the custom object's data. Because the renamed stream has a different name, it usually writes to a different destination table.
+
+</FieldAnchor>
 
 ## Limitations & Troubleshooting
 
@@ -576,7 +589,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
+| 6.13.0 | 2026-10-20 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add optional `prefix_colliding_custom_objects` setting that renames custom object streams whose names match a built-in stream to `custom_object_<name>`, to avoid duplicate stream name errors. Off by default |
 | 6.12.2 | 2026-10-20 | [89246](https://github.com/airbytehq/airbyte/pull/89246) | Update dependencies |
 | 6.12.1 | 2026-10-13 | [87204](https://github.com/airbytehq/airbyte/pull/87204) | Update dependencies |
 | 6.12.0 | 2026-10-10 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add experimental `flows` stream that syncs full workflow definitions from HubSpot's Automation v4 API. Available when `enable_experimental_streams` is on. The `workflows` stream is unchanged |
