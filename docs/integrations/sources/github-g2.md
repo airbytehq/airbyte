@@ -1,5 +1,9 @@
 # GitHub (Gen 2)
 
+:::warning Experimental connector
+This connector is experimental and intended for internal Airbyte use only. It is not publicly listed and may be removed or folded into the main GitHub source in the future.
+:::
+
 <HideInUI>
 
 This page contains the setup guide and reference information for the [GitHub (Gen 2)](https://www.github.com) source connector.
@@ -75,7 +79,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
 10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
 
-11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. While the declarative migration is in progress this setting applies only to the streams already moved to the declarative manifest (`repositories`, `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users`, `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments`, `pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`, `commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`); the remaining streams are still read one at a time. Raising it speeds up those streams but increases the risk of hitting GitHub's secondary rate limits.
+11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. All streams use the declarative manifest; raising this value may speed up syncs but increases the risk of hitting GitHub's secondary rate limits.
 
 ### For Airbyte Open Source:
 
@@ -83,6 +87,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
+
+## Output shape
+
+All streams emit flat records with deterministic scalar or scalar-array columns. Embedded GitHub identities use prefixed identity columns, and the multi-field arrays are separate streams: `workflow_job_steps`, `release_assets`, and `contributor_activity_weeks`. `events.payload` and `deployments.payload` remain opaque JSON fields under approved exemptions.
+
+Every field is strongly typed; values without a stable shape are opaque JSON (`payload`), never partially described objects. Every stream root uses `additionalProperties: false`; a future need for fields beyond declared columns requires a dedicated opaque JSON column kept separate from declared columns, never root `additionalProperties`, and human approval recorded in `FLATTEN_EXEMPTIONS`.
 
 <HideInUI>
 
@@ -102,6 +112,7 @@ This connector outputs the following full refresh streams:
 - [Assignees](https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees)
 - [Branches](https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches)
 - [Contributor Activity](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
+- [Contributor activity weeks](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
 - [Collaborators](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators)
 - [Issue labels](https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository)
 - [Organizations](https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations)
@@ -134,11 +145,13 @@ This connector outputs the following incremental streams:
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
 - [Releases](https://docs.github.com/en/graphql/reference/objects#release)
+- [Release assets](https://docs.github.com/en/graphql/reference/objects#releaseasset)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
 - [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
+- [Workflow job steps](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 

@@ -212,6 +212,36 @@ class ReleasesRecordTransformation(RecordTransformation):
 
 
 @dataclass
+class ReleaseAssetRecordTransformation(RecordTransformation):
+    """Convert a GraphQL release asset node to its flat REST-compatible field names."""
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        node_id = record.get("node_id") or record.get("id")
+        record["node_id"] = node_id
+        record["id"] = _extract_database_id_from_node_id(node_id)
+
+        for source, target in (
+            ("downloadUrl", "browser_download_url"),
+            ("contentType", "content_type"),
+            ("downloadCount", "download_count"),
+            ("createdAt", "created_at"),
+            ("updatedAt", "updated_at"),
+        ):
+            if source in record:
+                record[target] = record.pop(source)
+        uploader = record.pop("uploader", None) or {}
+        record["uploader_id"] = uploader.get("id")
+        record["uploader_login"] = uploader.get("login")
+        record["uploader_type"] = uploader.get("__typename")
+
+
+@dataclass
 class NestedGraphQLPaginationStrategy(PaginationStrategy):
     """Two-level cursor traversal for `reviews` and `issue_reactions`.
 
@@ -471,12 +501,7 @@ class DeepNestedGraphQLPaginationStrategy(PaginationStrategy):
 
 @dataclass
 class IssueTimelineEventsExtractor(RecordExtractor):
-    """Collapse an issue's timeline page into one record keyed by event type.
-
-    The legacy `IssueTimelineEvents.parse_response` yielded `{<event type>: <event>, ...}` per page,
-    the last event of each type winning, and a bare record when the body was not a list.
-    `repository` and `issue_number` are added by the stream's transformations.
-    """
+    """Emit one record for each event in a timeline response."""
 
     config: Config
     parameters: Mapping[str, Any]
@@ -486,12 +511,44 @@ class IssueTimelineEventsExtractor(RecordExtractor):
             body = response.json()
         except ValueError:
             body = None
-        record: MutableMapping[str, Any] = {}
         if isinstance(body, list):
             for event in body:
-                if isinstance(event, Mapping) and "event" in event:
-                    record[event["event"]] = event
-        yield record
+                if isinstance(event, Mapping):
+                    yield event
+        elif isinstance(body, Mapping) and "event" in body:
+            yield body
+
+
+@dataclass
+class EnforceDeclaredSchema(RecordTransformation):
+    """Drop undeclared fields and normalize scalar values for declared array fields."""
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    schema: Mapping[str, Any]
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        properties = self.schema.get("properties", {})
+        for field_name in list(record):
+            if field_name not in properties:
+                del record[field_name]
+
+        for field_name, value in list(record.items()):
+            field_type = properties[field_name].get("type")
+            field_types = field_type if isinstance(field_type, list) else [field_type]
+            if (
+                "array" in field_types
+                and value is not None
+                and not isinstance(value, list)
+                and isinstance(value, (str, int, float, bool))
+            ):
+                record[field_name] = [value]
 
 
 @dataclass

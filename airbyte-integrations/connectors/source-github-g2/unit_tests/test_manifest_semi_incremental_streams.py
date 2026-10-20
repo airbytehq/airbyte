@@ -446,11 +446,7 @@ def test_emitted_state_resumes_the_next_sync(rate_limit_mock_response, requests_
 
 
 def test_pull_requests_flatten_head_and_base_repositories(rate_limit_mock_response, requests_mock):
-    """`PullRequests.transform` replaced `head.repo` with `head.repo_id`. It also meant to do the
-    same for `base`, but read the id off the already-popped `head.repo`, so legacy always shipped
-    `base.repo_id: null` next to an intact `base.repo`. The schema declares `base.repo_id` an
-    integer, so the manifest fills it from `base.repo` — the one deliberate data change in this
-    group. `base.repo` stays, as before."""
+    """Head and base repository identity values are emitted as flat scalar columns."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
@@ -477,8 +473,11 @@ def test_pull_requests_flatten_head_and_base_repositories(rate_limit_mock_respon
     records, _, _, error = _read(config, "pull_requests")
 
     assert error is None
-    assert [record["head"] for record in records] == [{"ref": "fix", "repo_id": 11}, {"ref": "old", "repo_id": None}]
-    assert [record["base"] for record in records] == [{"ref": "main", "repo": {"id": 22}, "repo_id": 22}] * 2
+    assert [record["head_ref"] for record in records] == ["fix", "old"]
+    assert [record["head_repo_id"] for record in records] == [11, None]
+    assert [record["base_ref"] for record in records] == ["main", "main"]
+    assert [record["base_repo_id"] for record in records] == [22, 22]
+    assert all("head" not in record and "base" not in record for record in records)
 
 
 @pytest.mark.parametrize(
@@ -546,8 +545,14 @@ def test_stargazers_promote_the_user_id(rate_limit_mock_response, requests_mock)
 
     assert error is None
     assert records == [
-        {"starred_at": _AFTER_START, "user": {"id": 7, "login": "octocat"}, "repository": "docker/compose", "user_id": 7},
-        {"starred_at": _LATER, "user": None, "repository": "docker/compose", "user_id": None},
+        {
+            "starred_at": _AFTER_START,
+            "repository": "docker/compose",
+            "user_id": 7,
+            "user_login": "octocat",
+            "user_type": None,
+        },
+        {"starred_at": _LATER, "repository": "docker/compose", "user_id": None, "user_login": None, "user_type": None},
     ]
 
 

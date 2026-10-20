@@ -204,7 +204,17 @@ SINGLE_PARENT_CASES = [
         ],
         "/issues/3/timeline",
         {"per_page": ["100"]},
-        [{"closed": {"event": "closed", "actor": {"login": "octo"}}, "repository": _REPO, "issue_number": 3}],
+        [
+            {
+                "event": "closed",
+                "repository": _REPO,
+                "issue_number": 3,
+                "parent_shas": [],
+                "comment_ids": [],
+                "source_issue_repository_full_name": None,
+                "actor_login": "octo",
+            }
+        ],
         id="issue_timeline_events",
     ),
     pytest.param(
@@ -267,7 +277,7 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     assert by_name["pull_request_commits"].source_defined_primary_key == [["sha"]]
     assert by_name["team_members"].source_defined_primary_key == [["id"], ["team_slug"]]
     assert by_name["team_memberships"].source_defined_primary_key == [["url"]]
-    assert by_name["issue_timeline_events"].source_defined_primary_key == [["repository"], ["issue_number"]]
+    assert by_name["issue_timeline_events"].source_defined_primary_key == [["id"]]
     for name in INCREMENTAL_STREAMS:
         assert by_name[name].default_cursor_field == (["created_at"] if name.endswith("reactions") else ["updated_at"])
         assert by_name[name].supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
@@ -356,17 +366,17 @@ def test_pull_request_commits_legacy_scenario(rate_limit_mock_response, requests
             _record(id=3, updated_at="2022-02-02T10:10:06Z", number=3, head={}, base={}),
         ],
     )
-    requests_mock.get(f"{_API}/repos/organization/repository/pulls/2/commits", json=[{"sha": 1}, {"sha": 2}])
-    requests_mock.get(f"{_API}/repos/organization/repository/pulls/3/commits", json=[{"sha": 3}, {"sha": 4}])
+    requests_mock.get(f"{_API}/repos/organization/repository/pulls/2/commits", json=[{"sha": "1"}, {"sha": "2"}])
+    requests_mock.get(f"{_API}/repos/organization/repository/pulls/3/commits", json=[{"sha": "3"}, {"sha": "4"}])
 
     records, _, _, error = _read(config, "pull_request_commits")
 
     assert error is None
     assert sorted(records, key=lambda record: record["sha"]) == [
-        {"sha": 1, "repository": "organization/repository", "pull_number": 2},
-        {"sha": 2, "repository": "organization/repository", "pull_number": 2},
-        {"sha": 3, "repository": "organization/repository", "pull_number": 3},
-        {"sha": 4, "repository": "organization/repository", "pull_number": 3},
+        {"sha": "1", "repository": "organization/repository", "pull_number": 2},
+        {"sha": "2", "repository": "organization/repository", "pull_number": 2},
+        {"sha": "3", "repository": "organization/repository", "pull_number": 3},
+        {"sha": "4", "repository": "organization/repository", "pull_number": 3},
     ]
     assert _requested(requests_mock, "/pulls/1/commits") == []
 
@@ -668,13 +678,15 @@ def test_issue_timeline_events_expand_every_issue_regardless_of_start_date(rate_
     records, _, _, error = _read(config, "issue_timeline_events")
 
     assert error is None
-    assert records == [{"closed": {"event": "closed"}, "repository": _REPO, "issue_number": 3}]
+    assert len(records) == 1
+    assert records[0]["event"] == "closed"
+    assert records[0]["repository"] == _REPO
+    assert records[0]["issue_number"] == 3
     assert [request.qs.get("since") for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [None]
 
 
-def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_response, requests_mock):
-    """`test_issues_timeline_events`, ported onto the fixture files it used: the page of timeline
-    events becomes one record keyed by event type, plus `repository` and `issue_number`."""
+def test_issue_timeline_events_emit_one_flat_record_per_event(rate_limit_mock_response, requests_mock):
+    """Each REST timeline event is emitted as an independently flattened record."""
     config = _config("airbytehq/airbyte")
     _mock_repository_resolution(requests_mock, "airbytehq/airbyte")
     requests_mock.get(f"{_API}/repos/airbytehq/airbyte/issues", json=[_record(id=1, number=1, updated_at=_AFTER_START)])
@@ -686,7 +698,17 @@ def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_r
     records, _, _, error = _read(config, "issue_timeline_events")
 
     assert error is None
-    assert records == json.load(open(Path(__file__).parent / "responses/issue_timeline_events_response.json"))
+    events = json.load(open(Path(__file__).parent / "responses/issue_timeline_events.json"))
+    assert len(records) == len(events)
+    for event, record in zip(events, records):
+        assert record["repository"] == "airbytehq/airbyte"
+        assert record["issue_number"] == 1
+        assert record["event"] == event["event"]
+        assert record["id"] == event["id"]
+        if event.get("actor"):
+            assert record["actor_id"] == event["actor"]["id"]
+            assert record["actor_login"] == event["actor"]["login"]
+            assert record["actor_type"] == event["actor"]["type"]
 
 
 @pytest.mark.parametrize(
@@ -699,9 +721,8 @@ def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_r
         pytest.param({"json": "not_a_list"}, id="string_instead_of_list"),
     ],
 )
-def test_issue_timeline_events_odd_bodies_yield_the_bare_record(response, rate_limit_mock_response, requests_mock):
-    """`test_issue_timeline_events_parse_response_defensive`, ported: a body that is not a list
-    of events still produces the `repository`/`issue_number` record, never a failure."""
+def test_issue_timeline_events_odd_bodies_are_ignored(response, rate_limit_mock_response, requests_mock):
+    """Non-event response bodies are ignored without failing the stream."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/issues", json=[_record(id=30, number=3, updated_at=_AFTER_START)])
@@ -711,4 +732,4 @@ def test_issue_timeline_events_odd_bodies_yield_the_bare_record(response, rate_l
 
     assert error is None
     assert statuses[-1] == "COMPLETE"
-    assert records == [{"repository": _REPO, "issue_number": 3}]
+    assert records == []

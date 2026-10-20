@@ -80,14 +80,7 @@ class CommentsTest(TestCase):
         assert len(actual_messages.records) == 1
 
         record_data = actual_messages.records[0].record.data
-        reactions = record_data.get("reactions")
-
-        assert reactions is not None, "reactions field should exist"
-        assert "plus_one" in reactions, "plus_one field should exist after transformation"
-        assert "minus_one" in reactions, "minus_one field should exist after transformation"
-        assert "+1" not in reactions, "+1 field should not exist after transformation"
-        assert "-1" not in reactions, "-1 field should not exist after transformation"
-
-        assert reactions["plus_one"] == 2, "plus_one value should match original +1 value"
-        assert reactions["minus_one"] == 1, "minus_one value should match original -1 value"
-        assert reactions["total_count"] == 5, "total_count should remain unchanged"
+        assert record_data["reactions_plus_one"] == 2
+        assert record_data["reactions_minus_one"] == 1
+        assert record_data["reactions_total_count"] == 5
+        assert "reactions" not in record_data

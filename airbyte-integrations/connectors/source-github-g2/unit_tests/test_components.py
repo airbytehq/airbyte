@@ -16,6 +16,8 @@ import pytest
 import requests
 from components import (
     DeepNestedGraphQLPaginationStrategy,
+    EnforceDeclaredSchema,
+    IssueTimelineEventsExtractor,
     NestedGraphQLPaginationStrategy,
     ReleasesRecordTransformation,
     _extract_database_id_from_node_id,
@@ -24,6 +26,64 @@ from components import (
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+def test_enforce_declared_schema_drops_undeclared_fields_and_normalizes_arrays():
+    transformation = EnforceDeclaredSchema(
+        config={},
+        parameters={},
+        schema={
+            "properties": {
+                "tags": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
+                "ids": {"type": "array", "items": {"type": "integer"}},
+                "nullable": {"type": ["null", "array"], "items": {"type": "integer"}},
+                "value": {"type": "string"},
+                "opaque": {},
+            }
+        },
+    )
+    record = {
+        "tags": "github",
+        "ids": [1, 2],
+        "nullable": None,
+        "value": {"not": "coerced"},
+        "opaque": {"shape": "unknown"},
+        "future_field": "drop me",
+    }
+
+    transformation.transform(record)
+
+    assert record == {
+        "tags": ["github"],
+        "ids": [1, 2],
+        "nullable": None,
+        "value": {"not": "coerced"},
+        "opaque": {"shape": "unknown"},
+    }
+
+
+def test_enforce_declared_schema_wraps_integer_array_scalars():
+    transformation = EnforceDeclaredSchema(
+        config={},
+        parameters={},
+        schema={"properties": {"ids": {"type": "array", "items": {"type": "integer"}}}},
+    )
+    record = {"ids": 7}
+
+    transformation.transform(record)
+
+    assert record == {"ids": [7]}
+
+
+def test_issue_timeline_extractor_emits_each_event():
+    extractor = IssueTimelineEventsExtractor(config={}, parameters={})
+
+    class Response:
+        @staticmethod
+        def json():
+            return [{"event": "closed"}, {"event": "reopened"}]
+
+    assert list(extractor.extract_records(Response())) == [{"event": "closed"}, {"event": "reopened"}]
 
 
 def _response(payload):

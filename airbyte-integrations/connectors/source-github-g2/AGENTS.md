@@ -1,26 +1,35 @@
+> Experimental / internal Airbyte use only; not publicly listed and may be removed or folded into the main GitHub source.
+
 > NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
 
-# Contributing to source-github
+# Contributing to source-github-g2
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-## Migration to manifest-only (complete)
+## GitHub Gen 2 flat contract
 
-The connector is now fully manifest-only (tracking issue:
-airbytehq/airbyte-internal-issues#16492): `manifest.yaml` and `components.py` at the connector
-root, `language:manifest-only` in `metadata.yaml`, and no Python package — Step 9 moved the
-last six (the GraphQL) streams into the manifest, and Step 10 deleted `source_github/`,
-`main.py` and the root `pyproject.toml`. The connector runs on the `source-declarative-manifest`
-base image, where `components.py` is loaded as `source_declarative_manifest.components` — every
-`class_name:` in the manifest uses that module path, and `unit_tests/conftest.py` puts the
-connector root on `sys.path` so the same imports work under `components` locally.
+Forked from `source-github` 2.7.9 on 2026-10-20. Every stream has a deterministic flat schema:
+root `additionalProperties: false`; scalar fields and arrays of scalars only; nested value
+objects use prefixed columns; embedded entities expose identity columns; multi-field arrays use
+child streams. Keep `EnforceDeclaredSchema` last in every stream's transformations.
 
-`unit_tests/` is a self-contained poetry project (`unit_tests/pyproject.toml`,
-`package-mode = false`); run the suite exactly as CI does: `cd unit_tests && poetry install
---no-root && poetry run pytest`. Helpers live in `unit_tests/utils.py`: `make_source` builds
-the `YamlDeclarativeSource` on `manifest.yaml`, and `resolve_repositories_and_organizations` /
-`get_authenticator` are test-side ports of the connector's former resolution/authenticator
-methods.
+The contract test in `unit_tests/test_flat_schema_contract.py` must remain green. Its
+`FLATTEN_EXEMPTIONS` map contains only the AJ-approved opaque JSON fields `events.payload` and
+`deployments.payload`; any additional exemption requires human approval. Opaque fields have no
+partial schema description and are passed through without coercion.
+
+### Typing principle
+
+Every field is strongly typed; a value with no stable shape is declared as opaque JSON
+(`payload`), never as a partially described object. The stream root stays
+`additionalProperties: false`; if a known use case needs fields beyond the declared columns,
+they belong in one dedicated opaque JSON column kept separate from those columns, never at the
+root. Opaque fields require human approval and are listed in `FLATTEN_EXEMPTIONS`.
+
+`unit_tests/` is a self-contained Poetry project (`unit_tests/pyproject.toml`,
+`package-mode = false`). Run the suite as CI does:
+`cd unit_tests && poetry install --no-root && poetry run pytest -q`. Helpers live in
+`unit_tests/utils.py`: `make_source` builds the `YamlDeclarativeSource` on `manifest.yaml`.
 
 `check` is declarative too: `CheckStream` on `branches` with
 `config_overrides.max_waiting_time: 1`. `branches` slices on `repository_partition_router`,
@@ -63,13 +72,13 @@ Things worth knowing before touching either half:
   The parent is read with a fresh state manager (no `incremental_dependency`), i.e. from
   `start_date`, which is what the Python parents did. Set `use_cache: true` on a parent's
   requester so the parent read is served from the pages the parent stream itself fetched.
-- The Python parent-child streams nested their state under the repository and each parent id
+- The original parent-child streams nested their state under the repository and each parent id
   (`{repo: {project_id: {column_id: {updated_at}}}}`). `LegacyToPerPartitionStateMigration` only
   handles one level, so those four streams use
   `components.NestedLegacyToPerPartitionStateMigration`, which rebuilds the exact partition the
   router emits (`{"column_id": 50, "parent_slice": {"project_id": 5, "parent_slice": {"repository": ...}}}`,
-  ids as integers). `issue_timeline_events` collapses a page of events into one record with
-  `components.IssueTimelineEventsExtractor`; nothing declarative groups records per page.
+  ids as integers). `issue_timeline_events` emits one flat record per timeline event with
+  `components.IssueTimelineEventsExtractor`.
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
     `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first

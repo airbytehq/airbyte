@@ -380,9 +380,7 @@ def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
 def test_reaction_counts_are_renamed(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """`GithubStream.transform` renamed `+1`/`-1` to `plus_one`/`minus_one` and popped the
-    originals. The inline `reactions` schema declares only the renamed keys, so dropping
-    the rename would lose both counts."""
+    """Reaction counts are emitted as scalar `reactions_*` columns."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
@@ -399,8 +397,12 @@ def test_reaction_counts_are_renamed(stream_name, endpoint, rate_limit_mock_resp
     records, _, _, error = _read(config, stream_name)
 
     assert error is None
-    (reactions,) = [record["reactions"] for record in records]
-    assert reactions == {"total_count": 5, "plus_one": 2, "minus_one": 1, "heart": 2}
+    (record,) = records
+    assert record["reactions_total_count"] == 5
+    assert record["reactions_plus_one"] == 2
+    assert record["reactions_minus_one"] == 1
+    assert record["reactions_heart"] == 2
+    assert "reactions" not in record
 
 
 @pytest.mark.parametrize(
@@ -425,7 +427,10 @@ def test_reaction_rename_edge_cases(reactions, expected, rate_limit_mock_respons
     records, _, _, error = _read(config, "comments")
 
     assert error is None
-    assert [record["reactions"] for record in records] == [expected]
+    flattened_expected = {f"reactions_{field}": value for field, value in expected.items()}
+    flattened_actual = {field: value for field, value in records[0].items() if field.startswith("reactions_")}
+    assert flattened_actual == flattened_expected
+    assert "reactions" not in records[0]
 
 
 def test_reaction_less_record_does_not_gain_a_reactions_object(rate_limit_mock_response, requests_mock):

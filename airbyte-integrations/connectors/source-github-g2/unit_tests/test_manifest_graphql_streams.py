@@ -195,8 +195,7 @@ def _legacy_releases_state(**per_repository_cursor):
 
 
 def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_response, requests_mock):
-    """`ReleasesRecordTransformation` is a port of `streams.Releases.parse_response`, so every
-    field that transformation used to synthesize must still be present and identical."""
+    """Release records keep all scalar fields and entity identities in a flat shape."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
 
@@ -208,30 +207,76 @@ def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_respons
     assert record["repository"] == REPOSITORY
     assert record["target_commitish"] == "abc123"
     assert record["mentions_count"] == 2
-    assert record["author"]["type"] == "User"
+    assert record["author_type"] == "User"
+    assert record["author_id"] == 7
+    assert record["author_login"] == "octocat"
     # Reaction groups collapse to the REST counts, including zeros for unused reactions.
-    assert record["reactions"] == {
-        "plus_one": 3,
-        "minus_one": 0,
-        "laugh": 0,
-        "hooray": 0,
-        "confused": 0,
-        "heart": 1,
-        "rocket": 0,
-        "eyes": 0,
-        "total_count": 4,
-    }
-    # Assets are unwrapped, the uploader is flattened, and the numeric id is recovered from
-    # the node id because GraphQL's ReleaseAsset has no databaseId.
-    assert len(record["assets"]) == 1
-    assert record["assets"][0]["uploader_id"] == 7
-    assert record["assets"][0]["id"] == 1
+    assert record["reactions_plus_one"] == 3
+    assert record["reactions_minus_one"] == 0
+    assert record["reactions_laugh"] == 0
+    assert record["reactions_hooray"] == 0
+    assert record["reactions_confused"] == 0
+    assert record["reactions_heart"] == 1
+    assert record["reactions_rocket"] == 0
+    assert record["reactions_eyes"] == 0
+    assert record["reactions_total_count"] == 4
+    assert "assets" not in record
     # GraphQL returns none of these; they are synthesized to match the old REST payload.
     assert record["url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11"
     assert record["assets_url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11/assets"
     assert record["upload_url"] == f"https://uploads.github.com/repos/{REPOSITORY}/releases/11/assets{{?name,label}}"
     assert record["tarball_url"] == f"https://api.github.com/repos/{REPOSITORY}/tarball/v1.0.0"
     assert record["zipball_url"] == f"https://api.github.com/repos/{REPOSITORY}/zipball/v1.0.0"
+
+
+def test_release_assets_expand_into_child_records(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    node = _release_node()
+    node["assets"]["nodes"] = [
+        {
+            "node_id": "RA_kwDOAbcDEf4AAAAB",
+            "name": "asset.zip",
+            "label": "stable",
+            "state": "uploaded",
+            "digest": "sha256:abc",
+            "content_type": "application/zip",
+            "size": 42,
+            "download_count": 5,
+            "created_at": "2022-01-03T00:00:00Z",
+            "updated_at": "2022-01-04T00:00:00Z",
+            "browser_download_url": "https://github.com/download/asset.zip",
+            "url": "https://api.github.com/assets/1",
+            "uploader": {"__typename": "User", "id": 7, "login": "octocat"},
+        }
+    ]
+    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [node]))
+
+    records, error = _read(_config(), "release_assets")
+
+    assert error is None
+    assert records == [
+        {
+            "repository": REPOSITORY,
+            "release_id": 11,
+            "release_created_at": "2022-01-01T00:00:00Z",
+            "id": 1,
+            "node_id": "RA_kwDOAbcDEf4AAAAB",
+            "name": "asset.zip",
+            "label": "stable",
+            "state": "uploaded",
+            "digest": "sha256:abc",
+            "content_type": "application/zip",
+            "size": 42,
+            "download_count": 5,
+            "created_at": "2022-01-03T00:00:00Z",
+            "updated_at": "2022-01-04T00:00:00Z",
+            "browser_download_url": "https://github.com/download/asset.zip",
+            "url": "https://api.github.com/assets/1",
+            "uploader_id": 7,
+            "uploader_login": "octocat",
+            "uploader_type": "User",
+        }
+    ]
 
 
 def test_releases_sends_owner_and_name_as_graphql_variables(rate_limit_mock_response, requests_mock):
@@ -450,7 +495,7 @@ def test_releases_warns_when_a_release_has_more_than_100_assets(rate_limit_mock_
     records, error = _read(_config(), "releases")
 
     assert error is None
-    assert len(records[0]["assets"]) == 100
+    assert "assets" not in records[0]
     assert any(">100 assets" in message for message in caplog.messages)
 
 
@@ -465,7 +510,7 @@ def test_releases_without_reaction_groups_reports_null_reactions(rate_limit_mock
     records, error = _read(_config(), "releases")
 
     assert error is None
-    assert records[0]["reactions"] is None
+    assert not any(field.startswith("reactions_") for field in records[0])
 
 
 # --- Page-size reduction ------------------------------------------------------------------
@@ -745,14 +790,14 @@ def test_pull_request_stats_aggregates_the_connection_counts(rate_limit_mock_res
     assert record["comments"] == 6
     assert record["commits"] == 9
     assert record["repository"] == REPOSITORY
-    assert record["merged_by"]["type"] == "User"
-    assert "__typename" not in record["merged_by"]
-    assert record["merged_by"]["id"] == 7
+    assert record["merged_by_type"] == "User"
+    assert record["merged_by_id"] == 7
+    assert record["merged_by_login"] == "octocat"
+    assert "merged_by" not in record
 
 
 def test_pull_request_stats_leaves_merged_by_null_when_not_merged(rate_limit_mock_response, requests_mock):
-    """Writing `type` into a null `merged_by` would materialize an object where the legacy
-    record had null."""
+    """A missing merged-by entity leaves its identity columns null and never emits an object."""
     _mock_repository_resolution(requests_mock)
     node = {
         "node_id": "PR_2",
@@ -769,7 +814,10 @@ def test_pull_request_stats_leaves_merged_by_null_when_not_merged(rate_limit_moc
     records, error = _read(_config(), "pull_request_stats")
 
     assert error is None
-    assert records[0]["merged_by"] is None
+    assert "merged_by" not in records[0]
+    assert records[0].get("merged_by_id") is None
+    assert records[0].get("merged_by_login") is None
+    assert records[0].get("merged_by_type") is None
     assert records[0]["review_comments"] == 0
 
 
@@ -904,11 +952,7 @@ def test_reviews_record_keeps_the_rest_compatible_shape(rate_limit_mock_response
     # `commit { oid }` collapsed to the REST field name, and the nested object removed.
     assert record["commit_id"] == "deadbeef"
     assert "commit" not in record
-    # `_links` never came from GraphQL; it is rebuilt for backward compatibility.
-    assert record["_links"] == {
-        "html": {"href": record["html_url"]},
-        "pull_request": {"href": record["pull_request_url"]},
-    }
+    assert "_links" not in record
 
 
 def test_reviews_drills_into_a_pull_request_with_more_reviews(rate_limit_mock_response, requests_mock):
@@ -1030,7 +1074,7 @@ def test_issue_reactions_stamps_repository_and_issue_number(rate_limit_mock_resp
     assert len(records) == 1
     assert records[0]["repository"] == REPOSITORY
     assert records[0]["issue_number"] == 12
-    assert records[0]["user"]["type"] == "User"
+    assert records[0]["user_type"] == "User"
 
 
 def test_issue_reactions_drills_into_an_issue_with_more_reactions(rate_limit_mock_response, requests_mock):
@@ -1263,10 +1307,11 @@ def test_pull_request_comment_reactions_sets_the_user_type_when_there_is_a_user(
     records, error = _read(_config(), "pull_request_comment_reactions")
 
     assert error is None
-    assert {record["id"]: record["user"] for record in records} == {
-        301: {"node_id": "U_1", "id": 7, "login": "octocat", "type": "User"},
-        302: None,
+    assert {record["id"]: (record.get("user_id"), record.get("user_login"), record.get("user_type")) for record in records} == {
+        301: (7, "octocat", "User"),
+        302: (None, None, None),
     }
+    assert all("user" not in record for record in records)
 
 
 def test_pull_request_comment_reactions_omits_owner_and_name_on_drilldowns(rate_limit_mock_response, requests_mock):

@@ -132,7 +132,7 @@ def _partition_cursors(state_message):
 
 
 def _commit(sha, date):
-    return {"sha": sha, "commit": {"author": {"date": date}}}
+    return {"sha": str(sha), "commit": {"author": {"date": date}}}
 
 
 def _run(run_id, created_at, updated_at, repository=_REPO):
@@ -171,8 +171,22 @@ def test_commits_read_the_default_branch_when_none_is_configured(rate_limit_mock
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert records == [
-        {"sha": "a", "commit": {"author": {"date": _AFTER_START}}, "repository": _REPO, "branch": "main", "created_at": _AFTER_START},
-        {"sha": "b", "commit": {"author": {"date": _LATER}}, "repository": _REPO, "branch": "main", "created_at": _LATER},
+        {
+            "sha": "a",
+            "repository": _REPO,
+            "branch": "main",
+            "created_at": _AFTER_START,
+            "commit_author_date": _AFTER_START,
+            "parent_shas": [],
+        },
+        {
+            "sha": "b",
+            "repository": _REPO,
+            "branch": "main",
+            "created_at": _LATER,
+            "commit_author_date": _LATER,
+            "parent_shas": [],
+        },
     ]
     assert _requested(requests_mock, "/commits") == [f"/repos/{_REPO}/commits?per_page=100&sha=main&since=2022-01-01t00%3a00%3a00z"]
     assert _partition_cursors(states[-1]) == {'{"branch": "main", "parent_slice": {"repository": "docker/compose"}}': _LATER}
@@ -226,14 +240,14 @@ def test_commits_two_syncs_legacy_scenario(rate_limit_mock_response, requests_mo
 
     records, _, states, error = _read(config, "commits")
     assert error is None
-    assert [record["sha"] for record in records] == [1, 2, 3], "GitHub's `since` did the filtering; the Python class re-filtered strictly"
+    assert [record["sha"] for record in records] == ["1", "2", "3"], "GitHub's `since` did the filtering; the Python class re-filtered strictly"
     assert _partition_cursors(states[-1]) == {
         '{"branch": "branch", "parent_slice": {"repository": "organization/repository"}}': "2022-02-02T10:10:06Z"
     }
 
     records, _, states, error = _read(config, "commits", state=_state_message("commits", states[-1].stream.stream_state.__dict__))
     assert error is None
-    assert [record["sha"] for record in records] == [3, 4, 5, 6, 7]
+    assert [record["sha"] for record in records] == ["3", "4", "5", "6", "7"]
     assert _partition_cursors(states[-1]) == {
         '{"branch": "branch", "parent_slice": {"repository": "organization/repository"}}': "2022-02-02T10:10:14Z"
     }
@@ -291,8 +305,8 @@ def test_contributor_activity_flattens_the_author(rate_limit_mock_response, requ
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert records == [
-        {"total": 3, "weeks": [{"w": 1713052800, "a": 1, "d": 0, "c": 1}], "repository": _REPO, "login": "octo", "id": 7},
-        {"total": 0, "weeks": [{"w": 1713052800, "a": 0, "d": 0, "c": 0}], "repository": _REPO},
+        {"total": 3, "repository": _REPO, "author_id": 7, "author_login": "octo", "author_type": None},
+        {"total": 0, "repository": _REPO, "author_id": None, "author_login": None, "author_type": None},
     ]
     (request,) = [request for request in requests_mock.request_history if "/stats/" in request.path]
     assert request.headers["Accept"] == "application/vnd.github+json"
@@ -313,7 +327,30 @@ def test_contributor_activity_reads_the_response_fixture(rate_limit_mock_respons
 
     assert error is None
     assert len(records) == 1
-    assert records[0]["repository"] == "airbytehq/airbyte" and "author" not in records[0] and "login" in records[0]
+    assert records[0]["repository"] == "airbytehq/airbyte" and "author" not in records[0] and "author_login" in records[0]
+
+
+def test_contributor_activity_weeks_expand_into_child_records(rate_limit_mock_response, requests_mock):
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    week = {"w": 1713052800, "a": 1, "d": 0, "c": 1}
+    requests_mock.get(
+        f"{_API}/repos/{_REPO}/stats/contributors",
+        json=[{"author": {"login": "octo", "id": 7, "type": "User"}, "total": 3, "weeks": [week]}],
+    )
+
+    records, _, _, error = _read(config, "contributor_activity_weeks")
+
+    assert error is None
+    assert records == [
+        {
+            "repository": _REPO,
+            "author_id": 7,
+            "author_login": "octo",
+            "author_type": "User",
+            **week,
+        }
+    ]
 
 
 def test_contributor_activity_empty_response_yields_nothing(rate_limit_mock_response, requests_mock):
@@ -383,7 +420,8 @@ def test_workflow_runs_filter_on_updated_at(rate_limit_mock_response, requests_m
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert [record["id"] for record in records] == [3, 2]
-    assert records[0]["repository"] == {"full_name": _REPO}, "legacy emitted the payload as is, no `repository` string"
+    assert records[0]["repository"] == _REPO
+    assert records[0]["repository_id"] is None
     (request,) = [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]
     assert request.qs == {"per_page": ["100"]}
     assert "X-Airbyte-Window-Start" not in request.headers, "the stop condition reads the slice, not a smuggled header"
@@ -566,6 +604,56 @@ def test_workflow_jobs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
         f"/repos/org/repo/actions/runs/3/jobs?per_page=100&filter=all",
     ]
     assert states[-1].stream.stream_state.__dict__["state"] == {"completed_at": "2022-09-02T09:15:00Z"}
+
+
+def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, requests_mock):
+    config = _config("org/repo", start_date="2022-09-02T09:05:00Z")
+    _mock_repository_resolution(requests_mock, "org/repo")
+    runs_url = f"{_API}/repos/org/repo/actions/runs"
+    completed_at = "2022-09-02T09:10:02Z"
+    requests_mock.get(runs_url, json={"total_count": 1, "workflow_runs": [_run(23, _AFTER_START, completed_at, "org/repo")]})
+    requests_mock.get(
+        f"{runs_url}/23/jobs",
+        json={
+            "jobs": [
+                {
+                    "id": 7,
+                    "completed_at": completed_at,
+                    "steps": [
+                        {
+                            "number": 1,
+                            "name": "Checkout",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "started_at": _AFTER_START,
+                            "completed_at": completed_at,
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+
+    records, _, _, error = _read(config, "workflow_job_steps")
+
+    assert error is None
+    assert records == [
+        {
+            "repository": "org/repo",
+            "run_id": 23,
+            "job_id": 7,
+            "number": 1,
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": _AFTER_START,
+            "completed_at": completed_at,
+            "job_completed_at": completed_at,
+        }
+    ]
+    assert _requested(requests_mock, "/actions/runs/23/jobs") == [
+        f"/repos/org/repo/actions/runs/23/jobs?per_page=100&filter=all"
+    ]
 
 
 def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, requests_mock):
