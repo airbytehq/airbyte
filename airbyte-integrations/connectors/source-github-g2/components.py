@@ -542,12 +542,7 @@ class EnforceDeclaredSchema(RecordTransformation):
         for field_name, value in list(record.items()):
             field_type = properties[field_name].get("type")
             field_types = field_type if isinstance(field_type, list) else [field_type]
-            if (
-                "array" in field_types
-                and value is not None
-                and not isinstance(value, list)
-                and isinstance(value, (str, int, float, bool))
-            ):
+            if "array" in field_types and value is not None and not isinstance(value, list) and isinstance(value, (str, int, float, bool)):
                 record[field_name] = [value]
 
 
