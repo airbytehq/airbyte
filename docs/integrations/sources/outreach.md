@@ -6,7 +6,7 @@ The Outreach source supports both `Full Refresh` and `Incremental` syncs. You ca
 
 ### Output schema
 
-Some output streams are available from this source. A list of these streams can be found below in the [Streams](outreach.md#streams) section.
+Some output streams are available from this source. A list of these streams can be found below in the [Supported streams](#supported-streams) section.
 
 ### Features
 
@@ -17,38 +17,85 @@ Some output streams are available from this source. A list of these streams can 
 | SSL connection    | Yes        |
 | Namespaces        | No         |
 
-## Getting started
+## Prerequisites
 
-### Requirements
+- An Outreach account with access to the data you want to sync
+- An Outreach app with OAuth credentials (client ID and client secret)
+- A refresh token that Outreach issued for that app
 
-- Outreach Account
-- Outreach OAuth credentials
+## Setup guide
 
-### Setup guide
+### Step 1: Create an Outreach app
 
-Getting oauth credentials require contacting Outreach to request an account. Check out [here](https://www.outreach.io/lp/watch-demo#request-demo).
-Once you have an API application, you can follow the steps [here](https://api.outreach.io/api/v2/docs#authentication) to obtain a refresh token.
-Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings. The connector fills them in and saves each new refresh token that Outreach returns.
+1. In the [Outreach Developer Portal](https://developers.outreach.io/), create an app. See [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth).
+2. On the app's **API access** tab, add at least one redirect URI. You enter this same value in the connector's **Redirect URI** field.
+3. Select the `read` scope for each resource you want to sync, such as `accounts.read`, `prospects.read`, and `users.read`. The connector only reads data. It checks the connection by reading the `accounts` stream, so `accounts.read` is always required. If a scope is missing, Outreach returns a `403` error with the ID `unauthorizedOauthScope`.
+4. Copy the app's client ID and client secret. Outreach displays the client secret only once, when it's generated.
 
-## Streams
+Outreach provisions development credentials immediately and production credentials after the app is published and reviewed. Development credentials have limits: if more than 10 people from your organization use them, or users from another organization authorize them, Outreach expires the grant and those users must reauthorize the app weekly. See [Limitations of development credentials](https://developers.outreach.io/api/oauth/#limitations-of-development-credentials).
 
-List of available streams:
+### Step 2: Get a refresh token
 
-- Prospects
-- Sequences
-- SequenceStates
-- SequenceSteps
-- Calls
-- Mailings
-- Accounts
-- Opportunities
-- Personas
-- Mailboxes
-- Stages
-- Users
-- Tasks
-- Templates
-- Snippets
+1. Open the following URL in a browser, replacing the placeholders with your app's client ID, redirect URI, and space-separated scopes. URL-encode the redirect URI and scopes.
+
+   ```text
+   https://api.outreach.io/oauth/authorize?client_id=<client_id>&redirect_uri=<redirect_uri>&response_type=code&scope=<scopes>
+   ```
+
+2. Sign in to Outreach and authorize the app. Outreach redirects you to your redirect URI with a `code` query parameter.
+3. Exchange the code for tokens. The `code` value is short-lived, so run this soon after you authorize the app.
+
+   ```bash
+   curl https://api.outreach.io/oauth/token \
+     -X POST \
+     -d client_id=<client_id> \
+     -d client_secret=<client_secret> \
+     -d redirect_uri=<redirect_uri> \
+     -d grant_type=authorization_code \
+     -d code=<code>
+   ```
+
+   The client secret can contain URL-unsafe characters, so URL-encode it if your tool doesn't.
+
+4. Copy the `refresh_token` value from the response.
+
+For more details, see [API access (OAuth)](https://developers.outreach.io/api/oauth/) in the Outreach documentation.
+
+### Step 3: Set up the connector in Airbyte
+
+1. Enter your **Client ID**, **Client Secret**, **Refresh Token**, and **Redirect URI**.
+2. Enter a **Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2020-11-16T00:00:00Z`. The connector syncs records updated on or after this date.
+3. Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings if you configure the connector through the API. The connector fills them in.
+
+### How the connector manages tokens
+
+Outreach access tokens expire after 2 hours. Outreach issues a new refresh token with each new access token and recommends always using the most recent one. The connector saves each new refresh token, access token, and expiry time to its configuration, so the next sync starts with the latest token. If an access token expires or is revoked during a sync, the connector refreshes it once and retries the request.
+
+Outreach refresh tokens expire after 14 days. If the connector can't refresh the token, for example because the refresh token expired or the grant was revoked, the sync fails with a configuration error. To fix this, get a new refresh token and update the connector's **Refresh Token** field.
+
+## Supported streams
+
+All streams support full refresh and incremental syncs. Incremental syncs use the `updatedAt` cursor, and every stream uses `id` as its primary key.
+
+- `accounts`
+- `calls`
+- `call_dispositions`
+- `call_purposes`
+- `mailboxes`
+- `mailings`
+- `opportunities`
+- `personas`
+- `prospects`
+- `sequences`
+- `sequence_states`
+- `sequence_steps`
+- `snippets`
+- `stages`
+- `tasks`
+- `templates`
+- `users`
+
+The connector flattens each record's `relationships` into top-level fields that contain arrays of related record IDs. For example, the `creator` field in the `sequence_steps` stream is an array of user IDs.
 
 :::warning Upcoming change to the Prospects stream
 Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
@@ -57,6 +104,10 @@ After that date, the `contactHistogram` column in the `Prospects` stream will be
 
 If you rely on `contactHistogram`, retrieve it directly from the Outreach API by requesting it explicitly with the `fields[prospect]` parameter.
 :::
+
+## Rate limits
+
+Outreach limits API requests per user to 10,000 requests per hour. When the limit is exceeded, Outreach returns a `429` response, and the connector waits and retries the request. Because the limit applies per user, other apps that use the same Outreach user's authorization share this limit with the connector. See [Rate limiting](https://developers.outreach.io/api/getting-started/#rate-limiting).
 
 ## IP allow list
 
