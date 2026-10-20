@@ -112,6 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.11.0 | 2026-10-15 | [89003](https://github.com/airbytehq/airbyte/pull/89003) | Add incremental sync support to the `attached_item` stream |
+| 0.10.52 | 2026-10-20 | [89159](https://github.com/airbytehq/airbyte/pull/89159) | Update dependencies |
 | 0.10.51 | 2026-10-13 | [88525](https://github.com/airbytehq/airbyte/pull/88525) | Update dependencies |
 | 0.10.50 | 2026-10-06 | [87801](https://github.com/airbytehq/airbyte/pull/87801) | Update dependencies |
 | 0.10.49 | 2026-09-29 | [87111](https://github.com/airbytehq/airbyte/pull/87111) | Update dependencies |
