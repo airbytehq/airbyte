@@ -30,5 +30,9 @@ class ConfigBuilder:
         self._config["project"] = projects
         return self
 
+    def with_start_date(self, start_date: str) -> "ConfigBuilder":
+        self._config["start_date"] = start_date
+        return self
+
     def build(self) -> Dict[str, Any]:
         return self._config

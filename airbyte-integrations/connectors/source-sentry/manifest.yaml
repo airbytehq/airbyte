@@ -30,7 +30,9 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
+            stop_condition: >-
+              {{ headers.get('link', {}).get('next', {}).get('results', 'false')
+              == "false" }}
         requester:
           $ref: "#/definitions/base_requester"
           name: events
@@ -40,8 +42,7 @@ definitions:
           http_method: GET
           primary_key: id
           cursor_field: dateCreated
-          request_parameters:
-            full: "true"
+          request_parameters: "{{ {'full': 'true'} if config.get('events_full_payload', true) else {} }}"
         primary_key: id
         cursor_field: dateCreated
         record_selector:
@@ -69,13 +70,13 @@ definitions:
           inject_into: request_parameter
         start_datetime:
           type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -106,8 +107,9 @@ definitions:
           request_parameters:
             query: >-
               lastSeen:>{{ stream_interval.get('start_time', '') or
-              '1900-01-01T00:00:00.0Z' if stream_interval else
-              '1900-01-01T00:00:00.0Z' }}
+              config.get('start_date', '1900-01-01T00:00:00Z') if
+              stream_interval else config.get('start_date',
+              '1900-01-01T00:00:00Z') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,9 +129,9 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -175,9 +177,9 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -218,9 +220,9 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -305,17 +307,27 @@ definitions:
       type: DefaultErrorHandler
       max_retries: 10
       backoff_strategies:
-        - type: WaitUntilTimeFromHeader
-          header: X-Sentry-Rate-Limit-Reset
         - type: WaitTimeFromHeader
           header: Retry-After
+          max_waiting_time_in_seconds: 3660
+        - type: WaitUntilTimeFromHeader
+          header: X-Sentry-Rate-Limit-Reset
+          min_wait: 1
+          max_waiting_time_in_seconds: 3660
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
         - type: ExponentialBackoffStrategy
-          factor: 5
+          factor: 2
       response_filters:
         - type: HttpResponseFilter
           action: RATE_LIMITED
           http_codes: [429]
           failure_type: transient_error
+          error_message: >-
+            Sentry rate limit exceeded after retries. The connector backs off using
+            Retry-After and X-Sentry-Rate-Limit-Reset (see
+            https://docs.sentry.io/api/ratelimits/). Lower num_workers, disable the
+            events stream, set events_full_payload to false, or sync fewer projects.
         - type: HttpResponseFilter
           action: RETRY
           http_codes: [500, 502, 503, 504]
@@ -382,34 +394,75 @@ spec:
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 4
+        default: "1900-01-01T00:00:00Z"
+        description: >-
+          Lower bound for incremental syncs. For the events stream this maps to
+          Sentry's `start` query parameter (ISO-8601 UTC, e.g.
+          2026-06-01T00:00:00Z). On the first sync, only records at or after
+          this time are requested; later syncs use saved state when it is later
+          than this value. See
+          https://docs.sentry.io/api/events/list-a-projects-error-events/
       discover_fields:
         type: array
         description: Fields to retrieve when fetching discover events
         item: string
-        order: 4
+        order: 5
         title: Discover Event Fields
+      events_full_payload:
+        type: boolean
+        order: 6
+        title: Events full payload
+        default: true
+        description: >-
+          When enabled, the events stream requests full event bodies (stack
+          traces, entries). Sentry caps these pages at 10 events and may return
+          HTTP 500 on very large payloads; disable to sync summary events only.
       num_workers:
         type: integer
         title: Number of concurrent workers
         description: >-
-          Worker threads for concurrent stream partitions (for example, one
-          partition per configured project slug). Use 1 when syncing the events
-          stream or when Sentry returns HTTP 429/503; higher values increase
-          throughput but also rate-limit pressure.
+          Concurrent partitions per stream (for example, one partition per
+          configured project slug). Sentry also enforces a concurrent request
+          limit per endpoint (see X-Sentry-Rate-Limit-ConcurrentLimit in
+          https://docs.sentry.io/api/ratelimits/). Use 1 for events-only syncs
+          or when you hit HTTP 429.
         minimum: 1
         maximum: 20
         default: 5
-        order: 5
+        order: 7
     additionalProperties: true
 
+# Sentry rate limits are per caller and endpoint (fixed window + concurrent cap).
+# Responses expose X-Sentry-Rate-Limit-* headers; the budget below honors Remaining
+# and Reset, with conservative fallbacks when headers are absent. Project events
+# polling is especially easy to overrun — use a stricter matcher for /events/.
+# https://docs.sentry.io/api/ratelimits/
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 5
+        - limit: 2
+          interval: PT1S
+        - limit: 60
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "projects/.+/events/$"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3
           interval: PT1S
       matchers: []
+  ratelimit_remaining_header: X-Sentry-Rate-Limit-Remaining
+  ratelimit_reset_header: X-Sentry-Rate-Limit-Reset
+  status_codes_for_ratelimit_hit: [429]
 
 concurrency_level:
   type: ConcurrencyLevel
