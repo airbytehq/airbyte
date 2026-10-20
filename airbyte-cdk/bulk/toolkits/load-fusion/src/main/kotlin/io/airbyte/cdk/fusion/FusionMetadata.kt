@@ -23,7 +23,7 @@ class FusionMetadata(config: FusionConfiguration, runId: UUID, epochSeconds: Lon
         descriptor: Map<String, Any?>,
         schemaId: String,
         generationId: Long,
-        syncId: Long
+        syncId: Long,
     ): Map<String, Any?> {
         require(listOf("source_schema", "primary_key", "cursor").all { descriptor[it] != null }) {
             "Fusion schema descriptor must include source_schema, primary_key, and cursor"

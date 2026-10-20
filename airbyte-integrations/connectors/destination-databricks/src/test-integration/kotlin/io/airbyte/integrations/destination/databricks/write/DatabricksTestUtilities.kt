@@ -25,10 +25,10 @@ const val PAT_CONFIG_PATH = "secrets/pat_config.json"
 /**
  * Maps expected records to account for Databricks type storage:
  * - TIMESTAMP stores in UTC, losing the original offset. The JDBC driver also reports TIMESTAMP_NTZ
- * columns as "TIMESTAMP", so both types are read back as OffsetDateTime at UTC.
+ *   columns as "TIMESTAMP", so both types are read back as OffsetDateTime at UTC.
  * - Time types (with/without timezone) have no native Databricks equivalent and are stored as
- * STRING via [toString()][java.time.OffsetTime.toString], so expected time values are converted to
- * [StringValue] using the same method (which omits zero seconds, unlike ISO formatters).
+ *   STRING via [toString()][java.time.OffsetTime.toString], so expected time values are converted
+ *   to [StringValue] using the same method (which omits zero seconds, unlike ISO formatters).
  */
 object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
@@ -78,7 +78,8 @@ object DatabricksDataCleaner : DestinationCleaner {
                         SELECT schema_name FROM ${config.database}.information_schema.schemata
                         WHERE catalog_name = '${config.database}'
                         AND schema_name LIKE 'test%'
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                     .use { rs ->
                         while (rs.next()) {

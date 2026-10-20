@@ -34,7 +34,8 @@ class AirbyteValueProxyTest {
             "arrayField": [1, 2, 3],
             "unionFieldStringOrInt": "union string"
         }
-    """.trimIndent()
+        """
+            .trimIndent()
     val testJsonNull =
         """
         {
@@ -51,7 +52,8 @@ class AirbyteValueProxyTest {
             "arrayField": null,
             "unionFieldStringOrInt": null
         }
-    """.trimIndent()
+        """
+            .trimIndent()
     val testJsonEmpty = "{}"
 
     companion object {
@@ -73,13 +75,13 @@ class AirbyteValueProxyTest {
                     "objectField" to
                         FieldType(
                             ObjectType(linkedMapOf("key" to FieldType(StringType, true))),
-                            nullable = true
+                            nullable = true,
                         ),
                     "arrayField" to
                         FieldType(ArrayType(FieldType(IntegerType, true)), nullable = true),
                     "unionFieldStringOrInt" to
-                        FieldType(UnionType.of(StringType, IntegerType), nullable = true)
-                )
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = true),
+                ),
             )
     }
 
@@ -96,7 +98,7 @@ class AirbyteValueProxyTest {
                     tableNames =
                         io.airbyte.cdk.load.schema.model.TableNames(
                             finalTableName =
-                                io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                                io.airbyte.cdk.load.schema.model.TableName("namespace", "name"),
                         ),
                     columnSchema =
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
@@ -106,7 +108,7 @@ class AirbyteValueProxyTest {
                             finalSchema = mapOf(),
                         ),
                     importType = Append,
-                )
+                ),
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {
