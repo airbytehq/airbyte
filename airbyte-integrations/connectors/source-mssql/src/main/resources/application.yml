@@ -113,10 +113,9 @@ airbyte:
               Please verify your database name and user permissions.
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
 
-          # CheckOperation can emit the bare "Discovered zero tables." or the newer diagnostic
-          # naming searched namespaces; both are handled here because this classifier runs ahead of
-          # the default one (see `order` above). The sibling "Unable to query any of the N
-          # discovered table(s)." must not match.
+          # Thrown by the CDK's CheckOperation when discovery returns no table at all; reachable only
+          # because this classifier runs ahead of the default one (see `order` above). Anchored so
+          # that the sibling "Unable to query any of the N discovered table(s)." is left alone.
           - pattern: (?i)^Discovered zero tables\b
             input-example: >-
               Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables,

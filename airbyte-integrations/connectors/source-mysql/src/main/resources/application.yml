@@ -197,9 +197,9 @@ airbyte:
               the preferred SSL mode is not accepted on Airbyte Cloud without an SSH tunnel.
             reference-links: https://docs.airbyte.com/integrations/sources/mysql#connecting-with-ssl-or-ssh-tunneling
 
-          # CheckOperation can emit the bare "Discovered zero tables." or the newer diagnostic
-          # naming searched namespaces. This rule matches both because the regex classifier runs
-          # ahead of the default one (order: 0 above).
+          # The connection test found no table in the configured database: the CDK's CheckOperation
+          # throws ConfigErrorException("Discovered zero tables."), which this rule reaches only because
+          # the regex classifier runs ahead of the default one (order: 0 above).
           - pattern: (?i)^Discovered zero tables\b
             input-example: >-
               Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables,
