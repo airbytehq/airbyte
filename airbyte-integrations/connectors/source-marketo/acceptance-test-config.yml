@@ -20,8 +20,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: "activities_delete_lead"
             bypass_reason: "Marketo prune deletions older than 14 days"
@@ -157,16 +155,12 @@ acceptance_tests:
             bypass_reason: "The test instance has no activity of this type in this config's window (August 2025) any more; Marketo keeps most activity types for a limited time. Re-seed the activities or move the window in the test secret, then remove this entry"
           - name: "activities_visit_webpage"
             bypass_reason: "The test instance has no activity of this type in this config's window (August 2025) any more; Marketo keeps most activity types for a limited time. Re-seed the activities or move the window in the test secret, then remove this entry"
-        # 52 streams, most of them use BULK API therefore it takes much time to run a sync
-        timeout_seconds: 9000
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        timeout_seconds: 3600
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

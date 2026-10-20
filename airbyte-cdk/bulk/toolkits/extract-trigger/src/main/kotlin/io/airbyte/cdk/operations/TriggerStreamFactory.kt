@@ -35,7 +35,7 @@ class TriggerStreamFactory(private val config: TriggerTableConfig) : JdbcAirbyte
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
@@ -55,7 +55,7 @@ class TriggerStreamFactory(private val config: TriggerTableConfig) : JdbcAirbyte
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         recordData[CommonMetaField.CDC_UPDATED_AT.id] = FieldValueEncoder(null, NullCodec)
         recordData[CommonMetaField.CDC_DELETED_AT.id] = FieldValueEncoder(null, NullCodec)

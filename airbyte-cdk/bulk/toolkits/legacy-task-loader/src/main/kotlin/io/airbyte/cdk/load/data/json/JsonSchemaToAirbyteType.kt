@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Property
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class JsonSchemaToAirbyteType(
@@ -153,7 +153,7 @@ class JsonSchemaToAirbyteType(
         }
         val propertiesMapped =
             properties
-                .fields()
+                .properties()
                 .asSequence()
                 .map { (name, node) -> name to nodeToFieldType(node) }
                 .toMap(LinkedHashMap())
@@ -173,20 +173,19 @@ class JsonSchemaToAirbyteType(
 
     private fun unionFromCombinedTypes(
         options: List<JsonNode>,
-        parentSchema: ObjectNode
+        parentSchema: ObjectNode,
     ): AirbyteType {
         // Denormalize the properties across each type (the converter only checks what matters
         // per type).
-        val unionOptions =
-            options.mapNotNull {
-                if (it.isTextual) {
-                    val schema = parentSchema.deepCopy()
-                    schema.put("type", it.textValue())
-                    convertInner(schema)
-                } else {
-                    convertInner(it)
-                }
+        val unionOptions = options.mapNotNull {
+            if (it.isTextual) {
+                val schema = parentSchema.deepCopy()
+                schema.put("type", it.textValue())
+                convertInner(schema)
+            } else {
+                convertInner(it)
             }
+        }
         if (unionOptions.isEmpty()) {
             return UnknownType(parentSchema)
         }
