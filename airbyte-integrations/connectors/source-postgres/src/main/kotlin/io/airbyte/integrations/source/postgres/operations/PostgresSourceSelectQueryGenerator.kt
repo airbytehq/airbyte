@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.ctidField
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.airbyte.integrations.source.postgres.xminField
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -51,15 +52,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
     fun SelectQuerySpec.sql(): String {
         val selectNode = select
-        if (selectNode is SelectColumnMaxValue) {
-            return listOf(
-                    "SELECT ${selectNode.column.sql()}",
-                    from.sql(),
-                    where.sql(),
-                    "ORDER BY ${selectNode.column.sql()} DESC NULLS LAST LIMIT 1",
-                )
-                .filter { it.isNotBlank() }
-                .joinToString(" ")
+        if (selectNode is SelectColumnMaxValue && selectNode.column.type is PostgresUuidFieldType) {
+            return maxValueByOrderingSql(selectNode.column)
         }
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
@@ -74,6 +68,22 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         } else {
             "${select.sql()} FROM ($sqlWithoutLimit) $limitClause"
         }
+    }
+
+    /**
+     * Postgres defines no MAX() aggregate for uuid; the largest value is read by ordering instead.
+     * The `IS NOT NULL` predicate is what lets the planner answer this with a backward scan of the
+     * column's default (ASC NULLS LAST) btree index, the same plan it builds for MAX() on other
+     * types. `ORDER BY ... DESC NULLS LAST` without it cannot use that index and reads it whole.
+     */
+    private fun SelectQuerySpec.maxValueByOrderingSql(column: DataField): String {
+        val col: String = column.sql()
+        val whereSql: String =
+            when (val w = where) {
+                NoWhere -> "WHERE $col IS NOT NULL"
+                is Where -> "WHERE (${w.clause.sql()}) AND $col IS NOT NULL"
+            }
+        return "SELECT $col ${from.sql()} $whereSql ORDER BY $col DESC LIMIT 1"
     }
 
     fun SelectNode.sql(): String =
