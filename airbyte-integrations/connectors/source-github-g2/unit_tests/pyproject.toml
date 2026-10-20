@@ -18,7 +18,12 @@ pytest-mock = "^3"
 freezegun = "^1.2"
 responses = "^0.23.1"
 [tool.pytest.ini_options]
-addopts = "--durations=20"
+addopts = "--durations=20 -n auto"
 filterwarnings = [
     "ignore:This class is experimental*"
+]
+
+[dependency-groups]
+dev = [
+    "pytest-xdist (>=3.8.0,<4.0.0)"
 ]

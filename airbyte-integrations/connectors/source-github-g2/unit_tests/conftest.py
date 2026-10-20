@@ -125,11 +125,14 @@ def cache_declarative_manifest_processing():
 
 
 @pytest.fixture(autouse=True)
-def clear_request_cache():
+def clear_request_cache(request):
     """The manifest resolver streams use `use_cache: true`, which persists HTTP
     responses in a sqlite file across tests — a cached listing from one test would
     shadow another test's mock for the same URL. Start every test with a clean cache."""
-    shutil.rmtree(os.environ["REQUEST_CACHE_PATH"], ignore_errors=True)
+    worker_id = getattr(request.config, "workerinput", {}).get("workerid", "master")
+    cache_path = f"REQUEST_CACHE_PATH_{worker_id}"
+    os.environ["REQUEST_CACHE_PATH"] = cache_path
+    shutil.rmtree(cache_path, ignore_errors=True)
     yield
 
 
@@ -152,7 +155,7 @@ def validate_materialized_records(monkeypatch):
 
 def pytest_sessionfinish(session, exitstatus):
     options = session.config.option
-    if exitstatus != 0 or options.file_or_dir or options.keyword or options.markexpr:
+    if exitstatus != 0 or options.file_or_dir or options.keyword or options.markexpr or getattr(options, "numprocesses", None):
         return
 
     stream_names = {
