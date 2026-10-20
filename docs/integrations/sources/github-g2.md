@@ -306,7 +306,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.1 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Rename display name to GitHub (Experimental, Gen 2) |
+| 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |
 | 0.1.0 | 2026-10-20 | - | Initial release, forked from source-github 2.7.9 |
 
 </details>
