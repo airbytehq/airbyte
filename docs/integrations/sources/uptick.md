@@ -52,7 +52,7 @@ The Uptick user account needs read access to each module you want to sync; in pr
 | Full Refresh Sync | ✅ |
 | Incremental Sync | ✅ |
 
-Every stream except `majorservices` supports both full refresh and incremental sync on the `updated` cursor; `majorservices` has no `updated` timestamp and is full refresh only. Only the streams marked ✅ in the **Supports Incremental** column below expose a `deleted` timestamp; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
+Every stream except `majorservices` supports both full refresh and incremental sync on the `updated` cursor; `majorservices` has no `updated` timestamp and is full refresh only. Among the JSON:API streams, only those marked ✅ in the **Supports Incremental** column below expose a `deleted` timestamp; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
 
 ## Supported Streams
 
@@ -187,14 +187,14 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
-
-In the **Supports Incremental** column, ✅ means the stream syncs incrementally and reports deletions through a `deleted` timestamp, `❌ (no soft delete)` means the stream syncs incrementally but its endpoint doesn't report deletions, and ``❌ (no `updated` timestamp)`` means the stream is full refresh only.
 | `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) |
+
+In the **Supports Incremental** column, ✅ on a JSON:API stream means the stream syncs incrementally and reports deletions through a `deleted` timestamp (`task_profitability` is a generated report with no deleted state), `❌ (no soft delete)` means the stream syncs incrementally but its endpoint doesn't report deletions, and ``❌ (no `updated` timestamp)`` means the stream is full refresh only.
 
 ### API version and fields
 
@@ -250,11 +250,11 @@ If the Uptick user account lacks permission for an endpoint, the sync fails with
 
 **`403 Access denied … required licenses (FIELD, DESK, CONTRACTOR)` after logging in during "Authenticate with Uptick".** The Uptick user you signed in with has no licence in that workspace. Ask your Uptick administrator to grant one (for example, DESK), or use username/password authentication instead.
 
-### Authentication errors (401)
+### Authentication errors
 
-Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` For connections that use **Authenticate with Uptick**, re-authenticate so the stored tokens are refreshed. For username and password connections, check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
+Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings. Provider error: invalid_grant` (or `invalid_client`). For connections that use **Authenticate with Uptick**, re-authenticate so the stored tokens are refreshed. For username and password connections, check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
 
-Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with `HTTP 401: Uptick rejected the access token.` Update the credentials and run the sync again.
+Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with the configuration error `Refreshed OAuth access token is rejected by the API.` Update the credentials and run the sync again.
 
 For **Authenticate with Uptick**, the Base URL must be `https://<workspace>.onuptick.com`. If it points anywhere else, the connection check fails with a hint to correct the Base URL and the connector sends no request to that host.
 
@@ -298,7 +298,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
-| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams, expand fields on 7 existing streams, and make relationship field extraction null-safe |
+| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), expand fields on 7 existing streams, and make relationship field extraction null-safe |
 | 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |
 | 1.0.2 | 2026-08-04 | [83652](https://github.com/airbytehq/airbyte/pull/83652) | Update dependencies |
 | 1.0.1 | 2026-07-28 | [83098](https://github.com/airbytehq/airbyte/pull/83098) | Update dependencies |
@@ -319,7 +319,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.3 | 2026-02-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
 | 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
 | 0.5.1 | 2026-02-10 | [73007](https://github.com/airbytehq/airbyte/pull/73007) | Update dependencies |
-| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems and add 6 new routine-service and subtask streams |
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems and add 6 new streams (servicetasks, subtasks, and 4 routine-service streams) |
 | 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
