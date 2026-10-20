@@ -46,7 +46,7 @@ def _cursor_state(stream_name: str, token: str):
         StateBuilder()
         .with_stream_state(
             stream_name,
-            {"state_type": "opaque_token", "token": token, "committed_at": _COMMITTED_AT},
+            {"state_type": "sync_token", "token": token, "committed_at": _COMMITTED_AT},
         )
         .build()
     )
@@ -72,7 +72,7 @@ def _stream_state(output: EntrypointOutput, stream_name: str) -> Dict[str, Any]:
 
 def _assert_committed_state(output: EntrypointOutput, stream_name: str, token: str) -> None:
     state = _stream_state(output, stream_name)
-    assert state["state_type"] == "opaque_token"
+    assert state["state_type"] == "sync_token"
     assert state["token"] == token
     assert set(state) == {"state_type", "token", "committed_at"}
 
@@ -146,8 +146,8 @@ def test_incremental_response_emits_checked_and_deleted_items():
 def test_tasks_and_projects_keep_requests_and_committed_tokens_independent():
     tasks_request = _request("tasks", "tasks-old")
     projects_request = _request("projects", "projects-old")
-    tasks_state = {"state_type": "opaque_token", "token": "tasks-old", "committed_at": _COMMITTED_AT}
-    projects_state = {"state_type": "opaque_token", "token": "projects-old", "committed_at": _COMMITTED_AT}
+    tasks_state = {"state_type": "sync_token", "token": "tasks-old", "committed_at": _COMMITTED_AT}
+    projects_state = {"state_type": "sync_token", "token": "projects-old", "committed_at": _COMMITTED_AT}
     state = StateBuilder().with_stream_state("tasks", tasks_state).with_stream_state("projects", projects_state).build()
     with HttpMocker() as http_mocker:
         http_mocker.post(tasks_request, _response("tasks", [{"id": "task-1", "updated_at": "2026-10-02T00:00:00Z"}], "tasks-new"))

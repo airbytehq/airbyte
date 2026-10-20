@@ -14,7 +14,7 @@ definitions:
       type: DeclarativeStream
       name: tasks
       incremental_sync:
-        type: OpaqueTokenCursor
+        type: SyncTokenCursor
         token_path:
           - sync_token
         cursor_field: updated_at
@@ -46,7 +46,7 @@ definitions:
       type: DeclarativeStream
       name: projects
       incremental_sync:
-        type: OpaqueTokenCursor
+        type: SyncTokenCursor
         token_path:
           - sync_token
         cursor_field: updated_at
@@ -268,7 +268,7 @@ schemas:
         type:
           - "null"
           - string
-        description: Opaque ordering key of the task
+        description: Ordering key of the task
       content:
         type:
           - "null"
@@ -338,7 +338,7 @@ schemas:
         type:
           - "null"
           - string
-        description: Opaque ordering key of the project.
+        description: Ordering key of the project.
       is_collapsed:
         type:
           - "null"
@@ -415,7 +415,7 @@ schemas:
         type:
           - "null"
           - string
-        description: Opaque default ordering key of the project.
+        description: Default ordering key of the project.
       public_key:
         type:
           - "null"
