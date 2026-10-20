@@ -79,7 +79,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
-| 0.4.52 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Python 3.13, base image 4.1.1, and airbyte-cdk 7; fix incremental state checkpointing on the CDK upgrade |
+| 0.4.52 | 2026-10-20 | [89545](https://github.com/airbytehq/airbyte/pull/89545) | Upgrade to Python 3.13, base image 4.1.1, and airbyte-cdk 7; fix incremental state checkpointing on the CDK upgrade |
 | 0.4.51 | 2025-10-07 | [65777](https://github.com/airbytehq/airbyte/pull/65777) | Update dependencies |
 | 0.4.50 | 2025-08-23 | [65287](https://github.com/airbytehq/airbyte/pull/65287) | Update dependencies |
 | 0.4.49 | 2025-08-16 | [65003](https://github.com/airbytehq/airbyte/pull/65003) | Update dependencies |
