@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "type": "analyticsReportInstances",
+      "id": "instance-1",
+      "attributes": {
+        "processingDate": "2024-01-03"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/analyticsReports/report-1/instances"
+  }
+}

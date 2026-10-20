@@ -6,7 +6,7 @@ products: all
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
 
-If you have any security concerns with Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io). For more information about Airbyte's security practices and compliance certifications, visit the [Airbyte Trust Center](https://trust.airbyte.com/).
+If you believe you've found a security vulnerability in Airbyte, report it by following the instructions on [Report a security vulnerability](https://airbyte.com/security/vdp). For more information about Airbyte's security practices and compliance certifications, visit the [Airbyte Trust Center](https://trust.airbyte.com/).
 
 ## Securing your data
 
@@ -141,8 +141,8 @@ Our compliance efforts for Airbyte Cloud include:
 Do not file GitHub issues or post on our community Slack or forum for security vulnerabilities since they're public avenues and may lead to additional security concerns.
 :::
 
-Airbyte takes security issues very seriously. If you have any concerns about Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io). In the message, try to describe the issue and a way to reproduce it. The security team will get back to you as soon as possible.
+Airbyte takes security issues very seriously. To report a vulnerability, go to [Report a security vulnerability](https://airbyte.com/security/vdp). Airbyte Cloud and Airbyte open source each have their own vulnerability disclosure policy. Read the policy for the affected product before you test or submit a report. Each policy explains what's in scope, how to test safely, and how to submit your report.
 
-Use this security address only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Discourse forum](https://discuss.airbyte.io/) or [Community Slack](https://slack.airbyte.com/).
+Use the vulnerability disclosure process only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Community Slack](https://slack.airbyte.com/) or [GitHub discussions](https://github.com/airbytehq/airbyte/discussions).
 
 Please report any security problems to us before disclosing it publicly.

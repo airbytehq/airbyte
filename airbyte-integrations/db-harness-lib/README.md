@@ -17,10 +17,13 @@ An engine shim must export:
   `stop-backend.sh` is optional; the library's default is used when it is
   absent.
 - `DEFAULT_CONFIG_TEMPLATE`: engine's default config template, required
-  unless `--config-template` is supplied.
+  unless `--config-template` is supplied. In remote mode, an engine's own
+  `render-config.sh` renders from a secret rather than host substitution; see
+  [Remote backend mode](#remote-backend-mode).
 - `DEFAULT_FIXTURE`: engine's default SQL fixture, required unless an
   explicit `--fixture` is supplied or `--skip-fixtures` is used.
-- `BACKEND_NAME`: backend container name, required by the config renderer.
+- `BACKEND_MODE`: `local` (default) or `remote`.
+- `BACKEND_NAME`: backend container name, required when `BACKEND_MODE=local`.
 
 The engine scripts own backend startup, fixture application, and any
 engine-specific teardown. The library's default teardown removes the
@@ -28,6 +31,18 @@ backend container when no engine-specific `stop-backend.sh` is provided.
 The library scripts own protocol orchestration, catalog derivation, config
 rendering, and state extraction. `BACKEND_NAME` and the other usual harness
 environment variables may be overridden by callers for test isolation.
+An engine may provide an optional `render-config.sh` alongside its lifecycle
+scripts to override the library's default config renderer, just as it may
+provide an optional `stop-backend.sh`.
+
+### Remote backend mode
+
+In `BACKEND_MODE=remote`, the harness does not start a container. The engine's
+`start-backend.sh`, `reset-databases.sh`, and `stop-backend.sh` own whatever
+remote isolation unit exists, such as a per-run schema. `--reset=backend` is
+rejected; use `--reset=fixture` for a fresh isolation unit between images.
+The engine renders its config from a secret rather than using host
+substitution.
 
 ## Getting a target image
 
@@ -41,6 +56,34 @@ literally `dev`, so this skips a cold Gradle build entirely and gives
 reviewers a tag they can re-run against. Build locally with the connector's
 `./gradlew :airbyte-integrations:connectors:<connector>:dockerBuildx` only for
 code that is not on a pushed PR branch.
+
+## CDC config templates need an incremental catalog
+
+When no `--catalog` is given, `run.sh` derives the read catalog from
+`discover` with `--sync-mode` defaulting to `full_refresh` and no
+cursor. Under a CDC config template that catalog configures zero CDC
+streams: the connector still runs its global CDC feed and emits a
+cold-start state, but the read never exercises CDC and the second
+round may reject its own state with a misleading error (for
+`source-mssql`, `Incumbent CDC state is invalid ... Saved offset no
+longer present`). In comparison mode this fails identically on
+control and target, so it looks like a pre-existing connector bug.
+
+Whenever the config uses `replication_method.method == "CDC"`, pass
+either an explicit `--catalog=PATH` (the CDC skills ship one, e.g.
+`fixtures/catalogs/users-cdc.json`) or derive an incremental one:
+
+```bash
+--sync-mode=incremental --cursor-field=CURSOR --streams=TABLE1,TABLE2
+```
+
+The cursor field is the stream's source-defined CDC cursor
+(`_ab_cdc_cursor` for the bulk-CDK sources). `--streams` matters
+because `discover` can surface engine bookkeeping tables that have no
+CDC capture (SQL Server's `dbo.systranschemas`); see the engine skill
+for its specifics. `run.sh` refuses to run `read` when a CDC config
+would get a full-refresh derived catalog and exits 2 with the flags
+to pass.
 
 ## Minimal engine shim example
 
@@ -77,5 +120,6 @@ export CONFIG_HOST_JQ='.host = $h | .port = 5432'
 - `run-protocol-cmd.sh` invokes `airbyte-ops` for one protocol command.
 - `make-catalog.sh` derives a configured catalog from discover output.
 - `render-config.sh` substitutes the backend address using an overridable
-  `CONFIG_HOST_JQ` jq expression.
+  `CONFIG_HOST_JQ` jq expression. An engine-specific `render-config.sh` may
+  override this for remote backends.
 - `extract-state.py` extracts Airbyte state messages from JSONL output.

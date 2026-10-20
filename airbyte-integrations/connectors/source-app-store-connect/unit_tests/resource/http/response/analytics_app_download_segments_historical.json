@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "type": "analyticsReportSegments",
+      "id": "segment-1",
+      "attributes": {
+        "checksum": "abc123",
+        "sizeInBytes": 42
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/instance-1/segments"
+  }
+}
