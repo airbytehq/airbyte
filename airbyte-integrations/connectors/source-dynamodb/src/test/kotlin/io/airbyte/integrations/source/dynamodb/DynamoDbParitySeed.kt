@@ -20,10 +20,10 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
  *
  * A table entry may carry `generate` instead of / in addition to `items`:
  * - `count` + `itemTemplate` (+ `extraFrom` + `extraTemplate`): `count` items, `i` = 1..count,
- * every string expanded with `{i}` / `{i:04d}`; items with `i >= extraFrom` also get the
- * `extraTemplate` attributes;
+ *   every string expanded with `{i}` / `{i:04d}`; items with `i >= extraFrom` also get the
+ *   `extraTemplate` attributes;
  * - `tables`: the table `name` is a template expanded with `{i:03d}` for `i` = 1..tables; every
- * generated table gets the same key schema and the listed items (expanded with the same `i`).
+ *   generated table gets the same key schema and the listed items (expanded with the same `i`).
  */
 object DynamoDbParitySeed {
     const val RESOURCE = "parity-seed.json"
@@ -73,7 +73,7 @@ object DynamoDbParitySeed {
                 val item: ObjectNode = expandTemplate(generate["itemTemplate"], i) as ObjectNode
                 if (i >= extraFrom) {
                     item.setAll<ObjectNode>(
-                        expandTemplate(generate["extraTemplate"], i) as ObjectNode
+                        expandTemplate(generate["extraTemplate"], i) as ObjectNode,
                     )
                 }
                 items.add(DynamoDbLocalContainer.item(item))
@@ -96,7 +96,9 @@ object DynamoDbParitySeed {
             is TextNode -> TextNode.valueOf(expandTemplate(node.asText(), i))
             is ObjectNode ->
                 Jsons.objectNode().also { copy: ObjectNode ->
-                    node.fields().forEach { (k, v) -> copy.set<JsonNode>(k, expandTemplate(v, i)) }
+                    node.properties().forEach { (k, v) ->
+                        copy.set<JsonNode>(k, expandTemplate(v, i))
+                    }
                 }
             is ArrayNode ->
                 Jsons.arrayNode().also { copy -> node.forEach { copy.add(expandTemplate(it, i)) } }

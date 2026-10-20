@@ -29,7 +29,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
 
     override fun addState(message: AirbyteMessage) {
         Preconditions.checkArgument(
-            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM
+            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM,
         )
         val originalStreamId = message.state.stream.streamDescriptor
         val actualStreamId: StreamDescriptor
@@ -118,10 +118,11 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          *
          * @param streamToState
          * - map of stream descriptor to its last state
+         *
          * @return queue with the states ordered per the sort mentioned above
          */
         private fun listStatesInOrder(
-            streamToState: Map<StreamDescriptor, AirbyteMessage>
+            streamToState: Map<StreamDescriptor, AirbyteMessage>,
         ): Queue<AirbyteMessage> {
             return LinkedList(
                 streamToState.entries
@@ -133,14 +134,14 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
                                 { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                                     entry.key.namespace
                                 },
-                                Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
+                                Comparator.nullsFirst<String>(Comparator.naturalOrder<String>()),
                             ) // namespace is allowed to be null
                             .thenComparing<String> {
                                 entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                                 entry.key.name
-                            }
+                            },
                     )
-                    .map { obj: Map.Entry<StreamDescriptor, AirbyteMessage> -> obj.value }
+                    .map { obj: Map.Entry<StreamDescriptor, AirbyteMessage> -> obj.value },
             )
         }
 
@@ -149,13 +150,14 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          *
          * @param prevPhase
          * - map of stream to state messages for previous phase that will be moved to next phase.
-         * when this method returns this map will be empty.
+         *   when this method returns this map will be empty.
+         *
          * @param nextPhase
          * - map into which state messages from prevPhase will be added.
          */
         private fun moveToNextPhase(
             prevPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
-            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>
+            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
         ) {
             if (!prevPhase.isEmpty()) {
                 nextPhase.putAll(prevPhase)

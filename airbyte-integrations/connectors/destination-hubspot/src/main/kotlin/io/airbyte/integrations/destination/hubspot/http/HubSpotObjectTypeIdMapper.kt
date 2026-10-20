@@ -20,10 +20,10 @@ import io.airbyte.cdk.load.http.getBodyOrEmpty
  * potential solutions:
  * * Create a low-code component that could fetch additional data during the write command;
  * * Assuming this data is always available during the discover command, populate this as part of
- * the catalog. This would require a protocol change to have this information flow from the discover
- * to the write. It seems like this should be the preferable solution as it's easy to populate a new
- * field in the catalog and it wouldn't require re-specifying the query to get the information in
- * the write command in low-code.
+ *   the catalog. This would require a protocol change to have this information flow from the
+ *   discover to the write. It seems like this should be the preferable solution as it's easy to
+ *   populate a new field in the catalog and it wouldn't require re-specifying the query to get the
+ *   information in the write command in low-code.
  */
 class HubSpotObjectTypeIdMapper(private val httpClient: HttpClient) {
     private val decoder: JsonDecoder = JsonDecoder()

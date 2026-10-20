@@ -3,6 +3,7 @@
 #
 
 import json
+import shutil
 from typing import Any, Mapping
 
 from source_okta.config_migration import OktaConfigMigration
@@ -25,11 +26,14 @@ class TestMigrateConfig:
     test_not_migrated_config_path = "unit_tests/migration_configs/not_migrated_config.json"
     test_migrated_config_path = "unit_tests/migration_configs/migrated_config.json"
 
-    def test_migrate_config(self, capsys):
-        config = load_config(self.test_not_migrated_config_path)
+    def test_migrate_config(self, capsys, tmp_path):
+        # The migration rewrites the config file in place, so run it against a copy of the fixture.
+        config_path = str(tmp_path / "config.json")
+        shutil.copyfile(self.test_not_migrated_config_path, config_path)
+        config = load_config(config_path)
         assert "domain" not in config
         migration_instance = OktaConfigMigration()
-        migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
+        migration_instance.migrate([CMD, "--config", config_path], SOURCE)
         control_msg = json.loads(capsys.readouterr().out)
         assert control_msg["type"] == Type.CONTROL.value
         assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value

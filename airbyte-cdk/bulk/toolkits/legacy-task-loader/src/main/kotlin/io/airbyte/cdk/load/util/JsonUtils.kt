@@ -25,13 +25,13 @@ object Jsons : ObjectMapper() {
         registerKotlinModule()
         registerModule(JavaTimeModule())
         registerModule(AfterburnerModule())
-        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
         configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
         configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
         factory.setStreamReadConstraints(
-            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
+            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build(),
         )
     }
 }
