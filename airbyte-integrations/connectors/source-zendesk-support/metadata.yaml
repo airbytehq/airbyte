@@ -105,11 +105,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_ZENDESK_SUPPORT_OAUTH_CREDS
-          fileName: config_oauth.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Zendesk Support API
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/
