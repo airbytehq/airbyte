@@ -115,7 +115,9 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 0.1.1   | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests and fix README symlink, test config end date, and release date |
-| 0.1.0   | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496)                  |
+| 0.1.3 | 2026-10-20 | [89337](https://github.com/airbytehq/airbyte/pull/89337) | Update dependencies |
+| 0.1.2 | 2026-10-13 | [88750](https://github.com/airbytehq/airbyte/pull/88750) | Update dependencies |
+| 0.1.1 | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests and fix README symlink, test config end date, and release date |
+| 0.1.0 | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
 
 </details>

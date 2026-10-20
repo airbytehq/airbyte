@@ -60,6 +60,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.61 | 2026-10-20 | [89377](https://github.com/airbytehq/airbyte/pull/89377) | Update dependencies |
+| 0.0.60 | 2026-10-13 | [88798](https://github.com/airbytehq/airbyte/pull/88798) | Update dependencies |
 | 0.0.59 | 2026-10-07 | [88248](https://github.com/airbytehq/airbyte/pull/88248) | Fix `events` stream failing with `Start time cannot be more than 90 day(s) in the past` by clamping `createdAtStart` to the API retention window |
 | 0.0.58 | 2026-10-06 | [88024](https://github.com/airbytehq/airbyte/pull/88024) | Update dependencies |
 | 0.0.57 | 2026-09-29 | [87340](https://github.com/airbytehq/airbyte/pull/87340) | Update dependencies |
