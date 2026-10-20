@@ -588,9 +588,9 @@ def test_workflow_jobs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert sorted(records, key=lambda record: record["id"]) == [
-        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo", "label_ids": [], "label_names": []},
-        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo", "label_ids": [], "label_names": []},
-        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo", "label_ids": [], "label_names": []},
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo", "label_names": []},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo", "label_names": []},
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo", "label_names": []},
     ]
     assert all(request.endswith("/jobs?per_page=100&filter=all") for request in _requested(requests_mock, "/jobs"))
     state = states[-1].stream.stream_state.__dict__
@@ -619,6 +619,36 @@ def test_workflow_jobs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
         f"/repos/org/repo/actions/runs/3/jobs?per_page=100&filter=all",
     ]
     assert states[-1].stream.stream_state.__dict__["state"] == {"completed_at": "2022-09-02T09:15:00Z"}
+
+
+def test_workflow_jobs_emit_label_names_as_strings(rate_limit_mock_response, requests_mock):
+    config = _config("org/repo", start_date="2022-09-02T09:05:00Z")
+    _mock_repository_resolution(requests_mock, "org/repo")
+    runs_url = f"{_API}/repos/org/repo/actions/runs"
+    requests_mock.get(
+        runs_url,
+        json={"total_count": 1, "workflow_runs": [_run(1, "2022-09-02T09:06:00Z", "2022-09-02T09:08:00Z", "org/repo")]},
+    )
+    requests_mock.get(
+        f"{runs_url}/1/jobs",
+        json={
+            "jobs": [
+                {
+                    "id": 2,
+                    "run_id": 1,
+                    "completed_at": "2022-09-02T09:07:00Z",
+                    "labels": ["self-hosted", "linux"],
+                }
+            ]
+        },
+    )
+
+    records, _, _, error = _read(config, "workflow_jobs")
+
+    assert error is None
+    assert len(records) == 1
+    assert records[0]["label_names"] == ["self-hosted", "linux"]
+    assert "label_ids" not in records[0]
 
 
 def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, requests_mock):

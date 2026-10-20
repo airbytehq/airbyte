@@ -211,7 +211,7 @@ class ReleasesRecordTransformation(RecordTransformation):
 
 @dataclass
 class ReleaseAssetRecordTransformation(RecordTransformation):
-    """Convert a GraphQL release asset node to its flat REST-compatible field names."""
+    """Normalize release asset records to the stream's flat output fields."""
 
     def transform(
         self,
@@ -236,7 +236,7 @@ class ReleaseAssetRecordTransformation(RecordTransformation):
         uploader = record.pop("uploader", None) or {}
         record["uploader_id"] = uploader.get("id")
         record["uploader_login"] = uploader.get("login")
-        record["uploader_type"] = uploader.get("__typename")
+        record["uploader_type"] = uploader.get("__typename") or uploader.get("type")
 
 
 @dataclass

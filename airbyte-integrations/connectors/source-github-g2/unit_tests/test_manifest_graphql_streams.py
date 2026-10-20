@@ -238,25 +238,28 @@ def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_respons
 
 def test_release_assets_expand_into_child_records(rate_limit_mock_response, requests_mock):
     _mock_repository_resolution(requests_mock)
-    node = _release_node()
-    node["assets"]["nodes"] = [
-        {
-            "node_id": "RA_kwDOAbcDEf4AAAAB",
-            "name": "asset.zip",
-            "label": "stable",
-            "state": "uploaded",
-            "digest": "sha256:abc",
-            "content_type": "application/zip",
-            "size": 42,
-            "download_count": 5,
-            "created_at": "2022-01-03T00:00:00Z",
-            "updated_at": "2022-01-04T00:00:00Z",
-            "browser_download_url": "https://github.com/download/asset.zip",
-            "url": "https://api.github.com/assets/1",
-            "uploader": {"__typename": "User", "id": 7, "login": "octocat"},
-        }
-    ]
-    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [node]))
+    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
+    requests_mock.get(
+        f"https://api.github.com/repos/{REPOSITORY}/releases/11/assets",
+        json=[
+            {
+                "id": 1,
+                "node_id": "RA_kwDOAbcDEf4AAAAB",
+                "name": "asset.zip",
+                "label": "stable",
+                "state": "uploaded",
+                "digest": "sha256:abc",
+                "content_type": "application/zip",
+                "size": 42,
+                "download_count": 5,
+                "created_at": "2022-01-03T00:00:00Z",
+                "updated_at": "2022-01-04T00:00:00Z",
+                "browser_download_url": "https://github.com/download/asset.zip",
+                "url": "https://api.github.com/assets/1",
+                "uploader": {"id": 7, "login": "octocat", "type": "User"},
+            }
+        ],
+    )
 
     records, error = _read(_config(), "release_assets")
 
@@ -284,6 +287,40 @@ def test_release_assets_expand_into_child_records(rate_limit_mock_response, requ
             "uploader_type": "User",
         }
     ]
+
+
+def test_release_assets_paginate_with_link_header(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
+    assets_url = f"https://api.github.com/repos/{REPOSITORY}/releases/11/assets"
+    requests_mock.get(
+        f"{assets_url}?per_page=100",
+        json=[
+            {
+                "id": 1,
+                "node_id": "RA_kwDOAbcDEf4AAAAB",
+                "name": "asset-one.zip",
+                "uploader": {"id": 7, "login": "octocat", "type": "User"},
+            }
+        ],
+        headers={"Link": f'<{assets_url}?page=2>; rel="next"'},
+    )
+    requests_mock.get(
+        f"{assets_url}?page=2",
+        json=[
+            {
+                "id": 2,
+                "node_id": "RA_kwDOAbcDEf4AAAAC",
+                "name": "asset-two.zip",
+                "uploader": {"id": 7, "login": "octocat", "type": "User"},
+            }
+        ],
+    )
+
+    records, error = _read(_config(), "release_assets")
+
+    assert error is None
+    assert [record["name"] for record in records] == ["asset-one.zip", "asset-two.zip"]
 
 
 def test_releases_sends_owner_and_name_as_graphql_variables(rate_limit_mock_response, requests_mock):

@@ -9202,13 +9202,8 @@ definitions:
     - type: AddFields
       fields:
       - path:
-        - label_ids
-        value: '{{ (record.get(''labels'') or []) | map(attribute=''id'') | list }}'
-    - type: AddFields
-      fields:
-      - path:
         - label_names
-        value: '{{ (record.get(''labels'') or []) | map(attribute=''name'') | list }}'
+        value: '{{ record.get(''labels'') or [] }}'
     - type: CustomTransformation
       class_name: source_declarative_manifest.components.EnforceDeclaredSchema
       schema:
@@ -9281,14 +9276,6 @@ definitions:
             type: &id945
             - 'null'
             - string
-          label_ids:
-            type: &id946
-            - 'null'
-            - array
-            items:
-              type: &id947
-              - 'null'
-              - string
           label_names:
             type: &id948
             - 'null'
@@ -9381,10 +9368,6 @@ definitions:
           check_run_url:
             description: URL to view the check run associated with the job
             type: *id945
-          label_ids:
-            type: *id946
-            items:
-              type: *id947
           label_names:
             type: *id948
             items:
@@ -9500,11 +9483,7 @@ definitions:
               \        updated_at: updatedAt\n        draft: isDraft\n        prerelease: isPrerelease\n        body: description\n        body_html:\
               \ descriptionHTML\n        html_url: url\n        tagCommit { target_commitish: oid }\n        author {\n          __typename\n\
               \          ... on User {\n            node_id: id\n            id: databaseId\n            login\n            avatar_url: avatarUrl\n\
-              \            html_url: url\n            site_admin: isSiteAdmin\n          }\n        }\n        assets: releaseAssets(first: 100)\
-              \ {\n          nodes {\n            node_id: id\n            name\n            content_type: contentType\n            size\n   \
-              \         download_count: downloadCount\n            created_at: createdAt\n            updated_at: updatedAt\n            browser_download_url:\
-              \ downloadUrl\n            url\n            uploader: uploadedBy {\n              __typename\n              ... on User { id: databaseId\
-              \ }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n        reaction_groups: reactionGroups {\n    \
+              \            html_url: url\n            site_admin: isSiteAdmin\n          }\n        }\n        reaction_groups: reactionGroups {\n    \
               \      content\n          reactors { totalCount }\n        }\n        mentions_connection: mentions(first: 0) { totalCount }\n \
               \     }\n      pageInfo { hasNextPage endCursor }\n    }\n  }\n}\n"
             variables:
@@ -11097,73 +11076,42 @@ definitions:
     primary_key: id
     retriever:
       type: SimpleRetriever
-      page_size_reduction:
-        $ref: '#/definitions/graphql_page_size_reduction'
       requester:
-        $ref: '#/definitions/releases_cached_requester'
-        request_body:
-          type: RequestBodyJsonObject
-          value:
-            query: "query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {\n  repository(owner: $owner, name: $name)\
-              \ {\n    releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {\n      nodes {\n        node_id:\
-              \ id\n        id: databaseId\n        name\n        tag_name: tagName\n        created_at: createdAt\n        published_at: publishedAt\n\
-              \        updated_at: updatedAt\n        draft: isDraft\n        prerelease: isPrerelease\n        body: description\n        body_html:\
-              \ descriptionHTML\n        html_url: url\n        tagCommit { target_commitish: oid }\n        author {\n          __typename\n\
-              \          ... on User {\n            node_id: id\n            id: databaseId\n            login\n            avatar_url: avatarUrl\n\
-              \            html_url: url\n            site_admin: isSiteAdmin\n          }\n        }\n        assets: releaseAssets(first: 100)\
-              \ {\n          nodes {\n            node_id: id\n            name\n            label\n            state\n            digest\n  \
-              \          content_type: contentType\n            size\n            download_count: downloadCount\n            created_at: createdAt\n\
-              \            updated_at: updatedAt\n            browser_download_url: downloadUrl\n            url\n            uploader: uploadedBy\
-              \ {\n              __typename\n              ... on User { id: databaseId login }\n            }\n          }\n          pageInfo\
-              \ { hasNextPage }\n        }\n        reaction_groups: reactionGroups {\n          content\n          reactors { totalCount }\n\
-              \        }\n        mentions_connection: mentions(first: 0) { totalCount }\n      }\n      pageInfo { hasNextPage endCursor }\n\
-              \    }\n  }\n}\n"
-            variables:
-              owner: '{{ stream_partition.repository.split(''/'')[0] }}'
-              name: '{{ stream_partition.repository.split(''/'')[1] }}'
+        $ref: '#/definitions/repository_scoped_requester'
+        path: repos/{{ stream_partition.parent_slice.repository }}/releases/{{ stream_partition.release_id }}/assets
+        request_parameters:
+          per_page: '100'
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path:
-          - data
-          - repository
-          - releases
-          - nodes
-          record_expander:
-            type: RecordExpander
-            expand_records_from_field:
-            - assets
-            - nodes
-            parent_fields:
-            - type: ParentFieldPath
-              parent_path:
-              - id
-              record_path:
-              - release_id
-            - type: ParentFieldPath
-              parent_path:
-              - created_at
-              record_path:
-              - release_created_at
+          field_path: []
       paginator:
-        $ref: '#/definitions/graphql_paginator'
-        pagination_strategy:
-          type: CursorPagination
-          page_size:
-            $ref: '#/definitions/graphql_large_stream_page_size'
-          cursor_value: '{{ ((((response.get(''data'') or {}).get(''repository'') or {}).get(''releases'') or {}).get(''pageInfo'') or {}).get(''endCursor'')
-            }}'
-          stop_condition: '{{ not ((((response.get(''data'') or {}).get(''repository'') or {}).get(''releases'') or {}).get(''pageInfo'') or {}).get(''hasNextPage'')
-            }}'
+        $ref: '#/definitions/page_link_paginator'
       partition_router:
-        $ref: '#/definitions/repository_partition_router'
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: '#/definitions/releases_stream'
+          parent_key: id
+          partition_field: release_id
+          extra_fields:
+          - - repository
+          - - created_at
+          incremental_dependency: true
     transformations:
     - type: AddFields
       fields:
       - path:
         - repository
-        value: '{{ stream_slice.repository }}'
+        value: '{{ stream_slice.extra_fields[''repository''] }}'
+      - path:
+        - release_id
+        value: '{{ stream_partition.release_id }}'
+      - path:
+        - release_created_at
+        value: '{{ stream_slice.extra_fields[''created_at''] }}'
     - type: CustomTransformation
       class_name: source_declarative_manifest.components.ReleaseAssetRecordTransformation
     - type: CustomTransformation
@@ -11346,6 +11294,7 @@ definitions:
     type: DeclarativeStream
     name: contributor_activity_weeks
     primary_key:
+    - repository
     - author_id
     - w
     retriever:
