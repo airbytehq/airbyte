@@ -1,4 +1,11 @@
+> NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
+
 # Contributing to `source-bigquery`
+
+This file is connector-specific. For build and test commands, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
+`source-bigquery` is a Bulk CDK connector.
 
 ## Reproducing bugs
 

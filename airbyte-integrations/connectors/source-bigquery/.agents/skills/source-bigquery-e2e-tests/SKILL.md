@@ -1,4 +1,9 @@
-# Source BigQuery remote e2e tests
+---
+name: source-bigquery-e2e-tests
+description: Run the Airbyte protocol smoke sweep for airbyte/source-bigquery:<tag> against the shared BigQuery integration project inside a per-run PROVEFIX_<run_id> dataset (B3 remote-backend mode of db-harness-lib), with a dry-run orphan sweep.
+---
+
+# source-bigquery-e2e-tests
 
 This harness runs the source-bigquery protocol regression sweep against an isolated dataset in a real BigQuery project. Orchestration comes from `airbyte-integrations/db-harness-lib`; the engine scripts own the dataset, fixtures, and credentials.
 
@@ -29,6 +34,6 @@ Each run creates `PROVEFIX_<run_id>` in `BIGQUERY_PROJECT` and records ownership
 
 ## Expected smoke result
 
-The run should pass CHECK, DISCOVER both `smoke_table` and `smoke_view`, and READ three records from each stream. The table exercises the Storage Read API when Cloud edition is enabled; the view uses the query API.
+Both runs pass CHECK, DISCOVER `smoke_table` and `smoke_view`, and READ three records from each stream. The installed CLI warns when it lacks `--extra-env`, so that run exercises only the query API. With `BIGQUERY_AIRBYTE_EDITION=CLOUD` and the #349 CLI, connector logs show `smoke_table` opening a Storage Read API session and `smoke_view` falling back to the query API because views are unsupported by the Storage Read API.
 
 There is no bad-vs-fixed proof case yet: the 1.0.1 views fallback requires a service account without BigQuery Read Session User, and none exists in GSM.
