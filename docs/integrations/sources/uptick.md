@@ -240,6 +240,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
 | 2.1.0 | 2026-10-18 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication; make `base_url` the single required field for both authentication methods; copy legacy credentials under `credentials` (legacy top-level fields kept); OAuth requests read-only `read` scope |
+| 2.0.1 | 2026-10-20 | [89415](https://github.com/airbytehq/airbyte/pull/89415) | Update dependencies |
 | 2.0.0 | 2026-10-16 | [88925](https://github.com/airbytehq/airbyte/pull/88925) | Upgrade the Uptick API to v2.16, correct the types of object and numeric fields, make majorservices full refresh only, filter servicegroups and accreditationtypes server-side, and add product_id to invoicelineitems |
 | 1.3.3 | 2026-10-13 | [88821](https://github.com/airbytehq/airbyte/pull/88821) | Update dependencies |
 | 1.3.2 | 2026-10-06 | [88063](https://github.com/airbytehq/airbyte/pull/88063) | Update dependencies |
