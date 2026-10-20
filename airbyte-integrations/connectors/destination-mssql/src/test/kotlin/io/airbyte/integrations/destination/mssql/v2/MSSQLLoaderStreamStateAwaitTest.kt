@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test
 class MSSQLLoaderStreamStateAwaitTest {
     private val stream =
         DestinationStream(
-            unmappedNamespace = "PREPROD_IHASCO",
+            unmappedNamespace = "test_namespace",
             unmappedName = "users",
             importType = Append,
             schema = ObjectType(properties = linkedMapOf("id" to FieldType(StringType, true))),
