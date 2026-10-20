@@ -64,6 +64,22 @@ What `airbytehq/oncall#13250` establishes is narrower than the mechanism above: 
 
 **Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
 
+## 7. `ticket_comments` Pages by `start_time`, Not `next_page`, So a Timed-Out Page Can Shrink
+
+`ticket_comments` reads `GET /incremental/ticket_events.json?include=comment_events`. A heavy page makes Zendesk answer `504`, and re-issuing the identical request asks it to do the same work again. So the `504` filter uses `action: REDUCE_PAGE_SIZE` with a retriever-level `page_size_reduction`: the same page is re-requested with half the `per_page` (down to 1), and `reset_policy: AFTER_SUCCESSFUL_PAGE` restores the configured size on the next page. The stream is a single partition, so `NEVER` would keep the reduced size for the rest of the sync after one heavy page.
+
+This forces the paginator shape. The CDK (7.35.0) rejects `page_size_reduction` with a `RequestPath` page token, because the `next_page` URL Zendesk builds already carries the original `per_page` and the reduced size would be sent next to it. The paginator is therefore a `CursorPagination` with `cursor_value: '{{ response.get("end_time") }}'` injected as the `start_time` request parameter. That is what `next_page` contains anyway: verified on a test account, `next_page` is the same request plus `start_time=<end_time>`, and requesting it directly returns the identical events and the identical next `end_time`. A response without `end_time` yields no token and ends the pagination instead of re-requesting the first page.
+
+Details that keep this correct:
+
+- `ignore_stream_slicer_parameters_on_paginated_requests: true` keeps the cursor's own `start_time` off every page but the first; without it the two `start_time` values collide. `include` is a requester parameter, which that flag never drops.
+- The paginator is inline on purpose. `end_of_stream_paginator` is shared by `ticket_events`, `ticket_metric_events` and others that are not set up for page size reduction; do not edit it for this stream.
+- The `stop_condition` must not compare `last_page_size` (or a count from the body) against a fixed number: a full page at a reduced size would read as the last page and silently drop the rest of the stream. `end_of_stream` is safe.
+- The reduction path ignores `backoff_strategies` and `Retry-After`, so `backoff_seconds` (10, multiplied by the attempt number) and `retries_at_minimum_page_size` (3) carry the waiting: a `504` here can also mean Zendesk is briefly overloaded. `failure_type` is not set on the filter because `HttpResponseFilter` only applies it to `FAIL`.
+- Zendesk keeps events that share a `generated_timestamp` on one page, so a page can exceed `per_page` and no reduction can split such a group.
+
+The default page size is 1000. The setup form saves the spec default, so most configs stored the old default of 100 explicitly; a `ConfigMigration` rewrites exactly `100` (int or numeric string) to `1000` and leaves every other value, which users set on purpose (usually lowered after timeouts). `page_size` is top-level, so the migrated config is emitted as `CONNECTOR_CONFIG` and persisted.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

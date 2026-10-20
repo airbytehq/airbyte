@@ -51,6 +51,12 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
 
+## 7. `ticket_comments` Shrinks a Timed-Out Page Instead of Retrying It
+
+When Zendesk answers a `ticket_comments` page with a `504`, the stream requests the same page again with half the page size, down to one event per page, and goes back to the configured size (default 1000) on the next page. To make that possible the next page is requested as `start_time=<end_time>` instead of following the `next_page` URL, which already carries the original page size. Configs that still store the old default of 100 are migrated to 1000.
+
+**Why this matters:** keep the stream's paginator inline and keep its `stop_condition` on `end_of_stream`. A condition comparing the page length to a fixed number would end the stream early whenever a page was reduced. See AGENTS.md for the details.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
