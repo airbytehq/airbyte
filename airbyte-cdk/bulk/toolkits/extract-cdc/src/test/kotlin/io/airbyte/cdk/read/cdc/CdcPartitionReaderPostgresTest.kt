@@ -39,9 +39,11 @@ class CdcPartitionReaderPostgresTest :
 
     companion object {
         const val DOCKER_IMAGE_NAME = "postgres:13-alpine"
+
         init {
             TestContainerFactory.register(DOCKER_IMAGE_NAME, ::PostgreSQLContainer)
         }
+
         const val PUBLICATION_NAME = "test_publication"
         const val SLOT_NAME = "test_slot"
     }

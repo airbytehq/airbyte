@@ -132,7 +132,7 @@ object BigQueryFieldTypes {
                     fields =
                         (field.subFields ?: emptyList()).map {
                             EmittedField(it.name, fromField(it))
-                        }
+                        },
                 )
             // A schema field is never typed ARRAY; repetition is expressed by the REPEATED mode.
             StandardSQLTypeName.ARRAY -> PokemonFieldType
@@ -190,31 +190,37 @@ sealed class NullSafeGetter<T : Any>(private val convert: (Any) -> T) : JdbcGett
 }
 
 data object NullSafeBooleanGetter :
-    NullSafeGetter<Boolean>({ value ->
-        when (value) {
-            is Boolean -> value
-            is Number -> value.toInt() != 0
-            else -> value.toString().toBooleanStrict()
-        }
-    })
+    NullSafeGetter<Boolean>(
+        { value ->
+            when (value) {
+                is Boolean -> value
+                is Number -> value.toInt() != 0
+                else -> value.toString().toBooleanStrict()
+            }
+        },
+    )
 
 data object NullSafeLongGetter :
-    NullSafeGetter<Long>({ value ->
-        when (value) {
-            is Long -> value
-            is Number -> value.toLong()
-            else -> value.toString().toLong()
-        }
-    })
+    NullSafeGetter<Long>(
+        { value ->
+            when (value) {
+                is Long -> value
+                is Number -> value.toLong()
+                else -> value.toString().toLong()
+            }
+        },
+    )
 
 data object NullSafeDoubleGetter :
-    NullSafeGetter<Double>({ value ->
-        when (value) {
-            is Double -> value
-            is Number -> value.toDouble()
-            else -> value.toString().toDouble()
-        }
-    })
+    NullSafeGetter<Double>(
+        { value ->
+            when (value) {
+                is Double -> value
+                is Number -> value.toDouble()
+                else -> value.toString().toDouble()
+            }
+        },
+    )
 
 data object BigQueryBooleanFieldType :
     LosslessJdbcFieldType<Boolean, Boolean>(
@@ -247,11 +253,11 @@ data object BigQueryDoubleFieldType :
  * BigQuery `DATE`, `DATETIME` and `TIME` columns are selected as `CAST(col AS STRING)` and parsed
  * from BigQuery's canonical text instead of going through the JDBC driver's `java.sql` types:
  * - the driver materializes `TIME` as `java.sql.Time`, which keeps milliseconds at best while
- * BigQuery stores microseconds (`15:30:00.000001` comes back as `15:30:00.000`);
+ *   BigQuery stores microseconds (`15:30:00.000001` comes back as `15:30:00.000`);
  * - the driver converts `DATE` and `DATETIME` through `java.util.Date`, whose calendar is Julian
- * before 1582-10-15, so `DATE '0001-01-01'` comes back as `0001-01-03` from every accessor,
- * `getString` included (verified against the service on 2026-09-14). `TIMESTAMP` is not affected
- * (its conversion is epoch-based) and stays on [OffsetDateTimeFieldType].
+ *   before 1582-10-15, so `DATE '0001-01-01'` comes back as `0001-01-03` from every accessor,
+ *   `getString` included (verified against the service on 2026-09-14). `TIMESTAMP` is not affected
+ *   (its conversion is epoch-based) and stays on [OffsetDateTimeFieldType].
  *
  * Values that were not cast (e.g. `MAX(col)` on a `TIME` cursor) parse too, since the driver's text
  * form uses the same layout with fewer fraction digits.
@@ -474,7 +480,7 @@ object BigQueryValues {
         for (field in fields) {
             result.set<JsonNode>(
                 field.id,
-                fromJson(node.get(field.id) ?: Jsons.nullNode(), field.type)
+                fromJson(node.get(field.id) ?: Jsons.nullNode(), field.type),
             )
         }
         return result
@@ -491,7 +497,7 @@ object BigQueryValues {
 
     private val bareTemporal: Regex =
         Regex(
-            """(?<=[:\[,])\s*(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?|\d{2}:\d{2}:\d{2}(?:\.\d+)?)(?=\s*[,}\]])"""
+            """(?<=[:\[,])\s*(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?|\d{2}:\d{2}:\d{2}(?:\.\d+)?)(?=\s*[,}\]])""",
         )
 
     internal fun quoteBareTemporals(text: String): String =
@@ -506,7 +512,7 @@ object BigQueryValues {
                 LeafAirbyteSchemaType.DATE -> LocalDateCodec.encode(LocalDate.parse(node.asText()))
                 LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE ->
                     LocalDateTimeCodec.encode(
-                        LocalDateTime.parse(node.asText(), BigQueryTemporalText.DATETIME)
+                        LocalDateTime.parse(node.asText(), BigQueryTemporalText.DATETIME),
                     )
                 LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE ->
                     OffsetDateTimeCodec.encode(OffsetDateTime.parse(node.asText()))
@@ -582,7 +588,7 @@ object BigQueryValues {
             // java.sql.Time.toLocalTime() drops the fraction; keep the milliseconds the driver has.
             is Time ->
                 LocalTimeCodec.encode(
-                    Instant.ofEpochMilli(value.time).atZone(ZoneId.systemDefault()).toLocalTime()
+                    Instant.ofEpochMilli(value.time).atZone(ZoneId.systemDefault()).toLocalTime(),
                 )
             is BigDecimal -> Jsons.numberNode(value)
             is Number,

@@ -61,6 +61,7 @@ abstract class AbstractSourceConnectorTest {
      *
      * @param environment
      * - information about the test environment.
+     *
      * @throws Exception
      * - can throw any exception, test framework will handle.
      */
@@ -74,6 +75,7 @@ abstract class AbstractSourceConnectorTest {
      *
      * @param testEnv
      * - information about the test environment.
+     *
      * @throws Exception
      * - can throw any exception, test framework will handle.
      */
@@ -89,7 +91,7 @@ abstract class AbstractSourceConnectorTest {
         get() =
             convertProtocolObject(
                 CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.value.catalog),
-                AirbyteCatalog::class.java
+                AirbyteCatalog::class.java,
             )
 
     private val discoverWriteRequest: ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> =
@@ -99,7 +101,7 @@ abstract class AbstractSourceConnectorTest {
     @Throws(Exception::class)
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
@@ -124,7 +126,7 @@ abstract class AbstractSourceConnectorTest {
                 localRoot.toString(),
                 fileTransferMountSource = null,
                 "host",
-                envMap
+                envMap,
             )
 
         postSetup()
@@ -158,8 +160,8 @@ abstract class AbstractSourceConnectorTest {
                         null,
                         null,
                         false,
-                        featureFlags()
-                    )
+                        featureFlags(),
+                    ),
                 )
                 .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
                 .spec
@@ -177,9 +179,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                mConnectorConfigUpdater
+                mConnectorConfigUpdater,
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .checkConnection
@@ -196,9 +198,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                mConnectorConfigUpdater
+                mConnectorConfigUpdater,
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .checkConnection
@@ -219,15 +221,15 @@ abstract class AbstractSourceConnectorTest {
                         null,
                         null,
                         false,
-                        featureFlags()
+                        featureFlags(),
                     ),
-                    mConnectorConfigUpdater
+                    mConnectorConfigUpdater,
                 )
                 .run(
                     StandardDiscoverCatalogInput()
                         .withSourceId(SOURCE_ID.toString())
                         .withConnectionConfiguration(config),
-                    jobRoot
+                    jobRoot,
                 )
                 .discoverCatalogId
         Mockito.verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture())
@@ -242,7 +244,7 @@ abstract class AbstractSourceConnectorTest {
                 JOB_ID,
                 JOB_ATTEMPT,
                 jobRoot,
-                imageName
+                imageName,
             )
         assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
@@ -257,7 +259,7 @@ abstract class AbstractSourceConnectorTest {
     @Throws(Exception::class)
     protected fun runRead(
         catalog: ConfiguredAirbyteCatalog?,
-        state: JsonNode?
+        state: JsonNode?,
     ): List<AirbyteMessage> {
         val sourceConfig =
             WorkerSourceConfig()
@@ -266,8 +268,8 @@ abstract class AbstractSourceConnectorTest {
                 .withCatalog(
                     convertProtocolObject(
                         catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java,
+                    ),
                 )
 
         val source: AirbyteSource =
@@ -280,9 +282,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                featureFlags()
+                featureFlags(),
             )
         val messages: MutableList<AirbyteMessage> = ArrayList()
         source.start(sourceConfig, jobRoot)
@@ -300,7 +302,7 @@ abstract class AbstractSourceConnectorTest {
     protected fun runReadVerifyNumberOfReceivedMsgs(
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?,
-        mapOfExpectedRecordsCount: MutableMap<String, Int>
+        mapOfExpectedRecordsCount: MutableMap<String, Int>,
     ): Map<String, Int> {
         val sourceConfig =
             WorkerSourceConfig()
@@ -309,8 +311,8 @@ abstract class AbstractSourceConnectorTest {
                 .withCatalog(
                     convertProtocolObject(
                         catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java,
+                    ),
                 )
 
         val source = prepareAirbyteSource()
@@ -346,7 +348,7 @@ abstract class AbstractSourceConnectorTest {
                 null,
                 null,
                 false,
-                featureFlags()
+                featureFlags(),
             )
         return DefaultAirbyteSource(integrationLauncher, featureFlags())
     }

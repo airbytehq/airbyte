@@ -28,7 +28,7 @@ object S3BaseChecks {
     fun attemptS3WriteAndDelete(
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        bucketPath: String?
+        bucketPath: String?,
     ) {
         attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client())
     }
@@ -62,7 +62,7 @@ object S3BaseChecks {
             manager.multiPartOutputStreams[0].use { outputStream ->
                 CSVPrinter(
                         PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-                        CSVFormat.DEFAULT
+                        CSVFormat.DEFAULT,
                     )
                     .use { csvPrinter ->
                         val oneMegaByteString = "a".repeat(500000)
@@ -106,7 +106,7 @@ object S3BaseChecks {
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
         bucketPath: String?,
-        s3: AmazonS3
+        s3: AmazonS3,
     ) {
         val prefix =
             if (bucketPath.isNullOrEmpty()) {
@@ -134,7 +134,7 @@ object S3BaseChecks {
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
         outputTableName: String,
-        s3: AmazonS3?
+        s3: AmazonS3?,
     ) {
         val s3Bucket = s3Config.bucketName
         val bucketPath = s3Config.bucketPath

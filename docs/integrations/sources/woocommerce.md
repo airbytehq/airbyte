@@ -114,6 +114,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
 | 0.6.0 | 2026-10-16 | [89051](https://github.com/airbytehq/airbyte/pull/89051) | Add incremental sync support to the `product_variations` and `refunds` streams. |
+| 0.5.56 | 2026-10-20 | [89490](https://github.com/airbytehq/airbyte/pull/89490) | Update dependencies |
 | 0.5.55 | 2026-10-13 | [88866](https://github.com/airbytehq/airbyte/pull/88866) | Update dependencies |
 | 0.5.54 | 2026-10-06 | [88091](https://github.com/airbytehq/airbyte/pull/88091) | Update dependencies |
 | 0.5.53 | 2026-09-29 | [87432](https://github.com/airbytehq/airbyte/pull/87432) | Update dependencies |

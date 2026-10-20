@@ -78,11 +78,11 @@ class BigQueryReadApiTerminalStateTest {
         val bound =
             BigQueryReadApiState.CursorBound(
                 "updated_at",
-                Jsons.textNode("2024-01-10T20:53:31.000000")
+                Jsons.textNode("2024-01-10T20:53:31.000000"),
             )
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"primary_key":{},"cursors":{"updated_at":"2024-01-10T20:53:31.000000"}}"""
+                """{"primary_key":{},"cursors":{"updated_at":"2024-01-10T20:53:31.000000"}}""",
             ),
             terminal(cursor, bound.value),
         )

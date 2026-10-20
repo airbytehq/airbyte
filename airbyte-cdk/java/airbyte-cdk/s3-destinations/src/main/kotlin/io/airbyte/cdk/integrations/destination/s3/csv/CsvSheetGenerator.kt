@@ -22,7 +22,7 @@ interface CsvSheetGenerator {
         id: UUID,
         recordMessage: AirbyteRecordMessage,
         generationId: Long = 0,
-        syncId: Long = 0
+        syncId: Long = 0,
     ): List<Any>
 
     fun getDataRow(formattedData: JsonNode): List<Any>
@@ -40,7 +40,7 @@ interface CsvSheetGenerator {
         fun create(
             jsonSchema: JsonNode?,
             formatConfig: UploadCsvFormatConfig,
-            useV2FieldNames: Boolean = false
+            useV2FieldNames: Boolean = false,
         ): CsvSheetGenerator {
             return if (formatConfig.flattening == Flattening.NO) {
                 NoFlatteningSheetGenerator(useV2FieldNames)
@@ -48,7 +48,7 @@ interface CsvSheetGenerator {
                 RootLevelFlatteningSheetGenerator(jsonSchema!!, useV2FieldNames)
             } else {
                 throw IllegalArgumentException(
-                    "Unexpected flattening config: " + formatConfig.flattening
+                    "Unexpected flattening config: " + formatConfig.flattening,
                 )
             }
         }

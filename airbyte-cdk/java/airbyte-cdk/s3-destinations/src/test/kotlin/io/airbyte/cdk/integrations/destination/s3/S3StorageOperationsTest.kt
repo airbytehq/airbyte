@@ -45,7 +45,7 @@ class S3StorageOperationsTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     internal fun setup() {
         val nameTransformer: NamingConventionTransformer = S3NameTransformer()
@@ -139,7 +139,7 @@ class S3StorageOperationsTest {
             "\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}-\${MONTH}-\${DAY}-\${HOUR}-\${MINUTE}-\${SECOND}-\${MILLISECOND}-\${EPOCH}-\${UUID}"
         assertTrue(
             Pattern.compile(
-                    s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat)
+                    s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat),
                 )
                 .matcher(
                     s3StorageOperations.getBucketObjectPath(
@@ -238,12 +238,12 @@ class S3StorageOperationsTest {
         Mockito.`when`(recordsData.filename).thenReturn(".csv.gz")
         assertEquals(
             OBJECT_PREFIX + 0 + OBJECT_EXTENSION,
-            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData),
         )
         // 1 is skipped because it's already existing
         assertEquals(
             OBJECT_PREFIX + 2 + OBJECT_EXTENSION,
-            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData),
         )
     }
 }
