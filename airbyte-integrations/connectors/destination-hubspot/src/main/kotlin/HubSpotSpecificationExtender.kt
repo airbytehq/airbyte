@@ -99,17 +99,17 @@ class HubSpotSpecificationExtender(private val decorated: DestinationSpecificati
                 .withOauthConfigSpecification(
                     OAuthConfigSpecification()
                         .withOauthConnectorInputSpecification(
-                            Jsons.readTree(oauthConnectorInputSpecification)
+                            Jsons.readTree(oauthConnectorInputSpecification),
                         )
                         .withCompleteOauthOutputSpecification(
-                            Jsons.readTree(completeOauthOutputSpecification)
+                            Jsons.readTree(completeOauthOutputSpecification),
                         )
                         .withCompleteOauthServerInputSpecification(
-                            Jsons.readTree(completeOauthServerInputSpecification)
+                            Jsons.readTree(completeOauthServerInputSpecification),
                         )
                         .withCompleteOauthServerOutputSpecification(
-                            Jsons.readTree(completeOauthServerOutputSpecification)
-                        )
+                            Jsons.readTree(completeOauthServerOutputSpecification),
+                        ),
                 )
         return decorated.invoke(specification).withAdvancedAuth(advancedAuth)
     }

@@ -39,7 +39,7 @@ internal class SnowflakeSchemaRecordFormatterTest {
         return ColumnSchema(
             inputToFinalColumnNames = inputToFinalColumnNames,
             finalSchema = finalSchema,
-            inputSchema = inputSchema
+            inputSchema = inputSchema,
         )
     }
 
@@ -120,16 +120,15 @@ internal class SnowflakeSchemaRecordFormatterTest {
         result.add(record[COLUMN_NAME_AB_GENERATION_ID]?.toCsvValue() ?: "")
 
         // Add user columns
-        val userColumns =
-            columns.filterNot { col ->
-                listOf(
-                        COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName(),
-                        COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName(),
-                        COLUMN_NAME_AB_META.toSnowflakeCompatibleName(),
-                        COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
-                    )
-                    .contains(col)
-            }
+        val userColumns = columns.filterNot { col ->
+            listOf(
+                    COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName(),
+                    COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName(),
+                    COLUMN_NAME_AB_META.toSnowflakeCompatibleName(),
+                    COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName(),
+                )
+                .contains(col)
+        }
 
         userColumns.forEach { columnName ->
             val value = record[columnName] ?: if (!filterMissing) NullValue else null
