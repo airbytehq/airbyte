@@ -382,7 +382,7 @@ The `list_memberships` stream reads memberships for every list returned by the `
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
-If a custom object has the same name as a built-in stream (for example, a custom object named `form_submissions`), discover returns two streams with that name and connection setup fails with a duplicate stream name error. To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`) in the source configuration and refresh the source schema. The custom object is then exposed as `custom_object_<name>`. Custom objects with other names are not renamed.
+If a custom object has the same name as a built-in stream (for example, a custom object named `form_submissions`), discover returns two streams with that name and connection setup fails with a duplicate stream name error. To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`) in the source configuration and refresh the source schema. The custom object is then exposed as `custom_object_<name>`. Custom objects with other names are not renamed. If you were already syncing the built-in stream with that name, it may have been receiving the custom object's records. After enabling the setting and refreshing the schema, clear that stream's data so its destination table contains only the built-in stream's records.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
