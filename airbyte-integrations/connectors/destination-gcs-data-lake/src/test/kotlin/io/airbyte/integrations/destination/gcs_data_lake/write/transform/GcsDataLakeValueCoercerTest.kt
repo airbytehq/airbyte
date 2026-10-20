@@ -21,11 +21,13 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.mockk.mockk
@@ -178,6 +180,34 @@ internal class GcsDataLakeValueCoercerTest {
             result.abValue,
         )
         assertEquals(listOf(objectValue.serializeToString(), null), converted)
+    }
+
+    @Test
+    fun `passes through scalar values with unknown types`() {
+        val unknownType = UnknownType(Jsons.readTree("""{"type":"potato"}"""))
+        val value = StringValue("ex falso quodlibet")
+
+        val result = coercer.map(enriched(value, unknownType))
+
+        assertEquals(value, result.abValue)
+    }
+
+    @Test
+    fun `stringifies object elements in arrays with unknown item types`() {
+        val unknownType = UnknownType(Jsons.readTree("""{"type":"potato"}"""))
+        val objectValue = ObjectValue(linkedMapOf("id" to IntegerValue(1L)))
+
+        val (result, converted) =
+            mapAndConvert(
+                ArrayType(FieldType(unknownType, nullable = true)),
+                ArrayValue(listOf(objectValue)),
+            )
+
+        assertEquals(
+            ArrayValue(listOf(StringValue(objectValue.serializeToString()))),
+            result.abValue,
+        )
+        assertEquals(listOf(objectValue.serializeToString()), converted)
     }
 
     @Test
