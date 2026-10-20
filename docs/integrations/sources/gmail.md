@@ -115,7 +115,13 @@ Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `m
 
 These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10. Because the limit depends on the project, the connector doesn't throttle its calls up front and relies on Gmail's rate-limit responses instead.
 
-The connector retries `429 Too Many Requests` and `403` quota-saturation errors with backoff, up to 10 times over roughly 10 to 13 minutes. After a `429`, every request waits up to a minute for the current quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
+The connector retries `429 Too Many Requests` and `403` quota-saturation errors. It decides how long to wait before each retry as follows:
+
+1. If the response has a `Retry-After` header, it waits that long.
+2. Otherwise, if the error message contains a `Retry after <timestamp>` time, it waits until that time, up to 30 minutes.
+3. Otherwise, it uses exponential backoff.
+
+A request is retried up to 10 times, and the connector stops retrying after about 10 minutes. A wait taken from the error message can run past that limit. In that case, the connector retries once after the wait and fails the request if that retry also fails. After a `429`, every request also waits up to a minute for the current quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
 ## Limitations & troubleshooting
 
