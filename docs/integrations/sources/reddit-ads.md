@@ -164,7 +164,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.0.0 | 2026-10-19 | [89083](https://github.com/airbytehq/airbyte/pull/89083) | Type timestamp, date and integer fields to match Reddit's API and normalize report `date` to `YYYY-MM-DD` |
+| 1.0.0 | 2026-10-20 | [89083](https://github.com/airbytehq/airbyte/pull/89083) | Type timestamp, date and integer fields to match Reddit's API and normalize report `date` to `YYYY-MM-DD` |
 | 0.4.1 | 2026-10-20 | [88784](https://github.com/airbytehq/airbyte/pull/88784) | Update dependencies |
 | 0.4.0 | 2026-10-16 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams; show Reddit's field-level reason in HTTP 400 error messages |
 | 0.3.0 | 2026-10-15 | [88963](https://github.com/airbytehq/airbyte/pull/88963) | Fix campaign_report windows that skipped one day in every three and overwrote earlier days with partial data; add a configurable report lookback window |
