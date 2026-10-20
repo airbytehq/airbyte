@@ -81,18 +81,18 @@ class MsSqlSourceMetadataQuerier(
             base.conn.createStatement().use { stmt: Statement ->
                 stmt
                     .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
+                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'",
                     )
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
                             throw ConfigErrorException(
-                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
+                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running.",
                             )
                         }
                         val status = rs.getString("status_desc")
                         if (status != "Running") {
                             throw ConfigErrorException(
-                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
+                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running.",
                             )
                         }
                     }
@@ -112,13 +112,13 @@ class MsSqlSourceMetadataQuerier(
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
                             throw ConfigErrorException(
-                                "Could not determine CDC status for current database"
+                                "Could not determine CDC status for current database",
                             )
                         }
                         val cdcEnabled = rs.getBoolean("is_cdc_enabled")
                         if (!cdcEnabled) {
                             throw ConfigErrorException(
-                                "CDC is not enabled for the database. Please enable CDC with: EXEC sys.sp_cdc_enable_db"
+                                "CDC is not enabled for the database. Please enable CDC with: EXEC sys.sp_cdc_enable_db",
                             )
                         }
                     }
@@ -200,8 +200,9 @@ class MsSqlSourceMetadataQuerier(
     }
 
     val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableListOf<Pair<TableName, JdbcMetadataQuerier.ColumnMetadata>>()
         log.info { "Querying SQL Server column names for catalog discovery." }
         try {
@@ -212,7 +213,7 @@ class MsSqlSourceMetadataQuerier(
                 catalog: String?,
                 schema: String?,
                 tablePattern: String?,
-                isPseudoColumn: Boolean
+                isPseudoColumn: Boolean,
             ) {
                 val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
                 rsMethod(catalog, schema, tablePattern, null).use { rs ->
@@ -258,8 +259,9 @@ class MsSqlSourceMetadataQuerier(
 
     fun findTableName(
         streamID: StreamIdentifier,
-    ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+    ): TableName? = memoizedTableNames.find {
+        it.name == streamID.name && it.schema == streamID.namespace
+    }
 
     val memoizedClusteredIndexKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllClusteredIndexKeysRow>()
@@ -304,8 +306,7 @@ class MsSqlSourceMetadataQuerier(
                                 rowsByIndex.all { it.keyOrdinal != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val clusteredIndexColumnNames: List<List<String>> =
                         clusteredIndexRows
                             .sortedBy { it.keyOrdinal }
@@ -317,7 +318,7 @@ class MsSqlSourceMetadataQuerier(
         } catch (e: Exception) {
             throw RuntimeException(
                 "SQL Server clustered index discovery query failed: ${e.message}",
-                e
+                e,
             )
         }
     }
@@ -478,8 +479,7 @@ class MsSqlSourceMetadataQuerier(
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
                         pkRows
                             .sortedBy { it.position }
@@ -546,7 +546,7 @@ class MsSqlSourceMetadataQuerier(
                 "spt_values",
 
                 // Replication system schema
-                "MSreplication_options"
+                "MSreplication_options",
             )
 
         /**

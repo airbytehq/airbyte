@@ -24,6 +24,4 @@ dependencies {
     // (kotlin.test came through core-load -> core-base testFixtures). A bare kotlin-test would
     // make KGP infer the JUnit 5 variant and clash with core-base's kotlin-test-junit.
     testImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
-    testImplementation "io.mockk:mockk:1.13.12"
-    testImplementation "org.assertj:assertj-core:3.26.3"
 }

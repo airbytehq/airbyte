@@ -932,14 +932,14 @@ class HubspotRecordingDownloadFilter(RecordFilter):
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().filter_records(records, stream_state, stream_slice, next_page_token):
             url = record["recording_url"]
-            
+
             response = _download_recording(self.requester, url)
-            
+
             if not 200 <= response.status_code < 300:
                 logger.warning(f"Skipping recording {record.get('file_name')}: HubSpot responded with HTTP {response.status_code}.")
                 continue
             _downloaded_recording.url, _downloaded_recording.response = url, response
-            
+
             yield record
 
 

@@ -24,7 +24,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
 
     @Throws(Exception::class)
     protected override fun runRead(
-        configuredCatalog: ConfiguredAirbyteCatalog?
+        configuredCatalog: ConfiguredAirbyteCatalog?,
     ): List<AirbyteMessage> {
         if (stateAfterFirstSync == null) {
             throw RuntimeException("stateAfterFirstSync is null")
@@ -54,17 +54,19 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
         stateAfterFirstSync =
             jsonNode<MutableList<AirbyteStateMessage?>?>(
                 mutableListOf<AirbyteStateMessage?>(
-                    stateAfterFirstBatch.get(stateAfterFirstBatch.size - 1)
+                    stateAfterFirstBatch.get(stateAfterFirstBatch.size - 1),
                 ),
             )
         if (stateAfterFirstSync == null) {
             throw RuntimeException("stateAfterFirstSync should not be null")
         }
         for (test in testDataHolders) {
-            database.query<Any?>({ ctx: DSLContext? ->
-                test.insertSqlQueries.forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })
-                null
-            },)
+            database.query<Any?>(
+                { ctx: DSLContext? ->
+                    test.insertSqlQueries.forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })
+                    null
+                },
+            )
         }
     }
 
@@ -72,7 +74,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
-                    PostgresTestDatabase.ContainerModifier.CONF
+                    PostgresTestDatabase.ContainerModifier.CONF,
                 )
                 .with("CREATE EXTENSION hstore;")
                 .with("CREATE SCHEMA $nameSpace;")
@@ -118,7 +120,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                     // -999999999999999
                     // https://github.com/airbytehq/airbyte/issues/7338
                     /* "'-92233720368547758.08'", "'92233720368547758.07'" */
-                    )
+                )
                 .addExpectedValues(
                     null,
                     "999.99",

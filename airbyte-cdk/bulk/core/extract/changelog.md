@@ -7,6 +7,26 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.22 — 2026-10-16
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
+### 1.1.21 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
+### 1.1.20 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and load 1.1.6; no runtime behaviour change in extract.
+
+### 1.1.19 — 2026-10-16
+
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. Released alongside base 1.0.5 and load 1.1.5; no extract behaviour change.
+
+### 1.1.18 — 2026-10-16
+
+[#88151](https://github.com/airbytehq/airbyte/pull/88151) — CDC: record writes that happen while the Debezium engine is shutting down are queued and performed by `CdcPartitionReader.run()` once the engine thread has ended, so the record count in the final checkpoint includes them. Previously, with Debezium's `AsyncEmbeddedEngine` (source-mssql), a shutdown-path write could still be in flight when the state message was emitted, so the source reported fewer records than it had sent and the platform waited for the checkpoints to flush. A shutdown-path write that fails now fails the read with its cause instead of being lost.
+
 ### 1.1.17 — 2026-10-15
 
 [#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), `junit-platform-launcher` is on every test runtime classpath, and K2-lint cleanups that also compile on Kotlin 1.9 (`JdbcAccessor` array getter, redundant casts/safe calls). No behaviour change.
