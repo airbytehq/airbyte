@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+#
+
 import json
 from dataclasses import asdict
 from enum import Enum
