@@ -52,7 +52,7 @@ internal class DestinationMessageTest {
 
     private fun factory(
         dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-        namespaceMapper: NamespaceMapper = NamespaceMapper()
+        namespaceMapper: NamespaceMapper = NamespaceMapper(),
     ) =
         DestinationMessageFactory(
             DestinationCatalog(
@@ -71,8 +71,8 @@ internal class DestinationMessageTest {
                                         finalTableName =
                                             io.airbyte.cdk.load.schema.model.TableName(
                                                 descriptor.namespace ?: "default",
-                                                descriptor.name
-                                            )
+                                                descriptor.name,
+                                            ),
                                     ),
                                 columnSchema =
                                     io.airbyte.cdk.load.schema.model.ColumnSchema(
@@ -81,9 +81,9 @@ internal class DestinationMessageTest {
                                         finalSchema = mapOf(),
                                     ),
                                 importType = Append,
-                            )
-                    )
-                )
+                            ),
+                    ),
+                ),
             ),
             dataChannelMedium = dataChannelMedium,
             namespaceMapper = namespaceMapper,
@@ -104,7 +104,7 @@ internal class DestinationMessageTest {
             // as `Int?`.
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
             serialized.deserializeToClass(AirbyteMessage::class.java),
-            serialized.length.toLong()
+            serialized.length.toLong(),
         )
     }
 
@@ -136,11 +136,11 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(), inputMessage) as StreamCheckpoint
@@ -155,7 +155,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -180,7 +180,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(), inputMessage) as GlobalCheckpoint
@@ -192,7 +192,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -207,12 +207,12 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
@@ -229,7 +229,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -255,7 +255,7 @@ internal class DestinationMessageTest {
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
@@ -272,7 +272,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -287,11 +287,11 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                 )
 
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
@@ -322,7 +322,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
+                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234),
                 )
 
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
@@ -350,9 +350,9 @@ internal class DestinationMessageTest {
                                 // field, so it's not round-trippable
                                 .withStreamDescriptor(descriptor.asProtocolObject())
                                 .withStatus(
-                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
-                                )
-                        )
+                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
+                                ),
+                        ),
                 )
 
         @JvmStatic
@@ -373,15 +373,16 @@ internal class DestinationMessageTest {
                                                     .withField("foo")
                                                     .withReason(
                                                         AirbyteRecordMessageMetaChange.Reason
-                                                            .DESTINATION_FIELD_SIZE_LIMITATION
+                                                            .DESTINATION_FIELD_SIZE_LIMITATION,
                                                     )
                                                     .withChange(
-                                                        AirbyteRecordMessageMetaChange.Change.NULLED
-                                                    )
-                                            )
-                                        )
+                                                        AirbyteRecordMessageMetaChange.Change
+                                                            .NULLED,
+                                                    ),
+                                            ),
+                                        ),
                                 )
-                                .withData(blob1)
+                                .withData(blob1),
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -397,9 +398,9 @@ internal class DestinationMessageTest {
                                         .withStreamDescriptor(descriptor.asProtocolObject())
                                         .withStatus(
                                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
+                                                .COMPLETE,
+                                        ),
+                                ),
                         ),
                 )
                 .map { Arguments.of(it) }
@@ -414,9 +415,10 @@ internal class DestinationMessageTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(descriptor.asProtocolObject())
+                            AirbyteStreamState()
+                                .withStreamDescriptor(descriptor.asProtocolObject()),
                         )
-                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0)),
                 )
 
         assertDoesNotThrow { convert(factory(), inputMessage) as StreamCheckpoint }
@@ -434,9 +436,9 @@ internal class DestinationMessageTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(descriptor.asProtocolObject())
-                                .withStreamState(blob1)
+                                .withStreamState(blob1),
                         )
-                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0)),
                 )
 
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -464,14 +466,14 @@ internal class DestinationMessageTest {
                                             .withField("foo")
                                             .withReason(
                                                 AirbyteRecordMessageMetaChange.Reason
-                                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                                                    .DESTINATION_FIELD_SIZE_LIMITATION,
                                             )
                                             .withChange(
-                                                AirbyteRecordMessageMetaChange.Change.NULLED
-                                            )
-                                    )
-                                )
-                        )
+                                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            ),
+                                    ),
+                                ),
+                        ),
                 )
 
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -487,8 +489,8 @@ internal class DestinationMessageTest {
                 properties =
                     linkedMapOf(
                         "id" to FieldType(IntegerType, nullable = true),
-                        "name" to FieldType(StringType, nullable = true)
-                    )
+                        "name" to FieldType(StringType, nullable = true),
+                    ),
             )
         val stream =
             DestinationStream(
@@ -503,7 +505,7 @@ internal class DestinationMessageTest {
                         tableNames =
                             io.airbyte.cdk.load.schema.model.TableNames(
                                 finalTableName =
-                                    io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                                    io.airbyte.cdk.load.schema.model.TableName("namespace", "name"),
                             ),
                         columnSchema =
                             io.airbyte.cdk.load.schema.model.ColumnSchema(
@@ -513,7 +515,7 @@ internal class DestinationMessageTest {
                                 finalSchema = mapOf(),
                             ),
                         importType = Append,
-                    )
+                    ),
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
@@ -534,7 +536,7 @@ internal class DestinationMessageTest {
                         .addData(AirbyteValueProtobuf.newBuilder().setInteger(1))
                         .addData(AirbyteValueProtobuf.newBuilder().setString("test"))
                         .setPartitionId("checkpoint_id")
-                        .build()
+                        .build(),
                 )
                 .build()
 
@@ -550,7 +552,7 @@ internal class DestinationMessageTest {
             destinationRecord
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue(coercer)
-                .emittedAtMs
+                .emittedAtMs,
         )
         assertEquals(
             1,
@@ -558,7 +560,7 @@ internal class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["id"]
-                ?.let { (it.abValue as IntegerValue).value.toInt() }
+                ?.let { (it.abValue as IntegerValue).value.toInt() },
         )
         assertEquals(
             "test",
@@ -566,7 +568,7 @@ internal class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["name"]
-                ?.let { (it.abValue as StringValue).value }
+                ?.let { (it.abValue as StringValue).value },
         )
     }
 
@@ -584,13 +586,13 @@ internal class DestinationMessageTest {
                                 .withStream(
                                     AirbyteStreamState()
                                         .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStreamState(blob1)
+                                        .withStreamState(blob1),
                                 )
                                 .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                                 .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
-                                .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                                .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID"),
                         )
-                        .serializeToString()
+                        .serializeToString(),
                 )
                 .build()
 
@@ -632,7 +634,7 @@ internal class DestinationMessageTest {
                                             .withStreamDescriptor(
                                                 StreamDescriptor()
                                                     .withNamespace("potato")
-                                                    .withName("tomato")
+                                                    .withName("tomato"),
                                             )
                                             .withStreamState(blob2),
                                     ),
@@ -640,7 +642,7 @@ internal class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("id", 1234)
+                        .withAdditionalProperty("id", 1234),
                 )
 
         val parsedMessage = convert(factory(), inputMessage) as GlobalCheckpoint
@@ -652,7 +654,7 @@ internal class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 }

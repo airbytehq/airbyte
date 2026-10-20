@@ -30,8 +30,11 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
             },
             {
                 "bucket": "test_bucket",
-                "aws_access_key_id": "some_access_key",
-                "aws_secret_access_key": "some_secret",
+                "credentials": {
+                    "auth_type": "iam_user",
+                    "aws_access_key_id": "some_access_key",
+                    "aws_secret_access_key": "some_secret",
+                },
                 "endpoint": "https://external-s3.com",
                 "start_date": "2022-01-01T01:02:03.000000Z",
                 "streams": [
@@ -61,6 +64,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
             },
             {
                 "bucket": "test_bucket",
+                "credentials": {"auth_type": "default_credentials"},
                 "streams": [
                     {
                         "name": "test_data",
@@ -88,6 +92,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
             },
             {
                 "bucket": "test_bucket",
+                "credentials": {"auth_type": "default_credentials"},
                 "streams": [
                     {
                         "name": "test_data",
@@ -421,8 +426,11 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
 
     expected_config = {
         "bucket": "test_bucket",
-        "aws_access_key_id": "some_access_key",
-        "aws_secret_access_key": "some_secret",
+        "credentials": {
+            "auth_type": "iam_user",
+            "aws_access_key_id": "some_access_key",
+            "aws_secret_access_key": "some_secret",
+        },
         "streams": [
             {
                 "name": "test_data",

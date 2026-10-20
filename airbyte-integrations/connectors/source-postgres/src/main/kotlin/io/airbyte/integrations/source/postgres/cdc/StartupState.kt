@@ -33,14 +33,15 @@ class StartupState(connectionFactory: PostgresSourceJdbcConnectionFactory) {
                         ELSE pg_current_wal_lsn()
                     END AS lsn,
                     CURRENT_TIMESTAMP AS time
-            """.trimIndent(),
+                """
+                    .trimIndent(),
                 withResultSet = { rs ->
                     Triple(
                         rs.getLong("txid"),
                         Lsn.valueOf(rs.getString("lsn")).asLong(),
                         rs.getTimestamp("time").toInstant(),
                     )
-                }
+                },
             )
         this.txId = txId
         this.lsn = lsn

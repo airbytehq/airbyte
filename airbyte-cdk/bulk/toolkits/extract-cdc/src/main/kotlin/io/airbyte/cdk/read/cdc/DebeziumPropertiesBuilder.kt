@@ -62,7 +62,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // We find that in production, substantial time is in fact legitimately required here.
         with(
             "debezium.embedded.shutdown.pause.before.interrupt.ms",
-            5.minutes.inWholeMilliseconds.toString()
+            5.minutes.inWholeMilliseconds.toString(),
         )
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
@@ -127,8 +127,9 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
                 with("column.include.list", "$^")
             }
         }
-        val tableIncludeList: List<String> =
-            streams.map { Pattern.quote("${it.namespace}.${it.name}") }
+        val tableIncludeList: List<String> = streams.map {
+            Pattern.quote("${it.namespace}.${it.name}")
+        }
         val columnIncludeList: List<String> =
             streams.zip(tableIncludeList).map { (stream: Stream, prefix: String) ->
                 val suffix: String = stream.fields.joinToString("|") { Pattern.quote(it.id) }
@@ -141,11 +142,11 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     }
 
     fun withConverters(
-        vararg converters: KClass<out RelationalColumnCustomConverter>
+        vararg converters: KClass<out RelationalColumnCustomConverter>,
     ): DebeziumPropertiesBuilder = withConverters(*converters.map { it.java }.toTypedArray())
 
     fun withConverters(
-        vararg converters: Class<out RelationalColumnCustomConverter>
+        vararg converters: Class<out RelationalColumnCustomConverter>,
     ): DebeziumPropertiesBuilder {
         val classByKey: Map<String, Class<out RelationalColumnCustomConverter>> =
             converters.associateBy {

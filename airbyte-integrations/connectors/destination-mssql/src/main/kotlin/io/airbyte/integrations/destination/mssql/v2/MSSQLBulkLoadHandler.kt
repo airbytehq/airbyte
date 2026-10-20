@@ -20,7 +20,7 @@ class MSSQLBulkLoadHandler(
     private val schemaName: String,
     private val mainTableName: String,
     private val bulkUploadDataSource: String,
-    private val mssqlQueryBuilder: MSSQLQueryBuilder
+    private val mssqlQueryBuilder: MSSQLQueryBuilder,
 ) {
 
     companion object {
@@ -39,7 +39,7 @@ class MSSQLBulkLoadHandler(
     fun bulkLoadForAppendOverwrite(
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ) {
         val bulkInsertSql =
             buildBulkInsertSql(
@@ -86,7 +86,7 @@ class MSSQLBulkLoadHandler(
         nonPkColumns: List<String>,
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ) {
         if (primaryKeyColumns.isEmpty()) {
             throw IllegalArgumentException("At least one primary key column is required.")
@@ -151,7 +151,7 @@ class MSSQLBulkLoadHandler(
         conn: Connection,
         stagingTableName: String,
         primaryKeyColumns: List<String>,
-        cursorColumns: List<String>
+        cursorColumns: List<String>,
     ) {
         val quotedStagingTable = quoteIdentifier(schemaName, stagingTableName)
         // Build the partition clause for primary keys, e.g. T.[id1], T.[id2]
@@ -180,7 +180,8 @@ class MSSQLBulkLoadHandler(
         DELETE
         FROM Dedup_CTE
         WHERE row_num > 1;
-    """.trimIndent()
+    """
+                .trimIndent()
 
         logger.info { "Starting deduplication for staging table: $schemaName.$stagingTableName" }
         conn.prepareStatement(dedupSql).use { stmt -> stmt.executeUpdate() }
@@ -208,7 +209,7 @@ class MSSQLBulkLoadHandler(
         quotedTableName: String,
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ): String {
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
@@ -242,7 +243,8 @@ class MSSQLBulkLoadHandler(
             SELECT TOP 0 *
             INTO ${quoteIdentifier(schemaName, stagingTableName)}
             FROM ${quoteIdentifier(schemaName, mainTableName)}
-        """.trimIndent()
+        """
+                .trimIndent()
 
         conn.prepareStatement(createStagingTableSql).use { stmt -> stmt.executeUpdate() }
         conn.commit()
@@ -262,7 +264,7 @@ class MSSQLBulkLoadHandler(
     private fun buildMergeSql(
         stagingTableName: String,
         primaryKeyColumns: List<String>,
-        nonPkColumns: List<String>
+        nonPkColumns: List<String>,
     ): String {
         val quotedTableName = quoteIdentifier(schemaName = schemaName, tableName = mainTableName)
         val quotedStagingTable = quoteIdentifier(schemaName, stagingTableName)
@@ -293,7 +295,8 @@ class MSSQLBulkLoadHandler(
             INSERT ($allColumnsCsv)
             VALUES ($sourceColumnsCsv)
         ;
-    """.trimIndent()
+    """
+            .trimIndent()
     }
 
     /** Generates a staging table name with a timestamp suffix to avoid collisions. */

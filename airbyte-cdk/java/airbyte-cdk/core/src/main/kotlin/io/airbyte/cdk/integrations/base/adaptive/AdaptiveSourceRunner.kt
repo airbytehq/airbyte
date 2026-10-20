@@ -10,6 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class launches different variants of a source connector based on where Airbyte is deployed.
  */
@@ -31,7 +32,7 @@ object AdaptiveSourceRunner {
 
     class CloudSourceBuilder<OT : Source>(
         private val deploymentMode: String,
-        private val ossSourceSupplier: Supplier<OT>
+        private val ossSourceSupplier: Supplier<OT>,
     ) {
         fun <CT : Source> withCloudSource(cloudSourceSupplier: Supplier<CT>): Runner<OT, CT> {
             return Runner(deploymentMode, ossSourceSupplier, cloudSourceSupplier)
@@ -41,7 +42,7 @@ object AdaptiveSourceRunner {
     class Runner<OT : Source, CT : Source>(
         private val deploymentMode: String?,
         private val ossSourceSupplier: Supplier<OT>,
-        private val cloudSourceSupplier: Supplier<CT>
+        private val cloudSourceSupplier: Supplier<CT>,
     ) {
         private val source: Source
             get() {
