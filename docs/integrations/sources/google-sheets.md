@@ -309,6 +309,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------ | ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.12.45 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Accept pasted spreadsheet links without https://, with whitespace, or with /u/N/ |
 | 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
 | 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |
 | 0.12.42 | 2026-10-13 | [88639](https://github.com/airbytehq/airbyte/pull/88639) | Update dependencies |
