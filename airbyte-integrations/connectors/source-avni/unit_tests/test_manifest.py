@@ -207,18 +207,20 @@ def test_slice_end_is_pinned_across_pages_and_syncs(freeze_jinja_time):
         record = _record("subject", index, timestamp)
         records[record["ID"]] = record
     mutation_applied = False
+    server_default_now = _parse_timestamp(_SLICE_END)
 
     def page_response(request, context):
-        nonlocal mutation_applied
+        nonlocal mutation_applied, server_default_now
         query_params = _query_params(request)
         page = int(query_params.get("page", "0"))
         if page == 1 and not mutation_applied:
             records["subject-000"] = _record("subject", 0, "2024-06-01T00:00:02.000Z")
             records["subject-100"] = _record("subject", 100, "2024-06-01T00:00:01.000Z")
+            server_default_now += timedelta(seconds=10)
             mutation_applied = True
 
         last_modified_from = _parse_timestamp(query_params["lastModifiedDateTime"])
-        now = _parse_timestamp(query_params["now"])
+        now = _parse_timestamp(query_params["now"]) if "now" in query_params else server_default_now
         eligible_records = sorted(
             (record for record in records.values() if last_modified_from <= _parse_timestamp(record["audit"]["Last modified at"]) <= now),
             key=lambda record: record["audit"]["Last modified at"],
@@ -231,9 +233,9 @@ def test_slice_end_is_pinned_across_pages_and_syncs(freeze_jinja_time):
 
         first_sync = _read_stream(["subjects"])
         assert first_sync.errors == []
-        assert len(first_sync.records) == 100
         first_state = _state_by_stream(first_sync)["subjects"]["last_modified_at"]
         assert _parse_timestamp(first_state) <= _parse_timestamp(_SLICE_END)
+        assert len(first_sync.records) == 100
 
         first_sync_requests = _requests(mocker, _DATA_URLS["subjects"])
         assert len(first_sync_requests) == 2
