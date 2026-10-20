@@ -1,0 +1,66 @@
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    exception-classifiers:
+      regex:
+        order: 0
+        rules:
+          - pattern: "(?i).*WRONGPASS invalid username-password pair.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: WRONGPASS invalid username-password pair or user is disabled."
+            error: config
+            output: "Redis rejected the configured password or ACL username. Check the credentials and confirm the ACL user is enabled."
+
+          - pattern: "(?i).*NOAUTH.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: NOAUTH HELLO must be called with the client already authenticated, otherwise the HELLO <proto> AUTH <user> <pass> option can be used to authenticate the client and select the RESP protocol version at the same time"
+            error: config
+            output: "Redis requires authentication. Configure the correct username and password."
+
+          - pattern: "(?i).*NOPERM User .* has no permissions to run the '.*' command.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: NOPERM User no-scan has no permissions to run the 'scan' command"
+            error: config
+            output: "Redis does not permit a required command. Grant the configured user permission to run SCAN and DBSIZE."
+
+          - pattern: "(?i).*ERR DB index is out of range.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: ERR DB index is out of range"
+            error: config
+            output: "The configured Redis database index is out of range. Choose an enabled logical database."
+
+          - pattern: "(?i).*ERR SELECT is not allowed in cluster mode.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: ERR SELECT is not allowed in cluster mode"
+            error: config
+            output: "Redis Cluster mode is not supported because it does not allow selecting a logical database."
+
+          - pattern: "(?i).*Connection closed prematurely.*"
+            input-example: "io.lettuce.core.RedisConnectionException: Connection closed prematurely"
+            error: config
+            output: "The Redis server closed the connection during the handshake. Check whether the server requires TLS."
+
+          - pattern: "(?i).*handshake timed out.*"
+            input-example: "io.netty.handler.ssl.SslHandshakeTimeoutException: handshake timed out after 10000ms"
+            error: config
+            output: "The configured TLS mode does not match the Redis server. Check whether the server expects a TLS connection."
+
+          - pattern: "(?i).*certificate_required.*"
+            input-example: "javax.net.ssl.SSLHandshakeException: (certificate_required) Received fatal alert: certificate_required"
+            error: config
+            output: "Redis requires a client certificate. Configure the client certificate and private key for mutual TLS."
+
+          - pattern: "(?i).*PKIX path building failed.*"
+            input-example: "javax.net.ssl.SSLHandshakeException: (certificate_unknown) PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+            error: config
+            output: "The Redis server certificate is not trusted. Configure the correct CA certificate or use a trusted certificate."
+
+          - pattern: "(?i).*No subject alternative names matching.*"
+            input-example: "javax.net.ssl.SSLHandshakeException: (certificate_unknown) No subject alternative names matching IP address 127.0.0.2 found"
+            error: config
+            output: "Redis server certificate hostname does not match the configured host. Use the hostname listed in the certificate."
+
+          # Keep the generic Lettuce wrapper last so specific authentication, database, and TLS
+          # causes are classified before their shared "Unable to connect to ..." parent message.
+          - pattern: "(?i).*Unable to connect to .*"
+            input-example: "io.lettuce.core.RedisConnectionException: Unable to connect to localhost/<unresolved>:32770"
+            error: config
+            output: "Could not connect to Redis. Check the configured host, port, network access, and connection settings."

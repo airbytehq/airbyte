@@ -1,0 +1,348 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/redis",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Redis Source Spec",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "type": "string",
+        "description": "The hostname or IP address of the Redis server.",
+        "title": "Host",
+        "order": 0,
+        "examples": [
+          "redis.example.com"
+        ]
+      },
+      "port": {
+        "type": "integer",
+        "description": "The port on which Redis is listening.",
+        "title": "Port",
+        "order": 1,
+        "default": 6379,
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "username": {
+        "type": "string",
+        "description": "Optional Redis ACL username. Leave empty for the default user.",
+        "title": "Username",
+        "order": 2
+      },
+      "password": {
+        "type": "string",
+        "description": "Optional Redis password.",
+        "title": "Password",
+        "order": 3,
+        "airbyte_secret": true
+      },
+      "database": {
+        "type": "integer",
+        "description": "The Redis logical database index.",
+        "title": "Database",
+        "order": 4,
+        "default": 0,
+        "minimum": 0
+      },
+      "ssl_mode": {
+        "oneOf": [
+          {
+            "title": "Disable",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connect without TLS.",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "disable"
+                ],
+                "default": "disable"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          {
+            "title": "Require",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Use TLS without validating the server certificate.",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "require"
+                ],
+                "default": "require"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          {
+            "title": "Verify CA",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Use TLS and validate the server certificate against a trusted CA.",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "verify-ca"
+                ],
+                "default": "verify-ca"
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA Certificate",
+                "order": 0,
+                "multiline": true
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client Certificate",
+                "order": 1,
+                "multiline": true
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "order": 2,
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client Key Password",
+                "order": 3,
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          {
+            "title": "Verify Full",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Use TLS and validate the server certificate and hostname.",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "verify-full"
+                ],
+                "default": "verify-full"
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA Certificate",
+                "order": 0,
+                "multiline": true
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client Certificate",
+                "order": 1,
+                "multiline": true
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "order": 2,
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client Key Password",
+                "order": 3,
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        ],
+        "description": "The TLS mode used to connect to Redis.",
+        "title": "SSL Mode",
+        "order": 5,
+        "type": "object"
+      },
+      "key_pattern": {
+        "type": "string",
+        "description": "The Redis glob pattern to include. Discovery is static and does not scan keys.",
+        "title": "Key Pattern",
+        "order": 6,
+        "default": "*",
+        "examples": [
+          "*",
+          "app:*"
+        ]
+      },
+      "tunnel_method": {
+        "oneOf": [
+          {
+            "title": "No Tunnel",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "No ssh tunnel needed to connect to database",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": [
+                  "NO_TUNNEL"
+                ],
+                "default": "NO_TUNNEL"
+              }
+            },
+            "required": [
+              "tunnel_method"
+            ]
+          },
+          {
+            "title": "SSH Key Authentication",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connect through a jump server tunnel host using username and ssh key",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": [
+                  "SSH_KEY_AUTH"
+                ],
+                "default": "SSH_KEY_AUTH"
+              },
+              "tunnel_host": {
+                "type": "string",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "title": "SSH Tunnel Jump Server Host",
+                "order": 1
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "default": 22,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "title": "SSH Connection Port",
+                "order": 2,
+                "minimum": 0,
+                "maximum": 65536
+              },
+              "tunnel_user": {
+                "type": "string",
+                "description": "OS-level username for logging into the jump server host",
+                "title": "SSH Login Username",
+                "order": 3
+              },
+              "ssh_key": {
+                "type": "string",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "title": "SSH Private Key",
+                "order": 4,
+                "multiline": true,
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ]
+          },
+          {
+            "title": "Password Authentication",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connect through a jump server tunnel host using username and password authentication",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": [
+                  "SSH_PASSWORD_AUTH"
+                ],
+                "default": "SSH_PASSWORD_AUTH"
+              },
+              "tunnel_host": {
+                "type": "string",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "title": "SSH Tunnel Jump Server Host",
+                "order": 1
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "default": 22,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "title": "SSH Connection Port",
+                "order": 2,
+                "minimum": 0,
+                "maximum": 65536
+              },
+              "tunnel_user": {
+                "type": "string",
+                "description": "OS-level username for logging into the jump server host",
+                "title": "SSH Login Username",
+                "order": 3
+              },
+              "tunnel_user_password": {
+                "type": "string",
+                "description": "OS-level password for logging into the jump server host",
+                "title": "Password",
+                "order": 4,
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ]
+          }
+        ],
+        "description": "Whether to connect to Redis through an SSH tunnel.",
+        "title": "SSH Tunnel Method",
+        "order": 7,
+        "type": "object"
+      },
+      "scan_batch_size": {
+        "type": "integer",
+        "description": "The number of keys Redis should return per SCAN request.",
+        "title": "SCAN Batch Size",
+        "order": 8,
+        "default": 1000,
+        "minimum": 1
+      },
+      "checkpoint_target_interval_seconds": {
+        "type": "integer",
+        "description": "The target interval between checkpoints.",
+        "title": "Checkpoint Target Interval (Seconds)",
+        "order": 9,
+        "default": 300,
+        "minimum": 1
+      },
+      "max_db_connections": {
+        "type": "integer",
+        "description": "The maximum number of concurrent Redis connections.",
+        "title": "Max Concurrent Queries to Database",
+        "order": 10,
+        "minimum": 1
+      }
+    },
+    "required": [
+      "host",
+      "port"
+    ]
+  },
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": []
+}

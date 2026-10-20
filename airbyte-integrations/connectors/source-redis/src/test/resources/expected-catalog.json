@@ -1,0 +1,99 @@
+{
+  "streams": [
+    {
+      "name": "strings",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "value": { "type": "string" },
+          "ttl": { "type": "number", "airbyte_type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["key"]],
+      "is_resumable": true
+    },
+    {
+      "name": "hashes",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "value": { "type": "object", "additionalProperties": { "type": "string" } },
+          "ttl": { "type": "number", "airbyte_type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["key"]],
+      "is_resumable": true
+    },
+    {
+      "name": "lists",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "value": { "type": "array", "items": { "type": "string" } },
+          "ttl": { "type": "number", "airbyte_type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["key"]],
+      "is_resumable": true
+    },
+    {
+      "name": "sets",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "value": { "type": "array", "items": { "type": "string" } },
+          "ttl": { "type": "number", "airbyte_type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["key"]],
+      "is_resumable": true
+    },
+    {
+      "name": "sorted_sets",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "member": { "type": "string" },
+                "score": { "type": "number" }
+              }
+            }
+          },
+          "ttl": { "type": "number", "airbyte_type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["key"]],
+      "is_resumable": true
+    },
+    {
+      "name": "streams",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "id": { "type": "string" },
+          "fields": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["id"],
+      "source_defined_primary_key": [["key"], ["id"]],
+      "is_resumable": true
+    }
+  ]
+}
