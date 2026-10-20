@@ -167,7 +167,7 @@ constructor(
             host = host,
             port = port,
             username = pojo.username?.trim()?.ifBlank { null },
-            password = pojo.password?.takeIf(String::isNotBlank),
+            password = pojo.password?.takeIf { it.isNotEmpty() },
             database = database,
             sslMode = sslMode,
             keyPattern =

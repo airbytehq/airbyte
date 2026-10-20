@@ -18,6 +18,18 @@ class RedisSourceConfigurationFactoryTest {
     }
 
     @Test
+    fun testWhitespacePasswordIsPreserved() {
+        val config = factory().make(spec().apply { password = " " })
+        Assertions.assertEquals(" ", config.password)
+    }
+
+    @Test
+    fun testEmptyPasswordIsDiscarded() {
+        val config = factory().make(spec().apply { password = "" })
+        Assertions.assertNull(config.password)
+    }
+
+    @Test
     fun testSocketConcurrencyDefaultsToSocketCount() {
         val config = factory("SOCKET", listOf("/tmp/a", "/tmp/b")).make(spec())
         Assertions.assertEquals(2, config.maxConcurrency)

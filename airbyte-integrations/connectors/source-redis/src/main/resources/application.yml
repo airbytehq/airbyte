@@ -23,6 +23,11 @@ airbyte:
             error: config
             output: "Redis does not permit a required command. Grant the configured user permission to run SCAN and DBSIZE."
 
+          - pattern: "(?i).*NOPERM this user has no permissions to run the '.*' command or its subcommand.*"
+            input-example: "io.lettuce.core.RedisCommandExecutionException: NOPERM this user has no permissions to run the 'scan' command or its subcommand"
+            error: config
+            output: "Redis does not permit a required command. Grant the configured user permission to run SCAN and DBSIZE."
+
           - pattern: "(?i).*ERR DB index is out of range.*"
             input-example: "io.lettuce.core.RedisCommandExecutionException: ERR DB index is out of range"
             error: config
@@ -53,7 +58,7 @@ airbyte:
             error: config
             output: "The Redis server certificate is not trusted. Configure the correct CA certificate or use a trusted certificate."
 
-          - pattern: "(?i).*No subject alternative names matching.*"
+          - pattern: "(?i).*(No subject alternative (DNS )?names? (matching|present)|No name matching .* found).*"
             input-example: "javax.net.ssl.SSLHandshakeException: (certificate_unknown) No subject alternative names matching IP address 127.0.0.2 found"
             error: config
             output: "Redis server certificate hostname does not match the configured host. Use the hostname listed in the certificate."
