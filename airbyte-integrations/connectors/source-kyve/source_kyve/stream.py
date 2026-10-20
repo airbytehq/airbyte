@@ -5,11 +5,13 @@ import gzip
 import hashlib
 import json
 import logging
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_kyve.utils import query_endpoint
 
@@ -80,6 +82,23 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        if sync_mode == SyncMode.full_refresh:
+            stream_state = {}
+
+        yield from super().read_records(
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=stream_slice,
+            stream_state=stream_state,
+        )
 
     def request_params(
         self,

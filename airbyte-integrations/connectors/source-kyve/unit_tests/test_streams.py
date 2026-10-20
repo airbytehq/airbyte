@@ -9,6 +9,7 @@ import pytest
 import requests
 from source_kyve.source import KYVEStream as KyveStream
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 from . import config, pool_data
@@ -215,6 +216,51 @@ def test_state_accepts_empty_state(patch_base_class):
     stream.state = {}
 
     assert stream.state == {"offset": 0}
+
+
+def test_full_refresh_paginates_past_first_page(patch_base_class, mocker, requests_mock):
+    url = f"{config['url_base'].rstrip('/')}/kyve/v1/bundles/0"
+    requests_mock.get(
+        url,
+        [
+            {"json": {"pagination": {"next_key": "next"}}},
+            {"json": {"pagination": {}}},
+        ],
+    )
+    mocker.patch.object(KyveStream, "path", return_value="/kyve/v1/bundles/0")
+    mocker.patch.object(KyveStream, "parse_response", return_value=[{"key": "value"}])
+    stream = KyveStream(config, pool_data)
+
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=["offset"],
+            stream_slice={},
+            stream_state={"offset": 0},
+        )
+    )
+
+    offsets = [request.qs["pagination.offset"][0] for request in requests_mock.request_history]
+    assert offsets == ["0", "100"]
+
+
+def test_incremental_first_page_uses_state_offset(patch_base_class, mocker, requests_mock):
+    url = f"{config['url_base'].rstrip('/')}/kyve/v1/bundles/0"
+    requests_mock.get(url, json={"pagination": {}})
+    mocker.patch.object(KyveStream, "path", return_value="/kyve/v1/bundles/0")
+    mocker.patch.object(KyveStream, "parse_response", return_value=[{"key": "value"}])
+    stream = KyveStream(config, pool_data)
+
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            cursor_field=["offset"],
+            stream_slice={},
+            stream_state={"offset": 500},
+        )
+    )
+
+    assert requests_mock.request_history[0].qs["pagination.offset"] == ["500"]
 
 
 @pytest.mark.parametrize(
