@@ -157,6 +157,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add profile primary key and type count and size fields as integers |
 | 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
 | 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |

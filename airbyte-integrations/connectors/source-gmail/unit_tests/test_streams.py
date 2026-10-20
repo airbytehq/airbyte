@@ -70,6 +70,14 @@ def _schema_at(schema, *path):
     return node
 
 
+def _schema_nodes(schema, path=()):
+    yield path, schema
+    for key, subschema in schema.get("properties", {}).items():
+        yield from _schema_nodes(subschema, path + (key,))
+    if "items" in schema:
+        yield from _schema_nodes(schema["items"], path + ("[]",))
+
+
 def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(manifest, base_config):
     # https://developers.google.com/workspace/gmail/api/reference/quota
     # Pre-May-2026 projects keep higher per-user quotas, so the limit is the per-project ceiling.
@@ -368,6 +376,55 @@ def test_profile_read_emits_record(base_config, requests_mock):
     output = _read_stream("profile", SyncMode.full_refresh, base_config)
 
     assert len(output.records) == 1
+
+
+def test_profile_primary_key_and_integer_schema_types(base_config):
+    source = build_source(base_config)
+    catalog = source.discover(logging.getLogger("test"), base_config)
+    discovered_streams = {stream.name: stream for stream in catalog.streams}
+    assert discovered_streams["profile"].source_defined_primary_key == [["emailAddress"]]
+    schemas = {stream.name: stream.json_schema for stream in catalog.streams}
+    assert all(
+        "number" not in (node_type if isinstance(node_type, list) else [node_type])
+        for schema in schemas.values()
+        for _, node in _schema_nodes(schema)
+        if (node_type := node.get("type")) is not None
+    )
+
+    expected_integer_paths = {
+        "profile": {
+            ("messagesTotal",),
+            ("threadsTotal",),
+        },
+        "labels_details": {
+            ("messagesTotal",),
+            ("messagesUnread",),
+            ("threadsTotal",),
+            ("threadsUnread",),
+        },
+        "messages_details": {
+            ("sizeEstimate",),
+            ("payload", "body", "size"),
+            ("payload", "parts", "[]", "body", "size"),
+            ("payload", "parts", "[]", "parts", "[]", "body", "size"),
+            ("payload", "parts", "[]", "parts", "[]", "parts", "[]", "body", "size"),
+        },
+        "threads_details": {
+            ("messages", "[]", "sizeEstimate"),
+            ("messages", "[]", "payload", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "parts", "[]", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "parts", "[]", "parts", "[]", "body", "size"),
+        },
+    }
+    for stream_name, expected_paths in expected_integer_paths.items():
+        integer_paths = set()
+        for path, node in _schema_nodes(schemas[stream_name]):
+            node_type = node.get("type")
+            if node_type == "integer" or (isinstance(node_type, list) and "integer" in node_type):
+                assert node_type == ["integer", "null"]
+                integer_paths.add(path)
+        assert integer_paths == expected_paths
 
 
 def test_labels_read_emits_records(base_config, requests_mock):
