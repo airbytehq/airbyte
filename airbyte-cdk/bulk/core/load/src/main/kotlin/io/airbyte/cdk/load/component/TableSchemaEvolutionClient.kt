@@ -51,9 +51,9 @@ interface TableSchemaEvolutionClient {
      * @param stream The source stream containing schema definition and sync mode configuration
      * @param tableName The destination table to be synchronized
      * @param columnNameMapping Mapping between logical column names and physical database column
-     * names
+     *   names
      * @throws io.airbyte.cdk.ConfigErrorException if the table exists but is incompatible with
-     * Airbyte's requirements
+     *   Airbyte's requirements
      * @throws IllegalStateException if schema evolution cannot be safely performed
      */
     suspend fun ensureSchemaMatches(
@@ -88,7 +88,7 @@ interface TableSchemaEvolutionClient {
     /** Generate a changeset which, when applied to `this`, will result in [expectedColumns]. */
     fun computeChangeset(
         actualColumns: TableColumns,
-        expectedColumns: TableColumns
+        expectedColumns: TableColumns,
     ): ColumnChangeset {
         return ColumnChangeset(
             columnsToAdd = expectedColumns.filter { !actualColumns.contains(it.key) },

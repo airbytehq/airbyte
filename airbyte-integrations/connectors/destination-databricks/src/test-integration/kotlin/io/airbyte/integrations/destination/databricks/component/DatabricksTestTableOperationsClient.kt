@@ -98,7 +98,7 @@ class DatabricksTestTableOperationsClient(
                                             readColumn(rs, i, meta.getColumnTypeName(i).uppercase())
                                         if (value != null) put(meta.getColumnName(i), value)
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -118,7 +118,8 @@ class DatabricksTestTableOperationsClient(
                         WHERE table_catalog = '${config.database}'
                           AND table_schema = '${table.namespace}'
                           AND table_name = '${table.name}'
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                     .use { rs ->
                         return buildMap {
