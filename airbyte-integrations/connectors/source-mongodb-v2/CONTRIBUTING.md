@@ -1,6 +1,6 @@
 # Contributing to source-mongodb-v2
 
-For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/platform/connector-development).
 
 ## Unique behaviors (summary)
 
