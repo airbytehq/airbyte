@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlsplit
 
@@ -11,6 +12,7 @@ from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.auth import token_provider
+from airbyte_cdk.sources.declarative.interpolation.jinja import _ENVIRONMENT
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -31,7 +33,8 @@ _DATA_URLS = {
 }
 _CLIENT_ID = "avni-cognito-client-id"
 _ID_TOKEN = "tok"
-_LOGIN_ERROR = "Avni login failed: check your username and password."
+_FROZEN_NOW = datetime(2024, 6, 1, 0, 0, 10, tzinfo=timezone.utc)
+_SLICE_END = "2024-06-01T00:00:00.000000Z"
 
 
 def _record(stream_name: str, index: int, timestamp: str) -> dict:
@@ -46,6 +49,10 @@ def _record(stream_name: str, index: int, timestamp: str) -> dict:
 def _timestamp(index: int) -> str:
     value = datetime(2024, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=index)
     return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 def _configure_auth(mocker, status_code: int = 200, body: dict | None = None):
@@ -89,6 +96,20 @@ def _state_by_stream(output) -> dict:
         stream_state = message.state.stream
         result[stream_state.stream_descriptor.name] = vars(stream_state.stream_state)
     return result
+
+
+@pytest.fixture(autouse=True)
+def freeze_jinja_time(monkeypatch):
+    current_time = [_FROZEN_NOW]
+    monkeypatch.setitem(_ENVIRONMENT.globals, "now_utc", lambda: current_time[0])
+    return current_time
+
+
+def test_stream_requesters_have_no_deprecation_warnings():
+    source = get_source(config=dict(_CONFIG))
+    source.streams(dict(_CONFIG))
+
+    assert source.deprecation_warnings() == []
 
 
 def test_login_uses_idp_details_and_exact_cognito_request():
@@ -146,6 +167,7 @@ def test_stream_uses_legacy_data_request_and_adds_cursor(stream_name: str, sampl
     assert data_requests[0].headers["auth-token"] == _ID_TOKEN
     assert _query_params(data_requests[0]) == {
         "lastModifiedDateTime": "2000-06-23T01:30:00.000000Z",
+        "now": _SLICE_END,
         "size": "100",
     }
 
@@ -169,12 +191,67 @@ def test_subjects_page_increment_reads_101_records_with_cached_authentication():
     data_requests = _requests(mocker, _DATA_URLS["subjects"])
     assert len(data_requests) == 2
     assert [_query_params(request) for request in data_requests] == [
-        {"lastModifiedDateTime": "2000-06-23T01:30:00.000000Z", "size": "100"},
-        {"lastModifiedDateTime": "2000-06-23T01:30:00.000000Z", "page": "1", "size": "100"},
+        {"lastModifiedDateTime": "2000-06-23T01:30:00.000000Z", "now": _SLICE_END, "size": "100"},
+        {"lastModifiedDateTime": "2000-06-23T01:30:00.000000Z", "now": _SLICE_END, "page": "1", "size": "100"},
     ]
     assert [request.headers["auth-token"] for request in data_requests] == [_ID_TOKEN, _ID_TOKEN]
     assert len(_requests(mocker, _COGNITO_URL)) == 1
     assert len(_requests(mocker, _IDP_URL)) == 1
+
+
+def test_slice_end_is_pinned_across_pages_and_syncs(freeze_jinja_time):
+    start_time = datetime(2024, 5, 31, 23, 58, 20, tzinfo=timezone.utc)
+    records = {}
+    for index in range(100):
+        timestamp = (start_time + timedelta(seconds=index)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        record = _record("subject", index, timestamp)
+        records[record["ID"]] = record
+    mutation_applied = False
+
+    def page_response(request, context):
+        nonlocal mutation_applied
+        query_params = _query_params(request)
+        page = int(query_params.get("page", "0"))
+        if page == 1 and not mutation_applied:
+            records["subject-000"] = _record("subject", 0, "2024-06-01T00:00:02.000Z")
+            records["subject-100"] = _record("subject", 100, "2024-06-01T00:00:01.000Z")
+            mutation_applied = True
+
+        last_modified_from = _parse_timestamp(query_params["lastModifiedDateTime"])
+        now = _parse_timestamp(query_params["now"])
+        eligible_records = sorted(
+            (record for record in records.values() if last_modified_from <= _parse_timestamp(record["audit"]["Last modified at"]) <= now),
+            key=lambda record: record["audit"]["Last modified at"],
+        )
+        return json.dumps({"content": eligible_records[page * 100 : (page + 1) * 100]})
+
+    with requests_mock.Mocker() as mocker:
+        _configure_auth(mocker)
+        mocker.get(_DATA_URLS["subjects"], text=page_response)
+
+        first_sync = _read_stream(["subjects"])
+        assert first_sync.errors == []
+        assert len(first_sync.records) == 100
+        first_state = _state_by_stream(first_sync)["subjects"]["last_modified_at"]
+        assert _parse_timestamp(first_state) <= _parse_timestamp(_SLICE_END)
+
+        first_sync_requests = _requests(mocker, _DATA_URLS["subjects"])
+        assert len(first_sync_requests) == 2
+        assert {_query_params(request)["now"] for request in first_sync_requests} == {_SLICE_END}
+
+        freeze_jinja_time[0] = datetime(2024, 6, 1, 0, 0, 30, tzinfo=timezone.utc)
+        second_sync = _read_stream(["subjects"], state=[message.state for message in first_sync.state_messages])
+        all_data_requests = _requests(mocker, _DATA_URLS["subjects"])
+
+    assert second_sync.errors == []
+    assert "subject-100" in {record.record.data["ID"] for record in second_sync.records}
+    second_sync_requests = all_data_requests[len(first_sync_requests) :]
+    assert second_sync_requests
+    second_slice_end = "2024-06-01T00:00:20.000000Z"
+    assert {_query_params(request)["now"] for request in second_sync_requests} == {second_slice_end}
+    for request in second_sync_requests:
+        query_params = _query_params(request)
+        assert _parse_timestamp(query_params["lastModifiedDateTime"]) <= _parse_timestamp(query_params["now"])
 
 
 def test_authentication_refreshes_after_four_minutes(monkeypatch):
@@ -226,6 +303,7 @@ def test_legacy_stream_state_is_used_for_requests_and_advances_to_latest_record(
         assert len(data_requests) == 1
         assert _query_params(data_requests[0]) == {
             "lastModifiedDateTime": "2024-01-01T00:00:00.000000Z",
+            "now": _SLICE_END,
             "size": "100",
         }
         assert data_requests[0].headers["auth-token"] == _ID_TOKEN
@@ -237,18 +315,73 @@ def test_legacy_stream_state_is_used_for_requests_and_advances_to_latest_record(
 
 
 @pytest.mark.parametrize(
-    "error_body",
+    "error_type",
     [
-        {"__type": "UserNotFoundException", "message": "User does not exist"},
-        {"__type": "NotAuthorizedException", "message": "Incorrect username or password"},
+        pytest.param("NotAuthorizedException", id="not-authorized"),
+        pytest.param("UserNotFoundException", id="user-not-found"),
+        pytest.param("PasswordResetRequiredException", id="password-reset-required"),
+        pytest.param("UserNotConfirmedException", id="user-not-confirmed"),
+        pytest.param("com.amazonaws.cognito#NotAuthorizedException:", id="namespaced-not-authorized"),
     ],
 )
-def test_cognito_400_returns_config_error(error_body: dict):
+def test_cognito_credential_error_returns_config_error(error_type: str):
     with requests_mock.Mocker() as mocker:
-        _configure_auth(mocker, status_code=400, body=error_body)
+        _configure_auth(
+            mocker,
+            status_code=400,
+            body={"__type": error_type, "message": "Incorrect username or password."},
+        )
 
         output = _read_stream(["subjects"])
 
     assert output.errors
     assert output.errors[0].trace.error.failure_type == FailureType.config_error
-    assert _LOGIN_ERROR in output.errors[0].trace.error.message
+    assert output.errors[0].trace.error.message == "Avni login failed: Incorrect username or password."
+    assert len(_requests(mocker, _COGNITO_URL)) == 1
+
+
+def test_cognito_throttling_is_retried(monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda *_args, **_kwargs: None)
+    with requests_mock.Mocker() as mocker:
+        mocker.get(_IDP_URL, json={"cognito": {"clientId": _CLIENT_ID}})
+        mocker.post(
+            _COGNITO_URL,
+            [
+                {
+                    "status_code": 400,
+                    "json": {"__type": "TooManyRequestsException", "message": "Rate exceeded"},
+                },
+                {
+                    "status_code": 200,
+                    "json": {"AuthenticationResult": {"IdToken": _ID_TOKEN}},
+                },
+            ],
+        )
+        mocker.get(_DATA_URLS["subjects"], json={"content": [_record("subject", 1, _timestamp(1))]})
+
+        output = _read_stream(["subjects"])
+
+    assert output.errors == []
+    assert len(output.records) == 1
+    assert len(_requests(mocker, _COGNITO_URL)) == 2
+
+
+def test_cognito_non_credential_400_returns_system_error():
+    with requests_mock.Mocker() as mocker:
+        _configure_auth(
+            mocker,
+            status_code=400,
+            body={
+                "__type": "InvalidParameterException",
+                "message": "USER_PASSWORD_AUTH flow not enabled for this client",
+            },
+        )
+
+        output = _read_stream(["subjects"])
+
+    assert output.errors
+    assert output.errors[0].trace.error.failure_type == FailureType.system_error
+    assert (
+        output.errors[0].trace.error.message
+        == "AWS Cognito rejected the Avni login request: USER_PASSWORD_AUTH flow not enabled for this client"
+    )

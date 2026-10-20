@@ -8,7 +8,6 @@ definitions:
       - content
   requester:
     type: HttpRequester
-    url_base: https://app.avniproject.org/api
     http_method: GET
     authenticator:
       type: SessionTokenAuthenticator
@@ -44,13 +43,23 @@ definitions:
               field_name: ClientId
         error_handler:
           type: DefaultErrorHandler
+          # Cognito returns HTTP 400 for every InitiateAuth error, so match on the error type in `__type`.
           response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            predicate: "{{ response.get('__type', '').split(':')[0].split('#')[-1] == 'TooManyRequestsException' }}"
+            error_message: AWS Cognito throttled the Avni login request (TooManyRequestsException).
           - type: HttpResponseFilter
             action: FAIL
             failure_type: config_error
+            predicate: "{{ response.get('__type', '').split(':')[0].split('#')[-1] in ['NotAuthorizedException', 'UserNotFoundException', 'PasswordResetRequiredException', 'UserNotConfirmedException'] }}"
+            error_message: "Avni login failed: {{ response.get('message', 'check your username and password.') }}"
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: system_error
             http_codes:
             - 400
-            error_message: 'Avni login failed: check your username and password.'
+            error_message: "AWS Cognito rejected the Avni login request: {{ response.get('message', response.get('__type', 'HTTP 400')) }}"
       session_token_path:
       - AuthenticationResult
       - IdToken
@@ -91,6 +100,13 @@ definitions:
     start_time_option:
       field_name: lastModifiedDateTime
       inject_into: request_parameter
+    # Avni defaults `now` to server time - 10s on every request; pin it to the slice end so state cannot pass the sync start.
+    end_datetime:
+      datetime: "{{ (now_utc() - duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    end_time_option:
+      field_name: now
+      inject_into: request_parameter
   transformations_base:
   - type: AddFields
     fields:
@@ -113,7 +129,7 @@ definitions:
       $ref: '#/definitions/retriever'
       requester:
         $ref: '#/definitions/requester'
-        path: /subjects
+        url: https://app.avniproject.org/api/subjects
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -265,7 +281,7 @@ definitions:
       $ref: '#/definitions/retriever'
       requester:
         $ref: '#/definitions/requester'
-        path: /programEncounters
+        url: https://app.avniproject.org/api/programEncounters
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -409,7 +425,7 @@ definitions:
       $ref: '#/definitions/retriever'
       requester:
         $ref: '#/definitions/requester'
-        path: /programEnrolments
+        url: https://app.avniproject.org/api/programEnrolments
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -530,7 +546,7 @@ definitions:
       $ref: '#/definitions/retriever'
       requester:
         $ref: '#/definitions/requester'
-        path: /encounters
+        url: https://app.avniproject.org/api/encounters
     schema_loader:
       type: InlineSchemaLoader
       schema:
