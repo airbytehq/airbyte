@@ -6,7 +6,8 @@ from unittest.mock import MagicMock
 
 from source_gridly.source import SourceGridly
 
-from airbyte_cdk.models import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models.airbyte_protocol_serializers import AirbyteMessageSerializer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -61,8 +62,11 @@ def test_discover(requests_mock):
 
     stream = catalog.streams[0]
     assert stream.supported_sync_modes == [SyncMode.full_refresh]
-    assert stream.supported_destination_sync_modes == [DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup]
-    assert stream.json_schema == EXPECTED_JSON_SCHEMA
+    serialized_streams = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))["catalog"]["streams"]
+    assert serialized_streams == [
+        {"name": "Default view", "json_schema": EXPECTED_JSON_SCHEMA, "supported_sync_modes": ["full_refresh"]},
+        {"name": "Second view", "json_schema": EXPECTED_JSON_SCHEMA, "supported_sync_modes": ["full_refresh"]},
+    ]
 
 
 def test_read_records_paginates(requests_mock):
