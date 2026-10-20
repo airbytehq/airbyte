@@ -5,7 +5,7 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
+from airbyte_cdk import launch
 from source_rki_covid import SourceRkiCovid
 
 
