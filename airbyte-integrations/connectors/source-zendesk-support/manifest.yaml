@@ -1279,110 +1279,41 @@ definitions:
       schema:
         $ref: "#/schemas/tickets"
 
+  # `ticket_metrics` reads the `metric_sets` side-load of the same Incremental Ticket Export that
+  # `tickets` reads (one metric set per ticket on the page), so it costs one export request per
+  # page of up to 1000 tickets instead of one `tickets/{id}/metrics` request per ticket. The
+  # export also returns archived tickets, which `GET /ticket_metrics` leaves out. Metric sets carry
+  # no `generated_timestamp`, so the custom extractor stamps each one with its ticket's value as
+  # `_ab_updated_at`, and the stream checkpoints on that like `tickets` does. See AGENTS.md §2.
   ticket_metrics_stream:
-    type: StateDelegatingStream
-    name: "ticket_metrics"
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          include: "metric_sets"
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ZendeskSupportTicketMetricSetsExtractor
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketMetricsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_metrics"
-    full_refresh_stream:
-      $ref: "#/definitions/base_incremental_stream"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ticket_metrics"
+    $parameters:
       name: "ticket_metrics"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "_ab_updated_at"
+      cursor_filter: "start_time"
       primary_key: "id"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        cursor_field: "_ab_updated_at"
-        start_datetime:
-          datetime: "0" # not used as the API does not take filters in and we don't define a step so there is only one request
-      retriever:
-        $ref: "#/definitions/retriever"
-        ignore_stream_slicer_parameters_on_paginated_requests: true
-        requester:
-          $ref: "#/definitions/retriever/requester"
-          path: "ticket_metrics"
-        paginator:
-          $ref: "#/definitions/links_next_paginator"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: ["ticket_metrics"]
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - "_ab_updated_at"
-              value: "{{ format_datetime(record['updated_at'], '%s') }}"
-    incremental_stream:
-      $ref: "#/definitions/base_incremental_stream"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ticket_metrics"
-      name: "ticket_metrics"
-      primary_key: "id"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        cursor_field: "_ab_updated_at"
-        start_datetime:
-          datetime: "0" # not used as we should start from the state value
-      retriever:
-        $ref: "#/definitions/retriever"
-        ignore_stream_slicer_parameters_on_paginated_requests: true
-        requester:
-          $ref: "#/definitions/retriever/requester"
-          path: "tickets/{{ stream_partition.ticket_id }}/metrics"
-          error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - $ref: "#/definitions/oauth_token_refresh_response_filter"
-              - http_codes: [403]
-                action: IGNORE
-                failure_type: config_error
-                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
-              - http_codes: [404]
-                action: IGNORE
-                failure_type: config_error
-                error_message: "Not found. Ticket was deleted. If the issue persists, contact Zendesk support."
-        paginator:
-          type: NoPagination
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: ["ticket_metric"]
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: "id"
-              partition_field: "ticket_id"
-              extra_fields:
-                - ["generated_timestamp"]
-              stream:
-                $ref: "#/definitions/tickets_stream"
-              incremental_dependency: true
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - "_ab_updated_at"
-              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
-              value_type: "integer"
 
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"

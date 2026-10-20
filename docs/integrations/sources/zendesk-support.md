@@ -165,7 +165,7 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Client-Side Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Client-Side Incremental\) \(Enterprise only\)
-- [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+- [Ticket Metrics](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#sideloading) \(Incremental\)
 - [Ticket Events](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Client-Side Incremental\)
@@ -205,6 +205,19 @@ The former Export Search Results behavior is preserved as the **`tickets_search`
 
 `tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
+### Ticket Metrics stream
+
+The `ticket_metrics` stream reads the ticket metric sets that Zendesk [side-loads](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#sideloading) on the same [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-cursor-based) that the `tickets` stream reads. Each page returns up to 1000 tickets together with one metric set per ticket, so the stream needs one request per page rather than one request per ticket.
+
+- **Archived tickets are included.** The [List Ticket Metrics](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/#list-ticket-metrics) endpoint leaves out archived tickets, and Zendesk archives closed tickets 120 days after they close. The export returns them, so a full refresh now syncs their metric sets too.
+- **Deleted tickets keep their metric sets.** A deleted ticket still has a metric set in the export, and the stream syncs it, as earlier versions did.
+- **Start Date applies.** Like `tickets`, the stream syncs metric sets of tickets that changed on or after **Start Date**. Tickets that have not changed since then are not synced.
+- **Change tracking follows the ticket.** The stream's cursor, `_ab_updated_at`, is the ticket's `generated_timestamp`. A metric set is synced again whenever its ticket changes.
+
+:::note
+Before version 5.7.0, `ticket_metrics` read the List Ticket Metrics endpoint on its first sync and then requested `GET /api/v2/tickets/{ticket_id}/metrics` once for every created or updated ticket. Syncs after a bulk ticket update could therefore make tens of thousands of requests. On upgrade, the saved state of existing connections is migrated automatically, and the next sync resumes where the previous one stopped.
+:::
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -227,7 +240,7 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 
 The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The minimum is 2 and the maximum is 40. A single thread leaves no other stream emitting while the `tickets` stream reads, so a saved value of 1 is treated as 2 from the first sync after upgrading to 5.6.0, and the stored configuration is updated to match. If the source settings form flags the field before that first sync, set it to 2 or more.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_metrics`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. `tickets` and `ticket_metrics` each read the Incremental Ticket Export separately, so both count against this limit. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
@@ -284,6 +297,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.0 | 2026-10-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Read `ticket_metrics` from the metric sets side-loaded on the Incremental Ticket Export instead of one request per ticket, so the stream now includes archived tickets; existing state is migrated automatically |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |

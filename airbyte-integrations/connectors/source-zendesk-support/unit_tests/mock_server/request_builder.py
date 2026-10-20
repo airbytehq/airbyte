@@ -185,21 +185,6 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator).with_include("identities")
 
     @classmethod
-    def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /ticket_metrics endpoint (alias for stateless)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
-
-    @classmethod
-    def stateless_ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /ticket_metrics endpoint (stateless)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
-
-    @classmethod
-    def stateful_ticket_metrics_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /tickets/{ticket_id}/metrics endpoint (stateful)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/metrics").with_authenticator(authenticator)
-
-    @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /incremental/tickets/cursor.json endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/tickets/cursor.json").with_authenticator(authenticator)
