@@ -571,6 +571,37 @@ def test_get_custom_objects_metadata_success(
     assert custom_stream._stream_partition_generator._partition_factory._retriever._parameters["entity"] == "p19936848_Animal"
 
 
+def test_custom_object_stream_renamed_when_name_collides_with_static_stream(
+    requests_mock, custom_object_schema, config, mock_dynamic_schema_requests
+):
+    colliding_schema = dict(custom_object_schema, name="form_submissions", fullyQualifiedName="p19936848_form_submissions")
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [colliding_schema]})
+    source_hubspot = get_source(config)
+    streams = discover(source_hubspot, config)
+
+    stream_names = [s.name for s in streams.catalog.catalog.streams]
+    assert stream_names.count("form_submissions") == 1
+    assert "p19936848_form_submissions" in stream_names
+
+    custom_stream = [s for s in source_hubspot.streams(config) if s.name == "p19936848_form_submissions"][0]
+    assert custom_stream._stream_partition_generator._partition_factory._retriever._parameters["entity"] == "p19936848_form_submissions"
+
+
+def test_custom_object_streams_never_collide_with_static_streams(
+    requests_mock, custom_object_schema, config_experimental, mock_dynamic_schema_requests
+):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": []})
+    static_catalog = discover(get_source(config_experimental), config_experimental)
+    static_stream_names = {s.name for s in static_catalog.catalog.catalog.streams}
+    assert static_stream_names
+
+    colliding_schemas = [dict(custom_object_schema, name=name, fullyQualifiedName=f"p1_{name}") for name in sorted(static_stream_names)]
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": colliding_schemas})
+    catalog = discover(get_source(config_experimental), config_experimental)
+    stream_names = [s.name for s in catalog.catalog.catalog.streams]
+    assert len(stream_names) == len(set(stream_names))
+
+
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
