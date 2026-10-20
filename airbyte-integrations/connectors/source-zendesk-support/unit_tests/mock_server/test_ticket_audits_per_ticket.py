@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Tests for the opt-in `ticket_audits_per_ticket` stream.
+"""Tests for the `ticket_audits_per_ticket` stream.
 
 The stream reads GET /tickets/{ticket_id}/audits.json for every ticket returned by the `tickets`
 incremental export. It exists because GET /ticket_audits (the `ticket_audits` stream) excludes
-archived tickets. It is only discovered when `enable_ticket_audits_per_ticket` is true.
+archived tickets. It is always discovered; users opt in by selecting it in the catalog.
 """
 
 import json
@@ -12,6 +12,7 @@ import logging
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
 import requests
@@ -39,23 +40,19 @@ from .utils import read_stream
 
 
 _STREAM_NAME = "ticket_audits_per_ticket"
-_FLAG = "enable_ticket_audits_per_ticket"
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
 _AUTHENTICATOR = ApiTokenAuthenticator(email="user@example.com", password="password")
 
 
-def _config(enabled: Optional[bool] = True) -> Dict[str, Any]:
-    config = (
+def _config() -> Dict[str, Any]:
+    return (
         ConfigBuilder()
         .with_basic_auth_credentials("user@example.com", "password")
         .with_subdomain("d3v-airbyte")
         .with_start_date(_START_DATE)
         .build()
     )
-    if enabled is not None:
-        config[_FLAG] = enabled
-    return config
 
 
 def _given_tickets(http_mocker: HttpMocker, start_time: int, tickets: List[Dict[str, int]]) -> None:
@@ -89,26 +86,16 @@ def _given_audits(http_mocker: HttpMocker, ticket_id: int, audit_ids: List[int])
     http_mocker.get(_audits_request(ticket_id), response.build())
 
 
-class TestTicketAuditsPerTicketGating(TestCase):
-    """The stream is gated by ConditionalStreams on `enable_ticket_audits_per_ticket`."""
+class TestTicketAuditsPerTicketDiscovery(TestCase):
+    """The stream is a regular stream: discovered with the default config, with no spec setting of its own."""
 
     @staticmethod
     def _discovered_streams(config: Dict[str, Any]) -> Dict[str, Any]:
         catalog = get_source(config=config).discover(logging.getLogger("airbyte"), config)
         return {stream.name: stream for stream in catalog.streams}
 
-    def test_given_flag_missing_when_discover_then_stream_is_absent(self) -> None:
-        streams = self._discovered_streams(_config(enabled=None))
-        assert _STREAM_NAME not in streams
-        assert "ticket_audits" in streams
-
-    def test_given_flag_false_when_discover_then_stream_is_absent(self) -> None:
-        streams = self._discovered_streams(_config(enabled=False))
-        assert _STREAM_NAME not in streams
-        assert "ticket_audits" in streams
-
-    def test_given_flag_true_when_discover_then_stream_is_present_and_incremental(self) -> None:
-        streams = self._discovered_streams(_config(enabled=True))
+    def test_given_default_config_when_discover_then_stream_is_present_and_incremental(self) -> None:
+        streams = self._discovered_streams(_config())
         assert _STREAM_NAME in streams
         assert "ticket_audits" in streams
         stream = streams[_STREAM_NAME]
@@ -116,14 +103,15 @@ class TestTicketAuditsPerTicketGating(TestCase):
         assert stream.default_cursor_field == ["_ab_updated_at"]
         assert SyncMode.incremental in stream.supported_sync_modes
 
-    def test_given_flag_true_when_discover_then_only_the_new_stream_is_added(self) -> None:
-        disabled = self._discovered_streams(_config(enabled=False))
-        enabled = self._discovered_streams(_config(enabled=True))
-        assert set(enabled) - set(disabled) == {_STREAM_NAME}
+    def test_spec_has_no_setting_for_the_stream(self) -> None:
+        """Opt-in is stream selection only, and the stream has no rate-limit setting of its own."""
+        spec = get_source(config=_config()).spec(logging.getLogger("airbyte"))
+        properties = spec.connectionSpecification["properties"]
+        assert not [name for name in properties if "audit" in name]
 
     def test_schema_matches_ticket_audits_plus_cursor_field(self) -> None:
         """The schema $refs every `ticket_audits` property; this guards against the two drifting apart."""
-        streams = self._discovered_streams(_config(enabled=True))
+        streams = self._discovered_streams(_config())
         per_ticket_properties = dict(streams[_STREAM_NAME].json_schema["properties"])
         assert per_ticket_properties.pop("_ab_updated_at")["type"] == ["null", "integer"]
         assert per_ticket_properties == streams["ticket_audits"].json_schema["properties"]
@@ -221,6 +209,25 @@ class TestTicketAuditsPerTicketErrorHandling(TestCase):
         state = output.most_recent_state.stream_state.__dict__
         assert state["parent_state"]["tickets"] == {"generated_timestamp": str(start_time + 30)}
 
+    @HttpMocker()
+    def test_given_429_with_retry_after_when_read_then_wait_and_retry(self, http_mocker: HttpMocker) -> None:
+        """With no `api_budget` policy for this endpoint, Zendesk's 429 + Retry-After is the only throttle."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, start_time, [{"id": 101, "generated_timestamp": start_time + 10}])
+        success = TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response().with_record(_audit(1001, 101)).build()
+        http_mocker.get(
+            _audits_request(101),
+            [HttpResponse(json.dumps({"error": "APIRateLimitExceeded"}), 429, {"Retry-After": "7"}), success],
+        )
+
+        with patch("time.sleep") as sleep:
+            output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1001]
+        # The wait comes from the header (the CDK may add up to a second), not from the default exponential backoff.
+        assert any(call.args and 7 <= call.args[0] <= 8 for call in sleep.call_args_list)
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketAuditsPerTicketIncremental(TestCase):
@@ -286,7 +293,8 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
 
 
 class TestTicketAuditsPerTicketApiBudget(TestCase):
-    """The per-ticket audits endpoint has its own rate policy, placed before every other policy."""
+    """Like the per-ticket `ticket_metrics` calls, the per-ticket audits endpoint matches no `api_budget`
+    policy: it runs at the connector's concurrency and relies on 429 + Retry-After backoff."""
 
     @staticmethod
     def _budget(config: Dict[str, Any]):
@@ -299,21 +307,10 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
     def _request(path: str) -> requests.PreparedRequest:
         return requests.Request("GET", f"https://d3v-airbyte.zendesk.com{path}").prepare()
 
-    @staticmethod
-    def _limit(policy) -> int:
-        return policy._bucket.rates[0].limit
-
-    def test_per_ticket_audits_policy_matches_only_per_ticket_audit_requests(self) -> None:
+    def test_per_ticket_audit_requests_match_no_policy(self) -> None:
         budget = self._budget(_config())
-        policy = budget._policies[0]
-        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json")) is policy
-        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json?page%5Bsize%5D=100")) is policy
-        assert budget.get_matching_policy(self._request("/api/v2/ticket_audits")) is not policy
-        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/metrics")) is not policy
-        assert budget.get_matching_policy(self._request("/api/v2/incremental/tickets/cursor.json")) is not policy
-
-    def test_per_ticket_audits_policy_defaults_to_100_and_honours_config(self) -> None:
-        assert self._limit(self._budget(_config())._policies[0]) == 100
-        config = _config()
-        config["ticket_audits_per_ticket_requests_per_minute"] = 600
-        assert self._limit(self._budget(config)._policies[0]) == 600
+        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json")) is None
+        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json?page%5Bsize%5D=100")) is None
+        assert budget.get_matching_policy(self._request("/api/v2/tickets/123/metrics")) is None
+        # The parent walk still goes through the incremental export policy.
+        assert budget.get_matching_policy(self._request("/api/v2/incremental/tickets/cursor.json")) is not None

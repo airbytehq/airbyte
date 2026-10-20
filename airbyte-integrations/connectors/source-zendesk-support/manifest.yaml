@@ -10,18 +10,6 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    # Opt-in `ticket_audits_per_ticket` stream: one request per created/updated ticket, counted
-    # against the account-wide plan limit (Team, the lowest current plan, allows 200 req/min). The
-    # default of 100 req/min leaves half of a Team plan's budget for the other streams and for any
-    # other integration on the account; higher plans can raise it in the source settings. Kept
-    # first because the first matching policy wins.
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: "{{ config.get('ticket_audits_per_ticket_requests_per_minute', 100) }}"
-          interval: PT1M
-      matchers:
-        - url_path_pattern: '^/api/v2/tickets/\d+/audits(\.json)?$'
-
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 10
@@ -1086,12 +1074,14 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
-  # Opt-in `ticket_audits_per_ticket` stream, only discovered when `enable_ticket_audits_per_ticket`
-  # is true (see the ConditionalStreams entry in `streams`). `ticket_audits` reads the account-wide
+  # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
+  # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
   # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
   # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` incremental export
   # returns, and that endpoint does return audits for archived tickets. The cost is one request per
-  # created or updated ticket, so the endpoint has its own `api_budget` policy.
+  # created or updated ticket against the account-wide plan limit. Like the per-ticket
+  # `ticket_metrics` calls, the endpoint has no `api_budget` policy: it runs at the connector's
+  # concurrency and relies on 429 + Retry-After backoff.
   # Each changed ticket re-emits all of its audits; `id` deduplicates them. The cursor mirrors the
   # stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`),
   # but uses a global substream cursor: a per-ticket state would grow one entry per ticket.
@@ -1578,6 +1568,7 @@ streams:
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
+  - $ref: "#/definitions/ticket_audits_per_ticket_stream"
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/side_conversations_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
@@ -1589,12 +1580,6 @@ streams:
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"
-  # Opt-in streams. Gated on config rather than left to stream selection, because "propagate
-  # stream changes" can enable a newly discovered stream without the user choosing it.
-  - type: ConditionalStreams
-    condition: "{{ config.get('enable_ticket_audits_per_ticket', false) }}"
-    streams:
-      - $ref: "#/definitions/ticket_audits_per_ticket_stream"
   # todo: The following streams are enterprise-only streams. However, the low-code CDK does not support
   #  ConditionalStreams based on an API endpoint. These should be under that component once the CDK supports it.
   # - $ref: "#/definitions/ticket_forms_stream"
@@ -1828,34 +1813,6 @@ spec:
           updates (those never change `updated_at`) — use the default `tickets` stream if you
           need complete change tracking.
         order: 5
-      enable_ticket_audits_per_ticket:
-        type: boolean
-        title: Enable Per-Ticket Ticket Audits Stream
-        default: false
-        description: >-
-          Adds the opt-in `ticket_audits_per_ticket` stream, which reads audits ticket by ticket and,
-          unlike `ticket_audits`, includes archived tickets. It costs one API request per ticket
-          created or updated since the last sync (the first sync makes one request per ticket
-          updated since Start Date). These requests count against your Zendesk plan's account-wide
-          rate limit, not the incremental export limit, so a large update can make a sync take
-          hours. Leave this off unless you need audits for archived tickets.
-        order: 6
-      ticket_audits_per_ticket_requests_per_minute:
-        type: integer
-        title: Per-Ticket Ticket Audits Requests per Minute
-        minimum: 1
-        maximum: 2500
-        default: 100
-        examples:
-          - 100
-          - 300
-          - 600
-        description: >-
-          Only applies to the opt-in `ticket_audits_per_ticket` stream. The maximum number of
-          per-ticket audit requests the connector sends per minute. The default of 100 is half of
-          the Team plan's 200 requests per minute. Raise it if your plan allows more, leaving room
-          for the connector's other streams and any other integrations on your account.
-        order: 7
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
