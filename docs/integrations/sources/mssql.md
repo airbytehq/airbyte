@@ -506,7 +506,8 @@ Version 4.3.0 introduces a migration from the legacy CDK to the new CDK architec
 - **Automatic State Migration**: The connector automatically migrates legacy version 2 state formats to the new version 3 format. This includes:
   - `OrderedColumnLoadStatus` (primary key-based initial sync) → version 3 `primary_key` state type
   - `CursorBasedStatus` (cursor-based incremental) → version 3 `cursor_based` state type
-- **Backward Compatibility**: Existing connections will continue to work seamlessly without any manual intervention
+- **Backward Compatibility**: Existing connections keep working without manual intervention.
+- **Unrecognized legacy state**: Starting with version 5.1.2, if a cursor-based stream has a legacy state that matches neither format, the connector logs `Unknown legacy state format, the stream will be re-read from scratch` and re-reads that stream from the beginning on the next sync. Earlier versions treated the stream as already synced and emitted no records for it.
 
 ## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
 
@@ -574,7 +575,7 @@ see [Airbyte Cloud](#airbyte-cloud).
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                 |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.2       | 2026-10-19 | [85353](https://github.com/airbytehq/airbyte/pull/85353)                                                          | Cold-start a stream when its saved state is an empty object or an unrecognized legacy format instead of skipping it.                                    |
+| 5.1.2       | 2026-10-20 | [85353](https://github.com/airbytehq/airbyte/pull/85353)                                                          | Cold-start a stream when its saved state is an empty object or an unrecognized legacy format instead of skipping it.                                    |
 | 5.1.1       | 2026-10-14 | [88500](https://github.com/airbytehq/airbyte/pull/88500) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. Explain the `Discovered zero tables.` connection-test failure: say that no table is visible to the login and how to grant `SELECT`. On Airbyte Cloud, default the Encryption option to `Encrypted (trust server certificate)`. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 5.1.0       | 2026-10-13 | [86318](https://github.com/airbytehq/airbyte/pull/86318)                                                          | Add Debezium's `max_iteration_transactions` (`max.iteration.transactions`) as an advanced CDC option, defaulting to 500.                                |
 | 5.0.2       | 2026-10-09 | [88429](https://github.com/airbytehq/airbyte/pull/88429)                                                          | Upgrade to Bulk CDK 1.1.14.                                                                                                                             |
