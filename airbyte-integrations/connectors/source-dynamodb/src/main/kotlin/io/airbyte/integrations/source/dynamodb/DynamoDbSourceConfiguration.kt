@@ -75,7 +75,9 @@ data class DynamoDbSourceConfiguration(
         fun dynamoDbSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    DynamoDbSourceConfigurationSpecification, DynamoDbSourceConfiguration>,
+                    DynamoDbSourceConfigurationSpecification,
+                    DynamoDbSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<DynamoDbSourceConfigurationSpecification>,
         ): DynamoDbSourceConfiguration = factory.make(supplier.get())
     }
@@ -101,7 +103,9 @@ constructor(
     val featureFlags: Set<FeatureFlag> = emptySet(),
 ) :
     SourceConfigurationFactory<
-        DynamoDbSourceConfigurationSpecification, DynamoDbSourceConfiguration> {
+        DynamoDbSourceConfigurationSpecification,
+        DynamoDbSourceConfiguration,
+    > {
 
     private val log = KotlinLogging.logger {}
 
@@ -177,8 +181,7 @@ constructor(
             pojo.reservedAttributeNames
                 ?.split(RESERVED_ATTRIBUTE_NAMES_SEPARATOR)
                 ?.map(String::trim)
-                ?.filter(String::isNotEmpty)
-                ?: emptyList()
+                ?.filter(String::isNotEmpty) ?: emptyList()
 
         val discoverSampleSize: Int =
             pojo.discoverSampleSize

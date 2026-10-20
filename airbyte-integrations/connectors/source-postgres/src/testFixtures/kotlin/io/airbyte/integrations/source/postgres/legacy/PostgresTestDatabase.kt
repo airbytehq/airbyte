@@ -44,8 +44,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         NETWORK("withNetwork"),
         SSL("withSSL"),
         WAL_LEVEL_LOGICAL("withWalLevelLogical"),
-        CERT("withCert"),
-        ;
+        CERT("withCert");
 
         val methodName: String
 
@@ -151,7 +150,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     data class Certificates(
         val caCertificate: String?,
         val clientCertificate: String?,
-        val clientKey: String?
+        val clientKey: String?,
     )
 
     override fun configBuilder(): PostgresConfigBuilder {
@@ -194,7 +193,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
 
         @JvmOverloads
         fun withCdcReplication(
-            LsnCommitBehaviour: String = "While reading Data"
+            LsnCommitBehaviour: String = "While reading Data",
         ): PostgresConfigBuilder {
             return this.with("is_test", true)
                 .with(

@@ -32,7 +32,7 @@ class AirbyteLogMessageTemplateTest {
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     fun getLogger() {
         // We are creating a log appender with the same output pattern
@@ -53,7 +53,7 @@ class AirbyteLogMessageTemplateTest {
                 outputContent,
                 OUTPUT_STREAM_APPENDER,
                 false,
-                true
+                true,
             )
         outputStreamAppender.start()
 
@@ -85,7 +85,7 @@ class AirbyteLogMessageTemplateTest {
         val connectorLogMessageRegex =
             String.format(
                 "^INFO %s [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$",
-                Pattern.compile(Thread.currentThread().name)
+                Pattern.compile(Thread.currentThread().name),
             )
         val pattern = Pattern.compile(connectorLogMessageRegex)
 
