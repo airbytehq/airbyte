@@ -83,7 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.4.0 | 2026-10-20 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams |
+| 1.4.0 | 2026-10-20 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams |
 | 1.3.2 | 2026-10-20 | [89459](https://github.com/airbytehq/airbyte/pull/89459) | Update dependencies |
 | 1.3.1 | 2026-10-13 | [88881](https://github.com/airbytehq/airbyte/pull/88881) | Update dependencies |
 | 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
