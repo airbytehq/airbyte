@@ -158,7 +158,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 "_int2" -> JDBCType.SMALLINT
                 "_int4",
                 "_oid" -> JDBCType.INTEGER
-                "_int8", -> JDBCType.BIGINT
+                "_int8" -> JDBCType.BIGINT
                 "_numeric" -> JDBCType.NUMERIC
                 "_float4" -> JDBCType.REAL
                 "_money",

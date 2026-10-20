@@ -77,7 +77,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("table_filters")
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
-        "Optional filters to include only specific tables from the specified database."
+        "Optional filters to include only specific tables from the specified database.",
     )
     @JsonSchemaInject(json = """{"order":7}""")
     var tableFilters: List<TableFilter>? = null
@@ -169,7 +169,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaInject(json = """{"order":13}""")
     @JsonPropertyDescription(
-        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
     var max_db_connections: Int? = null
 
@@ -191,7 +191,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":14}""")
     @JsonSchemaDefault("false")
     @JsonPropertyDescription(
-        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans."
+        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans.",
     )
     var treatTinyint1AsInteger: Boolean? = false
 
@@ -220,7 +220,7 @@ class TableFilter {
     @JsonSchemaTitle("Database Name")
     @JsonPropertyDescription(
         "The name of the database to apply this filter to. " +
-            "Should match the database defined in the \"Database\" field above."
+            "Should match the database defined in the \"Database\" field above.",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     lateinit var databaseName: String
@@ -228,7 +228,7 @@ class TableFilter {
     @JsonProperty("table_name_patterns", required = true)
     @JsonSchemaTitle("Table Filter Patterns")
     @JsonPropertyDescription(
-        "List of table name patterns to include. Should be a SQL LIKE pattern."
+        "List of table name patterns to include. Should be a SQL LIKE pattern.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
     lateinit var patterns: List<String>
@@ -260,7 +260,7 @@ data object EncryptionRequired : EncryptionSpecification
 
 @JsonSchemaTitle("verify_ca")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
@@ -299,7 +299,7 @@ class SslVerifyCertificate : EncryptionSpecification {
 
 @JsonSchemaTitle("verify_identity")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyIdentity : EncryptionSpecification {
@@ -355,7 +355,7 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
-    JsonSubTypes.Type(value = Cdc::class, name = "CDC")
+    JsonSubTypes.Type(value = Cdc::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -393,7 +393,7 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
-        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}""",
     )
     var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 

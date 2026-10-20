@@ -30,7 +30,7 @@ interface DestinationWriter {
 class DefaultDestinationWriter : DestinationWriter {
     init {
         throw NotImplementedError(
-            "DestinationWrite not implemented. Please create a custom @Singleton implementation."
+            "DestinationWrite not implemented. Please create a custom @Singleton implementation.",
         )
     }
 
