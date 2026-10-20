@@ -519,7 +519,7 @@ definitions:
             refresh_token_policy:
               writeback_required: always
               description: "Gong refresh tokens are one-time tokens: each successful refresh returns a new refresh token and immediately invalidates the previous one. Source is Gong's community forum; Gong's API docs do not state the rotation policy."
-              url: https://visioneers.gong.io/integrations-77/recovering-from-invalid-refresh-tokens-1086
+              policy_docs_url: https://visioneers.gong.io/integrations-77/recovering-from-invalid-refresh-tokens-1086
         APIKey:
           type: BasicHttpAuthenticator
           username: "{{ config['credentials']['access_key'] }}"

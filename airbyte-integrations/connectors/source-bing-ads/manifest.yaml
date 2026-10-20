@@ -30,7 +30,7 @@ definitions:
       refresh_token_policy:
         writeback_required: eventually
         description: "The Microsoft identity platform returns a new refresh token on each refresh but does not revoke the old one, which stays valid until it expires (90 days by default). A single run without writeback is safe; the stored token dies if new tokens are never saved."
-        url: https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens
+        policy_docs_url: https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens
   users_stream:
     type: DeclarativeStream
     name: users

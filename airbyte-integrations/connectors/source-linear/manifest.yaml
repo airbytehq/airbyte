@@ -1773,7 +1773,7 @@ definitions:
             refresh_token_policy:
               writeback_required: always
               description: "Linear rotates the refresh token on every refresh. A consumed refresh token can be replayed for 30 minutes to recover a response lost to a network error; after that only the new refresh token works. Access tokens last 24 hours."
-              url: https://linear.app/developers/oauth-2-0-authentication
+              policy_docs_url: https://linear.app/developers/oauth-2-0-authentication
           refresh_token_error_status_codes: [400, 401]
           refresh_token_error_key: "error"
           refresh_token_error_values:

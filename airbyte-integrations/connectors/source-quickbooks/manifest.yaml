@@ -112,7 +112,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -301,7 +301,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -484,7 +484,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -754,7 +754,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -1119,7 +1119,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -1338,7 +1338,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -1490,7 +1490,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -1651,7 +1651,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -1842,7 +1842,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -2246,7 +2246,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -2617,7 +2617,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -2769,7 +2769,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -3073,7 +3073,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -3291,7 +3291,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -3746,7 +3746,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -3882,7 +3882,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -4451,7 +4451,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -4666,7 +4666,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -5001,7 +5001,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -5140,7 +5140,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -5451,7 +5451,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -5591,7 +5591,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -6054,7 +6054,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -6463,7 +6463,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -6827,7 +6827,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -7013,7 +7013,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -7465,7 +7465,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -7608,7 +7608,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -7799,7 +7799,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -8001,7 +8001,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -8164,7 +8164,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -8363,7 +8363,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -8542,7 +8542,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -8820,7 +8820,7 @@ definitions:
               refresh_token_policy:
                 writeback_required: always
                 description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-                url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+                policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
             refresh_token_error_status_codes:
             - 400
@@ -9092,7 +9092,7 @@ definitions:
         refresh_token_policy:
           writeback_required: always
           description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-          url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+          policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
       token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
       refresh_token_error_status_codes:
       - 400
@@ -9133,7 +9133,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -9322,7 +9322,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -9505,7 +9505,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -9775,7 +9775,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -10140,7 +10140,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -10359,7 +10359,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -10511,7 +10511,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -10671,7 +10671,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -10862,7 +10862,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -11266,7 +11266,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -11637,7 +11637,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -11789,7 +11789,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -12093,7 +12093,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -12311,7 +12311,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -12766,7 +12766,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -12902,7 +12902,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -13471,7 +13471,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -13686,7 +13686,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -14021,7 +14021,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -14160,7 +14160,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -14471,7 +14471,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -14610,7 +14610,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -15073,7 +15073,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -15482,7 +15482,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -15846,7 +15846,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -16032,7 +16032,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -16484,7 +16484,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -16627,7 +16627,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -16818,7 +16818,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -17020,7 +17020,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -17183,7 +17183,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -17382,7 +17382,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -17561,7 +17561,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400
@@ -17839,7 +17839,7 @@ streams:
           refresh_token_policy:
             writeback_required: always
             description: "Intuit refresh tokens last up to 100 days, and Intuit issues a new refresh token roughly every 24 hours. Once a new refresh token is returned, the previous one expires, so any run more than a day after the last refresh rotates the token."
-            url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
+            policy_docs_url: https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
         refresh_token_error_status_codes:
         - 400

@@ -385,7 +385,7 @@ definitions:
         refresh_token_policy:
           writeback_required: always
           description: "FreshBooks refresh tokens never expire but are one-time-use; only one refresh token is alive per user per application, and all older refresh tokens become invalid as soon as a new one is issued."
-          url: https://www.freshbooks.com/api/authentication
+          policy_docs_url: https://www.freshbooks.com/api/authentication
       token_refresh_endpoint: https://api.freshbooks.com/auth/oauth/token
 
 streams:

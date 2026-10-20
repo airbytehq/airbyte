@@ -2426,7 +2426,7 @@ definitions:
         refresh_token_policy:
           writeback_required: always
           description: "Greenhouse Harvest refresh tokens rotate on every refresh and expire after 14 days without use."
-          url: https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth
+          policy_docs_url: https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth
     client_credentials:
       type: OAuthAuthenticator
       token_refresh_endpoint: https://auth.greenhouse.io/token

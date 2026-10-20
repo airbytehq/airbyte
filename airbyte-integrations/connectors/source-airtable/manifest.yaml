@@ -472,7 +472,7 @@ definitions:
       refresh_token_policy:
         writeback_required: always
         description: "Airtable refresh tokens are single-use: exchanging a refresh token invalidates the previous access and refresh tokens and returns new ones. Refresh tokens expire after 60 days."
-        url: https://airtable.com/developers/web/api/oauth-reference
+        policy_docs_url: https://airtable.com/developers/web/api/oauth-reference
     token_refresh_endpoint: https://airtable.com/oauth2/v1/token
 
   bearer_authenticator:
