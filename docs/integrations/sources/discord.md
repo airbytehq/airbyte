@@ -44,7 +44,7 @@ If your bot is in 100 or more guilds, Discord requires your application to be [v
 3. Under **Bot Permissions**, select:
    - **View Channels** — required for reading channels and messages
    - **Read Message History** — required for accessing historical messages and archived threads
-   - **Manage Threads** — required only if you need private archived thread messages
+   - **Manage Threads** — optional; required only if you need private archived thread messages (channels without it are skipped)
 4. Copy the generated URL and open it in your browser.
 5. Select the guild you want to add the bot to and click **Authorize**.
 
@@ -116,7 +116,7 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 - **Message Content Intent**: Without the `MESSAGE_CONTENT` privileged intent enabled in the Developer Portal, the `messages` stream returns empty `content`, `embeds`, `attachments`, and `components` fields for most messages. Messages that mention the bot or are sent in DMs with the bot still include content.
 - **Server Members Intent**: The `members` stream requires the `GUILD_MEMBERS` privileged intent. Without it, the List Guild Members endpoint returns a 403 error. The connector surfaces this error so you know to enable the intent.
 - **Messages pagination**: The `messages` stream performs a full refresh, walking newest-to-oldest using the `before` cursor parameter. For channels with large message histories, the initial sync may take a long time. Incremental sync is not yet supported.
-- **Thread messages**: Messages from active threads and archived threads are automatically included in the `messages` stream alongside regular channel messages. Private archived threads require the bot to have **Manage Threads** and **Read Message History** permissions. Without those permissions, the connector fails with an actionable error instead of silently skipping records.
+- **Thread messages**: Messages from active threads and archived threads are automatically included in the `messages` stream alongside regular channel messages. Private archived threads require the bot to have **Manage Threads** and **Read Message History** permissions. Channels where the bot lacks those permissions are skipped (the `403 Missing Access` response is ignored) so the rest of the `messages` stream still syncs; grant **Manage Threads** if you need private archived thread messages.
 - **Channel permissions**: The connector skips channels where the bot lacks access (403 errors are ignored for per-channel streams). Streams that require guild-level permissions (`members`) fail with an actionable error if permissions are missing.
 
 ## Changelog
@@ -126,6 +126,12 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 
 | Version | Date       | Pull Request | Subject                         |
 | :------ | :--------- | :----------- | :------------------------------ |
+| 0.1.16 | 2026-10-07 | [88179](https://github.com/airbytehq/airbyte/pull/88179) | Skip channels where the bot lacks `MANAGE_THREADS` for private archived threads instead of failing the whole `messages` stream |
+| 0.1.15 | 2026-10-06 | [87822](https://github.com/airbytehq/airbyte/pull/87822) | Update dependencies |
+| 0.1.14 | 2026-09-29 | [87112](https://github.com/airbytehq/airbyte/pull/87112) | Update dependencies |
+| 0.1.13 | 2026-09-22 | [86591](https://github.com/airbytehq/airbyte/pull/86591) | Update dependencies |
+| 0.1.12 | 2026-09-15 | [85991](https://github.com/airbytehq/airbyte/pull/85991) | Update dependencies |
+| 0.1.11 | 2026-09-08 | [85423](https://github.com/airbytehq/airbyte/pull/85423) | Update dependencies |
 | 0.1.10 | 2026-08-18 | [84518](https://github.com/airbytehq/airbyte/pull/84518) | Update dependencies |
 | 0.1.9 | 2026-08-11 | [83874](https://github.com/airbytehq/airbyte/pull/83874) | Update dependencies |
 | 0.1.8 | 2026-08-04 | [83417](https://github.com/airbytehq/airbyte/pull/83417) | Update dependencies |

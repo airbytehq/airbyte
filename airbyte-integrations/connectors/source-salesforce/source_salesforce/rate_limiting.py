@@ -58,6 +58,9 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
+_NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
+_BULK_COMPOUND_DATA_ERROR_MESSAGE = "Selecting compound data not supported in Bulk Query"
+
 logger = logging.getLogger("airbyte")
 
 
@@ -137,6 +140,9 @@ class SalesforceErrorHandler(ErrorHandler):
                     ),
                 )
 
+            if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
+                return self._handle_invalid_field(error_message)
+
             if self._is_bulk_job_creation(response) and response.status_code in [
                 codes.FORBIDDEN,
                 codes.BAD_REQUEST,
@@ -163,10 +169,33 @@ class SalesforceErrorHandler(ErrorHandler):
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
+        if not isinstance(response, requests.Response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.system_error,
+                f"Request for stream '{self._stream_name}' failed with {type(response).__name__}: {response}",
+            )
+
         return ErrorResolution(
             ResponseAction.FAIL,
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
+        )
+
+    def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
+        """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
+        deleted or renamed, or field-level read access was revoked for the authenticated user. The
+        selected fields come from the sObject describe, so this is a customer-side change rather than an
+        Airbyte failure and must not be reported as a system error.
+        """
+        logger.error(f"Salesforce returned INVALID_FIELD for stream '{self._stream_name}': {error_message}")
+        field_match = _NO_SUCH_COLUMN_PATTERN.search(error_message)
+        field_reference = f"Field '{field_match.group('field')}'" if field_match else "A field"
+        return ErrorResolution(
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            f"{field_reference} requested by stream '{self._stream_name}' does not exist in Salesforce or is not visible to the "
+            "authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.",
         )
 
     @staticmethod
@@ -196,7 +225,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
-        if error_message == "Selecting compound data not supported in Bulk Query" or (
+        if error_message == _BULK_COMPOUND_DATA_ERROR_MESSAGE or (
             error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(
@@ -269,12 +298,13 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = (
-            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
-            != ResponseAction.RETRY
-        )
+        response_or_exception = exc if exc.response is None else exc.response
+        give_up = SalesforceErrorHandler().interpret_response(response_or_exception).response_action != ResponseAction.RETRY
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
+            if isinstance(response_or_exception, requests.Response):
+                logger.info(f"Giving up for returned HTTP status: {response_or_exception.status_code}, body: {response_or_exception.text}")
+            else:
+                logger.info(f"Giving up after {type(response_or_exception).__name__}: {response_or_exception}")
         return give_up
 
     return backoff.on_exception(

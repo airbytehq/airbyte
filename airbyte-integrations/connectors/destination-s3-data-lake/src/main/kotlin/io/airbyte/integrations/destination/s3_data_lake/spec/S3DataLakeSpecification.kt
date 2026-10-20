@@ -83,6 +83,19 @@ class S3DataLakeSpecification :
         json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Normalize Column Names")
+    @get:JsonPropertyDescription(
+        "Lowercases column names and replaces non-alphanumeric characters with underscores " +
+            "before writing to Iceberg (e.g. \"Foo.Bar\" -> \"foo_bar\"). " +
+            "Enable this when downstream query engines cannot handle mixed-case or " +
+            "special-character column names. " +
+            "IMPORTANT: toggling this on existing synced streams requires clearing the " +
+            "stream data and running a full refresh."
+    )
+    @get:JsonProperty("normalize_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val normalizeColumnNames: Boolean? = null
 }
 
 @Singleton

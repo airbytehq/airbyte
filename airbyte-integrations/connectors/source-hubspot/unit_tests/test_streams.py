@@ -695,6 +695,7 @@ def test_cast_record_fields_if_needed(
         ("engagements_meetings", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/meetings/search", "POST"),
         ("engagements_notes", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/notes/search", "POST"),
         ("engagements_tasks", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/tasks/search", "POST"),
+        ("engagements_task_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/pipelines/tasks", "GET"),
         ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),

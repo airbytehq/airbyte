@@ -7,8 +7,8 @@ Bunny provides a single platform for subscription management, billing, quoting, 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `apikey` | `string` | API Key.  |  |
-| `subdomain` | `string` | Subdomain. The subdomain specific to your Bunny account or service. |  |
+| `apikey` | `string` | API Key. A Bunny access token, sent as a `Bearer` token. Generate it for a Bunny API client application with the `standard:read` scope via the OAuth client-credentials flow described in [Authorizing API requests](https://docs.bunny.com/developer/using-the-graphql-api/authorizing-api-requests); tokens expire after the lifetime configured on the API client, so configure a long-lived token. |  |
+| `subdomain` | `string` | Subdomain. The subdomain specific to your Bunny account or service (`https://<subdomain>.bunny.com`). |  |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -41,6 +41,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88332) | Fix GraphQL queries rejected by the Bunny API (`quoteCharges` root field, removed fields on `tenants`/`entities`/`invoiceItems`/`transactions`, `subscriptions.cancellationDate`) and surface GraphQL errors instead of crashing |
+| 0.0.57 | 2026-10-06 | [87769](https://github.com/airbytehq/airbyte/pull/87769) | Update dependencies |
+| 0.0.56 | 2026-09-29 | [87095](https://github.com/airbytehq/airbyte/pull/87095) | Update dependencies |
+| 0.0.55 | 2026-09-22 | [86552](https://github.com/airbytehq/airbyte/pull/86552) | Update dependencies |
+| 0.0.54 | 2026-09-15 | [85969](https://github.com/airbytehq/airbyte/pull/85969) | Update dependencies |
+| 0.0.53 | 2026-09-08 | [85397](https://github.com/airbytehq/airbyte/pull/85397) | Update dependencies |
 | 0.0.52 | 2026-08-18 | [84477](https://github.com/airbytehq/airbyte/pull/84477) | Update dependencies |
 | 0.0.51 | 2026-08-11 | [83852](https://github.com/airbytehq/airbyte/pull/83852) | Update dependencies |
 | 0.0.50 | 2026-08-04 | [83383](https://github.com/airbytehq/airbyte/pull/83383) | Update dependencies |

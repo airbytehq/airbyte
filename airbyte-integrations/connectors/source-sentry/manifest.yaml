@@ -299,6 +299,14 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"auth_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: "Sentry organization or project is missing or invalid."
+          failure_type: config_error
 
 streams:
   - $ref: "#/definitions/streams/events"
@@ -351,6 +359,8 @@ spec:
         airbyte_secret: true
       organization:
         type: string
+        minLength: 1
+        pattern: ^.*\S.*$
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization

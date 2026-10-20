@@ -10,13 +10,14 @@ weekly and monthly time series data.
 
 This source is capable of syncing the following streams:
 
-- `time_series_intraday`
+- `time_series_intraday` (premium only)
 - `time_series_daily`
 - `time_series_daily_adjusted` (premium only)
 - `time_series_weekly`
 - `time_series_weekly_adjusted`
 - `time_series_monthly`
 - `time_series_monthly_adjusted`
+- `quote`
 
 ### Features
 
@@ -33,6 +34,11 @@ configured, it is recommended to use `Full Refresh` with `Overwrite` to avoid
 storing duplicate data.
 
 Also, the data returned can be quite large.
+
+Free Alpha Vantage API keys are limited to 25 requests per day and roughly one
+request per second. The connector throttles its own requests to stay under the
+per-second limit, and each selected stream consumes one request per sync.
+`time_series_intraday` and `time_series_daily_adjusted` require a premium Alpha Vantage plan.
 
 ## Getting started
 
@@ -65,6 +71,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.15 | 2026-10-07 | [88236](https://github.com/airbytehq/airbyte/pull/88236) | Fix connector crashing on `quote` stream extractor; surface Alpha Vantage error/rate-limit responses; throttle requests to the free-tier limit |
 | 0.2.14 | 2025-05-24 | [60731](https://github.com/airbytehq/airbyte/pull/60731) | Update dependencies |
 | 0.2.13 | 2025-05-10 | [59787](https://github.com/airbytehq/airbyte/pull/59787) | Update dependencies |
 | 0.2.12 | 2025-05-03 | [59361](https://github.com/airbytehq/airbyte/pull/59361) | Update dependencies |

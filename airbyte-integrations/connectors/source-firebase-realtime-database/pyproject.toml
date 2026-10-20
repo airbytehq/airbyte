@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.49"
+version = "0.1.50"
 name = "source-firebase-realtime-database"
 description = "Source implementation for Firebase Realtime Database."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_firebase_realtime_database"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.14"
 firebase-admin = "==6.0.1"
-airbyte-cdk = "^0"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-firebase-realtime-database = "source_firebase_realtime_database.run:run"

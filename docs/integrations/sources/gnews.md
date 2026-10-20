@@ -8,8 +8,8 @@ The GNews source supports full refresh syncs
 
 Two output streams are available from this source:
 
-_[Search](https://gnews.io/docs/v4?shell#search-endpoint).
-_[Top Headlines](https://gnews.io/docs/v4?shell#top-headlines-endpoint).
+- [Search](https://docs.gnews.io/endpoints/search-endpoint)
+- [Top Headlines](https://docs.gnews.io/endpoints/top-headlines-endpoint)
 
 ### Features
 
@@ -20,7 +20,7 @@ _[Top Headlines](https://gnews.io/docs/v4?shell#top-headlines-endpoint).
 
 ### Performance considerations
 
-Rate Limiting is based on the API Key tier subscription, get more info [here](https://gnews.io/#pricing).
+Rate limiting and the daily request quota depend on your GNews subscription, see the [pricing page](https://gnews.io/pricing) and the [error handling docs](https://docs.gnews.io/error-handling). Requests that exceed the per-second rate limit (HTTP 429) are retried automatically. If the daily quota is exceeded (HTTP 403) the sync fails with an explicit error; it will work again after the quota resets at 00:00 UTC.
 
 ## Getting started
 
@@ -30,7 +30,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 ### Connect using `API Key`:
 
-1. Generate an API Key as described [here](https://gnews.io/docs/v4?shell#authentication).
+1. Generate an API Key as described [here](https://docs.gnews.io/authentication).
 2. Use the generated `API Key` in the Airbyte connection.
 
 ## IP allow list
@@ -44,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.24 | 2026-10-07 | [88210](https://github.com/airbytehq/airbyte/pull/88210) | Replace the broken custom 403 backoff strategy (`components.py`) with declarative error handling and clearer 400/401/403 error messages |
 | 0.2.23 | 2025-05-24 | [60638](https://github.com/airbytehq/airbyte/pull/60638) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59267](https://github.com/airbytehq/airbyte/pull/59267) | Update dependencies |
 | 0.2.21 | 2025-04-26 | [58763](https://github.com/airbytehq/airbyte/pull/58763) | Update dependencies |

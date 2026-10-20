@@ -6,12 +6,16 @@ This page guides you through the process of setting up the SurrealDB destination
 
 #### Output Schema
 
-Each stream will be output into its own table in SurrealDB. Each table will contain 3 columns:
+Each stream will be output into its own table in SurrealDB. Each table will contain the following Airbyte columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SurrealDB is `string`.
 The connector use this as the ID of each record in the destination SurrealDB table.
 - `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SurrealDB is `datetime`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in SurrealDB is `object`.
+- `_airbyte_meta`: additional information about the record. The column type in SurrealDB is `object`.
+
+Each top-level field of the stream's JSON schema is written as its own field, defined as an optional SurrealDB type
+(`string`, `int`, `number`, `bool`, `object`, `array`, or `datetime` for `date-time` strings; `any` for untyped fields).
+Because `id` is reserved for the record ID in SurrealDB, a source field named `id` is written as `_airbyte_source_id`.
 
 ## Supported sync modes
 
@@ -92,6 +96,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.1.1   | 2026-10-07 | [88340](https://github.com/airbytehq/airbyte/pull/88340) | Fix `DEFINE FIELD` type mapping (`boolean`, nullable/union types), `id` field conflict, sparse records, and `check` over HTTP. |
 | 0.1.0   | 2025-05-09 | [\#59742](https://github.com/airbytehq/airbyte/pull/59742) | Added SurrealDB destination.                                                                       |
 
 </details>

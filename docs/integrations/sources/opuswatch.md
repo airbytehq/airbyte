@@ -35,22 +35,23 @@ By leveraging the OPUSWatch Airbyte connector, horticultural businesses can brea
 | `start_date` | `string` | Start Date.  | 20250101 |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| client |  | No pagination | ✅ |  ❌  |
-| locations |  | No pagination | ✅ |  ❌  |
-| rows |  | No pagination | ✅ |  ❌  |
-| users |  | No pagination | ✅ |  ❌  |
-| workers |  | No pagination | ✅ |  ❌  |
-| worker groups |  | No pagination | ✅ |  ❌  |
-| tasks |  | No pagination | ✅ |  ❌  |
-| task groups |  | No pagination | ✅ |  ❌  |
-| labels |  | No pagination | ✅ |  ❌  |
-| varieties |  | No pagination | ✅ |  ❌  |
-| registrations initial |  | DefaultPaginator | ✅ |  ❌  |
-| registrations incremental |  | No pagination | ✅ |  ❌  |
-| sessions initial |  | DefaultPaginator | ✅ |  ❌  |
-| sessions incremental |  | No pagination | ✅ |  ❌  |
+| --- | --- | --- | --- | --- |
+| client | | No pagination | ✅ | ❌ |
+| locations | | No pagination | ✅ | ❌ |
+| rows | | No pagination | ✅ | ❌ |
+| users | | No pagination | ✅ | ❌ |
+| workers | | No pagination | ✅ | ❌ |
+| worker groups | | No pagination | ✅ | ❌ |
+| tasks | | No pagination | ✅ | ❌ |
+| task groups | | No pagination | ✅ | ❌ |
+| labels | | No pagination | ✅ | ❌ |
+| varieties | | No pagination | ✅ | ❌ |
+| registrations initial | | DefaultPaginator | ✅ | ❌ |
+| registrations incremental | | DefaultPaginator | ✅ | ❌ |
+| sessions initial | | DefaultPaginator | ✅ | ❌ |
+| sessions incremental | | DefaultPaginator | ✅ | ❌ |
 
 ## IP allow list
 
@@ -61,8 +62,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.0.47 | 2026-10-07 | [88308](https://github.com/airbytehq/airbyte/pull/88308) | Paginate recent registrations and sessions to avoid truncating results after the first page. |
+| 0.0.46 | 2026-10-06 | [87977](https://github.com/airbytehq/airbyte/pull/87977) | Update dependencies |
+| 0.0.45 | 2026-09-29 | [87274](https://github.com/airbytehq/airbyte/pull/87274) | Update dependencies |
+| 0.0.44 | 2026-09-22 | [86763](https://github.com/airbytehq/airbyte/pull/86763) | Update dependencies |
+| 0.0.43 | 2026-09-15 | [86161](https://github.com/airbytehq/airbyte/pull/86161) | Update dependencies |
+| 0.0.42 | 2026-09-08 | [85599](https://github.com/airbytehq/airbyte/pull/85599) | Update dependencies |
 | 0.0.41 | 2026-08-18 | [84691](https://github.com/airbytehq/airbyte/pull/84691) | Update dependencies |
 | 0.0.40 | 2026-08-11 | [84041](https://github.com/airbytehq/airbyte/pull/84041) | Update dependencies |
 | 0.0.39 | 2026-08-04 | [83574](https://github.com/airbytehq/airbyte/pull/83574) | Update dependencies |

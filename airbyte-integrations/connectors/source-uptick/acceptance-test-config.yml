@@ -16,7 +16,21 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: creditnotelineitems
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /creditnotelineitems/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; no write path (OPTIONS Allow: GET, HEAD, OPTIONS; POST -> 405; POST /creditnotes/ accepts no lineitems)"
+          - name: remarkevents
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /remarkevents/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; no write path (OPTIONS Allow: GET, HEAD, OPTIONS) and creating/updating seeded remarks did not emit events"
+          - name: majorservices
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /majorservices/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; no write path (OPTIONS Allow: GET, HEAD, OPTIONS; POST -> 405)"
+          - name: promptquestions
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /promptquestions/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; no write path (OPTIONS Allow: GET, HEAD, OPTIONS; POST -> 405)"
+          - name: promptanswers
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /promptanswers/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; no write path (OPTIONS Allow: GET, HEAD, OPTIONS; POST -> 405)"
+          - name: servicequotefixedlineitems
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /servicequotefixedlineitems/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; POST (type ServiceQuoteFixedLineItem, all required fields) returns 201 but GET by the returned id is 404 and the collection stays at 0"
+          - name: servicequotedoandchargelineitems
+            bypass_reason: "Sandbox tenant holds no rows: unfiltered GET /servicequotedoandchargelineitems/ returns 0 (meta count 0), also 0 with updatedsince/ordering/show_deleted/fields[] added individually; POST (type ServiceQuoteDoAndChargeLineItem, all required fields) returns 201 but GET by the returned id is 404 and the collection stays at 0"
   incremental:
     tests:
       - config_path: secrets/config.json

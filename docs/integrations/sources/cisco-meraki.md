@@ -32,6 +32,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-10-07 | [88200](https://github.com/airbytehq/airbyte/pull/88200) | Fix `datacenters` stream path (`api/secureConnect/v1`) and skip organizations without Secure Connect |
+| 0.0.49 | 2026-10-06 | [87798](https://github.com/airbytehq/airbyte/pull/87798) | Update dependencies |
+| 0.0.48 | 2026-09-29 | [87119](https://github.com/airbytehq/airbyte/pull/87119) | Update dependencies |
+| 0.0.47 | 2026-09-22 | [86592](https://github.com/airbytehq/airbyte/pull/86592) | Update dependencies |
+| 0.0.46 | 2026-09-15 | [86003](https://github.com/airbytehq/airbyte/pull/86003) | Update dependencies |
+| 0.0.45 | 2026-09-08 | [85443](https://github.com/airbytehq/airbyte/pull/85443) | Update dependencies |
 | 0.0.44 | 2026-08-18 | [84526](https://github.com/airbytehq/airbyte/pull/84526) | Update dependencies |
 | 0.0.43 | 2026-08-11 | [83893](https://github.com/airbytehq/airbyte/pull/83893) | Update dependencies |
 | 0.0.42 | 2026-08-04 | [83412](https://github.com/airbytehq/airbyte/pull/83412) | Update dependencies |

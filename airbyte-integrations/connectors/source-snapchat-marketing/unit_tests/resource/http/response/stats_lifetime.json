@@ -15,7 +15,9 @@
           "video_views": 80000,
           "android_installs": 1000,
           "ios_installs": 1500,
-          "total_installs": 2500
+          "total_installs": 2500,
+          "coupon_used_local": 123456,
+          "coupon_used_usd": 7890
         }
       }
     }

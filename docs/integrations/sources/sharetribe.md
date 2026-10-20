@@ -45,6 +45,10 @@ For more details about the API, check out https://www.sharetribe.com/api-referen
 | messages | id | Default pagination | ✅ |  ✅  |
 | reviews | id | Default pagination | ✅ |  ✅  |
 
+:::note
+Sharetribe only retains marketplace events for 90 days on live marketplaces (7 days on dev and test marketplaces), and the `events/query` endpoint rejects a `createdAtStart` older than that. The `events` stream therefore never requests events older than 89 days, regardless of the configured **Start date**; a full history of events is not available from the API.
+:::
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -56,6 +60,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-10-07 | [88248](https://github.com/airbytehq/airbyte/pull/88248) | Fix `events` stream failing with `Start time cannot be more than 90 day(s) in the past` by clamping `createdAtStart` to the API retention window |
+| 0.0.58 | 2026-10-06 | [88024](https://github.com/airbytehq/airbyte/pull/88024) | Update dependencies |
+| 0.0.57 | 2026-09-29 | [87340](https://github.com/airbytehq/airbyte/pull/87340) | Update dependencies |
+| 0.0.56 | 2026-09-22 | [86800](https://github.com/airbytehq/airbyte/pull/86800) | Update dependencies |
+| 0.0.55 | 2026-09-15 | [86207](https://github.com/airbytehq/airbyte/pull/86207) | Update dependencies |
+| 0.0.54 | 2026-09-08 | [85625](https://github.com/airbytehq/airbyte/pull/85625) | Update dependencies |
 | 0.0.53 | 2026-08-18 | [84743](https://github.com/airbytehq/airbyte/pull/84743) | Update dependencies |
 | 0.0.52 | 2026-08-11 | [84086](https://github.com/airbytehq/airbyte/pull/84086) | Update dependencies |
 | 0.0.51 | 2026-08-04 | [83599](https://github.com/airbytehq/airbyte/pull/83599) | Update dependencies |

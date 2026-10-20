@@ -1,0 +1,13 @@
+# robots.txt for docs.airbyte.com
+#
+# AI-crawler policy: all crawlers, including AI crawlers (GPTBot, ClaudeBot,
+# PerplexityBot, Google-Extended, CCBot, etc.), are deliberately allowed.
+# Airbyte documentation is public and we want it discoverable by both search
+# engines and AI assistants. See also /llms.txt.
+
+User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Disallow: /search
+
+Sitemap: https://docs.airbyte.com/sitemap.xml

@@ -62,6 +62,12 @@ airbyte:
             group: Connection Error
             output: Invalid credentials. Please check your username and password.
 
+          - code: 2037
+            #  SQL compilation error: Failure during expansion of view '<view>' (session variable, view references not set, etc)
+            error: config
+            group: Configuration Error
+            output: A selected view could not be queried because it is invalid or inaccessible. Please deselect the view or fix its definition in Snowflake.
+
           - code: 2003
             # SQL compilation error: ... object ... does not exist or not authorized.
             error: config

@@ -2,6 +2,8 @@
 Marketstack provides data from 72 global stock exchanges.
 Using this connector we can extract Historical Data , Splits and Dividends data !
 
+This connector uses the [Marketstack API v2](https://marketstack.com/documentation_v2) (`https://api.marketstack.com/v2/`). Marketstack deprecated the v1 endpoints after June 30th, 2025.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -29,6 +31,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-07 | [88194](https://github.com/airbytehq/airbyte/pull/88194) | Migrate from the deprecated Marketstack API v1 to v2 (`https://api.marketstack.com/v2/`) |
+| 0.0.68 | 2026-10-06 | [87920](https://github.com/airbytehq/airbyte/pull/87920) | Update dependencies |
+| 0.0.67 | 2026-09-29 | [87269](https://github.com/airbytehq/airbyte/pull/87269) | Update dependencies |
+| 0.0.66 | 2026-09-22 | [86724](https://github.com/airbytehq/airbyte/pull/86724) | Update dependencies |
+| 0.0.65 | 2026-09-15 | [86134](https://github.com/airbytehq/airbyte/pull/86134) | Update dependencies |
+| 0.0.64 | 2026-09-08 | [85561](https://github.com/airbytehq/airbyte/pull/85561) | Update dependencies |
 | 0.0.63 | 2026-08-18 | [84664](https://github.com/airbytehq/airbyte/pull/84664) | Update dependencies |
 | 0.0.62 | 2026-08-11 | [84005](https://github.com/airbytehq/airbyte/pull/84005) | Update dependencies |
 | 0.0.61 | 2026-08-04 | [83534](https://github.com/airbytehq/airbyte/pull/83534) | Update dependencies |

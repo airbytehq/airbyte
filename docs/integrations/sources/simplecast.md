@@ -12,13 +12,13 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 |-------------|-------------|------------|---------------------|----------------------|
 | podcasts | id | DefaultPaginator | ✅ |  ❌  |
 | episodes | id | DefaultPaginator | ✅ |  ❌  |
-| analytics |  | DefaultPaginator | ✅ |  ❌  |
+| analytics |  | No pagination | ✅ |  ❌  |
 | analytics_downloads | id | No pagination | ✅ |  ❌  |
 | analytics_podcasts_listeners | id | No pagination | ✅ |  ❌  |
-| categories |  | DefaultPaginator | ✅ |  ❌  |
-| distribution_channels |  | DefaultPaginator | ✅ |  ❌  |
+| categories |  | No pagination | ✅ |  ❌  |
+| distribution_channels |  | No pagination | ✅ |  ❌  |
 | timezones | value | No pagination | ✅ |  ❌  |
-| analytics_episodes | id | No pagination | ✅ |  ❌  |
+| analytics_episodes | id | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -31,6 +31,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-07 | [88316](https://github.com/airbytehq/airbyte/pull/88316) | Fix infinite pagination loops on `categories`, `distribution_channels`, `analytics`; paginate `podcasts`, `episodes`, `analytics_episodes` via `pages.next.href` |
+| 0.0.64 | 2026-10-06 | [88028](https://github.com/airbytehq/airbyte/pull/88028) | Update dependencies |
+| 0.0.63 | 2026-09-29 | [87353](https://github.com/airbytehq/airbyte/pull/87353) | Update dependencies |
+| 0.0.62 | 2026-09-22 | [86810](https://github.com/airbytehq/airbyte/pull/86810) | Update dependencies |
+| 0.0.61 | 2026-09-15 | [86210](https://github.com/airbytehq/airbyte/pull/86210) | Update dependencies |
+| 0.0.60 | 2026-09-08 | [85640](https://github.com/airbytehq/airbyte/pull/85640) | Update dependencies |
 | 0.0.59 | 2026-08-18 | [84751](https://github.com/airbytehq/airbyte/pull/84751) | Update dependencies |
 | 0.0.58 | 2026-08-11 | [84113](https://github.com/airbytehq/airbyte/pull/84113) | Update dependencies |
 | 0.0.57 | 2026-08-04 | [83614](https://github.com/airbytehq/airbyte/pull/83614) | Update dependencies |

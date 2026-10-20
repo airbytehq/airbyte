@@ -13,7 +13,8 @@ You have to give your login email and password used with `when-i-work` account f
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `email` | `string` | Email of your When I Work account. |  |
+| `password` | `string` | Password for your When I Work account. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -42,6 +43,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.68 | 2026-10-06 | [88107](https://github.com/airbytehq/airbyte/pull/88107) | Update dependencies |
+| 0.0.67 | 2026-09-29 | [87430](https://github.com/airbytehq/airbyte/pull/87430) | Update dependencies |
+| 0.0.66 | 2026-09-22 | [86881](https://github.com/airbytehq/airbyte/pull/86881) | Update dependencies |
+| 0.0.65 | 2026-09-15 | [86293](https://github.com/airbytehq/airbyte/pull/86293) | Update dependencies |
+| 0.0.64 | 2026-09-08 | [85724](https://github.com/airbytehq/airbyte/pull/85724) | Update dependencies |
 | 0.0.63 | 2026-08-18 | [84817](https://github.com/airbytehq/airbyte/pull/84817) | Update dependencies |
 | 0.0.62 | 2026-08-11 | [84192](https://github.com/airbytehq/airbyte/pull/84192) | Update dependencies |
 | 0.0.61 | 2026-08-04 | [83682](https://github.com/airbytehq/airbyte/pull/83682) | Update dependencies |
