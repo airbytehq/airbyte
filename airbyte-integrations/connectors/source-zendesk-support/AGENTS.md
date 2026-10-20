@@ -64,6 +64,26 @@ What `airbytehq/oncall#13250` establishes is narrower than the mechanism above: 
 
 **Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
 
+## 7. `ticket_events` and `ticket_metric_events` Filter Records Client-Side; `ticket_comments` Does Not
+
+Zendesk's time-based incremental exports (`incremental/ticket_events.json`, `incremental/ticket_metric_events`) select rows by the ticket's hidden `generated_timestamp`, not by the event's own time. Archiving a ticket, or deleting an archived one, moves the ticket's **entire** event history to the new `generated_timestamp` (Zendesk's guide, [Understanding older ticket events in responses](https://developer.zendesk.com/documentation/ticketing/managing-tickets/using-the-incremental-export-api/)). After a bulk update of archived tickets, a sync with a recent `start_time` receives every historical event of every touched ticket, with cursor values far older than the saved state. Before 5.6.4 the connector emitted all of it: `cursor_incremental_sync` has no record filter, and the CDK only compares records to the cursor when `is_client_side_incremental` (or `is_data_feed`) is set.
+
+Both streams therefore override `incremental_sync` with `$ref: "#/definitions/cursor_incremental_sync"` plus `is_client_side_incremental: true`. The shared `cursor_incremental_sync` definition is untouched because `tickets`, `users`, `organizations`, `ticket_comments` and others use it. A `$ref` with sibling keys is a shallow merge, so the override keeps every other key of the definition; check the resolved manifest if the definition gains nested keys a stream overrides.
+
+What the CDK filter (`ClientSideIncrementalRecordFilterDecorator` → `ConcurrentCursor.should_be_synced`, CDK 7.35.0) does for these streams:
+
+- Keeps `cursor_start <= value <= now`. `cursor_start` is the saved state, or the configured start date on a first sync. A record equal to the state is kept, which matters because the export overlaps at the boundary.
+- Keeps a record whose cursor value is missing or matches none of `cursor_datetime_formats` (`ValueError` → kept, one warning per stream). `ticket_events.timestamp` is an integer epoch (`%s`); `ticket_metric_events.time` is an ISO string such as `2025-12-16T20:16:16Z` (`%Y-%m-%dT%H:%M:%SZ`). Both were confirmed against the live API. If Zendesk ever adds fractional seconds to `time`, nothing would match and the filter would quietly stop filtering rather than drop records.
+- Drops a record later than the current time. Such a record is not checkpointed, so it cannot push the next `start_time` into the future (the export answers a future `start_time` with a 400).
+- Leaves the state unchanged. The state is the maximum of the previous state and the emitted cursor values, and every dropped record is older than the previous state, so the checkpoint is the same as before the filter.
+- Changes nothing about the requests: the same pages are fetched and paginated. Only destination volume goes down; API requests and runtime stay the same.
+
+`ticket_metric_events` had this filter before the low-code migration (the Python stream yielded only `record["time"] > state["time"]`); the migration dropped it. `ticket_events` was added after the migration and never had it.
+
+**Why `ticket_comments` is excluded:** it reads the same ticket events export (and has the same re-stamping exposure), but its cursor is the comment's `created_at`. A comment that is redacted or edited later is returned again with its original `created_at`, so a cursor filter could drop real changes. Whether to filter it is a separate decision.
+
+**Why this matters:** do not remove `is_client_side_incremental` from these two streams, or replace their `incremental_sync` override with a copy that drops it. Without it, a bulk change to archived tickets can re-emit millions of already-synced events.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

@@ -1131,6 +1131,9 @@ definitions:
 
   ticket_metric_events_stream:
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      is_client_side_incremental: true
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
@@ -1149,6 +1152,9 @@ definitions:
 
   ticket_events_stream:
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      is_client_side_incremental: true
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
