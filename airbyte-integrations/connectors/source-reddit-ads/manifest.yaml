@@ -162,7 +162,7 @@ definitions:
     is_data_feed: false
   report_record_filter:
     type: RecordFilter
-    condition: "{{ record['date'][:10] <= stream_slice['end_time'] }}"
+    condition: "{{ record['date'] is string and record['date'][:10] <= stream_slice['end_time'] }}"
   report_window:
     starts_at: "{{ stream_interval.start_time }}T00:00:00Z"
     ends_at: "{{ min((str_to_datetime(stream_interval.end_time) + duration('P1D')).strftime('%Y-%m-%dT%H:00:00Z'), now_utc().strftime('%Y-%m-%dT%H:00:00Z')) }}"

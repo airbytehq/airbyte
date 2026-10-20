@@ -43,8 +43,10 @@ report stream sets `date` to its first ten characters with `AddFields`, so the
 emitted value always matches its `format: date` and the primary key stays
 `YYYY-MM-DD` even if Reddit appends a time. The record filter and the cursor's
 `cursor_datetime_formats` still accept a time suffix, and legacy state values
-such as `2026-10-13T00:00:00Z` still parse. `ad` and `campaign` timestamps,
-including `campaign.start_time` and `end_time`, are typed `date-time`.
+such as `2026-10-13T00:00:00Z` still parse. The record filter drops report
+rows whose `date` is null or not a string: rendering `[:10]` on a null fails,
+and the CDK would then emit the unrendered template as `date` for every later
+row. `ad` and `campaign` timestamps, including `campaign.start_time` and `end_time`, are typed `date-time`.
 Pagination uses `pagination.next_url` and
 decodes `%3D` in `page.token` before sending the next request.
 
@@ -90,7 +92,8 @@ refresh when you need to detect removals.
 Read-only live checks against a test ad account with no delivery confirmed the
 report request bodies (Reddit validates breakdown and field names), the
 rate-limit groups and the `ad_account` and `ad_group` record shapes. The test
-account's reports return no rows. The only report-row behavior known from real
-data is the `campaign_report` finding above, that parent IDs requested only as
-`fields` don't appear in rows. Report row keys, the `date` format and the
-metric types otherwise rest on Reddit's OpenAPI spec and the hermetic tests.
+account's reports return no rows. Known from real data: parent IDs requested
+only as `fields` don't appear in `campaign_report` rows (above), and a
+comparison regression test on a customer connection with delivery showed the
+26 integer-typed metrics as JSON integers and `date` as plain `YYYY-MM-DD`.
+Report row keys otherwise rest on Reddit's OpenAPI spec and the hermetic tests.

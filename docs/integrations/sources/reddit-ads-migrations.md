@@ -5,7 +5,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 1.0.0
 
 :::danger Risk of permanent data loss
-Clearing a stream truncates its destination data. Snapshot or back up affected tables first. A re-sync is bounded by your configured start date and by the history Reddit still serves: Reddit serves report data for the last 24 months only, so report rows older than that are not restored by a clear.
+Clear a stream only if a sync fails after the schema refresh (step 3). A clear truncates the stream's destination data, so back up the affected tables first. A re-sync can't restore report rows older than 24 months, because Reddit serves only the last 24 months of report data. If **Start Date** is empty, a re-sync also skips ads and campaigns last modified more than 24 months ago; set an earlier Start Date first (step 5).
 :::
 
 ### What changed
@@ -18,7 +18,7 @@ Version 1.0.0 corrects the declared types of existing fields so destinations loa
 | `ad` | `modified_at` | string | string, `format: date-time` |
 | `campaign` | `created_at` | nullable string | nullable string, `format: date-time` |
 | `campaign` | `modified_at` | string | string, `format: date-time` |
-| `campaign` | `start_time`, `end_time` | not declared (not synced) | nullable string, `format: date-time` (new columns) |
+| `campaign` | `start_time`, `end_time` | not declared, so typed destinations didn't load them | nullable string, `format: date-time` (new columns) |
 | `campaign` | `spend_cap` | nullable number | nullable integer |
 | `campaign_report` | `date` | string | string, `format: date` |
 | `ad_account_report`, `ad_group_report`, `ad_report` | `date` | string, `format: date` | unchanged type; value now always `YYYY-MM-DD` |
@@ -38,11 +38,15 @@ Connections that sync `ad`, `campaign`, `campaign_report`, `ad_account_report`, 
 
 1. Upgrade to version 1.0.0.
 2. Refresh the source schema and accept the changes.
-3. Check whether your destination can change an existing column's type from string to timestamp or date, and from a floating-point number to an integer.
-   - If it can, or if it stores records as JSON, no clear is needed.
-   - If it can't (for example, S3 Data Lake and other Iceberg destinations reject these type changes), clear the affected streams, then sync them again. A clear is destructive and truncates the destination data for that stream.
-4. `campaign.start_time` and `campaign.end_time` were not synced before. `campaign` syncs incrementally on `modified_at`, so existing campaign rows get these columns only when the campaign changes. To fill them for every campaign, clear `campaign` and sync it again.
-5. A clear re-syncs from your configured start date. Report history is limited to the last 24 months, so report rows older than that will not be restored. Snapshot or back up the destination first.
+3. Run a sync.
+   - If it succeeds, you're done. You don't need to clear anything.
+   - If it fails with a column type or schema-evolution error (S3 Data Lake and other Iceberg destinations reject string-to-timestamp, string-to-date and float-to-integer changes), back up the affected tables, then clear only the streams named in the error and sync them again. A clear truncates the destination data for that stream; see step 5 for what a re-sync can and can't restore.
+4. `campaign.start_time` and `campaign.end_time` were not declared before, so typed destinations didn't load them. `campaign` syncs incrementally on `modified_at`, so existing campaign rows get these columns only when the campaign changes. To fill them for every campaign, run a [refresh](https://docs.airbyte.com/platform/operator-guides/refreshes) of `campaign` with **Refresh stream and retain records**. You don't need a clear for this.
+5. A clear or refresh re-syncs from your configured **Start Date**. If you left Start Date empty, the re-sync starts 24 months before the day it runs:
+   - For `ad` and `campaign`, any ad or campaign last modified before then is not synced again. Reddit still returns these records, so before clearing or refreshing, set Start Date to a fixed date earlier than your oldest ad or campaign, such as `2015-01-01T00:00:00Z`.
+   - For the report streams, Reddit only serves the last 24 months, so a clear permanently loses report rows older than that whatever Start Date you set.
+
+   Snapshot or back up the destination tables before you clear.
 
 ### Downstream changes
 

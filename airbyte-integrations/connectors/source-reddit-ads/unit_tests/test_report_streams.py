@@ -205,3 +205,29 @@ def test_report_legacy_timestamp_state_round_trips_to_plain_date(
     assert output.errors == []
     assert [message.record.data["date"] for message in output.records] == ["2026-10-13", "2026-10-14"]
     assert output.state_messages[-1].state.stream.stream_state.date == "2026-10-14"
+
+
+@pytest.mark.parametrize("stream_name,breakdowns,_expected_ids", _REPORT_STREAMS)
+def test_report_drops_null_date_rows_and_normalizes_the_rest(
+    stream_name: str,
+    breakdowns: list[str],
+    _expected_ids: dict,
+) -> None:
+    config = base_config(start_time="2026-10-13T00:00:00Z", report_lookback_window_days=0)
+    rows = [
+        _report_record(breakdowns, None, _PLACEHOLDER_ID),
+        _report_record(breakdowns, "2026-10-13T00:00:00Z", _PLACEHOLDER_ID),
+        _report_record(breakdowns, "2026-10-14", _PLACEHOLDER_ID),
+    ]
+
+    with freeze_time("2026-10-15T00:30:00Z"), HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(_REPORT_URL, body=_report_body(breakdowns, "2026-10-13T00:00:00Z", "2026-10-15T00:00:00Z")),
+            HttpResponse(body=json.dumps({"data": {"metrics": rows}}), status_code=200),
+        )
+        _mock_token(http_mocker)
+        output = read(get_source(config, _catalog(stream_name)), config, _catalog(stream_name))
+
+    assert output.errors == []
+    assert [message.record.data["date"] for message in output.records] == ["2026-10-13", "2026-10-14"]
+    assert output.state_messages[-1].state.stream.stream_state.date == "2026-10-14"
