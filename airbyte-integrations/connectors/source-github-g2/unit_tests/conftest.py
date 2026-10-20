@@ -11,6 +11,7 @@ import pytest
 
 from airbyte_cdk.models import Type
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from unit_tests.utils import FLATTEN_EXEMPTIONS
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -31,12 +32,9 @@ sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
-FLATTEN_EXEMPTIONS = {
-    ("events", "payload"),
-    ("deployments", "payload"),
-}
 SCALAR_TYPES = {"string", "integer", "number", "boolean"}
 VALIDATED_RECORD_COUNTS: Counter[str] = Counter()
+DECLARED_SCHEMAS: dict[str, dict[str, Any]] = {}
 
 
 def _matches_type(value: Any, type_declaration: Any) -> bool:
@@ -61,7 +59,7 @@ def _validate_record(stream_name: str, record: dict[str, Any], schema: dict[str,
     undeclared = set(record) - set(properties)
     assert not undeclared, f"{stream_name}: undeclared record keys {sorted(undeclared)}"
     for field_name, value in record.items():
-        if (stream_name, field_name) in FLATTEN_EXEMPTIONS:
+        if field_name in FLATTEN_EXEMPTIONS.get(stream_name, {}):
             continue
         field_schema = properties[field_name]
         field_type = field_schema.get("type")
@@ -91,11 +89,12 @@ def validate_materialized_records(monkeypatch):
     original_read = YamlDeclarativeSource.read
 
     def read_with_validation(source, logger, config, catalog, state=None):
-        schemas = {stream.name: stream.get_json_schema() for stream in source.streams(config)}
+        if not DECLARED_SCHEMAS:
+            DECLARED_SCHEMAS.update({stream.name: stream.get_json_schema() for stream in source.streams(config)})
         for message in original_read(source, logger, config, catalog, state):
             if message.type == Type.RECORD:
                 stream_name = message.record.stream
-                _validate_record(stream_name, message.record.data, schemas[stream_name])
+                _validate_record(stream_name, message.record.data, DECLARED_SCHEMAS[stream_name])
                 VALIDATED_RECORD_COUNTS[stream_name] += 1
             yield message
 
@@ -103,18 +102,19 @@ def validate_materialized_records(monkeypatch):
 
 
 def pytest_sessionfinish(session, exitstatus):
-    if exitstatus == 0:
-        stream_names = {
-            item.callspec.params["stream_name"]
-            for item in session.items
-            if hasattr(item, "callspec") and "stream_name" in item.callspec.params
-        }
-        if len(stream_names) != 42:
-            return
-        missing = stream_names - VALIDATED_RECORD_COUNTS.keys()
-        if missing:
-            session.exitstatus = pytest.ExitCode.TESTS_FAILED
-            print(f"\nNo validated records were emitted for streams: {sorted(missing)}")
+    options = session.config.option
+    if exitstatus != 0 or options.file_or_dir or options.keyword or options.markexpr:
+        return
+
+    stream_names = {
+        item.callspec.params["stream_name"] for item in session.items if hasattr(item, "callspec") and "stream_name" in item.callspec.params
+    }
+    if len(stream_names) != 42:
+        return
+    missing = stream_names - VALIDATED_RECORD_COUNTS.keys()
+    if missing:
+        session.exitstatus = pytest.ExitCode.TESTS_FAILED
+        print(f"\nNo validated records were emitted for streams: {sorted(missing)}")
 
 
 @pytest.fixture(name="rate_limit_mock_response")

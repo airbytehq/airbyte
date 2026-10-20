@@ -28,6 +28,13 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
+FLATTEN_EXEMPTIONS: dict[str, dict[str, str]] = {
+    "events": {"payload": "Approved by AJ Steers 2026-10-20: payload shape varies by event type; emitted as schemaless JSON."},
+    "deployments": {
+        "payload": "Approved by AJ Steers 2026-10-20: GitHub documents payload as object or string; emitted as schemaless JSON."
+    },
+}
+
 
 def make_source(config=None, catalog=None, state=None, config_path=None) -> YamlDeclarativeSource:
     return YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config, catalog=catalog, state=state, config_path=config_path)
