@@ -255,18 +255,18 @@ def test_jira_settings_stream(config, jira_settings_response):
 def test_board_issues_stream(config, mock_board_response, board_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/software/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000+ORDER+BY+updated+asc",
         json=board_issues_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/software/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000+ORDER+BY+updated+asc",
         json={"errorMessages": ["This board has no columns with a mapped status."], "errors": {}},
         status=500,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/software/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000+ORDER+BY+updated+asc",
         json={},
     )
 
@@ -405,7 +405,7 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
 def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/software/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000+ORDER+BY+updated+asc",
         json=sprints_issues_response,
     )
 

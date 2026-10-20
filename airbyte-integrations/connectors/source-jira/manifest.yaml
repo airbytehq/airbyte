@@ -12152,12 +12152,10 @@ definitions:
         $ref: "#/definitions/requester_software_v1"
         request_parameters:
           fields: "['key', 'created', 'updated']"
-          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }} ORDER BY updated asc"
         error_handler:
           $ref: "#/definitions/error_handler"
           response_filters:
-          - http_codes: [500]
-            action: IGNORE
           - predicate: "{{ 'no columns with a mapped status' in (response.get('errorMessages') or []) | join(' ') }}"
             action: IGNORE
     transformations:
@@ -14035,7 +14033,7 @@ definitions:
         $ref: "#/definitions/requester_software_v1"
         request_parameters:
           fields: "{{ stream_slice._partition.extra_fields['fields'] }}"
-          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }} ORDER BY updated asc"
     transformations:
     - type: AddFields
       fields:
@@ -14851,9 +14849,10 @@ spec:
         default: []
       lookback_window_minutes:
         title: Lookback window
-        description: When set to N, the connector will always refresh resources created
-          within the past N minutes. By default, updated objects that are not newly
-          created are not incrementally synced.
+        description: When set to N, incremental syncs of `issues`, `board_issues` and
+          `sprint_issues` start N minutes before the last synced `updated` value, so
+          changes Jira had not indexed yet are picked up. Records in that window are
+          emitted again.
         examples:
         - 60
         default: 0

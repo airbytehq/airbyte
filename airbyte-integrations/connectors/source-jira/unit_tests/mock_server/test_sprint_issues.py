@@ -231,7 +231,7 @@ class TestSprintIssuesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert output.errors == []
 
     @HttpMocker()
     def test_sprint_with_no_issues(self, http_mocker: HttpMocker):
@@ -283,7 +283,7 @@ class TestSprintIssuesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert output.errors == []
 
     @HttpMocker()
     def test_cursor_pagination(self, http_mocker: HttpMocker):
@@ -315,14 +315,14 @@ class TestSprintIssuesStream(TestCase):
         page_1_request = (
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1")
             .with_fields(["customfield_10001", "key", "status", "created", "updated"])
-            .with_jql("updated >= 1609459200000")
+            .with_jql("updated >= 1609459200000 ORDER BY updated asc")
             .with_max_results(50)
             .build()
         )
         page_2_request = (
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1")
             .with_fields(["customfield_10001", "key", "status", "created", "updated"])
-            .with_jql("updated >= 1609459200000")
+            .with_jql("updated >= 1609459200000 ORDER BY updated asc")
             .with_max_results(50)
             .with_next_page_token("page-2-token")
             .build()
