@@ -438,24 +438,30 @@ jobs:
           && steps.verify-checks.outputs.ready == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Post pending ai-ready commit status
+      - name: Start ai-ready check run
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
+        id: ai-ready-check
         # Informational only; never block the evaluation on it.
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
           SHA: ${{ steps.verify-checks.outputs.sha }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: >
-          gh api --method POST "repos/airbytehq/airbyte/statuses/$SHA"
-          -f state=pending
-          -f context="Hydra / ai-ready"
-          -f description="EVALUATING: Devin scope analysis in progress"
-          -f target_url="$TARGET_URL"
+        run: |
+          set -euo pipefail
+          id=$(gh api --method POST repos/airbytehq/airbyte/check-runs \
+            -f name="Hydra / ai-ready" \
+            -f head_sha="$SHA" \
+            -f status=in_progress \
+            -f details_url="$TARGET_URL" \
+            -f 'output[title]=EVALUATING: Devin scope analysis in progress' \
+            -f "output[summary]=[Workflow run]($TARGET_URL)" \
+            --jq .id)
+          echo "id=$id" | tee -a "$GITHUB_OUTPUT"
 
       - name: Run Devin auto-merge evaluation
         if: >
@@ -1034,14 +1040,17 @@ jobs:
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      # ── Commit status ──────────────────────────────────────────────
-      # Post exactly one final `Hydra / ai-ready` commit status on the PR head
-      # this run evaluated, so consumers can read the /ai-ready outcome from the
-      # head commit's statuses instead of listing workflow runs. The description
-      # starts with a machine-readable outcome token (mirrors libhydra's
-      # ReadyOutcome). Runs on every terminal path, including failures and
-      # cancellation; a run that fails before the hoard token exists posts none.
-      - name: Post final ai-ready commit status
+      # ── ai-ready check run ─────────────────────────────────────────
+      # Complete exactly one `Hydra / ai-ready` check run on the PR head this
+      # run evaluated, so consumers can read the /ai-ready outcome from the
+      # head commit's statusCheckRollup instead of listing workflow runs. The
+      # title starts with a machine-readable outcome token (mirrors libhydra's
+      # ReadyOutcome). A check run rather than a commit status so outcomes that
+      # aren't failures (not eligible, checks pending, needs human review) can
+      # render grey instead of red. Runs on every terminal path, including
+      # failures and cancellation; a run that fails before the hoard token
+      # exists posts none.
+      - name: Complete ai-ready check run
         if: always() && steps.get-hoard-token.outputs.token != ''
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
@@ -1054,6 +1063,9 @@ jobs:
           # Autopilot pushes a new head that is what actually gets merged; post
           # there too so the PR's final head carries the outcome.
           AUTOPILOT_SHA: ${{ steps.autopilot-enable.outputs.sha }}
+          # In-progress check run started before the Devin eval, if any; it is
+          # completed in place so each SHA carries a single entry.
+          CHECK_RUN_ID: ${{ steps.ai-ready-check.outputs.id }}
           PRE_CHECK_OUTCOME: ${{ steps.pre-check.outcome }}
           INELIGIBLE_REASON: ${{ steps.pre-check.outputs.ineligible_reason }}
           PR_STATE: ${{ steps.pre-check.outputs.state }}
@@ -1115,31 +1127,40 @@ jobs:
             reason="run cancelled"
           fi
 
+          # Only a broken run is red. Outcomes that just mean "not for
+          # auto-merge" or "not yet" render grey so they don't read as failures.
           case "$outcome" in
-            MERGED | GATES_PASSED) state=success ;;
-            *) state=failure ;;
+            MERGED | GATES_PASSED) conclusion=success ;;
+            NOT_ELIGIBLE) conclusion=skipped ;;
+            CHECKS_FAILING | GATES_FAILED) conclusion=neutral ;;
+            *) conclusion=failure ;;
           esac
 
-          description="$outcome: $reason"
-          # Commit status descriptions are capped at 140 characters.
-          if (( ${#description} > 140 )); then
-            description="${description:0:137}..."
-          fi
-          echo "state=$state description=$description"
+          title="$outcome: $reason"
+          echo "conclusion=$conclusion title=$title"
 
           if [[ -z "$EVALUATED_SHA" ]]; then
-            echo "::warning::No PR head SHA was resolved; skipping the Hydra / ai-ready commit status."
+            echo "::warning::No PR head SHA was resolved; skipping the Hydra / ai-ready check run."
             exit 0
           fi
-          shas=("$EVALUATED_SHA")
-          if [[ -n "$AUTOPILOT_SHA" && "$AUTOPILOT_SHA" != "$EVALUATED_SHA" ]]; then
-            shas+=("$AUTOPILOT_SHA")
+
+          complete_check() {
+            local method=$1 path=$2
+            shift 2
+            gh api --method "$method" "repos/airbytehq/airbyte/$path" "$@" \
+              -f status=completed \
+              -f conclusion="$conclusion" \
+              -f details_url="$TARGET_URL" \
+              -f "output[title]=$title" \
+              -f "output[summary]=$reason"$'\n\n'"[Workflow run]($TARGET_URL)" \
+              --jq '"Completed Hydra / ai-ready check run \(.id) on \(.head_sha): \(.conclusion)"'
+          }
+
+          if [[ -n "$CHECK_RUN_ID" ]]; then
+            complete_check PATCH "check-runs/$CHECK_RUN_ID"
+          else
+            complete_check POST check-runs -f name="Hydra / ai-ready" -f head_sha="$EVALUATED_SHA"
           fi
-          for sha in "${shas[@]}"; do
-            gh api --method POST "repos/airbytehq/airbyte/statuses/$sha" \
-              -f state="$state" \
-              -f context="Hydra / ai-ready" \
-              -f description="$description" \
-              -f target_url="$TARGET_URL" \
-              --jq '"Posted \(.state) Hydra / ai-ready status on \(.url)"'
-          done
+          if [[ -n "$AUTOPILOT_SHA" && "$AUTOPILOT_SHA" != "$EVALUATED_SHA" ]]; then
+            complete_check POST check-runs -f name="Hydra / ai-ready" -f head_sha="$AUTOPILOT_SHA"
+          fi
