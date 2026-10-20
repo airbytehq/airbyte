@@ -40,3 +40,10 @@ test {
     jvmArgs '--add-opens', 'java.base/java.net=ALL-UNNAMED'
     systemProperty 'container.vm.log.skip', 'true'
 }
+
+// The test fixtures pin Testcontainers with an enforced platform (see above) so that connectors
+// using them keep 1.21.4 instead of the 2.0.2 that the Debezium BOM asks for. Gradle refuses to
+// publish an enforced platform unless told that this is intended.
+tasks.withType(GenerateModuleMetadata).configureEach {
+    suppressedValidationErrors.add('enforced-platform')
+}
