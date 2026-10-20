@@ -10,13 +10,13 @@ There are three parts to this:
 - Embedding - convert the text into a vector representation, either by calling an embedding service, by reading a pre-calculated vector from the record, or by letting Weaviate's own vectorizer do it.
 - Indexing - store the vectors in a vector database for similarity search
 
-The connector uses version 3 of the Weaviate Python client, so it works with Weaviate's class-based schema API. Newer Weaviate documentation calls these objects collections, but this connector and its configuration refer to them as classes.
+The connector uses version 4 of the Weaviate Python client, which talks to Weaviate over both HTTP and gRPC. Newer Weaviate documentation calls the objects the connector writes to collections, but this connector and its configuration refer to them as classes.
 
 ## Prerequisites
 
 To use the Weaviate destination, you'll need:
 
-- Access to a running Weaviate instance (either self-hosted or Weaviate Cloud), minimum version 1.21.2
+- Access to a running Weaviate instance (either self-hosted or Weaviate Cloud), minimum version 1.27.0, with both its HTTP and gRPC ports reachable from Airbyte
 - One of the following, depending on how you want vectors to be produced:
   - An account with API access for OpenAI, Azure OpenAI, Cohere, or another OpenAI-compatible embedding service
   - Pre-calculated embeddings stored in a field in your source records
@@ -24,11 +24,23 @@ To use the Weaviate destination, you'll need:
 
 You'll need the following information to configure the destination:
 
-- **Public Endpoint** - The URL of the Weaviate cluster to load data into, for example `https://my-cluster.weaviate.network`.
-- **Authentication** - How to authenticate against the cluster: an API token (Weaviate Cloud), a username and password (self-managed clusters), or no authentication (local test clusters only).
+- **Public Endpoint** - The REST endpoint of the Weaviate cluster to load data into, for example `https://my-cluster.c0.europe-west3.gcp.weaviate.cloud` or `http://my-weaviate-host:8080`. A bare hostname is treated as `https://`.
+- **Authentication** - How to authenticate against the cluster: an API key (Weaviate Cloud), a username and password, OIDC client credentials or an OIDC bearer token (clusters behind an identity provider), or no authentication (local test clusters only).
 - **Embedding service API key** - Only required if Airbyte calculates the embeddings for you.
 
-On Airbyte Cloud, the endpoint must start with `https://` and authentication must be enabled. The connection check fails if either condition isn't met, so **No Authentication** and plain HTTP endpoints only work in self-managed Airbyte deployments.
+### Weaviate Cloud
+
+1. In the [Weaviate Cloud console](https://console.weaviate.cloud/), open your cluster and copy its **REST Endpoint** and an **API key**.
+2. Paste the REST Endpoint into **Public Endpoint**, with or without `https://`.
+3. Choose **API Key** under **Authentication** and paste the key.
+
+That's all. The connector derives the cluster's gRPC endpoint and enables TLS on its own, so **Connection Options** can stay at their defaults.
+
+### Self-hosted Weaviate
+
+Set **Public Endpoint** to the cluster's HTTP endpoint. The connector connects to gRPC on the same host, port `50051`, with TLS when the public endpoint uses `https://`. If gRPC is exposed elsewhere, for example behind an ingress on port 443, set **Connection Options > gRPC Endpoint** and, if needed, **gRPC TLS**.
+
+On Airbyte Cloud, the endpoint must use `https` and authentication must be enabled. The connection check fails if either condition isn't met, so **No Authentication** and plain HTTP endpoints only work in self-managed Airbyte deployments.
 
 ## Supported sync modes
 
@@ -88,10 +100,33 @@ The indexing section has the following options:
 | Option | Default | Description |
 | :--- | :--- | :--- |
 | **Batch Size** | 128 | Number of objects sent to Weaviate per batch. Lower it if the cluster rejects large batches or runs out of memory. |
+| **Concurrent Batch Requests** | 1 | Number of batches sent to Weaviate in parallel. |
+| **Consistency Level** | `default` | Replication [consistency level](https://docs.weaviate.io/weaviate/concepts/replication-architecture/consistency) for writes and deletes: `ONE`, `QUORUM` or `ALL`. `default` uses the server default (`QUORUM`). |
 | **Text Field** | `text` | Property that receives the embedded text chunk. It must match the `text_key` your query code and any vectorizer expect. |
 | **Tenant ID** | empty | Enables multi-tenancy for this connection. Leave empty to disable multi-tenancy. |
 | **Default Vectorizer** | `none` | Vectorizer set on classes the connector creates. Only relevant when Weaviate should embed the text itself. |
 | **Additional headers** | empty | Extra HTTP headers sent with every request, for example `X-OpenAI-Api-Key` for a `text2vec-openai` vectorizer. |
+| **Connection Options** | | Advanced connection settings, see below. |
+
+#### Connection options
+
+All connection options are optional. The defaults work for Weaviate Cloud and for most self-hosted clusters.
+
+| Option | Default | Description |
+| :--- | :--- | :--- |
+| **gRPC Endpoint** | derived | `host` or `host:port` of the gRPC API. When empty, Weaviate Cloud clusters use their gRPC host on port 443 and other clusters use the public endpoint's host on port `50051`. |
+| **gRPC TLS** | `auto` | `auto` uses TLS for gRPC when the public endpoint uses `https`. `enabled` and `disabled` override it. |
+| **Init Timeout** | 2 | Seconds allowed for the initial connection checks. |
+| **Query Timeout** | 30 | Seconds allowed for schema, tenant and delete requests. |
+| **Insert Timeout** | 90 | Seconds allowed for a batch insert. Raise it for large batches or slow vectorizers. |
+| **Skip Init Checks** | false | Skip the server version and readiness checks on connect, for example when a proxy blocks the meta endpoints. |
+| **Trust Environment** | false | Read proxy settings and CA bundles from environment variables such as `HTTPS_PROXY` and `SSL_CERT_FILE`. |
+| **HTTP Proxy**, **HTTPS Proxy**, **gRPC Proxy** | empty | Proxy URLs for each protocol. |
+| **Session Pool Connections** | 20 | Number of HTTP connection pools to cache. |
+| **Session Pool Max Size** | 100 | Maximum number of HTTP connections per pool. |
+| **Session Pool Max Retries** | 3 | Retries for failed HTTP requests. |
+| **Session Pool Timeout** | 5 | Seconds to wait for a free HTTP connection. |
+| **gRPC Channel Options** | empty | Extra [gRPC channel arguments](https://grpc.github.io/grpc/core/group__grpc__arg__keys.html) as name/value pairs, for example `grpc.keepalive_time_ms` = `10000`. Integer values are passed as integers. |
 
 All streams will be indexed into separate classes derived from the stream name. The connector strips everything except letters, digits, and underscores from the stream name and capitalizes the first character, so the `users_v2` stream becomes the `Users_v2` class and `my orders!` becomes `Myorders`.
 
@@ -99,11 +134,11 @@ If a class doesn't exist in the schema of the cluster, the connector creates it 
 
 You can also create the class in Weaviate in advance if you need more control over the schema. In this case, create the text properties `_ab_stream` and `_ab_record_id` for bookkeeping reasons. Deduplication and CDC deletes depend on `_ab_record_id`: if the existing class doesn't have that property, the connector skips the delete step and older versions of a record stay in the class alongside the new ones.
 
-When a sync runs in `Overwrite` mode, the class is deleted and recreated with the same schema it had before, so any properties Weaviate inferred earlier are preserved.
+When a sync runs in `Overwrite` mode, the class is deleted and recreated with the same schema it had before, so any properties Weaviate inferred earlier are preserved. For multi-tenant classes, the configured tenant is created again after the class is recreated.
 
 Properties in Weaviate have to start with a lowercase letter and can't contain spaces or special characters, so field names might be updated during the loading process. The field names `id`, `_id`, and `_additional` are reserved keywords in Weaviate, so they are renamed to `raw_id`, `raw__id`, and `raw__additional` respectively.
 
-When using [multi-tenancy](https://docs.weaviate.io/weaviate/manage-collections/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case you want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled. In case the class doesn't exist, it will be created with multi-tenancy properly configured. If the class already exists but the tenant id is not associated with the class, the connector will automatically add the tenant id to the class. This allows you to configure multiple connections for different tenants on the same schema.
+When using [multi-tenancy](https://docs.weaviate.io/weaviate/manage-collections/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case you want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled. In case the class doesn't exist, it will be created with multi-tenancy properly configured. If the class already exists but the tenant id is not associated with the class, the connector will automatically add the tenant id to the class. Only the classes of the streams being synced are touched; other classes in the cluster are left alone. This allows you to configure multiple connections for different tenants on the same schema.
 
 ## Namespace support
 
@@ -116,6 +151,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 |:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.3.0 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | 🚨 Breaking change: migrate to the Weaviate Python client v4 (HTTP + gRPC), expose all client connection options (gRPC endpoint and TLS, timeouts, proxies, connection pool, OIDC client credentials and bearer token, batch concurrency, consistency level), accept bare Weaviate Cloud hostnames, send the `X-Weaviate-Client-Integration` header, keep the tenant on overwrite, stop adding tenants to unrelated classes, bump the CDK and vulnerable dependencies |
 | 0.2.64 | 2026-08-13 | [84358](https://github.com/airbytehq/airbyte/pull/84358) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.2.63 | 2026-07-02 | [81386](https://github.com/airbytehq/airbyte/pull/81386) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.2.62 | 2026-07-01 | [81364](https://github.com/airbytehq/airbyte/pull/81364) | Bump authlib 1.6.3 to 1.6.12 to resolve security vulnerabilities |

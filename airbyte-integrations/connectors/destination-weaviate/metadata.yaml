@@ -5,6 +5,9 @@ data:
   allowedHosts:
     hosts:
       - ${indexing.host}
+      - ${indexing.connection.grpc_host}
+      - "*.weaviate.cloud"
+      - "*.weaviate.network"
       - api.openai.com
       - api.cohere.ai
       - ${embedding.api_base}
@@ -13,7 +16,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.2.64
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-weaviate
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   githubIssueLabel: destination-weaviate
@@ -28,6 +31,14 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges:
+      0.3.0:
+        upgradeDeadline: "2026-12-01"
+        message: >-
+          This version moves the connector to version 4 of the Weaviate Python client, which writes and deletes objects over gRPC.
+          Airbyte now needs to reach the cluster's gRPC port in addition to its HTTP endpoint, and the minimum supported Weaviate version is 1.27.0.
+          Weaviate Cloud users don't need to change anything. Self-hosted users must make the gRPC port (50051 by default) reachable from Airbyte,
+          or set Connection Options > gRPC Endpoint if it is exposed on another host or port.
+          See https://docs.airbyte.com/integrations/destinations/weaviate-migrations for details.
       0.2.0:
         message: "After upgrading, you need to reconfigure the source. For more details check out the migration guide.\n"
         upgradeDeadline: "2023-10-01"
