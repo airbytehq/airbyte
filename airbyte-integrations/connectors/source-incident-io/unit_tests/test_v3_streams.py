@@ -36,6 +36,57 @@ from airbyte_cdk.test.state_builder import StateBuilder
 _RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 _STATUS_CATEGORIES = ["triage", "live", "learning", "paused", "closed", "declined", "canceled", "merged"]
+_TIMESTAMP_SCHEMA_PATHS = [
+    ("actions", "completed_at"),
+    ("actions", "created_at"),
+    ("actions", "updated_at"),
+    ("alerts", "created_at"),
+    ("alerts", "resolved_at"),
+    ("alerts", "updated_at"),
+    ("catalog_types", "created_at"),
+    ("catalog_types", "last_synced_at"),
+    ("catalog_types", "updated_at"),
+    ("custom_fields", "created_at"),
+    ("custom_fields", "updated_at"),
+    ("escalations", "created_at"),
+    ("escalations", "updated_at"),
+    ("escalations", "events[].occurred_at"),
+    ("escalations", "related_alerts[].created_at"),
+    ("escalations", "related_alerts[].resolved_at"),
+    ("escalations", "related_alerts[].updated_at"),
+    ("follow-ups", "completed_at"),
+    ("follow-ups", "created_at"),
+    ("follow-ups", "updated_at"),
+    ("incident_roles", "created_at"),
+    ("incident_roles", "updated_at"),
+    ("incident_statuses", "created_at"),
+    ("incident_statuses", "updated_at"),
+    ("severities", "created_at"),
+    ("severities", "updated_at"),
+    ("incident_updates", "created_at"),
+    ("incident_updates", "new_incident_status.created_at"),
+    ("incident_updates", "new_incident_status.updated_at"),
+    ("incident_updates", "new_severity.created_at"),
+    ("incident_updates", "new_severity.updated_at"),
+    ("incidents", "created_at"),
+    ("incidents", "updated_at"),
+    ("incidents", "last_activity_at"),
+    ("incidents", "incident_status.created_at"),
+    ("incidents", "incident_status.updated_at"),
+    ("incidents", "incident_type.created_at"),
+    ("incidents", "incident_type.updated_at"),
+    ("incidents", "severity.created_at"),
+    ("incidents", "severity.updated_at"),
+    ("incidents", "incident_role_assignments[].role.created_at"),
+    ("incidents", "incident_role_assignments[].role.updated_at"),
+    ("incidents", "incident_timestamp_values[].value.value"),
+    ("schedules", "created_at"),
+    ("schedules", "updated_at"),
+    ("schedules", "config.rotations[].handover_start_at"),
+    ("schedules", "current_shifts[].start_at"),
+    ("schedules", "current_shifts[].end_at"),
+    ("workflows", "runs_from"),
+]
 
 
 def _mock_empty(mocker, path, records_field):
@@ -183,6 +234,96 @@ def test_incidents_requests_all_status_categories():
     assert [message.record.data["id"] for message in output.records] == ["1"]
     assert requests_made
     assert all(request.qs["status_category[one_of]"] == _STATUS_CATEGORIES for request in requests_made)
+    assert all(request.qs["mode[one_of]"] == _MODES for request in requests_made)
+
+
+def _schema_field(schema, path):
+    field_schema = schema
+    for segment in path.split("."):
+        is_array = segment.endswith("[]")
+        name = segment[:-2] if is_array else segment
+        field_schema = field_schema["properties"][name]
+        if is_array:
+            field_schema = field_schema["items"]
+    return field_schema
+
+
+@pytest.mark.parametrize(("stream_name", "path"), _TIMESTAMP_SCHEMA_PATHS)
+def test_timestamp_fields_have_timezone_type(stream_name, path):
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    field_schema = _schema_field(manifest["schemas"][stream_name], path)
+
+    assert field_schema["type"] == ["string", "null"]
+    assert field_schema["format"] == "date-time"
+    assert field_schema["airbyte_type"] == "timestamp_with_timezone"
+
+
+def test_catalog_types_uses_v3_schema():
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    requester = manifest["definitions"]["streams"]["catalog_types"]["retriever"]["requester"]
+    properties = manifest["schemas"]["catalog_types"]["properties"]
+
+    assert requester["path"] == "/v3/catalog_types"
+    assert "semantic_type" not in properties
+    top_level_fields = {
+        "engine_resource_type",
+        "estimated_count",
+        "is_team_type",
+        "owning_team_ids",
+        "use_name_as_identifier",
+    }
+    assert top_level_fields <= properties.keys()
+    assert properties["use_name_as_identifier"]["type"] == ["boolean", "null"]
+    assert "format" not in properties["use_name_as_identifier"]
+    assert "airbyte_type" not in properties["use_name_as_identifier"]
+
+    attributes = properties["schema"]["properties"]["attributes"]["items"]["properties"]
+    assert {"backlink_attribute", "path"} <= attributes.keys()
+    assert {"attribute_id", "attribute_name"} <= attributes["path"]["items"]["properties"].keys()
+
+
+def test_catalog_types_reads_v3_response():
+    mocked_record = {
+        "id": "ct-1",
+        "name": "Incident Type",
+        "created_at": "2026-10-01T12:00:00Z",
+        "updated_at": "2026-10-02T12:00:00Z",
+        "last_synced_at": "2026-10-03T12:00:00Z",
+        "engine_resource_type": "incident",
+        "is_team_type": True,
+        "owning_team_ids": ["team-1"],
+        "use_name_as_identifier": False,
+        "estimated_count": 3,
+        "schema": {
+            "attributes": [
+                {
+                    "id": "attribute-1",
+                    "name": "Country",
+                    "mode": "api",
+                    "backlink_attribute": "country_code",
+                    "path": [{"attribute_id": "attribute-1", "attribute_name": "Country"}],
+                }
+            ]
+        },
+    }
+    response = {"catalog_types": [mocked_record]}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["catalog_types"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v3/catalog_types", json=response)
+        output = _read_stream("catalog_types")
+        requests_made = mocker.request_history
+
+    records = [message.record.data for message in output.records]
+    assert len(records) == 1
+    assert records[0] == mocked_record
+    assert requests_made
+    assert all(request.path == "/v3/catalog_types" for request in requests_made)
+    assert all("/v2/catalog_types" not in request.path for request in requests_made)
+    jsonschema.validate(mocked_record, schema)
+    assert "semantic_type" not in schema["properties"]
 
 
 @pytest.mark.parametrize(
@@ -340,6 +481,80 @@ def test_vendor_fields_are_declared_and_read(stream_name, path, records_field, f
 
     if stream_name == "incidents":
         assert "enum" not in schema["properties"]["external_issue_reference"]["properties"]["provider"]
+
+
+def test_custom_fields_vendor_fields_are_declared_and_read():
+    populated = {
+        "id": "1",
+        "updated_at": "2026-09-18T10:38:18.161Z",
+        "filter_by": {"custom_field_id": "01H2FW182TAH0NHEVBY34SCAK0", "catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK1"},
+        "fixed_filter": {"catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK1", "values": ["01H2FW182TAH0NHEVBY34SCAK2"]},
+        "helptext_catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK3",
+    }
+    # The vendor omits all three when a custom field has no catalog filtering configured.
+    bare = {"id": "2", "updated_at": "2026-09-18T10:38:18.161Z"}
+    response = {"custom_fields": [populated, bare], "pagination_meta": {}}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["custom_fields"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/custom_fields", json=response)
+        output = _read_stream("custom_fields")
+
+    records = [message.record for message in output.records]
+    assert len(records) == 2
+    for field in ("filter_by", "fixed_filter"):
+        assert schema["properties"][field]["type"] == ["object", "null"]
+        assert records[0].data[field] == populated[field]
+    assert schema["properties"]["fixed_filter"]["properties"]["values"]["items"]["type"] == ["string", "null"]
+    assert schema["properties"]["helptext_catalog_attribute_id"]["type"] == ["string", "null"]
+    assert records[0].data["helptext_catalog_attribute_id"] == populated["helptext_catalog_attribute_id"]
+    for field in ("filter_by", "fixed_filter", "helptext_catalog_attribute_id"):
+        assert field not in records[1].data
+    for mocked_record in response["custom_fields"]:
+        jsonschema.validate(mocked_record, schema)
+
+
+def test_workflows_vendor_fields_are_declared_and_read():
+    populated = {
+        "id": "01H2FW182TAH0NHEVBY34SCAK0",
+        "name": "Page the on-call",
+        "auto_run_mode": "confirm_before_running",
+        "delay": {"conditions_apply_over_delay": True, "for_seconds": 300},
+        "folder": "Escalations",
+        "owning_team_ids": ["01H2FW182TAH0NHEVBY34SCAK1"],
+        "shortform": "page-oncall",
+    }
+    # auto_run_mode is required by the vendor; the other four are optional and omitted when unset.
+    bare = {"id": "01H2FW182TAH0NHEVBY34SCAK2", "name": "Archive", "auto_run_mode": "run_automatically"}
+    response = {"workflows": [populated, bare], "pagination_meta": {}}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["workflows"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", json=response)
+        output = _read_stream("workflows")
+
+    records = [message.record for message in output.records]
+    assert len(records) == 2
+    expected_types = {
+        "auto_run_mode": ["string", "null"],
+        "delay": ["object", "null"],
+        "folder": ["string", "null"],
+        "owning_team_ids": ["array", "null"],
+        "shortform": ["string", "null"],
+    }
+    for field, expected in expected_types.items():
+        assert schema["properties"][field]["type"] == expected
+        assert records[0].data[field] == populated[field]
+    assert "enum" not in schema["properties"]["auto_run_mode"]
+    assert records[1].data["auto_run_mode"] == "run_automatically"
+    for field in ("delay", "folder", "owning_team_ids", "shortform"):
+        assert field not in records[1].data
+    for mocked_record in response["workflows"]:
+        jsonschema.validate(mocked_record, schema)
 
 
 @pytest.mark.parametrize(
@@ -697,9 +912,7 @@ def test_incident_attachments_error_handler_reuses_base_filters():
     base_handler = base_requester_handlers[0]
 
     attachment_requester = definitions["streams"]["incident_attachments"]["retriever"]["requester"]
-    attachment_handlers = attachment_requester["error_handler"]["error_handlers"]
-    assert len(attachment_handlers) == 1
-    attachment_handler = attachment_handlers[0]
+    attachment_handler = attachment_requester["error_handler"]
     assert attachment_handler["type"] == "DefaultErrorHandler"
     assert attachment_handler["max_retries"] == base_handler["max_retries"]
 
@@ -715,7 +928,7 @@ def test_incident_attachments_error_handler_reuses_base_filters():
 
 def test_catalog_entries_partitions_and_follows_all_pages():
     with requests_mock.Mocker() as mocker:
-        mocker.get(f"{_BASE_URL}/v2/catalog_types", json={"catalog_types": [{"id": "catalog-type-1"}]})
+        mocker.get(f"{_BASE_URL}/v3/catalog_types", json={"catalog_types": [{"id": "catalog-type-1"}]})
         mocker.get(
             f"{_BASE_URL}/v3/catalog_entries",
             [
