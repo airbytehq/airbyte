@@ -52,7 +52,7 @@ class SourceNetsuite(AbstractSource):
             # ensure there are no duplicate record types as this will break Airbyte
             duplicates = [k for k, v in Counter(object_types).items() if v > 1]
             if duplicates:
-                return False, f'Duplicate record type: {", ".join(duplicates)}'
+                return False, f"Duplicate record type: {', '.join(duplicates)}"
             # check connectivity to all provided `object_types`
             for object in object_types:
                 try:
