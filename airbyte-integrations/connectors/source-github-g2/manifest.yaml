@@ -2861,27 +2861,41 @@ definitions:
     - type: AddFields
       fields:
       - path:
-        - head
-        - repo_id
+        - head_repo_full_name
+        value: '{{ ((record.get(''head'') or {}).get(''repo'') or {}).get(''full_name'') }}'
+      - path:
+        - head_repo_id
         value: '{{ ((record.get(''head'') or {}).get(''repo'') or {}).get(''id'') }}'
       - path:
-        - base
-        - repo_id
+        - base_repo_full_name
+        value: '{{ ((record.get(''base'') or {}).get(''repo'') or {}).get(''full_name'') }}'
+      - path:
+        - base_repo_id
         value: '{{ ((record.get(''base'') or {}).get(''repo'') or {}).get(''id'') }}'
+      - path:
+        - head_label
+        value: '{{ (record.get(''head'') or {}).get(''label'') }}'
+      - path:
+        - head_ref
+        value: '{{ (record.get(''head'') or {}).get(''ref'') }}'
+      - path:
+        - head_sha
+        value: '{{ (record.get(''head'') or {}).get(''sha'') }}'
+      - path:
+        - base_label
+        value: '{{ (record.get(''base'') or {}).get(''label'') }}'
+      - path:
+        - base_ref
+        value: '{{ (record.get(''base'') or {}).get(''ref'') }}'
+      - path:
+        - base_sha
+        value: '{{ (record.get(''base'') or {}).get(''sha'') }}'
     - type: RemoveFields
       field_pointers:
       - - head
         - repo
     - type: AddFields
       fields:
-      - path:
-        - head
-        - repo_full_name
-        value: '{{ ((record.get(''head'') or {}).get(''repo'') or {}).get(''full_name'') }}'
-      - path:
-        - base
-        - repo_full_name
-        value: '{{ ((record.get(''base'') or {}).get(''repo'') or {}).get(''full_name'') }}'
       - path:
         - head_user_login
         value: '{{ ((record.get(''head'') or {}).get(''user'') or {}).get(''login'') }}'
@@ -5387,6 +5401,9 @@ definitions:
         - user_login
         value: '{{ (record.get(''user'') or {}).get(''login'') }}'
       - path:
+        - user_id
+        value: '{{ (record.get(''user'') or {}).get(''id'') }}'
+      - path:
         - user_type
         value: '{{ (record.get(''user'') or {}).get(''type'') }}'
     - type: DpathFlattenFields
@@ -7349,7 +7366,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: '#/definitions/repository_scoped_requester'
-        path: repos/{{ stream_slice.extra_fields['repository'] }}/issues/{{ stream_partition.number }}/timeline
+        path: repos/{{ stream_slice.extra_fields['repository'] }}/issues/{{ stream_partition.issue_number }}/timeline
       record_selector:
         type: RecordSelector
         extractor:
@@ -7374,7 +7391,7 @@ definitions:
                 datetime: '1970-01-01T00:00:00Z'
                 datetime_format: '%Y-%m-%dT%H:%M:%SZ'
           parent_key: number
-          partition_field: number
+          partition_field: issue_number
           extra_fields:
           - - repository
     transformations:
@@ -7385,7 +7402,7 @@ definitions:
         value: '{{ stream_slice.extra_fields[''repository''] }}'
       - path:
         - issue_number
-        value: '{{ stream_partition.number }}'
+        value: '{{ stream_partition.issue_number }}'
     - type: AddFields
       fields:
       - path:
@@ -7393,7 +7410,7 @@ definitions:
         value: '{{ stream_slice.extra_fields[''repository''] }}'
       - path:
         - issue_number
-        value: '{{ stream_partition.number }}'
+        value: '{{ stream_partition.issue_number }}'
       - path:
         - parent_shas
         value: '{{ (record.get(''parents'') or []) | map(attribute=''sha'') | list }}'

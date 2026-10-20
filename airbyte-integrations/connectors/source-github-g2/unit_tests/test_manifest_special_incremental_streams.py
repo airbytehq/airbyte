@@ -240,7 +240,11 @@ def test_commits_two_syncs_legacy_scenario(rate_limit_mock_response, requests_mo
 
     records, _, states, error = _read(config, "commits")
     assert error is None
-    assert [record["sha"] for record in records] == ["1", "2", "3"], "GitHub's `since` did the filtering; the Python class re-filtered strictly"
+    assert [record["sha"] for record in records] == [
+        "1",
+        "2",
+        "3",
+    ], "GitHub's `since` did the filtering; the Python class re-filtered strictly"
     assert _partition_cursors(states[-1]) == {
         '{"branch": "branch", "parent_slice": {"repository": "organization/repository"}}': "2022-02-02T10:10:06Z"
     }
@@ -573,9 +577,9 @@ def test_workflow_jobs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert sorted(records, key=lambda record: record["id"]) == [
-        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo"},
-        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo"},
-        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo"},
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo", "label_ids": [], "label_names": []},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo", "label_ids": [], "label_names": []},
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo", "label_ids": [], "label_names": []},
     ]
     assert all(request.endswith("/jobs?per_page=100&filter=all") for request in _requested(requests_mock, "/jobs"))
     state = states[-1].stream.stream_state.__dict__
@@ -651,9 +655,7 @@ def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, 
             "job_completed_at": completed_at,
         }
     ]
-    assert _requested(requests_mock, "/actions/runs/23/jobs") == [
-        f"/repos/org/repo/actions/runs/23/jobs?per_page=100&filter=all"
-    ]
+    assert _requested(requests_mock, "/actions/runs/23/jobs") == [f"/repos/org/repo/actions/runs/23/jobs?per_page=100&filter=all"]
 
 
 def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, requests_mock):

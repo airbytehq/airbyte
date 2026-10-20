@@ -147,7 +147,7 @@ SINGLE_PARENT_CASES = [
         ],
         "/pulls/7/commits",
         {"per_page": ["100"]},
-        [{"sha": "a", "repository": _REPO, "pull_number": 7}],
+        [{"sha": "a", "repository": _REPO, "pull_number": 7, "parent_shas": []}],
         id="pull_request_commits",
     ),
     pytest.param(
@@ -373,10 +373,10 @@ def test_pull_request_commits_legacy_scenario(rate_limit_mock_response, requests
 
     assert error is None
     assert sorted(records, key=lambda record: record["sha"]) == [
-        {"sha": "1", "repository": "organization/repository", "pull_number": 2},
-        {"sha": "2", "repository": "organization/repository", "pull_number": 2},
-        {"sha": "3", "repository": "organization/repository", "pull_number": 3},
-        {"sha": "4", "repository": "organization/repository", "pull_number": 3},
+        {"sha": "1", "repository": "organization/repository", "pull_number": 2, "parent_shas": []},
+        {"sha": "2", "repository": "organization/repository", "pull_number": 2, "parent_shas": []},
+        {"sha": "3", "repository": "organization/repository", "pull_number": 3, "parent_shas": []},
+        {"sha": "4", "repository": "organization/repository", "pull_number": 3, "parent_shas": []},
     ]
     assert _requested(requests_mock, "/pulls/1/commits") == []
 

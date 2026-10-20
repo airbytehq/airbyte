@@ -171,6 +171,8 @@ def _record(stream_name, record_id, cursor_field, cursor):
     """A GitHub payload record for `stream_name` with the fields the manifest reads."""
     if stream_name == "stargazers":
         return {"starred_at": cursor, "user": {"id": record_id}}
+    if stream_name == "events":
+        record_id = str(record_id)
     record = {"id": record_id, cursor_field: cursor}
     if stream_name == "pull_requests":
         record.update({"number": record_id, "head": {"repo": {"id": 100 + record_id}}, "base": {"repo": {"id": 200 + record_id}}})
@@ -187,6 +189,10 @@ def _body(stream_name, records):
 def _ids(stream_name, records):
     key = "user_id" if stream_name == "stargazers" else "id"
     return [record[key] for record in records]
+
+
+def _expected_ids(stream_name, values):
+    return [str(value) for value in values] if stream_name == "events" else values
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint", "cursor_field", "params"), STREAM_PARAMS)
@@ -285,7 +291,7 @@ def test_start_date_filters_older_records_and_keeps_the_boundary(
 
     assert error is None
     assert statuses[-1] == "COMPLETE"
-    assert _ids(stream_name, records) == [3, 2]
+    assert _ids(stream_name, records) == _expected_ids(stream_name, [3, 2])
     assert _partition_cursors(states[-1]) == {"docker/compose": _stored_cursor(stream_name, _AFTER_START)}
 
 
@@ -320,8 +326,8 @@ def test_legacy_state_is_migrated_and_filters_per_repository(
     by_repository = {}
     for record in records:
         by_repository.setdefault(record["repository"], []).append(record)
-    assert _ids(stream_name, by_repository["airbytehq/airbyte"]) == [3, 2]
-    assert _ids(stream_name, by_repository["docker/compose"]) == [3, 2, 1]
+    assert _ids(stream_name, by_repository["airbytehq/airbyte"]) == _expected_ids(stream_name, [3, 2])
+    assert _ids(stream_name, by_repository["docker/compose"]) == _expected_ids(stream_name, [3, 2, 1])
     assert _partition_cursors(states[-1]) == {repository: _stored_cursor(stream_name, _LATEST) for repository in config["repositories"]}
 
 
@@ -352,7 +358,7 @@ def test_unsorted_streams_read_every_page(stream_name, endpoint, cursor_field, p
 
     assert error is None
     assert statuses[-1] == "COMPLETE"
-    assert _ids(stream_name, records) == [3]
+    assert _ids(stream_name, records) == _expected_ids(stream_name, [3])
     assert [request.qs.get("page") for request in _listings(requests_mock, endpoint)] == [None, ["2"]]
 
 
@@ -456,8 +462,20 @@ def test_pull_requests_flatten_head_and_base_repositories(rate_limit_mock_respon
                 "id": 2,
                 "number": 2,
                 "updated_at": _LATER,
-                "head": {"ref": "fix", "repo": {"id": 11}},
-                "base": {"ref": "main", "repo": {"id": 22}},
+                "head": {
+                    "label": "fork:fix",
+                    "ref": "fix",
+                    "sha": "head-sha",
+                    "user": {"id": 101, "login": "octocat", "type": "User"},
+                    "repo": {"id": 11, "full_name": "fork/compose"},
+                },
+                "base": {
+                    "label": "docker:main",
+                    "ref": "main",
+                    "sha": "base-sha",
+                    "user": {"id": 202, "login": "maintainer", "type": "User"},
+                    "repo": {"id": 22, "full_name": "docker/compose"},
+                },
             },
             # A fork that was deleted: GitHub sends `head.repo: null`.
             {
@@ -473,10 +491,22 @@ def test_pull_requests_flatten_head_and_base_repositories(rate_limit_mock_respon
     records, _, _, error = _read(config, "pull_requests")
 
     assert error is None
+    assert [record["head_label"] for record in records] == ["fork:fix", None]
     assert [record["head_ref"] for record in records] == ["fix", "old"]
+    assert [record["head_sha"] for record in records] == ["head-sha", None]
+    assert [record["head_user_id"] for record in records] == [101, None]
+    assert [record["head_user_login"] for record in records] == ["octocat", None]
+    assert [record["head_user_type"] for record in records] == ["User", None]
     assert [record["head_repo_id"] for record in records] == [11, None]
+    assert [record["head_repo_full_name"] for record in records] == ["fork/compose", None]
+    assert [record["base_label"] for record in records] == ["docker:main", None]
     assert [record["base_ref"] for record in records] == ["main", "main"]
+    assert [record["base_sha"] for record in records] == ["base-sha", None]
+    assert [record["base_user_id"] for record in records] == [202, None]
+    assert [record["base_user_login"] for record in records] == ["maintainer", None]
+    assert [record["base_user_type"] for record in records] == ["User", None]
     assert [record["base_repo_id"] for record in records] == [22, 22]
+    assert [record["base_repo_full_name"] for record in records] == ["docker/compose", None]
     assert all("head" not in record and "base" not in record for record in records)
 
 
@@ -508,9 +538,7 @@ def test_pull_requests_sends_the_large_stream_page_size(page_size_config, rate_l
 
 
 def test_commit_comments_rename_reactions(rate_limit_mock_response, requests_mock):
-    """`GithubStream.transform` renamed `+1`/`-1` to `plus_one`/`minus_one` (the 2.0.0 breaking
-    change); `reactions.json` declares only the renamed keys. A count of 0 is a value and must
-    survive; a record without `reactions` must not gain an empty one."""
+    """Reaction values keep their renamed scalar counts in the flat record."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
@@ -525,15 +553,18 @@ def test_commit_comments_rename_reactions(rate_limit_mock_response, requests_moc
     records, _, _, error = _read(config, "commit_comments")
 
     assert error is None
-    assert records[0]["reactions"] == {"url": "u", "total_count": 3, "laugh": 1, "plus_one": 2, "minus_one": 0}
-    assert records[1]["reactions"] == {"url": "u", "total_count": 0}
+    assert records[0]["reactions_url"] == "u"
+    assert records[0]["reactions_total_count"] == 3
+    assert records[0]["reactions_laugh"] == 1
+    assert records[0]["reactions_plus_one"] == 2
+    assert records[0]["reactions_minus_one"] == 0
+    assert records[1]["reactions_url"] == "u"
+    assert records[1]["reactions_total_count"] == 0
     assert "reactions" not in records[2]
 
 
 def test_stargazers_promote_the_user_id(rate_limit_mock_response, requests_mock):
-    """The star payload has no id of its own, so `Stargazers.transform` copied `user.id` to a
-    top-level `user_id` — the primary key — and kept the `user` object. Legacy raised on a null
-    `user`; a null `user_id` is the more useful outcome."""
+    """The star payload has no id of its own, so `user.id` becomes the flat primary-key field."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(

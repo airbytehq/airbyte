@@ -80,6 +80,7 @@ class CommentsTest(TestCase):
         assert len(actual_messages.records) == 1
 
         record_data = actual_messages.records[0].record.data
+        assert record_data["user_id"] == 1
         assert record_data["reactions_plus_one"] == 2
         assert record_data["reactions_minus_one"] == 1
         assert record_data["reactions_total_count"] == 5
