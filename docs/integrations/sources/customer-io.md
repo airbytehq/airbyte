@@ -203,6 +203,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 1.1.2 | 2026-10-20 | [89495](https://github.com/airbytehq/airbyte/pull/89495) | Add the Customer.io OpenAPI spec to the documentation URLs |
 | 1.1.1 | 2026-10-20 | [89163](https://github.com/airbytehq/airbyte/pull/89163) | Update dependencies |
 | 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Re-read 7 days of `activities` per sync instead of 1 hour, add worker and activity lookback options, declare five fields seen in production, cast digit-string `campaigns.webhook_id` values, and update to source-declarative-manifest 7.35.0 |
 | 1.0.0 | 2026-10-09 | [88159](https://github.com/airbytehq/airbyte/pull/88159) | Declare `from_id`, `reply_to_id` and `sent_at` as integers and the item types of four ID and tag arrays |
