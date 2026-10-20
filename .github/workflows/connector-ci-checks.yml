@@ -263,13 +263,10 @@ jobs:
           needs.generate-matrix.outputs.creds-available == 'true' &&
           needs.generate-matrix.outputs.is-fork != 'true' &&
           steps.fetch-secrets.outcome == 'success'
-        run: |
-          # TODO: Drop this guard once an `airbyte-internal-ops` release with `secrets push` is on PyPI.
-          if ! airbyte-ops secrets --help 2>/dev/null | grep -qE '^\W*push\s'; then
-            echo "::warning::Installed airbyte-ops has no 'secrets push' command; rotated secrets were not written back."
-            exit 0
-          fi
-          airbyte-ops secrets push ${{ matrix.connector }}
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          GCP_GSM_WRITER_CREDENTIALS: ${{ secrets.GCP_GSM_WRITER_CREDENTIALS }}
+        run: .github/scripts/write-back-rotated-secrets.sh
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
@@ -427,13 +424,10 @@ jobs:
           needs.generate-matrix.outputs.creds-available == 'true' &&
           needs.generate-matrix.outputs.is-fork != 'true' &&
           steps.fetch-secrets.outcome == 'success'
-        run: |
-          # TODO: Drop this guard once an `airbyte-internal-ops` release with `secrets push` is on PyPI.
-          if ! airbyte-ops secrets --help 2>/dev/null | grep -qE '^\W*push\s'; then
-            echo "::warning::Installed airbyte-ops has no 'secrets push' command; rotated secrets were not written back."
-            exit 0
-          fi
-          airbyte-ops secrets push ${{ matrix.connector }}
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          GCP_GSM_WRITER_CREDENTIALS: ${{ secrets.GCP_GSM_WRITER_CREDENTIALS }}
+        run: .github/scripts/write-back-rotated-secrets.sh
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
