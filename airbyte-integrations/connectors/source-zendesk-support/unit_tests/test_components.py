@@ -175,6 +175,23 @@ def test_ticket_metric_sets_extractor_stamps_each_metric_set_with_its_tickets_ge
     assert "generated_timestamp" not in records[0]
 
 
+def test_ticket_metric_sets_extractor_joins_by_ticket_id_not_by_position(components_module):
+    body = {
+        "tickets": [
+            {"id": 10, "generated_timestamp": 100},
+            {"id": 20, "generated_timestamp": 200},
+        ],
+        "metric_sets": [
+            {"id": 2000, "ticket_id": 20, "updated_at": "2024-01-01T00:00:00Z"},
+            {"id": 1000, "ticket_id": 10, "updated_at": "2024-01-01T00:00:00Z"},
+        ],
+    }
+
+    records = components_module.ZendeskSupportTicketMetricSetsExtractor().extract_records(_response_with_json(body))
+
+    assert [(record["ticket_id"], record["_ab_updated_at"]) for record in records] == [(20, 200), (10, 100)]
+
+
 def test_ticket_metric_sets_extractor_falls_back_to_updated_at_when_the_ticket_is_not_on_the_page(components_module):
     body = {"tickets": [], "metric_sets": [{"id": 7, "ticket_id": 99, "updated_at": "2024-01-01T00:00:00Z"}]}
 
