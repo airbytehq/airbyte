@@ -7,9 +7,9 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.23 — 2026-10-20
+### 1.2.0 — 2026-10-20
 
-[#89012](https://github.com/airbytehq/airbyte/pull/89012) — Debezium `3.1.2.Final` → `3.4.3.Final` in the `extract-cdc` toolkit, the version source-mssql already runs. This picks up DBZ-9682: `MySqlGtidSet.subtract()` no longer throws `NullPointerException: Cannot invoke "MySqlGtidSet$UUIDSet.getUUID()" because "other" is null` when the server's executed GTID set carries a server UUID that the saved offset has never seen, which made source-mysql fail every CDC sync with `Incumbent CDC state is invalid` after a failover, an upgrade or a restore of a managed MySQL instance ([#75558](https://github.com/airbytehq/airbyte/issues/75558)). From Debezium 3.2 the embedded engine is the `AsyncEmbeddedEngine`, whose `close()` interrupts the polling thread instead of waiting for the consumer; the shutdown-path record handling added in 1.1.18 covers that. The Debezium BOM manages Testcontainers at 2.0.2 (renamed artifacts); the test fixtures hold Testcontainers at 1.21.4 with an enforced platform, and `debezium-testing-testcontainers` no longer brings in its own Testcontainers, so connectors keep their current Testcontainers artifacts.
+[#89012](https://github.com/airbytehq/airbyte/pull/89012) — Debezium `3.1.2.Final` → `3.4.3.Final` in `extract-cdc`. Fixes source-mysql CDC syncs failing with `Incumbent CDC state is invalid ... "other" is null` once a failover, upgrade or restore adds a server UUID that the saved offset does not have (DBZ-9682, [#75558](https://github.com/airbytehq/airbyte/issues/75558)). Debezium now runs on its `AsyncEmbeddedEngine` (shutdown handling since 1.1.18) and Kafka Connect 4.1.1. Test fixtures stay on Testcontainers 1.21.4.
 
 ### 1.1.22 — 2026-10-16
 
