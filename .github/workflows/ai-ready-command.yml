@@ -95,6 +95,25 @@ jobs:
             > Auto-merge is paused over the weekend, so no `hyd-ready` label was applied.
             > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze. Otherwise, please wait until after the weekend.
 
+      # hydra-automerge does not run during the freeze, so post the final
+      # `Hydra / ai-ready` commit status here. `success` so it can never block
+      # a merge; the FROZEN token in the description carries the outcome.
+      - name: Post frozen ai-ready commit status
+        if: inputs.pr != '' && steps.weekend-check.outputs.blocked == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          sha=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
+            -f state=success \
+            -f context="Hydra / ai-ready" \
+            -f description="FROZEN: weekend freeze; not evaluated. Re-run /ai-ready force=true to bypass" \
+            -f target_url="$TARGET_URL" \
+            --jq '"Posted \(.state) Hydra / ai-ready status on \(.url)"'
+
       - name: Apply ready label
         if: inputs.pr != '' && steps.weekend-check.outputs.blocked != 'true'
         env:

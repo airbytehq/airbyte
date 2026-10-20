@@ -71,10 +71,14 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,headRefOid,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
+
+          # Export the head SHA before any early exit so the final
+          # `Hydra / ai-ready` commit status has a commit to land on.
+          echo "head_sha=$(echo "$pr_json" | jq -r '.headRefOid')" | tee -a "$GITHUB_OUTPUT"
 
           # Hydra only merges into master, so never act on a PR with any other
           # base. This also blocks PRs opened by an airbytehq/ai-skills eval's
@@ -83,6 +87,7 @@ jobs:
           base=$(echo "$pr_json" | jq -r '.baseRefName')
           if [[ "$base" != "master" ]]; then
             echo "::error::PR #$PR_NUMBER targets base '$base', not master. Auto-merge is blocked."
+            echo "ineligible_reason=PR targets base '$base', not master" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -92,6 +97,7 @@ jobs:
           labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
           if [[ "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
             echo "::error::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is blocked."
+            echo "ineligible_reason=playbook-eval PR" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -248,6 +254,7 @@ jobs:
             if (invalidPath) {
               core.warning(`Non-connector file: ${invalidPath}`);
             }
+            core.setOutput('sha', pull.head.sha);
             core.setOutput('valid', String(valid));
             core.setOutput(
               'auto_merge_eligible',
@@ -430,6 +437,25 @@ jobs:
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Post pending ai-ready commit status
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
+          && steps.verify-checks.outputs.ready == 'true'
+        # Informational only; never block the evaluation on it.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          SHA: ${{ steps.verify-checks.outputs.sha }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: >
+          gh api --method POST "repos/airbytehq/airbyte/statuses/$SHA"
+          -f state=pending
+          -f context="Hydra / ai-ready"
+          -f description="EVALUATING: Devin scope analysis in progress"
+          -f target_url="$TARGET_URL"
 
       - name: Run Devin auto-merge evaluation
         if: >
@@ -856,6 +882,7 @@ jobs:
 
       - name: Squash merge PR
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        id: merge
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
@@ -1006,3 +1033,113 @@ jobs:
             > :red_circle: **Auto-merge aborted.** The Devin evaluation passed, but a step in the autopilot-enable / merge phase failed, so this PR was **not** merged. Please check the run and re-trigger auto-merge once resolved.
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      # ── Commit status ──────────────────────────────────────────────
+      # Post exactly one final `Hydra / ai-ready` commit status on the PR head
+      # this run evaluated, so consumers can read the /ai-ready outcome from the
+      # head commit's statuses instead of listing workflow runs. The description
+      # starts with a machine-readable outcome token (mirrors libhydra's
+      # ReadyOutcome). Runs on every terminal path, including failures and
+      # cancellation; a run that fails before the hoard token exists posts none.
+      - name: Post final ai-ready commit status
+        if: always() && steps.get-hoard-token.outputs.token != ''
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB_STATUS: ${{ job.status }}
+          # Most specific evaluated SHA first: verify-checks pins the
+          # eval->merge chain, classify read the head it classified, pre-check
+          # resolved it before any early exit.
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha || steps.validate-paths.outputs.sha || steps.pre-check.outputs.head_sha }}
+          # Autopilot pushes a new head that is what actually gets merged; post
+          # there too so the PR's final head carries the outcome.
+          AUTOPILOT_SHA: ${{ steps.autopilot-enable.outputs.sha }}
+          PRE_CHECK_OUTCOME: ${{ steps.pre-check.outcome }}
+          INELIGIBLE_REASON: ${{ steps.pre-check.outputs.ineligible_reason }}
+          PR_STATE: ${{ steps.pre-check.outputs.state }}
+          CLASSIFY_OUTCOME: ${{ steps.validate-paths.outcome }}
+          PATHS_VALID: ${{ steps.validate-paths.outputs.valid }}
+          AUTO_MERGE_ELIGIBLE: ${{ steps.validate-paths.outputs.auto_merge_eligible }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
+          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
+          NO_DATABASE_SOURCE_CHANGES: ${{ steps.validate-paths.outputs.no_database_source_changes }}
+          VERIFY_OUTCOME: ${{ steps.verify-checks.outcome }}
+          CHECKS_READY: ${{ steps.verify-checks.outputs.ready }}
+          MISSING_CHECKS: ${{ steps.verify-checks.outputs.missing }}
+          DEVIN_OUTPUT_OK: ${{ steps.check-output.outputs.success }}
+          EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          AUTO_MERGE_ENABLED: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+        run: |
+          set -euo pipefail
+
+          if [[ -n "$INELIGIBLE_REASON" ]]; then
+            outcome=NOT_ELIGIBLE; reason="$INELIGIBLE_REASON"
+          elif [[ "$PRE_CHECK_OUTCOME" != "success" ]]; then
+            outcome=ERROR; reason="PR pre-check failed"
+          elif [[ "$PR_STATE" != "OPEN" ]]; then
+            outcome=NOT_ELIGIBLE; reason="PR is not open (state=$PR_STATE)"
+          elif [[ "$CLASSIFY_OUTCOME" != "success" ]]; then
+            outcome=ERROR; reason="eligibility classification failed"
+          elif [[ "$PATHS_VALID" != "true" ]]; then
+            outcome=NOT_ELIGIBLE; reason="PR modifies non-connector paths"
+          elif [[ "$AUTO_MERGE_ELIGIBLE" != "true" ]]; then
+            failed=()
+            [[ "$SUPPORT_BOT_ASSIGNED" == "true" ]] || failed+=("support bot not assigned")
+            [[ "$NO_DESTINATION_CHANGES" == "true" ]] || failed+=("destination change")
+            [[ "$NO_DATABASE_SOURCE_CHANGES" == "true" ]] || failed+=("database source change")
+            reason="$(printf '%s, ' "${failed[@]}")"
+            outcome=NOT_ELIGIBLE; reason="${reason%, }"
+          elif [[ "$VERIFY_OUTCOME" != "success" ]]; then
+            outcome=ERROR; reason="required checks lookup failed"
+          elif [[ "$CHECKS_READY" != "true" ]]; then
+            outcome=CHECKS_FAILING; reason="required checks not passing: $MISSING_CHECKS"
+          elif [[ "$DEVIN_OUTPUT_OK" != "true" || -z "$EVAL_RESULT" ]]; then
+            outcome=ERROR; reason="Devin evaluation produced no structured output"
+          elif [[ "$EVAL_RESULT" != "PASS" ]]; then
+            outcome=GATES_FAILED; reason="Devin scope analysis did not pass the auto-merge gates"
+          elif [[ "$MERGE_OUTCOME" == "success" ]]; then
+            outcome=MERGED; reason="squash-merged by Hydra"
+          elif [[ "$JOB_STATUS" != "success" ]]; then
+            outcome=ERROR; reason="gates passed but a post-eval step failed; not merged"
+          elif [[ "$DRY_RUN" == "true" ]]; then
+            outcome=GATES_PASSED; reason="dry run (dry-run flag); not merged"
+          elif [[ "$AUTO_MERGE_ENABLED" != "true" ]]; then
+            outcome=GATES_PASSED; reason="dry run (ENABLE_CONNECTOR_AUTO_MERGE off); not merged"
+          else
+            outcome=ERROR; reason="gates passed but PR was not merged"
+          fi
+
+          if [[ "$outcome" == "ERROR" && "$JOB_STATUS" == "cancelled" ]]; then
+            reason="run cancelled"
+          fi
+
+          case "$outcome" in
+            MERGED | GATES_PASSED) state=success ;;
+            *) state=failure ;;
+          esac
+
+          description="$outcome: $reason"
+          # Commit status descriptions are capped at 140 characters.
+          if (( ${#description} > 140 )); then
+            description="${description:0:137}..."
+          fi
+          echo "state=$state description=$description"
+
+          if [[ -z "$EVALUATED_SHA" ]]; then
+            echo "::warning::No PR head SHA was resolved; skipping the Hydra / ai-ready commit status."
+            exit 0
+          fi
+          shas=("$EVALUATED_SHA")
+          if [[ -n "$AUTOPILOT_SHA" && "$AUTOPILOT_SHA" != "$EVALUATED_SHA" ]]; then
+            shas+=("$AUTOPILOT_SHA")
+          fi
+          for sha in "${shas[@]}"; do
+            gh api --method POST "repos/airbytehq/airbyte/statuses/$sha" \
+              -f state="$state" \
+              -f context="Hydra / ai-ready" \
+              -f description="$description" \
+              -f target_url="$TARGET_URL" \
+              --jq '"Posted \(.state) Hydra / ai-ready status on \(.url)"'
+          done
