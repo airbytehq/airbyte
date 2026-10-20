@@ -527,16 +527,17 @@ def test_short_page_with_next_link_is_followed(rate_limit_mock_response, request
     assert sorted(_names(records)) == ["docker/a", "docker/b"]
 
 
-def test_legacy_state_migration_round_trip(rate_limit_mock_response, requests_mock):
-    """Legacy `{org: {updated_at: ...}}` state must migrate to per-partition state and re-attach
-    to the org partition."""
+def test_partition_state_round_trip(rate_limit_mock_response, requests_mock):
+    """The current organization partition state filters records and is emitted unchanged."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
-    legacy_state = [
+    partition_state = [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name="repositories"),
-                stream_state=AirbyteStateBlob({"docker": {"updated_at": "2025-06-01T00:00:00Z"}}),
+                stream_state=AirbyteStateBlob(
+                    {"states": [{"partition": {"organization": "docker"}, "cursor": {"updated_at": "2025-06-01T00:00:00Z"}}]}
+                ),
             ),
         )
     ]
@@ -548,25 +549,22 @@ def test_legacy_state_migration_round_trip(rate_limit_mock_response, requests_mo
         ],
     )
 
-    records, statuses, error = _read(config, state=legacy_state)
+    records, statuses, error = _read(config, state=partition_state)
 
     assert error is None
-    # The data-feed post-pagination filter drops the boundary page's records that are at or
-    # below the migrated partition cursor, so only records newer than the legacy state are
-    # emitted. The migration is asserted by the emitted per-partition state below.
     assert sorted(_names(records)) == ["docker/compose"]
     assert statuses[-1] == "COMPLETE"
 
-    migrated = [message.state for message in _read_messages(config, state=legacy_state) if message.type == Type.STATE]
-    assert migrated, "the repositories stream emitted no state message"
-    assert migrated[-1].stream.stream_state.states == [
+    emitted = [message.state for message in _read_messages(config, state=partition_state) if message.type == Type.STATE]
+    assert emitted, "the repositories stream emitted no state message"
+    assert emitted[-1].stream.stream_state.states == [
         {"partition": {"organization": "docker"}, "cursor": {"updated_at": "2026-01-01T00:00:00Z"}}
     ]
 
 
 def test_pagination_stops_at_cursor(rate_limit_mock_response, requests_mock):
     """The listing is served most-recent-first, so once a page ends at or below the partition
-    cursor the stop condition must end pagination — this replaces the legacy
+    cursor the stop condition must end pagination — this replaces the old
     `Repositories.is_sorted = "desc"` early break and keeps incremental syncs at ~1 request/org."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get("https://api.github.com/orgs/docker/repos", json=[_repo(999, "docker/new", updated_at="2026-06-01T00:00:00Z")])
@@ -615,7 +613,7 @@ def test_newly_added_org_filtered_by_global_cursor(rate_limit_mock_response, req
 
 
 def test_emitted_state_resumes_next_sync(rate_limit_mock_response, requests_mock):
-    """The state the migrated stream emits must re-attach to the `organization` partition on the
+    """The stream's state must re-attach to the `organization` partition on the
     next sync and bound its pagination."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get(
@@ -624,7 +622,7 @@ def test_emitted_state_resumes_next_sync(rate_limit_mock_response, requests_mock
     )
 
     emitted = [message.state for message in _read_messages(config) if message.type == Type.STATE]
-    assert emitted, "the migrated repositories stream emitted no state message"
+    assert emitted, "the repositories stream emitted no state message"
     assert emitted[-1].stream.stream_state.states == [
         {"partition": {"organization": "docker"}, "cursor": {"updated_at": "2026-01-01T00:00:00Z"}}
     ]

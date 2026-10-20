@@ -182,13 +182,20 @@ def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0", created_at="2022
 # --- Releases ---------------------------------------------------------------------------
 
 
-def _legacy_releases_state(**per_repository_cursor):
+def _partitioned_releases_state(**per_repository_cursor):
     return [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name="releases"),
-                stream_state=AirbyteStateBlob({repository: {"created_at": cursor} for repository, cursor in per_repository_cursor.items()}),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {"partition": {"repository": repository}, "cursor": {"created_at": cursor}}
+                            for repository, cursor in per_repository_cursor.items()
+                        ]
+                    }
+                ),
             ),
         )
     ]
@@ -352,7 +359,7 @@ def test_releases_stop_paginating_after_a_page_ending_below_the_state_cursor(rat
     messages, error = _read_messages(
         _config(),
         "releases",
-        state=_legacy_releases_state(**{REPOSITORY: "2022-06-01T00:00:00Z"}),
+        state=_partitioned_releases_state(**{REPOSITORY: "2022-06-01T00:00:00Z"}),
     )
 
     assert error is None
@@ -438,7 +445,7 @@ def test_releases_incremental_sync_without_new_releases_makes_one_request_per_re
     messages, error = _read_messages(
         _config(repositories=repositories),
         "releases",
-        state=_legacy_releases_state(**{repository: cursor for repository in repositories}),
+        state=_partitioned_releases_state(**{repository: cursor for repository in repositories}),
     )
 
     assert error is None

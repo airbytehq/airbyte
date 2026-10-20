@@ -103,14 +103,21 @@ def _mock_repository_resolution(requests_mock, *repositories):
         )
 
 
-def _legacy_state(stream_name, **per_repository_cursor):
-    """The state shape the Python streams wrote: `{repository: {updated_at: ...}}`."""
+def _partition_state(stream_name, **per_repository_cursor):
+    """Build the CDK's cursor state for each repository partition."""
     return [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream_name),
-                stream_state=AirbyteStateBlob({repository: {"updated_at": cursor} for repository, cursor in per_repository_cursor.items()}),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {"partition": {"repository": repository}, "cursor": {"updated_at": cursor}}
+                            for repository, cursor in per_repository_cursor.items()
+                        ]
+                    }
+                ),
             ),
         )
     ]
@@ -227,15 +234,13 @@ def test_emitted_state_is_per_repository_and_resumes_the_next_sync(stream_name, 
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """Existing connections carry `{repository: {updated_at: ...}}`. Without
-    `LegacyToPerPartitionStateMigration` the CDK would not recognise it, drop it, and re-read
-    every repository from `start_date`."""
+def test_partition_state_filters_since_per_repository(stream_name, endpoint, rate_limit_mock_response, requests_mock):
+    """Each repository's cursor independently determines the `since` value for its request."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
 
-    state = _legacy_state(stream_name, **{"docker/compose": "2025-06-01T00:00:00Z"})
+    state = _partition_state(stream_name, **{"docker/compose": "2025-06-01T00:00:00Z"})
     _, _, states, error = _read(config, stream_name, state=state)
 
     assert error is None

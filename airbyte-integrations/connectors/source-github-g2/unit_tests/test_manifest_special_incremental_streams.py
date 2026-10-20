@@ -257,16 +257,22 @@ def test_commits_two_syncs_legacy_scenario(rate_limit_mock_response, requests_mo
     }
 
 
-def test_commits_legacy_state_is_migrated_per_branch(rate_limit_mock_response, requests_mock):
-    """The Python class kept `{repository: {branch: {created_at}}}`; the migration has to land on
-    the `{"branch": ..., "parent_slice": {"repository": ...}}` partition the router builds, and a
-    digit-only branch name must stay a string."""
+def test_commits_partition_state_keeps_numeric_branch_names(rate_limit_mock_response, requests_mock):
+    """A numeric branch name remains a string in its partition state."""
     config = _config(_REPO, branches=["docker/compose/2024"])
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/branches", json=[{"name": "main"}, {"name": "2024"}])
     requests_mock.get(f"{_API}/repos/{_REPO}/commits", json=[_commit("a", _LATER)])
 
-    _, _, states, error = _read(config, "commits", state=_state_message("commits", {_REPO: {"2024": {"created_at": _AFTER_START}}}))
+    state = {
+        "states": [
+            {
+                "partition": {"branch": "2024", "parent_slice": {"repository": _REPO}},
+                "cursor": {"created_at": _AFTER_START},
+            }
+        ]
+    }
+    _, _, states, error = _read(config, "commits", state=_state_message("commits", state))
 
     assert error is None
     assert _requested(requests_mock, "/commits") == [f"/repos/{_REPO}/commits?per_page=100&sha=2024&since=2022-06-01t00%3a00%3a00z"]
@@ -432,9 +438,8 @@ def test_workflow_runs_filter_on_updated_at(rate_limit_mock_response, requests_m
     assert _partition_cursors(states[-1]) == {'{"repository": "docker/compose"}': _LATER}
 
 
-def test_workflow_runs_legacy_state_becomes_the_window_start(rate_limit_mock_response, requests_mock):
-    """The run on the first page was created 45 days before the state cursor but long after the
-    configured start date, so paging stops there only if the window starts at the state cursor."""
+def test_workflow_runs_state_becomes_the_window_start(rate_limit_mock_response, requests_mock):
+    """The run on the first page was created 45 days before the cursor, so it sets the window start."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     runs = f"{_API}/repos/{_REPO}/actions/runs"
@@ -449,7 +454,8 @@ def test_workflow_runs_legacy_state_becomes_the_window_start(rate_limit_mock_res
         ],
     )
 
-    records, _, _, error = _read(config, "workflow_runs", state=_state_message("workflow_runs", {_REPO: {"updated_at": _AFTER_START}}))
+    state = {"states": [{"partition": {"repository": _REPO}, "cursor": {"updated_at": _AFTER_START}}]}
+    records, _, _, error = _read(config, "workflow_runs", state=_state_message("workflow_runs", state))
 
     assert error is None
     assert [record["id"] for record in records] == [3]
@@ -506,7 +512,12 @@ def test_workflow_runs_keep_paging_while_the_window_holds_even_if_nothing_is_emi
     )
 
     records, _, _, error = _read(
-        config, "workflow_runs", state=_state_message("workflow_runs", {_REPO: {"updated_at": "2022-06-15T00:00:00Z"}})
+        config,
+        "workflow_runs",
+        state=_state_message(
+            "workflow_runs",
+            {"states": [{"partition": {"repository": _REPO}, "cursor": {"updated_at": "2022-06-15T00:00:00Z"}}]},
+        ),
     )
 
     assert error is None
@@ -658,10 +669,8 @@ def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, 
     assert _requested(requests_mock, "/actions/runs/23/jobs") == [f"/repos/org/repo/actions/runs/23/jobs?per_page=100&filter=all"]
 
 
-def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, requests_mock):
-    """The Python class kept `{repository: {completed_at}}` and handed that cursor to its parent as
-    `updated_at`. The migration keeps both: the parent resumes per repository from that value and
-    the stream's own cursor is the lowest one across repositories."""
+def test_workflow_jobs_global_cursor_resumes_parent_runs(rate_limit_mock_response, requests_mock):
+    """The global job cursor and per-repository parent cursor resume together."""
     config = _config("org/repo", start_date="2022-09-02T09:05:00Z")
     _mock_repository_resolution(requests_mock, "org/repo")
     runs_url = f"{_API}/repos/org/repo/actions/runs"
@@ -686,35 +695,22 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
     )
     requests_mock.get(f"{runs_url}/2/jobs", json={"jobs": [{"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2}]})
 
-    records, _, states, error = _read(
-        config, "workflow_jobs", state=_state_message("workflow_jobs", {"org/repo": {"completed_at": "2022-09-02T09:10:00Z"}})
-    )
+    state = {
+        "use_global_cursor": True,
+        "state": {"completed_at": "2022-09-02T09:10:00Z"},
+        "parent_state": {
+            "workflow_runs": {"states": [{"partition": {"repository": "org/repo"}, "cursor": {"updated_at": "2022-09-02T09:10:00Z"}}]}
+        },
+    }
+    records, _, states, error = _read(config, "workflow_jobs", state=_state_message("workflow_jobs", state))
 
     assert error is None
     assert sorted(record["id"] for record in records) == [4, 5]
     assert _requested(requests_mock, "/jobs") == [
         "/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"
-    ], "run 2 predates the migrated parent cursor"
+    ], "run 2 predates the parent cursor"
     state = states[-1].stream.stream_state.__dict__
     assert state["use_global_cursor"] is True and state["state"] == {"completed_at": "2022-09-02T09:12:00Z"}
-
-
-def test_workflow_jobs_legacy_state_picks_the_earliest_instant():
-    """The global cursor must be the earliest instant across repositories, not the smallest string:
-    with offsets, text order and time order differ."""
-    from components import WorkflowJobsLegacyStateMigration
-
-    migration = WorkflowJobsLegacyStateMigration(config={}, parameters={})
-    legacy = {"org/a": {"completed_at": "2022-09-02T10:00:00+02:00"}, "org/b": {"completed_at": "2022-09-02T09:00:00Z"}}
-
-    assert migration.should_migrate(legacy)
-    migrated = migration.migrate(legacy)
-
-    assert migrated["state"] == {"completed_at": "2022-09-02T10:00:00+02:00"}, "08:00Z is earlier than 09:00Z"
-    assert migrated["parent_state"] == {
-        "workflow_runs": {"org/a": {"updated_at": "2022-09-02T10:00:00+02:00"}, "org/b": {"updated_at": "2022-09-02T09:00:00Z"}}
-    }
-    assert migrated["use_global_cursor"] is True
 
 
 @pytest.mark.parametrize(

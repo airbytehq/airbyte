@@ -136,9 +136,7 @@ class EventsTest(TestCase):
 
     def test_given_state_more_recent_than_some_records_when_read_incrementally_then_filter_records(self):
         """Ensure incremental sync.
-        `events` is semi-incremental, so all requests will be performed and only new records will be extracted.
-        The state is the legacy `{repository: {created_at: ...}}` shape, migrated by the manifest's
-        `LegacyToPerPartitionStateMigration`."""
+        `events` is semi-incremental, so all requests will be performed and only new records will be extracted."""
 
         self.r_mock.get(
             HttpRequest(
@@ -148,16 +146,28 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        state = StateBuilder().with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2022-06-09T10:00:00Z"}}).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "events",
+                {
+                    "states": [
+                        {
+                            "partition": {"repository": "airbytehq/integration-test"},
+                            "cursor": {"created_at": "2022-06-09T10:00:00Z"},
+                        }
+                    ]
+                },
+            )
+            .build()
+        )
         # Declarative streams read their state at construction, not from `read()`'s argument.
         source = make_source(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         assert len(actual_messages.records) == 1
 
     def test_when_read_incrementally_then_emit_state_message(self):
-        """Ensure incremental sync emits correct stream state message. The manifest stream tracks
-        the cursor per repository partition, so the shape is the CDK's per-partition state rather
-        than the legacy `{repository: {created_at: ...}}` it was fed."""
+        """Ensure incremental sync emits correct per-repository stream state."""
 
         self.r_mock.get(
             HttpRequest(
@@ -167,7 +177,21 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        state = StateBuilder().with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2020-06-09T10:00:00Z"}}).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "events",
+                {
+                    "states": [
+                        {
+                            "partition": {"repository": "airbytehq/integration-test"},
+                            "cursor": {"created_at": "2020-06-09T10:00:00Z"},
+                        }
+                    ]
+                },
+            )
+            .build()
+        )
         source = make_source(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         assert len(actual_messages.records) == 2

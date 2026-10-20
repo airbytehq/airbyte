@@ -893,8 +893,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2782,8 +2780,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: created_at
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3334,8 +3330,6 @@ definitions:
             - boolean
     incremental_sync:
       $ref: '#/definitions/data_feed_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3679,8 +3673,6 @@ definitions:
             - integer
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3864,8 +3856,6 @@ definitions:
             - string
     incremental_sync:
       $ref: '#/definitions/data_feed_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3996,8 +3986,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: starred_at
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4117,8 +4105,6 @@ definitions:
             - string
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4786,8 +4772,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: created_at
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5158,8 +5142,6 @@ definitions:
             - string
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5302,8 +5284,6 @@ definitions:
       - '%Y-%m-%dT%H:%M:%S.%f%z'
       - '%Y-%m-%dT%H:%M:%S%z'
       datetime_format: '%Y-%m-%dT%H:%M:%S%z'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5549,8 +5529,6 @@ definitions:
             - string
     incremental_sync:
       $ref: '#/definitions/server_side_since_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5982,8 +5960,6 @@ definitions:
             - string
     incremental_sync:
       $ref: '#/definitions/server_side_since_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6349,8 +6325,6 @@ definitions:
             - integer
     incremental_sync:
       $ref: '#/definitions/server_side_since_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6852,12 +6826,6 @@ definitions:
             - integer
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
-      cursor_field: updated_at
-      partition_fields:
-      - project_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7016,13 +6984,6 @@ definitions:
             - integer
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
-      cursor_field: updated_at
-      partition_fields:
-      - project_id
-      - column_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -8096,12 +8057,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: created_at
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
-      cursor_field: created_at
-      partition_fields:
-      - comment_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -8212,12 +8167,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: created_at
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
-      cursor_field: created_at
-      partition_fields:
-      - comment_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -8539,13 +8488,6 @@ definitions:
     incremental_sync:
       $ref: '#/definitions/server_side_since_cursor'
       cursor_field: created_at
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
-      cursor_field: created_at
-      partition_fields:
-      - branch
-      integer_ids: false
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -8760,8 +8702,6 @@ definitions:
             \ < str_to_datetime(stream_interval['start_time']) - duration('P32D') }}"
     incremental_sync:
       $ref: '#/definitions/client_side_filtered_cursor'
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -9381,9 +9321,6 @@ definitions:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: completed_at
       global_substream_cursor: true
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.WorkflowJobsLegacyStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -9758,8 +9695,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10015,8 +9950,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_client_side_incremental: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10245,8 +10178,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10506,8 +10437,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_client_side_incremental: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10711,8 +10640,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_client_side_incremental: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10968,8 +10895,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_client_side_incremental: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11117,9 +11042,6 @@ definitions:
       $ref: '#/definitions/client_side_filtered_cursor'
       cursor_field: job_completed_at
       global_substream_cursor: true
-    state_migrations:
-    - type: CustomStateMigration
-      class_name: source_declarative_manifest.components.WorkflowJobsLegacyStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11335,8 +11257,6 @@ definitions:
         datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       is_data_feed: true
-    state_migrations:
-    - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11815,17 +11735,6 @@ spec:
             - client_secret
   config_normalization_rules:
     type: ConfigNormalizationRules
-    config_migrations:
-    - type: ConfigMigration
-      description: '1.4.6: `repository` (space-separated string) -> `repositories` (list)'
-      transformations:
-      - type: CustomConfigTransformation
-        class_name: source_declarative_manifest.components.MigrateRepository
-    - type: ConfigMigration
-      description: '1.4.6: `branch` (space-separated string) -> `branches` (list)'
-      transformations:
-      - type: CustomConfigTransformation
-        class_name: source_declarative_manifest.components.MigrateBranch
     transformations:
     - type: CustomConfigTransformation
       class_name: source_declarative_manifest.components.ConfigNormalization

@@ -8,7 +8,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from airbyte_cdk.test.state_builder import StateBuilder
 
 from ..utils import make_source
 from .config import ConfigBuilder
@@ -99,29 +98,3 @@ class AssigneesTest(TestCase):
         # A full-refresh declarative stream checkpoints once, at the end, with no cursor value.
         assert len(actual_messages.state_messages) == 1
         assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob({"__ab_no_cursor_state_message": True})
-
-    def test_read_ignores_legacy_resumable_full_refresh_state(self):
-        """State written by the Python implementation carried a per-repository
-        `__ab_full_refresh_sync_complete` marker. The manifest stream has no such cursor, so
-        that state is ignored rather than skipping the repositories it names."""
-        self._mock_assignees()
-
-        incoming_state = (
-            StateBuilder()
-            .with_stream_state(
-                "assignees",
-                {
-                    "states": [
-                        {"partition": {"repository": "airbytehq/mock-test-0"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-                        {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-                    ]
-                },
-            )
-            .build()
-        )
-
-        source = make_source(config=_CONFIG, catalog=_create_catalog(), state=incoming_state)
-        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), state=incoming_state)
-
-        assert len(actual_messages.records) == 6
-        assert sorted({record.record.data["repository"] for record in actual_messages.records}) == _CONFIG.get("repositories")

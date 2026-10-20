@@ -338,14 +338,16 @@ def test_parents_older_than_start_date_are_not_expanded(
 
 
 def test_parent_read_ignores_the_parent_streams_own_saved_state(rate_limit_mock_response, requests_mock):
-    """Legacy `PullRequestCommits` read `PullRequests` from `start_date` no matter what state the
-    `pull_requests` stream itself had saved. A saved `pull_requests` cursor newer than a pull
-    request must not stop that pull request's commits from being read."""
+    """The parent starts from `start_date` regardless of its own saved cursor, so a newer cursor
+    must not stop the child commits from being read."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/pulls", json=[_record(id=7, number=7, updated_at=_AFTER_START, head={}, base={})])
     requests_mock.get(f"{_API}/repos/{_REPO}/pulls/7/commits", json=[{"sha": "a"}])
-    pull_requests_state = _state_message("pull_requests", {_REPO: {"updated_at": _LATER}})
+    pull_requests_state = _state_message(
+        "pull_requests",
+        {"states": [{"partition": {"repository": _REPO}, "cursor": {"updated_at": _LATER}}]},
+    )
 
     records, _, _, error = _read(config, "pull_request_commits", state=pull_requests_state)
 
@@ -552,11 +554,12 @@ def test_commit_comment_reactions_two_syncs_legacy_scenario(rate_limit_mock_resp
 
 
 @pytest.mark.parametrize(
-    ("stream_name", "legacy_state", "mocks", "expected_ids"),
+    ("stream_name", "partition", "cursor_field", "mocks", "expected_ids"),
     [
         pytest.param(
             "project_columns",
-            {_REPO: {"5": {"updated_at": _AFTER_START}}},
+            {"project_id": 5, "parent_slice": {"repository": _REPO}},
+            "updated_at",
             [
                 (f"{_API}/repos/{_REPO}/projects", [_record(id=5, updated_at=_LATER)]),
                 (
@@ -569,7 +572,8 @@ def test_commit_comment_reactions_two_syncs_legacy_scenario(rate_limit_mock_resp
         ),
         pytest.param(
             "project_cards",
-            {_REPO: {"5": {"50": {"updated_at": _AFTER_START}}}},
+            {"column_id": 50, "parent_slice": {"project_id": 5, "parent_slice": {"repository": _REPO}}},
+            "updated_at",
             [
                 (f"{_API}/repos/{_REPO}/projects", [_record(id=5, updated_at=_LATER)]),
                 (f"{_API}/projects/5/columns", [_record(id=50, updated_at=_LATER)]),
@@ -587,7 +591,8 @@ def test_commit_comment_reactions_two_syncs_legacy_scenario(rate_limit_mock_resp
         ),
         pytest.param(
             "commit_comment_reactions",
-            {_REPO: {"9": {"created_at": _AFTER_START}}},
+            {"comment_id": 9, "parent_slice": {"repository": _REPO}},
+            "created_at",
             [
                 (f"{_API}/repos/{_REPO}/comments", [_record(id=9, updated_at=_LATER)]),
                 (
@@ -600,7 +605,8 @@ def test_commit_comment_reactions_two_syncs_legacy_scenario(rate_limit_mock_resp
         ),
         pytest.param(
             "issue_comment_reactions",
-            {_REPO: {"8": {"created_at": _AFTER_START}}},
+            {"comment_id": 8, "parent_slice": {"repository": _REPO}},
+            "created_at",
             [
                 (f"{_API}/repos/{_REPO}/issues/comments", [_record(id=8, updated_at=_LATER)]),
                 (
@@ -613,20 +619,17 @@ def test_commit_comment_reactions_two_syncs_legacy_scenario(rate_limit_mock_resp
         ),
     ],
 )
-def test_legacy_nested_state_is_migrated_per_partition(
-    stream_name, legacy_state, mocks, expected_ids, rate_limit_mock_response, requests_mock
+def test_partition_state_filters_parent_child_streams(
+    stream_name, partition, cursor_field, mocks, expected_ids, rate_limit_mock_response, requests_mock
 ):
-    """The Python classes nested their cursor under the repository and each parent id
-    (`{repo: {project_id: {column_id: {updated_at}}}}` for cards), which the CDK's
-    `LegacyToPerPartitionStateMigration` does not understand. The custom migration in
-    `components.py` has to land on exactly the partition the substream router builds, ids as
-    integers; if it did not, the record older than the cursor (…2) would be re-emitted."""
+    """A cursor on a parent-child partition filters that partition's records."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     for url, body in mocks:
         requests_mock.get(url, json=body)
 
-    records, _, states, error = _read(config, stream_name, state=_state_message(stream_name, legacy_state))
+    state = {"states": [{"partition": partition, "cursor": {cursor_field: _AFTER_START}}]}
+    records, _, states, error = _read(config, stream_name, state=_state_message(stream_name, state))
 
     assert error is None
     assert [record["id"] for record in records] == expected_ids

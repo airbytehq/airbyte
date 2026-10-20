@@ -125,14 +125,21 @@ def _mock_repository_resolution(requests_mock, *repositories):
         )
 
 
-def _legacy_state(stream_name, cursor_field, **per_repository_cursor):
-    """The state shape the Python streams wrote: `{repository: {cursor_field: ...}}`."""
+def _partition_state(stream_name, cursor_field, **per_repository_cursor):
+    """Build the CDK's cursor state for each repository partition."""
     return [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream_name),
-                stream_state=AirbyteStateBlob({repository: {cursor_field: cursor} for repository, cursor in per_repository_cursor.items()}),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {"partition": {"repository": repository}, "cursor": {cursor_field: cursor}}
+                            for repository, cursor in per_repository_cursor.items()
+                        ]
+                    }
+                ),
             ),
         )
     ]
@@ -296,13 +303,8 @@ def test_start_date_filters_older_records_and_keeps_the_boundary(
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint", "cursor_field", "params"), STREAM_PARAMS)
-def test_legacy_state_is_migrated_and_filters_per_repository(
-    stream_name, endpoint, cursor_field, params, rate_limit_mock_response, requests_mock
-):
-    """An upgraded connection arrives with `{repository: {cursor_field: value}}`. Without
-    `LegacyToPerPartitionStateMigration` the CDK would not recognise it and silently re-read
-    from `start_date`. The cursor must stay per repository: one shared value would skip records
-    in every repository but the most recently updated one."""
+def test_partition_state_filters_per_repository(stream_name, endpoint, cursor_field, params, rate_limit_mock_response, requests_mock):
+    """Each repository's cursor stays independent; one shared value would filter the other repo incorrectly."""
     config = _config("airbytehq/airbyte", "docker/compose")
     _mock_repository_resolution(requests_mock, *config["repositories"])
     for repository in config["repositories"]:
@@ -317,7 +319,7 @@ def test_legacy_state_is_migrated_and_filters_per_repository(
                 ],
             ),
         )
-    state = _legacy_state(stream_name, cursor_field, **{"airbytehq/airbyte": _LATER, "docker/compose": _AFTER_START})
+    state = _partition_state(stream_name, cursor_field, **{"airbytehq/airbyte": _LATER, "docker/compose": _AFTER_START})
 
     records, statuses, states, error = _read(config, stream_name, state=state)
 
@@ -422,7 +424,7 @@ def test_sorted_streams_keep_paginating_past_a_boundary_record(
         ],
     )
 
-    records, _, _, error = _read(config, stream_name, state=_legacy_state(stream_name, cursor_field, **{"docker/compose": _AFTER_START}))
+    records, _, _, error = _read(config, stream_name, state=_partition_state(stream_name, cursor_field, **{"docker/compose": _AFTER_START}))
 
     assert error is None
     assert _ids(stream_name, records) == [2, 1]
@@ -759,9 +761,8 @@ def test_workflows_offset_timestamps_keep_their_instant_across_syncs(rate_limit_
     assert _partition_cursors(states[-1]) == {"docker/compose": "2024-01-01T07:00:00+0000"}
 
 
-def test_workflows_legacy_utc_state_is_understood(rate_limit_mock_response, requests_mock):
-    """Legacy stored the normalised `...Z` value; `%z` parses a bare `Z`, so a migrated state
-    filters correctly against offset-stamped records."""
+def test_workflows_utc_partition_state_is_understood(rate_limit_mock_response, requests_mock):
+    """`%z` parses a UTC `Z` cursor and compares it to offset-stamped records."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
@@ -776,7 +777,7 @@ def test_workflows_legacy_utc_state_is_understood(rate_limit_mock_response, requ
     )
 
     records, _, _, error = _read(
-        config, "workflows", state=_legacy_state("workflows", "updated_at", **{"docker/compose": "2024-01-01T08:00:00Z"})
+        config, "workflows", state=_partition_state("workflows", "updated_at", **{"docker/compose": "2024-01-01T08:00:00Z"})
     )
 
     assert error is None

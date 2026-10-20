@@ -38,14 +38,11 @@ to nothing fails with "no stream slices were found" — and then reads one page 
 `repos/{repo}/branches`. The `max_waiting_time` override is the interactive check's fail-fast
 budget (see the comment on the `check` component in `manifest.yaml`).
 
-Config normalization, validation and the legacy config migrations live in the manifest
-`spec.config_normalization_rules`: `config_migrations` runs
-`components.MigrateRepository`/`MigrateBranch` (1.4.6 space-separated strings → lists, emitting
-CONNECTOR_CONFIG), `transformations` runs `components.ConfigNormalization` (default/normalize
-`api_url`, convert the legacy strings when the list keys are absent), and `validations` runs
-`components.ApiUrlValidationStrategy` on `api_url`. The CDK runs migrations+transformations at
-construction on `self._config` and the validations in `streams()`, so `read`/`discover`/`check`
-get a config error.
+Config normalization and validation live in the manifest `spec.config_normalization_rules`:
+`transformations` runs `components.ConfigNormalization` (default/normalize `api_url` and normalize
+`repository`/`branch` values when the list keys are absent), and `validations` runs
+`components.ApiUrlValidationStrategy` on `api_url`. The CDK runs transformations at construction
+on `self._config` and validations in `streams()`, so `read`/`discover`/`check` get a config error.
 
 - `manifest.yaml` — every stream, with every schema inline
   (`InlineSchemaLoader`). There is no `schemas/` directory; there is no `JsonFileSchemaLoader`
@@ -72,12 +69,7 @@ Things worth knowing before touching either half:
   The parent is read with a fresh state manager (no `incremental_dependency`), i.e. from
   `start_date`, which is what the Python parents did. Set `use_cache: true` on a parent's
   requester so the parent read is served from the pages the parent stream itself fetched.
-- The original parent-child streams nested their state under the repository and each parent id
-  (`{repo: {project_id: {column_id: {updated_at}}}}`). `LegacyToPerPartitionStateMigration` only
-  handles one level, so those four streams use
-  `components.NestedLegacyToPerPartitionStateMigration`, which rebuilds the exact partition the
-  router emits (`{"column_id": 50, "parent_slice": {"project_id": 5, "parent_slice": {"repository": ...}}}`,
-  ids as integers). `issue_timeline_events` emits one flat record per timeline event with
+- `issue_timeline_events` emits one flat record per timeline event with
   `components.IssueTimelineEventsExtractor`.
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
@@ -94,19 +86,16 @@ Things worth knowing before touching either half:
     compares against the un-shifted start.
   - `workflow_jobs` is a substream of `workflow_runs` with `incremental_dependency: true` and
     `global_substream_cursor: true`: one `completed_at` cursor for the stream, and the parent
-    resumes per repository from `parent_state`, which is what the Python class did by handing its
-    cursor to the parent. `components.WorkflowJobsLegacyStateMigration` turns the legacy
-    `{repo: {completed_at}}` into that shape; the parent's own legacy migration then converts
-    `parent_state`. A record filter needs `is not none`, not a bare value: Jinja renders `None`
-    as "None", which the CDK's boolean does not treat as false.
+    resumes per repository from `parent_state`. A record filter needs `is not none`, not a bare
+    value: Jinja renders `None` as "None", which the CDK's boolean does not treat as false.
   - `contributor_activity` retries 202 with a 90s constant backoff. `WaitUntilTimeFromHeader` must
     not sit in front of it in `backoff_strategies`, because it answers `min_wait` whenever its
     header is absent and would turn every 202 into a 60s wait.
   - `commits` slices per branch through `components.CommitsBranchPartitionRouter`, a
     `SubstreamPartitionRouter` over `repository_branches_resolver` that keeps the configured
     branches that exist and falls back to the default branch otherwise, exactly like
-    `Commits._validate_branches_to_pull`. The nested legacy state is migrated with
-    `integer_ids: false` so a digit-only branch name stays a string.
+    `Commits._validate_branches_to_pull`. Digit-only branch names remain strings in their
+    partition values.
 - The authenticator quota tests need real HTTP traffic through a `Stream`, and no connector
   stream is left to borrow. `unit_tests/utils.py::ProbeStream` is a minimal `HttpStream`
   (`GET repos/{repository}/probe_stream`) that exists only for them. It deliberately has no
@@ -160,9 +149,6 @@ Things worth knowing before touching either half:
     to UTC, so a `...%SZ` output format stamps `Z` onto a local wall-clock time and the stored
     state is off by the offset. Use `datetime_format: "%Y-%m-%dT%H:%M:%S%z"` for those streams;
     `test_workflows_offset_timestamps_keep_their_instant_across_syncs` shows the failure mode.
-  - Every one of them needs `state_migrations: [LegacyToPerPartitionStateMigration]`; the legacy
-    `{repository: {cursor_field: value}}` state is not recognised without it and an upgraded
-    connection would silently re-read from `start_date`.
 - Three known differences from the Python error contract apply to **every** stream migrated
   from here on. All are spelled out in the error-handling comment block in `manifest.yaml`; do
   not re-litigate them per stream.
@@ -189,19 +175,9 @@ Things worth knowing before touching either half:
   - **`is_sorted = "asc"` has no declarative equivalent.** Its only effect was
     `state_checkpoint_interval = page_size`, i.e. a STATE message per page. Concurrent
     declarative cursors checkpoint per partition, so an interrupted sync restarts the partition.
-- Every migrated incremental stream needs `state_migrations: [LegacyToPerPartitionStateMigration]`.
-  The Python state shape was `{<partition>: {<cursor_field>: <value>}}`, which the CDK does not
-  recognise; without the migration an upgraded connection silently re-reads from `start_date`.
-  It works with `UnionPartitionRouter` (it reads `partition_field` off the router directly), so
-  `repository_partition_router` and `organization_partition_router` are both fine.
-- When migrating a stream, check `unit_tests/integration/test_<stream>.py` for tests that assert
-  `SubstreamResumableFullRefreshCursor` state (`__ab_full_refresh_sync_complete`): declarative
-  full-refresh streams emit a single terminal state message instead. Those tests also construct
-  `make_source()` with no arguments and pass state only to `read()`; a declarative stream reads
-  its state at construction, so they have to build `make_source(config=..., catalog=...,
-  state=...)` or the state is silently ignored (`test_events.py` shows the adapted form). `test_assignees.py` also
-  turned out to define the same test name twice, so only the second body ran — worth grepping
-  for that in the other `integration/test_*.py` files before trusting their coverage.
+- Declarative full-refresh streams emit a single terminal state message. They read state at
+  construction, so integration tests that supply state should build
+  `make_source(config=..., catalog=..., state=...)` and pass the same state to `read()`.
 
 ## Authentication: one shared authenticator, always
 

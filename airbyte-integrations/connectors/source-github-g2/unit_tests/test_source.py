@@ -143,6 +143,7 @@ def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests
     requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test"})
     requests_mock.get("https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2"})
     mock_branches(requests_mock, "airbyte/test")
+    mock_branches(requests_mock, "airbyte/test2")
 
     status = check_source("airbyte/test airbyte/test2 airbytehq/* org/*")
     assert status.status == Status.SUCCEEDED

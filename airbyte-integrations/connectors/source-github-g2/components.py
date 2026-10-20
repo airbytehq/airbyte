@@ -17,7 +17,7 @@ import struct
 from dataclasses import InitVar, dataclass
 from itertools import groupby
 from os import getenv
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -25,7 +25,6 @@ import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
@@ -36,7 +35,6 @@ from airbyte_cdk.sources.declarative.transformations.config_transformations.conf
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -547,80 +545,6 @@ class EnforceDeclaredSchema(RecordTransformation):
 
 
 @dataclass
-class NestedLegacyToPerPartitionStateMigration(StateMigration):
-    """Migrate the nested state the Python parent-child streams wrote to per-partition state.
-
-    Legacy shape: `{repository: {<parent id>: {cursor_field: value}}}`, one more level of ids per
-    parent (`project_cards` nests `project_id` then `column_id`). `partition_fields` lists those id
-    levels, outermost first. Ids were stored as strings; the declarative partitions carry them as
-    the integers GitHub returns.
-    """
-
-    config: Config
-    parameters: Mapping[str, Any]
-    cursor_field: str
-    partition_fields: List[str]
-    # GitHub ids were stored as strings and the routers carry them as integers; branch names stay strings.
-    integer_ids: bool = True
-
-    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if not stream_state or "states" in stream_state or "state" in stream_state:
-            return False
-        return all(self._is_legacy_repository_state(value) for value in stream_state.values())
-
-    def _is_legacy_repository_state(self, node: Any, depth: int = 0) -> bool:
-        if not isinstance(node, Mapping) or not node:
-            return False
-        if depth == len(self.partition_fields):
-            return set(node) == {self.cursor_field}
-        return all(self._is_legacy_repository_state(child, depth + 1) for child in node.values())
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        states = []
-        for repository, node in stream_state.items():
-            self._collect(node, {"repository": repository}, 0, states)
-        return {"states": states}
-
-    def _collect(self, node: Mapping[str, Any], partition: Mapping[str, Any], depth: int, states: List[Mapping[str, Any]]) -> None:
-        if depth == len(self.partition_fields):
-            states.append({"partition": partition, "cursor": {self.cursor_field: node[self.cursor_field]}})
-            return
-        for key, child in node.items():
-            child_partition = {self.partition_fields[depth]: self._to_id(key), "parent_slice": partition}
-            self._collect(child, child_partition, depth + 1, states)
-
-    def _to_id(self, key: str) -> Any:
-        return int(key) if self.integer_ids and isinstance(key, str) and key.isdigit() else key
-
-
-@dataclass
-class WorkflowJobsLegacyStateMigration(StateMigration):
-    """Migrate the legacy `{repository: {completed_at: value}}` state of `workflow_jobs`.
-
-    The declarative stream keeps one global `completed_at` cursor and lets its parent
-    (`workflow_runs`) resume per repository, which is what the Python class did by handing its own
-    cursor to the parent as `updated_at`. The lowest repository cursor becomes the global one so no
-    repository skips jobs; the parent state keeps the per-repository values.
-    """
-
-    config: Config
-    parameters: Mapping[str, Any]
-
-    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if not stream_state or "state" in stream_state or "states" in stream_state or "parent_state" in stream_state:
-            return False
-        return all(isinstance(value, Mapping) and set(value) == {"completed_at"} for value in stream_state.values())
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        cursors = {repository: value["completed_at"] for repository, value in stream_state.items()}
-        return {
-            "use_global_cursor": True,
-            "state": {"completed_at": min(cursors.values(), key=ab_datetime_parse)},
-            "parent_state": {"workflow_runs": {repository: {"updated_at": cursor} for repository, cursor in cursors.items()}},
-        }
-
-
-@dataclass
 class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
     """One partition per branch to pull commits from, resolved the way `Commits.stream_slices` did.
 
@@ -671,32 +595,6 @@ class ConfigNormalization(ConfigTransformation):
             config["repositories"] = set(filter(None, config["repository"].split(" ")))
         if not config.get("branches") and config.get("branch"):
             config["branches"] = set(filter(None, config["branch"].split(" ")))
-
-
-class MigrateStringToArray(ConfigTransformation):
-    """Legacy (<1.4.6) `repository`/`branch` were space-separated strings; the CDK writes the
-    migrated config back and emits a CONNECTOR_CONFIG control message when this changes it.
-    The legacy key is kept so a downgrade still finds it."""
-
-    migrate_from_key: str
-    migrate_to_key: str
-
-    def __init__(self, **kwargs: Any) -> None:
-        pass
-
-    def transform(self, config: MutableMapping[str, Any]) -> None:
-        if self.migrate_from_key in config and self.migrate_to_key not in config:
-            config[self.migrate_to_key] = sorted(set(filter(None, config[self.migrate_from_key].split(" "))))
-
-
-class MigrateRepository(MigrateStringToArray):
-    migrate_from_key = "repository"
-    migrate_to_key = "repositories"
-
-
-class MigrateBranch(MigrateStringToArray):
-    migrate_from_key = "branch"
-    migrate_to_key = "branches"
 
 
 class ApiUrlValidationStrategy(ValidationStrategy):
