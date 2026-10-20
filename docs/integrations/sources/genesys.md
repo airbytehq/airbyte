@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.43 | 2026-10-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
+| 0.1.43 | 2026-10-20 | [89521](https://github.com/airbytehq/airbyte/pull/89521) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
 | 0.1.42 | 2026-06-02 | [78710](https://github.com/airbytehq/airbyte/pull/78710) | Update dependencies |
 | 0.1.41 | 2025-05-10 | [59960](https://github.com/airbytehq/airbyte/pull/59960) | Update dependencies |
 | 0.1.40 | 2025-05-03 | [59444](https://github.com/airbytehq/airbyte/pull/59444) | Update dependencies |
