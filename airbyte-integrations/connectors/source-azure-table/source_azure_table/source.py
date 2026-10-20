@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -20,6 +21,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 
+from . import constants
 from .azure_table import AzureTableReader
 from .streams import AzureTableStream
 
@@ -36,12 +38,7 @@ class SourceAzureTable(AbstractSource):
     @property
     def get_typed_schema(self) -> object:
         """Static schema for tables"""
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "additionalProperties": True,
-            "properties": {"PartitionKey": {"type": "string"}},
-        }
+        return copy.deepcopy(constants.table_json_schema)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
@@ -101,14 +98,13 @@ class SourceAzureTable(AbstractSource):
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
         """
         stream_instances = {s.name: s for s in self.streams(logger=logger, config=config)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
+        state_manager = ConnectorStateManager(state=state)
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
-                stream_instance.cursor_field = configured_stream.cursor_field
                 if not stream_instance and configured_stream.stream.name == "quotes":
                     logger.warning("Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
                     continue
@@ -116,6 +112,7 @@ class SourceAzureTable(AbstractSource):
                     raise KeyError(
                         f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
                     )
+                stream_instance.cursor_field = configured_stream.cursor_field
 
                 try:
                     yield from self._read_stream(
