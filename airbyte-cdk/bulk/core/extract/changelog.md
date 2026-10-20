@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.1 — 2026-10-20
+
+[#89583](https://github.com/airbytehq/airbyte/pull/89583) — Declare the Debezium `3.4.3.Final` artifacts in `extract-cdc` with explicit versions instead of importing the Debezium BOM, whose Testcontainers 2.0.2 constraint made the test fixtures unpublishable (extract 1.2.0 was only partially published). Connectors keep resolving `io.debezium:debezium-connector-*` without a version through published constraints; the BOM's JUnit 6 and Jackson 2.19 constraints no longer reach connector classpaths.
+
 ### 1.2.0 — 2026-10-20
 
 [#89012](https://github.com/airbytehq/airbyte/pull/89012) — Upgrade Debezium to `3.4.3.Final` in `extract-cdc`. Fixes source-mysql CDC syncs failing with `Incumbent CDC state is invalid ... "other" is null` once a failover, upgrade or restore adds a server UUID that the saved offset does not have (DBZ-9682, [#75558](https://github.com/airbytehq/airbyte/issues/75558)). The Debezium engine now gets 5 minutes to shut down and to start its task (`record.processing.shutdown.timeout.ms`, `internal.task.management.timeout.ms`), replacing `debezium.embedded.shutdown.pause.before.interrupt.ms`, which Debezium no longer reads.
