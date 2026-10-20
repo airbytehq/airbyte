@@ -52,7 +52,7 @@ The Uptick user account needs read access to each module you want to sync; in pr
 | Full Refresh Sync | ✅ |
 | Incremental Sync | ✅ |
 
-Every stream except `majorservices` supports both full refresh and incremental sync on the `updated` cursor; `majorservices` has no `updated` timestamp and is full refresh only. Among the JSON:API streams, only those marked ✅ in the **Supports Incremental** column below expose a `deleted` timestamp; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
+Every stream except `majorservices` supports both full refresh and incremental sync on the `updated` cursor; `majorservices` has no `updated` timestamp and is full refresh only. Among the JSON:API streams, only those marked ✅ in the **Reports deletions** column below expose a `deleted` timestamp; on the streams marked ❌ there, an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
 
 ## Supported Streams
 
@@ -136,65 +136,63 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 ### Stream details
 
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
-| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `clients` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `properties` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `invoices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `projects` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `suppliers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `routines` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcards` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `users` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `costcentres` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `accreditations` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `branches` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `products` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `contractors` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `appointments` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
-| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) |
-
-In the **Supports Incremental** column, ✅ on a JSON:API stream means the stream syncs incrementally and reports deletions through a `deleted` timestamp (`task_profitability` is a generated report with no deleted state), `❌ (no soft delete)` means the stream syncs incrementally but its endpoint doesn't report deletions, and ``❌ (no `updated` timestamp)`` means the stream is full refresh only.
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | Reports deletions |
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- | ------------------- |
+| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `clients` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `properties` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `invoices` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `projects` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `suppliers` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `routines` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcards` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `users` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `costcentres` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `accreditations` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `branches` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `products` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `contractors` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `appointments` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservices` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ | n/a (generated report) |
+| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) | n/a (full refresh only) |
 
 ### API version and fields
 
@@ -226,7 +224,7 @@ Before version 2.0.0, the `servicegroups` and `accreditationtypes` endpoints ign
 
 The `majorservices` endpoint has no `updated` timestamp, so there is no cursor to sync from. From version 2.0.0 the connector offers this stream in full refresh mode only.
 
-Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream except `majorservices`. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
+Airbyte still offers incremental sync in the UI for the streams marked ❌ under **Reports deletions**, because the connector defines the `updated` cursor for every stream except `majorservices`. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
 
 ## Data type map
 
@@ -260,7 +258,7 @@ For **Authenticate with Uptick**, the Base URL must be `https://<workspace>.onup
 
 ### Deleted records
 
-Streams marked `❌ (no soft delete)` in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a **Full Refresh | Overwrite** sync (Full Refresh | Append doesn't remove rows). The 12 JSON:API streams marked ✅ expose a `deleted` timestamp on deleted records; `task_profitability` is a generated report and has no deleted state.
+Streams marked ❌ under **Reports deletions** in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a **Full Refresh | Overwrite** sync (Full Refresh | Append doesn't remove rows). The 12 JSON:API streams marked ✅ there expose a `deleted` timestamp on deleted records; `task_profitability` is a generated report and has no deleted state.
 
 ### Rate limits
 
