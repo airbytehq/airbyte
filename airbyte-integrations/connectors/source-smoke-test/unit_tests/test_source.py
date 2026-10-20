@@ -1,9 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import importlib.util
 import logging
 import subprocess
 import sys
+
+from source_smoke_test._scenarios import PREDEFINED_SCENARIOS
+from source_smoke_test.source import SourceSmokeTest
 
 from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
@@ -13,14 +15,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
-
-if importlib.util.find_spec("source_smoke_test.source") is None:
-    from airbyte.cli.smoke_test_source._scenarios import PREDEFINED_SCENARIOS
-    from airbyte.cli.smoke_test_source.source import SourceSmokeTest
-else:
-    from source_smoke_test._scenarios import PREDEFINED_SCENARIOS
-    from source_smoke_test.source import SourceSmokeTest
 
 
 def test_does_not_import_pyairbyte() -> None:
@@ -90,7 +84,6 @@ def test_read_emits_records_for_selected_streams() -> None:
     selected_names = {stream.name for stream in selected_streams}
 
     assert {message.record.stream for message in records} == selected_names
-    assert all(any(message.record.stream == name for message in records) for name in selected_names)
 
 
 def test_custom_scenario_is_discovered_and_read() -> None:
