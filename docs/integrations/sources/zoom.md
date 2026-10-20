@@ -82,6 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 1.4.0 | 2026-10-08 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 as the default authentication method; existing Server-to-Server OAuth configurations are migrated automatically |
+| 1.3.2 | 2026-10-20 | [89459](https://github.com/airbytehq/airbyte/pull/89459) | Update dependencies |
 | 1.3.1 | 2026-10-13 | [88881](https://github.com/airbytehq/airbyte/pull/88881) | Update dependencies |
 | 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
 | 1.2.67 | 2026-10-07 | [87005](https://github.com/airbytehq/airbyte/pull/87005) | Fix sync failures on users without meeting hosting rights, deleted meetings and webinars, and webinar UUIDs containing slashes |

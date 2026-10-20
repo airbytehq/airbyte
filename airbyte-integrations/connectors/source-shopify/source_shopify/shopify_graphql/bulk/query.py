@@ -139,7 +139,7 @@ class ShopifyBulkQuery:
     def inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
         if self.parent_stream_cursor_alias:
             # inject parent cursor key as alias to the `updatedAt` parent cursor field
-            nodes.insert(index, Field(name=key, alias=self.parent_stream_cursor_alias))
+            return [*nodes[:index], Field(name=key, alias=self.parent_stream_cursor_alias), *nodes[index:]]
         return nodes
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
@@ -1943,6 +1943,7 @@ class Transaction(ShopifyBulkQuery):
                         __typename
                         id
                         currency: currencyCode
+                        order_created_at: createdAt
                         transactions {
                             id
                             errorCode
@@ -2085,6 +2086,7 @@ class Transaction(ShopifyBulkQuery):
         "__typename",
         "id",
         Field(name="currencyCode", alias="currency"),
+        Field(name="createdAt", alias="order_created_at"),
         Field(name="transactions", fields=transaction_fields),
     ]
 
@@ -2172,6 +2174,7 @@ class Transaction(ShopifyBulkQuery):
                     # populate parent record keys
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
+                    transaction["order_created_at"] = self.tools.from_iso8601_to_rfc3339(record, "order_created_at")
                     yield self.process_transaction(transaction)
 
 

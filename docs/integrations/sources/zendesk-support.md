@@ -284,6 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |
 | 5.6.0 | 2026-09-10 | [85760](https://github.com/airbytehq/airbyte/pull/85760) | Raise the minimum **Number of concurrent threads** to 2 and migrate existing single-thread configurations, which hit the heartbeat timeout during long `tickets` reads |
