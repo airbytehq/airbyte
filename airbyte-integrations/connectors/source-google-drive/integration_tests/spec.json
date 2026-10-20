@@ -25,8 +25,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "title": "Name",
-              "description": "The name of the stream.",
+              "title": "Stream Name",
+              "description": "The name of this stream in the destination, for example the table name. This is not a file name or pattern; use Globs to choose which files to read.",
               "type": "string"
             },
             "globs": {
@@ -339,7 +339,8 @@
                   },
                   "required": ["filetype"]
                 }
-              ]
+              ],
+              "default": "csv"
             },
             "schemaless": {
               "title": "Schemaless",
@@ -355,7 +356,16 @@
             }
           },
           "required": ["name", "format"]
-        }
+        },
+        "default": [
+          {
+            "name": "files",
+            "globs": ["**"],
+            "format": {
+              "filetype": "csv"
+            }
+          }
+        ]
       },
       "delivery_method": {
         "title": "Delivery Method",
