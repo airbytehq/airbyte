@@ -86,7 +86,7 @@ abstract class MSSQLAcceptanceTest(
     ) {
     @Test
     @Disabled(
-        "there's a bug in the connector - https://github.com/airbytehq/airbyte-internal-issues/issues/13042"
+        "there's a bug in the connector - https://github.com/airbytehq/airbyte-internal-issues/issues/13042",
     )
     override fun testFunkyCharactersDedup() {
         super.testFunkyCharactersDedup()
@@ -176,7 +176,7 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
                                     val meta =
                                         Jsons.deserialize(
                                             metaJson,
-                                            AirbyteRecordMessageMeta::class.java
+                                            AirbyteRecordMessageMeta::class.java,
                                         )
                                     OutputRecord.Meta(
                                         changes =
@@ -190,9 +190,9 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
                                         syncId =
                                             meta.additionalProperties["sync_id"]
                                                 ?.toString()
-                                                ?.toLong()
+                                                ?.toLong(),
                                     )
-                                }
+                                },
                         )
                     output.add(record)
                 }
@@ -308,7 +308,8 @@ object MSSQLDataCleaner : DestinationCleaner {
             JOIN sys.tables t ON s.schema_id = t.schema_id
             WHERE s.name = '$schemaName';
             EXEC sp_executesql @sql;
-        """.trimIndent()
+        """
+                .trimIndent()
 
         conn.createStatement().use { stmt -> stmt.execute(dropTablesSql) }
     }
@@ -352,7 +353,7 @@ object InsertConfigUpdater : ConfigurationUpdater {
 
     override fun setDefaultNamespace(
         config: String,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): DefaultNamespaceResult = DefaultNamespaceResult(config, null)
 }
 

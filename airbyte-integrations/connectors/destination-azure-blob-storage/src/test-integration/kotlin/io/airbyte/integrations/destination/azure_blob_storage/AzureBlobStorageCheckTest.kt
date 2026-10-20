@@ -14,10 +14,10 @@ class AzureBlobStorageCheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    AzureBlobStorageTestUtil.getAccountKeyConfig(JsonFormatSpecification())
+                    AzureBlobStorageTestUtil.getAccountKeyConfig(JsonFormatSpecification()),
                 ),
                 CheckTestConfig(
-                    AzureBlobStorageTestUtil.getAccountKeyConfig(CSVFormatSpecification())
+                    AzureBlobStorageTestUtil.getAccountKeyConfig(CSVFormatSpecification()),
                 ),
                 CheckTestConfig(AzureBlobStorageTestUtil.getSasConfig(CSVFormatSpecification())),
             ),
@@ -25,7 +25,7 @@ class AzureBlobStorageCheckTest :
             mapOf(
                 CheckTestConfig(
                     AzureBlobStorageTestUtil.getInvalidConfig(CSVFormatSpecification()),
-                    name = "Bad hostname"
+                    name = "Bad hostname",
                 ) to "Server failed to authenticate the request".toPattern(),
             ),
     )

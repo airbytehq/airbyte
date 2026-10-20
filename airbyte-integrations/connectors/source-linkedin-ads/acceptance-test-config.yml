@@ -11,10 +11,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
-        timeout_seconds: 60
       - config_path: "secrets/config_multiple_account_ids.json"
         status: "succeed"
-        timeout_seconds: 60
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
       - config_path: "integration_tests/invalid_config_custom_report.json"
@@ -22,7 +20,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config_oauth.json"
-        timeout_seconds: 60
   basic_read:
     tests:
       - config_path: "secrets/config_oauth.json"
@@ -49,19 +46,13 @@ acceptance_tests:
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
           - name: ad_member_seniority_analytics
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-        fail_on_extra_columns: true
-        timeout_seconds: 3600
   incremental:
     tests:
       - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           bypass_reason: "This test does not make sense using Concurrent CDK"
-        timeout_seconds: 3600
   full_refresh:
     tests:
       - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 3600

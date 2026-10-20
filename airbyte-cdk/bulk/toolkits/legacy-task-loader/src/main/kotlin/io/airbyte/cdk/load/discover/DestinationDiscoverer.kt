@@ -19,5 +19,6 @@ import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
  */
 interface DestinationDiscoverer {
     fun discover(): DestinationDiscoverCatalog
+
     fun cleanup() {}
 }
