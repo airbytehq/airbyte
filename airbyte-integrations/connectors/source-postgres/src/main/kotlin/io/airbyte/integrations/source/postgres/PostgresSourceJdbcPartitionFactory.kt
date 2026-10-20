@@ -39,6 +39,7 @@ import io.airbyte.integrations.source.postgres.config.XminIncrementalConfigurati
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifiedTableName
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -132,6 +133,26 @@ open class PostgresSourceJdbcPartitionFactory(
         }
     }
 
+    /**
+     * Postgres orders uuid values bytewise, so a uuid cursor skips rows inserted later with a
+     * smaller value. Discover does not offer uuid columns as cursors; this guards a catalog that
+     * selected one anyway and fails the sync with a configuration error, as the legacy connector
+     * did for unsupported cursor types.
+     */
+    private fun rejectUnsupportedCursorType(stream: Stream) {
+        if (config.incrementalConfiguration !is UserDefinedCursorIncrementalConfiguration) return
+        if (stream.configuredSyncMode != ConfiguredSyncMode.INCREMENTAL) return
+        val cursor = stream.configuredCursor ?: return
+        if (cursor.type is PostgresUuidFieldType) {
+            throw ConfigErrorException(
+                "Cursor column \"${cursor.id}\" in stream \"${stream.id}\" has type uuid, " +
+                    "whose values do not increase with new rows. Select a timestamp or an " +
+                    "auto-incrementing numeric column as the cursor, or switch the stream to " +
+                    "full refresh.",
+            )
+        }
+    }
+
     val tidRangeScanCapableDBServer: Boolean by
         lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             isTidRangeScanCapableDBServer(connectionFactory)
@@ -139,6 +160,7 @@ open class PostgresSourceJdbcPartitionFactory(
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
+        rejectUnsupportedCursorType(stream)
         val streamState: PostgresSourceJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
 
