@@ -1,20 +1,23 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-callrail:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "manifest.yaml"
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      # Restore `config_path: "secrets/config.json"` with `status: "succeed"` once the GSM test config is rotated.
+      - bypass_reason: "The GSM test config fails `check` and `read` with 401 Unauthorized ('You do not have access.')"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+  # Once the GSM test config is rotated, restore the `secrets/config.json` entries with
+  # `configured_catalog_path: "integration_tests/configured_catalog.json"`, and in `basic_read`
+  # `empty_streams` set to `- name: "calls"` and `- name: "conversations"`.
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["calls", "conversations"]
+    bypass_reason: "The GSM test config fails `check` and `read` with 401 Unauthorized ('You do not have access.')"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "The GSM test config fails `check` and `read` with 401 Unauthorized ('You do not have access.')"
