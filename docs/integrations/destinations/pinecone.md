@@ -114,7 +114,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.53 | 2026-10-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Upgrade to Python 3.13 and base image 4.1.1 |
+| 0.1.53 | 2026-10-20 | [89526](https://github.com/airbytehq/airbyte/pull/89526) | Upgrade to Python 3.13 and base image 4.1.1 |
 | 0.1.52 | 2026-10-13 | [88612](https://github.com/airbytehq/airbyte/pull/88612) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
 | 0.1.51 | 2026-08-13 | [84344](https://github.com/airbytehq/airbyte/pull/84344) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
