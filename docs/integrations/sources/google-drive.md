@@ -326,7 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.41 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Accept more folder link formats (no scheme, http, open?id=) and report invalid folder URLs clearly in check |
+| 0.5.41 | 2026-10-20 | [89509](https://github.com/airbytehq/airbyte/pull/89509) | Accept more folder link formats (no scheme, http, open?id=) and report invalid folder URLs clearly in check |
 | 0.5.40 | 2026-10-20 | [89242](https://github.com/airbytehq/airbyte/pull/89242) | Update dependencies |
 | 0.5.39 | 2026-10-13 | [88658](https://github.com/airbytehq/airbyte/pull/88658) | Update dependencies |
 | 0.5.38 | 2026-10-06 | [87880](https://github.com/airbytehq/airbyte/pull/87880) | Update dependencies |
