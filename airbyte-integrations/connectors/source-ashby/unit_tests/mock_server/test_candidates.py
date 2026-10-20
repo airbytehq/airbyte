@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Mock server tests for opaque-token incremental sync on `candidates`."""
+"""Mock server tests for sync-token incremental sync on `candidates`."""
 
 import json
 import logging
@@ -62,7 +62,7 @@ def _cursor_state(token: str):
         StateBuilder()
         .with_stream_state(
             _STREAM_NAME,
-            {"state_type": "opaque_token", "token": token, "committed_at": _COMMITTED_AT},
+            {"state_type": "sync_token", "token": token, "committed_at": _COMMITTED_AT},
         )
         .build()
     )
@@ -106,7 +106,7 @@ class TestCandidates(TestCase):
         assert output.errors == []
         assert len(output.records) == 3
         stream_state = output.most_recent_state.stream_state.__dict__
-        assert stream_state["state_type"] == "opaque_token"
+        assert stream_state["state_type"] == "sync_token"
         assert stream_state["token"] == "tok1"
         assert "committed_at" in stream_state
         http_mocker.assert_number_of_calls(first_page, 1)

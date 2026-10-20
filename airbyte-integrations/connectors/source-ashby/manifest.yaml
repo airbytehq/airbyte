@@ -40,7 +40,7 @@ definitions:
         lack access; generate a new key in Ashby under Admin > API Keys.
     sync_token_rejected:
       type: HttpResponseFilter
-      action: RESET_OPAQUE_TOKEN
+      action: RESET_SYNC_TOKEN
       predicate: >-
         {{ response.get('success', true) == false and
         ((response.get('errorInfo') or {}).get('code') in ['sync_token_expired', 'sync_token_invalid']
@@ -790,7 +790,7 @@ streams:
     primary_key:
       - id
     incremental_sync:
-      type: OpaqueTokenCursor
+      type: SyncTokenCursor
       token_path: ["syncToken"]
       cursor_field: updatedAt
       token_option:
