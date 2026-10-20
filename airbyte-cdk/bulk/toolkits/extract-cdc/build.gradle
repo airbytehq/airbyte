@@ -6,14 +6,6 @@ dependencies {
     // those constraints into every connector's test classpath.
     api "io.debezium:debezium-api:$debeziumVersion"
     api "io.debezium:debezium-embedded:$debeziumVersion"
-    constraints {
-        // Connectors declare their Debezium connector artifact without a version.
-        api "io.debezium:debezium-connector-mysql:$debeziumVersion"
-        api "io.debezium:debezium-connector-postgres:$debeziumVersion"
-        api "io.debezium:debezium-connector-mongodb:$debeziumVersion"
-        api "io.debezium:debezium-connector-sqlserver:$debeziumVersion"
-        testImplementation "io.debezium:debezium-testing-testcontainers:$debeziumVersion"
-    }
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
@@ -34,14 +26,14 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
     testImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
-    testImplementation('io.debezium:debezium-testing-testcontainers') { // required for testing with mongo
+    testImplementation("io.debezium:debezium-testing-testcontainers:$debeziumVersion") { // required for testing with mongo
         // Debezium 3.4.3 builds against Testcontainers 2.0.2 (renamed artifacts); the CDK stays on 1.21.4.
         exclude group: 'org.testcontainers'
     }
-    testImplementation 'io.debezium:debezium-connector-mysql'
-    testImplementation 'io.debezium:debezium-connector-postgres'
-    testImplementation 'io.debezium:debezium-connector-mongodb'
-    testImplementation 'io.debezium:debezium-connector-sqlserver'
+    testImplementation "io.debezium:debezium-connector-mysql:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-postgres:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-mongodb:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-sqlserver:$debeziumVersion"
     testFixturesImplementation 'io.mockk:mockk:1.14.11' // keep in step with the testImplementation version in airbyte-cdk/bulk/build.gradle
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'
