@@ -25,7 +25,7 @@ class MsSqlServerSchemaHistoryComparatorTest {
                 Configuration.create()
                     .with("topic.prefix", "test")
                     .with("database.names", "test")
-                    .build()
+                    .build(),
             )
             .historyRecordComparator
 
@@ -63,7 +63,7 @@ class MsSqlServerSchemaHistoryComparatorTest {
     private fun normalized(): Map<String, Any?> {
         val offset =
             DebeziumOffset(
-                mapOf(Jsons.readTree("""["test"]""") to Jsons.valueToTree(heartbeatOffset))
+                mapOf(Jsons.readTree("""["test"]""") to Jsons.valueToTree(heartbeatOffset)),
             )
         val value =
             debeziumOperationsWithoutDatabase()

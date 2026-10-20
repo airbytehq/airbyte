@@ -156,7 +156,7 @@ class MsSqlServerCdcHeartbeatSchemaChangeIntegrationTest {
             CatalogHelpers.toDefaultConfiguredStream(stream)
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withCursorField(
-                    listOf(MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id)
+                    listOf(MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
                 )
         return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
     }

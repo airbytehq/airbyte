@@ -28,14 +28,14 @@ class MsSqlServerDebeziumOperationsOffsetTest {
     fun `Debezium snapshot offset is normalized`() {
         // Debezium 3.4.3 writes change_lsn = "NULL" in snapshot offsets too.
         assertNormalized(
-            """{"snapshot":"INITIAL","snapshot_completed":true,"commit_lsn":"$COMMIT","change_lsn":"NULL","event_serial_no":1}"""
+            """{"snapshot":"INITIAL","snapshot_completed":true,"commit_lsn":"$COMMIT","change_lsn":"NULL","event_serial_no":1}""",
         )
     }
 
     @Test
     fun `offset with a real change_lsn is unchanged`() {
         assertUnchanged(
-            """{"commit_lsn":"$COMMIT","change_lsn":"00033e76:0000cd58:0003","event_serial_no":2}"""
+            """{"commit_lsn":"$COMMIT","change_lsn":"00033e76:0000cd58:0003","event_serial_no":2}""",
         )
     }
 
