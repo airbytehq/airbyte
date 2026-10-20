@@ -1,0 +1,1031 @@
+Table "issue_timeline_events" {
+    "repository" string
+    "issue_number" integer
+    "comment" object
+    "cross-referenced" object
+    "committed" object
+    "reviewed" object
+    "commented" object
+    "commit_commented" object
+
+    indexes {
+        (repository, issue_number) [pk]
+    }
+}
+
+Table "assignees" {
+    "repository" string
+    "login" string
+    "id" integer [pk]
+    "node_id" string
+    "avatar_url" string
+    "gravatar_id" string
+    "url" string
+    "html_url" string
+    "followers_url" string
+    "following_url" string
+    "gists_url" string
+    "starred_url" string
+    "subscriptions_url" string
+    "organizations_url" string
+    "repos_url" string
+    "events_url" string
+    "received_events_url" string
+    "type" string
+    "site_admin" boolean
+}
+
+Table "branches" {
+    "repository" string
+    "name" string
+    "commit" object
+    "protected" boolean
+    "protection" object
+    "protection_url" string
+
+    indexes {
+        (repository, name) [pk]
+    }
+}
+
+Table "collaborators" {
+    "repository" string
+    "login" string
+    "id" integer [pk]
+    "node_id" string
+    "avatar_url" string
+    "gravatar_id" string
+    "url" string
+    "html_url" string
+    "followers_url" string
+    "following_url" string
+    "gists_url" string
+    "starred_url" string
+    "subscriptions_url" string
+    "organizations_url" string
+    "repos_url" string
+    "events_url" string
+    "received_events_url" string
+    "type" string
+    "site_admin" boolean
+    "role_name" string
+    "permissions" object
+}
+
+Table "comments" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "user" object
+    "url" string
+    "html_url" string
+    "body" string
+    "user_id" integer
+    "created_at" string
+    "updated_at" string
+    "issue_url" string
+    "author_association" string
+    "reactions" object
+    "performed_via_github_app" object
+}
+
+Table "commit_comment_reactions" {
+    "id" integer [pk]
+    "node_id" string
+    "content" string
+    "created_at" string
+    "user" object
+    "repository" string
+    "comment_id" integer
+}
+
+Table "commit_comments" {
+    "repository" string
+    "html_url" string
+    "url" string
+    "id" integer [pk]
+    "node_id" string
+    "body" string
+    "path" string
+    "position" integer
+    "line" integer
+    "commit_id" string
+    "user" object
+    "created_at" string
+    "updated_at" string
+    "author_association" string
+    "reactions" object
+}
+
+Table "commits" {
+    "repository" string
+    "branch" string
+    "created_at" string
+    "url" string
+    "sha" string [pk]
+    "node_id" string
+    "html_url" string
+    "comments_url" string
+    "commit" object
+    "author" object
+    "committer" object
+    "parents" array
+}
+
+Table "contributor_activity" {
+    "name" string
+    "email" string
+    "login" string
+    "id" integer [pk]
+    "node_id" string
+    "avatar_url" string
+    "gravatar_id" string
+    "url" string
+    "html_url" string
+    "followers_url" string
+    "following_url" string
+    "gists_url" string
+    "starred_url" string
+    "subscriptions_url" string
+    "organizations_url" string
+    "repos_url" string
+    "events_url" string
+    "repository" string
+    "received_events_url" string
+    "type" string
+    "site_admin" boolean
+    "starred_at" string
+    "total" integer
+    "weeks" array
+}
+
+Table "deployments" {
+    "url" string
+    "id" integer [pk]
+    "node_id" string
+    "task" string
+    "original_environment" string
+    "environment" string
+    "description" string
+    "created_at" string
+    "updated_at" string
+    "statuses_url" string
+    "repository_url" string
+    "creator" object
+    "sha" string
+    "ref" string
+    "transient_environment" boolean
+    "production_environment" boolean
+    "performed_via_github_app" string
+    "repository" string
+}
+
+Table "events" {
+    "repository" string
+    "type" string
+    "public" boolean
+    "payload" object
+    "repo" object
+    "actor" object
+    "org" object
+    "created_at" string
+    "id" string [pk]
+}
+
+Table "issue_comment_reactions" {
+    "id" integer [pk]
+    "node_id" string
+    "content" string
+    "created_at" string
+    "user" object
+    "repository" string
+    "comment_id" integer
+}
+
+Table "issue_events" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "url" string
+    "actor" object
+    "event" string
+    "commit_id" string
+    "commit_url" string
+    "created_at" string
+    "state_reason" string
+    "label" object
+    "review_requester" object
+    "issue" object
+    "performed_via_github_app" object
+    "milestone" object
+    "assignee" object
+    "assigner" object
+    "project_card" object
+    "dismissed_review" object
+    "requested_team" object
+    "rename" object
+    "requested_reviewer" object
+}
+
+Table "issue_labels" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "url" string
+    "name" string
+    "description" string
+    "color" string
+    "default" boolean
+}
+
+Table "issue_milestones" {
+    "repository" string
+    "url" string
+    "html_url" string
+    "labels_url" string
+    "id" integer [pk]
+    "node_id" string
+    "number" integer
+    "state" string
+    "title" string
+    "description" string
+    "creator" object
+    "open_issues" integer
+    "closed_issues" integer
+    "created_at" string
+    "updated_at" string
+    "closed_at" string
+    "due_on" string
+}
+
+Table "issue_reactions" {
+    "id" integer [pk]
+    "node_id" string
+    "content" string
+    "created_at" string
+    "user" object
+    "repository" string
+    "issue_number" integer
+}
+
+Table "issues" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "url" string
+    "repository_url" string
+    "labels_url" string
+    "comments_url" string
+    "events_url" string
+    "html_url" string
+    "number" integer
+    "state" string
+    "title" string
+    "user" object
+    "body" string
+    "user_id" integer
+    "labels" array
+    "assignee" object
+    "assignees" array
+    "milestone" object
+    "locked" boolean
+    "active_lock_reason" string
+    "comments" integer
+    "pull_request" object
+    "closed_at" string
+    "created_at" string
+    "updated_at" string
+    "author_association" string
+    "draft" boolean
+    "reactions" object
+    "timeline_url" string
+    "performed_via_github_app" object
+    "state_reason" string
+}
+
+Table "organizations" {
+    "login" string
+    "id" integer [pk]
+    "node_id" string
+    "url" string
+    "repos_url" string
+    "events_url" string
+    "hooks_url" string
+    "issues_url" string
+    "members_url" string
+    "public_members_url" string
+    "avatar_url" string
+    "description" string
+    "name" string
+    "company" string
+    "blog" string
+    "location" string
+    "email" string
+    "twitter_username" string
+    "is_verified" boolean
+    "has_organization_projects" boolean
+    "has_repository_projects" boolean
+    "public_repos" integer
+    "public_gists" integer
+    "followers" integer
+    "following" integer
+    "html_url" string
+    "created_at" string
+    "updated_at" string
+    "archived_at" string
+    "type" string
+    "total_private_repos" integer
+    "owned_private_repos" integer
+    "private_gists" integer
+    "disk_usage" integer
+    "collaborators" integer
+    "billing_email" string
+    "default_repository_permission" string
+    "members_can_create_repositories" boolean
+    "two_factor_requirement_enabled" boolean
+    "members_allowed_repository_creation_type" string
+    "members_can_create_public_repositories" boolean
+    "members_can_create_private_repositories" boolean
+    "members_can_create_internal_repositories" boolean
+    "members_can_create_pages" boolean
+    "members_can_fork_private_repositories" boolean
+    "web_commit_signoff_required" boolean
+    "members_can_create_public_pages" boolean
+    "members_can_create_private_pages" boolean
+    "plan" object
+    "advanced_security_enabled_for_new_repositories" boolean
+    "dependabot_alerts_enabled_for_new_repositories" boolean
+    "dependabot_security_updates_enabled_for_new_repositories" boolean
+    "dependency_graph_enabled_for_new_repositories" boolean
+    "secret_scanning_enabled_for_new_repositories" boolean
+    "secret_scanning_push_protection_enabled_for_new_repositories" boolean
+    "secret_scanning_push_protection_custom_link_enabled" boolean
+    "secret_scanning_push_protection_custom_link" string
+}
+
+Table "project_cards" {
+    "url" string
+    "project_url" string
+    "id" integer [pk]
+    "node_id" string
+    "note" string
+    "archived" boolean
+    "creator" object
+    "created_at" string
+    "updated_at" string
+    "column_url" string
+    "content_url" string
+    "repository" string
+    "project_id" integer
+    "column_id" integer
+}
+
+Table "project_columns" {
+    "url" string
+    "project_url" string
+    "cards_url" string
+    "id" integer [pk]
+    "node_id" string
+    "name" string
+    "created_at" string
+    "updated_at" string
+    "repository" string
+    "project_id" integer
+}
+
+Table "projects" {
+    "repository" string
+    "owner_url" string
+    "url" string
+    "html_url" string
+    "columns_url" string
+    "id" integer [pk]
+    "node_id" string
+    "name" string
+    "body" string
+    "number" integer
+    "state" string
+    "creator" object
+    "created_at" string
+    "updated_at" string
+}
+
+Table "pull_request_comment_reactions" {
+    "id" integer [pk]
+    "node_id" string
+    "content" string
+    "created_at" string
+    "user" object
+    "repository" string
+    "comment_id" integer
+}
+
+Table "pull_request_commits" {
+    "sha" string [pk]
+    "node_id" string
+    "commit" object
+    "url" string
+    "html_url" string
+    "comments_url" string
+    "author" object
+    "committer" object
+    "parents" array
+    "repository" string
+    "pull_number" integer
+}
+
+Table "pull_request_stats" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "number" integer
+    "merged" boolean
+    "mergeable" string
+    "can_be_rebased" boolean
+    "merge_state_status" string
+    "merged_by" object
+    "comments" integer
+    "review_comments" integer
+    "maintainer_can_modify" boolean
+    "commits" integer
+    "additions" integer
+    "deletions" integer
+    "changed_files" integer
+    "updated_at" string
+}
+
+Table "projects_v2" {
+    "closed" boolean
+    "created_at" string
+    "creator" object
+    "closed_at" string
+    "updated_at" string
+    "node_id" string
+    "id" integer [pk]
+    "number" integer
+    "public" boolean
+    "readme" string
+    "short_description" string
+    "template" boolean
+    "title" string
+    "url" string
+    "viewerCanClose" boolean
+    "viewerCanReopen" boolean
+    "viewerCanUpdate" boolean
+    "owner_id" string
+    "repository" string
+}
+
+Table "pull_requests" {
+    "repository" string
+    "url" string
+    "id" integer [pk]
+    "node_id" string
+    "html_url" string
+    "diff_url" string
+    "patch_url" string
+    "issue_url" string
+    "commits_url" string
+    "review_comments_url" string
+    "review_comment_url" string
+    "comments_url" string
+    "statuses_url" string
+    "number" integer
+    "state" string
+    "locked" boolean
+    "title" string
+    "user" object
+    "body" string
+    "labels" array
+    "milestone" object
+    "active_lock_reason" string
+    "created_at" string
+    "updated_at" string
+    "closed_at" string
+    "merged_at" string
+    "merge_commit_sha" string
+    "assignee" object
+    "assignees" array
+    "requested_reviewers" array
+    "requested_teams" array
+    "head" object
+    "base" object
+    "_links" object
+    "author_association" string
+    "auto_merge" object
+    "draft" boolean
+}
+
+Table "releases" {
+    "repository" string
+    "url" string
+    "html_url" string
+    "assets_url" string
+    "upload_url" string
+    "tarball_url" string
+    "zipball_url" string
+    "id" integer [pk]
+    "node_id" string
+    "tag_name" string
+    "target_commitish" string
+    "name" string
+    "body" string
+    "draft" boolean
+    "prerelease" boolean
+    "created_at" string
+    "published_at" string
+    "author" object
+    "assets" array
+    "body_html" string
+    "body_text" string
+    "mentions_count" integer
+    "discussion_url" string
+    "reactions" object
+}
+
+Table "repositories" {
+    "id" integer [pk]
+    "node_id" string
+    "name" string
+    "full_name" string
+    "owner" object
+    "private" boolean
+    "html_url" string
+    "description" string
+    "fork" boolean
+    "url" string
+    "archive_url" string
+    "assignees_url" string
+    "blobs_url" string
+    "branches_url" string
+    "collaborators_url" string
+    "comments_url" string
+    "commits_url" string
+    "compare_url" string
+    "contents_url" string
+    "contributors_url" string
+    "deployments_url" string
+    "downloads_url" string
+    "events_url" string
+    "forks_url" string
+    "git_commits_url" string
+    "git_refs_url" string
+    "git_tags_url" string
+    "git_url" string
+    "issue_comment_url" string
+    "issue_events_url" string
+    "issues_url" string
+    "keys_url" string
+    "labels_url" string
+    "languages_url" string
+    "merges_url" string
+    "milestones_url" string
+    "notifications_url" string
+    "pulls_url" string
+    "releases_url" string
+    "ssh_url" string
+    "stargazers_url" string
+    "statuses_url" string
+    "subscribers_url" string
+    "subscription_url" string
+    "tags_url" string
+    "teams_url" string
+    "trees_url" string
+    "clone_url" string
+    "mirror_url" string
+    "hooks_url" string
+    "svn_url" string
+    "homepage" string
+    "language" string
+    "forks_count" integer
+    "stargazers_count" integer
+    "watchers_count" integer
+    "size" integer
+    "default_branch" string
+    "open_issues_count" integer
+    "is_template" boolean
+    "topics" array
+    "license" object
+    "has_issues" boolean
+    "has_projects" boolean
+    "has_wiki" boolean
+    "has_pages" boolean
+    "has_downloads" boolean
+    "archived" boolean
+    "disabled" boolean
+    "visibility" string
+    "pushed_at" string
+    "created_at" string
+    "updated_at" string
+    "permissions" object
+    "allow_forking" boolean
+    "forks" integer
+    "has_discussions" boolean
+    "open_issues" integer
+    "organization" string
+    "watchers" integer
+    "web_commit_signoff_required" boolean
+    "security_and_analysis" object
+}
+
+Table "review_comments" {
+    "repository" string
+    "url" string
+    "pull_request_review_id" integer
+    "id" integer [pk]
+    "node_id" string
+    "diff_hunk" string
+    "path" string
+    "position" integer
+    "original_position" integer
+    "commit_id" string
+    "original_commit_id" string
+    "in_reply_to_id" integer
+    "user" object
+    "body" string
+    "created_at" string
+    "updated_at" string
+    "html_url" string
+    "pull_request_url" string
+    "author_association" string
+    "_links" object
+    "start_line" integer
+    "original_start_line" integer
+    "start_side" string
+    "line" integer
+    "original_line" integer
+    "side" string
+    "subject_type" string
+    "reactions" object
+}
+
+Table "reviews" {
+    "repository" string
+    "id" integer [pk]
+    "node_id" string
+    "user" object
+    "body" string
+    "state" string
+    "html_url" string
+    "pull_request_url" string
+    "_links" object
+    "submitted_at" string
+    "created_at" string
+    "updated_at" string
+    "commit_id" string
+    "author_association" string
+}
+
+Table "stargazers" {
+    "repository" string
+    "user_id" integer [pk]
+    "starred_at" string
+    "user" object
+}
+
+Table "tags" {
+    "repository" string
+    "name" string
+    "commit" object
+    "zipball_url" string
+    "tarball_url" string
+    "node_id" string
+
+    indexes {
+        (repository, name) [pk]
+    }
+}
+
+Table "teams" {
+    "organization" string
+    "id" integer [pk]
+    "node_id" string
+    "url" string
+    "html_url" string
+    "name" string
+    "slug" string
+    "description" string
+    "privacy" string
+    "notification_setting" string
+    "permission" string
+    "members_url" string
+    "repositories_url" string
+    "parent" object
+}
+
+Table "team_members" {
+    "login" string
+    "id" integer
+    "node_id" string
+    "avatar_url" string
+    "gravatar_id" string
+    "url" string
+    "html_url" string
+    "followers_url" string
+    "following_url" string
+    "gists_url" string
+    "starred_url" string
+    "subscriptions_url" string
+    "organizations_url" string
+    "repos_url" string
+    "events_url" string
+    "received_events_url" string
+    "type" string
+    "site_admin" boolean
+    "organization" string
+    "team_slug" string
+
+    indexes {
+        (id, team_slug) [pk]
+    }
+}
+
+Table "users" {
+    "organization" string
+    "login" string
+    "id" integer [pk]
+    "node_id" string
+    "avatar_url" string
+    "gravatar_id" string
+    "url" string
+    "html_url" string
+    "followers_url" string
+    "following_url" string
+    "gists_url" string
+    "starred_url" string
+    "subscriptions_url" string
+    "organizations_url" string
+    "repos_url" string
+    "events_url" string
+    "received_events_url" string
+    "type" string
+    "site_admin" boolean
+}
+
+Table "workflows" {
+    "id" integer [pk]
+    "node_id" string
+    "name" string
+    "path" string
+    "state" string
+    "created_at" string
+    "updated_at" string
+    "url" string
+    "html_url" string
+    "badge_url" string
+    "repository" string
+}
+
+Table "workflow_runs" {
+    "id" integer [pk]
+    "name" string
+    "node_id" string
+    "head_branch" string
+    "head_sha" string
+    "path" string
+    "display_title" string
+    "run_number" integer
+    "event" string
+    "status" string
+    "conclusion" string
+    "workflow_id" integer
+    "check_suite_id" integer
+    "check_suite_node_id" string
+    "url" string
+    "html_url" string
+    "pull_requests" array
+    "created_at" string
+    "updated_at" string
+    "run_attempt" integer
+    "referenced_workflows" array
+    "run_started_at" string
+    "jobs_url" string
+    "logs_url" string
+    "check_suite_url" string
+    "artifacts_url" string
+    "cancel_url" string
+    "rerun_url" string
+    "previous_attempt_url" string
+    "workflow_url" string
+    "head_commit" object
+    "repository" object
+    "head_repository" object
+    "actor" object
+    "triggering_actor" object
+}
+
+Table "workflow_jobs" {
+    "id" integer [pk]
+    "run_id" integer
+    "workflow_name" string
+    "head_branch" string
+    "run_url" string
+    "run_attempt" integer
+    "node_id" string
+    "head_sha" string
+    "url" string
+    "html_url" string
+    "status" string
+    "conclusion" string
+    "created_at" string
+    "started_at" string
+    "completed_at" string
+    "name" string
+    "steps" array
+    "check_run_url" string
+    "labels" array
+    "runner_id" integer
+    "runner_name" string
+    "runner_group_id" integer
+    "runner_group_name" string
+    "repository" string
+}
+
+Table "team_memberships" {
+    "state" string
+    "role" string
+    "url" string [pk]
+    "organization" string
+    "team_slug" string
+    "username" string
+}
+
+Ref {
+    "assignees"."id" <> "users"."id"
+}
+
+Ref {
+    "collaborators"."id" <> "users"."id"
+}
+
+Ref {
+    "comments"."user_id" <> "users"."id"
+}
+
+Ref {
+    "commit_comment_reactions"."comment_id" <> "commit_comments"."id"
+}
+
+Ref {
+    "contributor_activity"."id" <> "users"."id"
+}
+
+Ref {
+    "contributor_activity"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "deployments"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "events"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "issue_comment_reactions"."comment_id" <> "comments"."id"
+}
+
+Ref {
+    "issue_events"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "issue_labels"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "issue_milestones"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "issue_reactions"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "issues"."user_id" <> "users"."id"
+}
+
+Ref {
+    "issues"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "project_cards"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "project_cards"."project_id" <> "projects"."id"
+}
+
+Ref {
+    "project_cards"."column_id" <> "project_columns"."id"
+}
+
+Ref {
+    "project_columns"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "project_columns"."project_id" <> "projects"."id"
+}
+
+Ref {
+    "projects"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "pull_request_comment_reactions"."comment_id" <> "review_comments"."id"
+}
+
+Ref {
+    "pull_request_commits"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "pull_request_stats"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "projects_v2"."owner_id" <> "organizations"."id"
+}
+
+Ref {
+    "projects_v2"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "pull_requests"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "releases"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "repositories"."organization" <> "organizations"."login"
+}
+
+Ref {
+    "review_comments"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "reviews"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "stargazers"."user_id" <> "users"."id"
+}
+
+Ref {
+    "stargazers"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "tags"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "teams"."organization" <> "organizations"."login"
+}
+
+Ref {
+    "team_members"."id" <> "users"."id"
+}
+
+Ref {
+    "team_members"."organization" <> "organizations"."login"
+}
+
+Ref {
+    "users"."organization" <> "organizations"."login"
+}
+
+Ref {
+    "workflows"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "workflow_runs"."workflow_id" <> "workflows"."id"
+}
+
+Ref {
+    "workflow_runs"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "workflow_jobs"."repository" <> "repositories"."full_name"
+}
+
+Ref {
+    "workflow_jobs"."run_id" <> "workflow_runs"."id"
+}
+
+Ref {
+    "team_memberships"."organization" <> "organizations"."login"
+}
+
+Ref {
+    "team_memberships"."username" <> "users"."login"
+}
