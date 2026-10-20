@@ -41,6 +41,8 @@ os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 SCALAR_TYPES = {"string", "integer", "number", "boolean"}
 VALIDATED_RECORD_COUNTS: Counter[str] = Counter()
 DECLARED_SCHEMAS: dict[str, dict[str, Any]] = {}
+AGGREGATED_VALIDATED_RECORD_COUNTS: Counter[str] = Counter()
+AGGREGATED_STREAM_NAMES: set[str] = set()
 
 
 def _stable_manifest_key(manifest: dict[str, Any]) -> str:
@@ -155,18 +157,43 @@ def validate_materialized_records(monkeypatch):
 
 def pytest_sessionfinish(session, exitstatus):
     options = session.config.option
-    if exitstatus != 0 or options.file_or_dir or options.keyword or options.markexpr or getattr(options, "numprocesses", None):
+    if hasattr(session.config, "workeroutput"):
+        session.config.workeroutput["validated_record_counts"] = dict(VALIDATED_RECORD_COUNTS)
+        session.config.workeroutput["stream_names"] = {
+            item.callspec.params["stream_name"]
+            for item in session.items
+            if hasattr(item, "callspec") and "stream_name" in item.callspec.params
+        }
         return
 
-    stream_names = {
-        item.callspec.params["stream_name"] for item in session.items if hasattr(item, "callspec") and "stream_name" in item.callspec.params
-    }
+    if exitstatus != 0 or options.file_or_dir or options.keyword or options.markexpr:
+        return
+
+    is_xdist_controller = bool(getattr(options, "numprocesses", None))
+    stream_names = (
+        AGGREGATED_STREAM_NAMES
+        if is_xdist_controller
+        else {
+            item.callspec.params["stream_name"]
+            for item in session.items
+            if hasattr(item, "callspec") and "stream_name" in item.callspec.params
+        }
+    )
     if len(stream_names) != 42:
         return
-    missing = stream_names - VALIDATED_RECORD_COUNTS.keys()
+    validated_record_counts = AGGREGATED_VALIDATED_RECORD_COUNTS if is_xdist_controller else VALIDATED_RECORD_COUNTS
+    missing = stream_names - validated_record_counts.keys()
     if missing:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
         print(f"\nNo validated records were emitted for streams: {sorted(missing)}")
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_testnodedown(node, error):
+    worker_output = getattr(node, "workeroutput", {})
+    AGGREGATED_STREAM_NAMES.update(worker_output.get("stream_names", set()))
+    for stream_name, count in worker_output.get("validated_record_counts", {}).items():
+        AGGREGATED_VALIDATED_RECORD_COUNTS[stream_name] += count
 
 
 @pytest.fixture(name="rate_limit_mock_response")
