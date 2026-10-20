@@ -289,10 +289,16 @@ class DefaultJdbcPartitionFactoryTest {
         val result = factory.create(stream.bootstrap(opaqueStateValue()))
         factory.assertFailures()
         Assertions.assertNull(result)
+    }
+
+    @Test
+    fun testNullSentinelStateYieldsNoPartition() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
         // The isNull sentinel for completed empty-table streams still yields no partition.
-        val nullResult = factory.create(stream.bootstrap(Jsons.nullNode()))
+        val result = factory.create(stream.bootstrap(Jsons.nullNode()))
         factory.assertFailures()
-        Assertions.assertNull(nullResult)
+        Assertions.assertNull(result)
     }
 
     @Test

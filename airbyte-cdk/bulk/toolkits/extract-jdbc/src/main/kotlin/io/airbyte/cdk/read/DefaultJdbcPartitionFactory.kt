@@ -51,8 +51,8 @@ class DefaultJdbcPartitionFactory(
             return null
         }
 
-        // An empty object state (e.g. the placeholder emitted for a stream that never checkpointed)
-        // carries no progress information, so it's treated the same as a missing state.
+        // The CDK emits an empty object as the placeholder state for a stream that has not
+        // checkpointed yet; it carries no resume point, so treat it like no state at all.
         if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState)
         }
