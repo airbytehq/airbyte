@@ -307,6 +307,10 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
 
+#### Product category values
+
+The `category` field on the `products` stream comes from Shopify's Standard Product Taxonomy. Shopify updates the taxonomy several times a year and can rename a category or move it in the tree without changing its ID. Because `products` syncs incrementally on `updated_at`, a product is only re-read when it changes, so its `category` values can lag behind the current taxonomy. Use `category.id` as the stable identifier, and refresh the `products` stream to get current values.
+
 #### BULK job checkpoint collisions
 
 Incremental GraphQL Bulk streams checkpoint a bulk job once it has collected **BULK Job checkpoint (rows collected)** lines, then start the next job from the newest cursor value they saw. If a single cursor value holds more lines than that threshold, the next job cannot advance past it, and the sync fails with:

@@ -20,24 +20,17 @@ from source_shopify.shopify_graphql.bulk.query import (
 from source_shopify.streams.streams import Customers, Products
 
 
-def test_product_query_includes_category() -> None:
-    query = Product({"shop": "test-shop"}).get(
+def test_product_query_includes_category(auth_config) -> None:
+    query = Product(auth_config).get(
         filter_field="updated_at",
         start="2026-01-01T00:00:00+00:00",
         end="2026-01-02T00:00:00+00:00",
     )
 
-    assert "category {" in query
-    for field in (
-        "full_name: fullName",
-        "is_leaf: isLeaf",
-        "is_root: isRoot",
-        "is_archived: isArchived",
-        "parent_id: parentId",
-        "ancestor_ids: ancestorIds",
-        "level",
-    ):
-        assert field in query
+    assert (
+        "category { id name level full_name: fullName is_leaf: isLeaf is_root: isRoot "
+        "is_archived: isArchived parent_id: parentId ancestor_ids: ancestorIds }"
+    ) in " ".join(query.split())
 
 
 def test_products_schema_includes_nullable_category() -> None:
