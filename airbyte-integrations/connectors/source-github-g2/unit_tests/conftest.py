@@ -1,15 +1,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import copy
+import hashlib
+import json
 import os
 import shutil
 import sys
 from collections import Counter
+from functools import wraps
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from airbyte_cdk.models import Type
+from airbyte_cdk.sources.declarative import concurrent_declarative_source as concurrent_source_module
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from unit_tests.utils import FLATTEN_EXEMPTIONS
 
@@ -35,6 +41,11 @@ os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 SCALAR_TYPES = {"string", "integer", "number", "boolean"}
 VALIDATED_RECORD_COUNTS: Counter[str] = Counter()
 DECLARED_SCHEMAS: dict[str, dict[str, Any]] = {}
+
+
+def _stable_manifest_key(manifest: dict[str, Any]) -> str:
+    serialized_manifest = json.dumps(manifest, sort_keys=True, default=str).encode()
+    return hashlib.sha256(serialized_manifest).hexdigest()
 
 
 def _matches_type(value: Any, type_declaration: Any) -> bool:
@@ -73,6 +84,44 @@ def _validate_record(stream_name: str, record: dict[str, Any], schema: dict[str,
                 assert _matches_type(item, item_types), f"{stream_name}.{field_name}[{index}]: invalid item type"
         else:
             assert _matches_type(value, field_type), f"{stream_name}.{field_name}: invalid type for {value!r}"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cache_declarative_manifest_processing():
+    original_component_schema_loader = concurrent_source_module._get_declarative_component_schema
+    original_preprocess_manifest = ConcurrentDeclarativeSource._pre_process_manifest
+    original_validate_source = ConcurrentDeclarativeSource._validate_source
+    component_schema = None
+    preprocessed_manifests: dict[str, dict[str, Any]] = {}
+    validated_manifests: set[str] = set()
+
+    @wraps(original_component_schema_loader)
+    def get_component_schema():
+        nonlocal component_schema
+        if component_schema is None:
+            component_schema = original_component_schema_loader()
+        return copy.deepcopy(component_schema)
+
+    @wraps(original_preprocess_manifest)
+    def preprocess_manifest(source, manifest):
+        key = _stable_manifest_key(manifest)
+        if key not in preprocessed_manifests:
+            preprocessed_manifests[key] = copy.deepcopy(original_preprocess_manifest(source, copy.deepcopy(manifest)))
+        return copy.deepcopy(preprocessed_manifests[key])
+
+    @wraps(original_validate_source)
+    def validate_source(source):
+        key = _stable_manifest_key(source._source_config)
+        if key not in validated_manifests:
+            original_validate_source(source)
+            validated_manifests.add(key)
+
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(concurrent_source_module, "_get_declarative_component_schema", get_component_schema)
+    monkeypatch.setattr(ConcurrentDeclarativeSource, "_pre_process_manifest", preprocess_manifest)
+    monkeypatch.setattr(ConcurrentDeclarativeSource, "_validate_source", validate_source)
+    yield
+    monkeypatch.undo()
 
 
 @pytest.fixture(autouse=True)

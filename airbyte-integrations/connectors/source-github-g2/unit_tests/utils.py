@@ -2,17 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 from unittest import mock
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+import yaml
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     RateLimitedMultipleTokenAuthenticator as RateLimitedMultipleTokenAuthenticatorModel,
 )
@@ -36,8 +40,34 @@ FLATTEN_EXEMPTIONS: dict[str, dict[str, str]] = {
 }
 
 
+@lru_cache(maxsize=1)
+def _load_manifest() -> dict[str, Any]:
+    with MANIFEST_PATH.open() as manifest_file:
+        return yaml.safe_load(manifest_file)
+
+
+class _DictBasedYamlDeclarativeSource(YamlDeclarativeSource):
+    def __init__(self, source_config, catalog=None, config=None, state=None, config_path=None):
+        self._path_to_yaml = str(MANIFEST_PATH)
+        ConcurrentDeclarativeSource.__init__(
+            self,
+            catalog=catalog or ConfiguredAirbyteCatalog(streams=[]),
+            config=config or {},
+            state=state or [],
+            source_config=source_config,
+            emit_connector_builder_messages=False,
+            config_path=config_path,
+        )
+
+
 def make_source(config=None, catalog=None, state=None, config_path=None) -> YamlDeclarativeSource:
-    return YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config, catalog=catalog, state=state, config_path=config_path)
+    return _DictBasedYamlDeclarativeSource(
+        source_config=copy.deepcopy(_load_manifest()),
+        config=config,
+        catalog=catalog,
+        state=state,
+        config_path=config_path,
+    )
 
 
 def _get_access_token(config: Mapping[str, Any]) -> str:
