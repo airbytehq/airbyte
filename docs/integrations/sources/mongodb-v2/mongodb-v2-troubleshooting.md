@@ -59,7 +59,7 @@ that was deleted before the event could be read is emitted as a delete.
 - Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
 - Views are not discovered and cannot be synced; sync the underlying collection. Capped and clustered collections have not been validated with this connector.
 - Empty collections are excluded from schema discovery.
-- All documents in a collection must use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types fails the sync with "Collection &lt;database&gt;.&lt;collection&gt; has \_id values of more than one type", because a sync resuming after a checkpoint on one type would miss the documents of the other.
+- All documents in a collection should use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types is read in full by an uninterrupted sync, but a sync resuming after a checkpoint on one type does not sync the documents of the other types. The connector warns with "The \_id fields in this collection are not consistently typed, which may lead to data loss" and the types it found; make the type consistent or exclude the collection.
 - Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
 
 ### Schema Discovery & Enforcement

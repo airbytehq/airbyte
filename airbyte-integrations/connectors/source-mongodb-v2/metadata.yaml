@@ -44,9 +44,8 @@ data:
           no reset is required. The settings 'initial_waiting_seconds', 'queue_size'
           and 'update_capture_mode' are removed from the spec; update events always
           read the document's current state. Views are no longer discovered
-          or synced, time series collections are not supported, boolean fields
-          are now typed as boolean, and a collection whose _id values are of more
-          than one type fails the sync. See the migration guide for details."
+          or synced, time series collections are not supported, and boolean
+          fields are now typed as boolean. See the migration guide for details."
         upgradeDeadline: "2027-02-01"
       2.0.0:
         message:

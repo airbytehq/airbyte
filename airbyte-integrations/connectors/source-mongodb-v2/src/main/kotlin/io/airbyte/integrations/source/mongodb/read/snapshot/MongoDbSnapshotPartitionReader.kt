@@ -20,6 +20,7 @@ import io.airbyte.integrations.source.mongodb.read.partition.MongoDbPartitionRea
 import io.airbyte.integrations.source.mongodb.read.partition.RecordAcceptor
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbRecordConverter
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
+import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
@@ -71,7 +72,7 @@ class MongoDbSnapshotPartitionReader(
     override suspend fun run() {
         val emit: RecordAcceptor =
             checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
-        sharedState.logStreamStart(stream.id)
+        if (sharedState.logStreamStart(stream.id)) warnIfIdTypesAreMixed()
         val startId: Any? = resumeFromId()
         lastId = startId
         log.info { "Reading ${stream.namespace}.${stream.name} after _id=$startId." }
@@ -120,6 +121,23 @@ class MongoDbSnapshotPartitionReader(
      */
     private fun shouldYieldToCdc(): Boolean =
         !isFullRefresh && numRecords > 0 && Instant.now().isAfter(sharedState.snapshotDeadline)
+
+    /**
+     * As the legacy connector did: a collection mixing `_id` types is not refused, but it reads the
+     * checkpointed type only once resumed (see [MongoDbIdTypes]), so the sync warns and emits the
+     * legacy analytics trace once per stream.
+     */
+    private fun warnIfIdTypesAreMixed() {
+        val types: List<String> = sharedState.idTypes(stream.id)
+        if (types.size <= 1) return
+        log.warn {
+            "The _id fields in this collection are not consistently typed, which may lead to " +
+                "data loss (collection = ${stream.name}, types = $types)."
+        }
+        feedBootstrap.outputConsumer.accept(
+            AirbyteAnalyticsTraceMessage().withType(MongoDbIdTypes.ANALYTICS_KEY).withValue("1")
+        )
+    }
 
     /** The `_id` to resume after; null for a fresh read (no state, or already complete). */
     private fun resumeFromId(): Any? =

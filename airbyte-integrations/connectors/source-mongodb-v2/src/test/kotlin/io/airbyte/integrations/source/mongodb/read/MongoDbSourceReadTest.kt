@@ -19,6 +19,7 @@ import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationS
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbResumeTokens
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdType
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdTypes
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
@@ -656,6 +657,7 @@ class MongoDbSourceReadTest {
             )
         val records = result.records().filter { it.stream == NUMERIC_ID }
         Assertions.assertEquals((1..4).toList(), records.map { it.data["v"].asInt() })
+        Assertions.assertEquals(emptyList<String>(), mixedIdTypeAnalytics(result), "one type")
         // Resumed after the double 2.5, the round read the long and the decimal.
         val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, NUMERIC_ID)
         Assertions.assertEquals(MongoDbIdType.DOUBLE, checkpoints.first().idType)
@@ -685,14 +687,26 @@ class MongoDbSourceReadTest {
                 setOf(MIXED_ID),
                 includeEmpty = false,
             )
+        val whole: BufferingOutputConsumer = read(catalog)
         Assertions.assertEquals(
             (1..5).toList(),
-            recordDataFor(read(catalog), MIXED_ID).map { it["v"] as Int },
+            recordDataFor(whole, MIXED_ID).map { it["v"] as Int }
         )
+        // As the legacy connector did: the mix is warned about and reported once, not refused.
+        Assertions.assertEquals(listOf("1"), mixedIdTypeAnalytics(whole))
         val cut: BufferingOutputConsumer = readCutAfter(2, catalog)
         Assertions.assertEquals(listOf(1, 2), recordDataFor(cut, MIXED_ID).map { it["v"] as Int })
         Assertions.assertEquals(2, allStreamStatesFor(cut, MIXED_ID).first().resumeIdValue())
     }
+
+    /** The values of the legacy `db-sources-mongo-multiple-id-types` analytics traces emitted. */
+    private fun mixedIdTypeAnalytics(result: BufferingOutputConsumer): List<String> =
+        result
+            .traces()
+            .filter { it.type == AirbyteTraceMessage.Type.ANALYTICS }
+            .map { it.analytics }
+            .filter { it.type == MongoDbIdTypes.ANALYTICS_KEY }
+            .map { it.value }
 
     /**
      * One document holding every BSON type, read through the connector in both schema modes: each

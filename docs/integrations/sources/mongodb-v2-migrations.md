@@ -29,8 +29,6 @@ What changes for you:
 - **Removed settings.** "Initial Waiting Time in Seconds" and "Size of the queue" only existed for Debezium and are
   gone, and "Capture mode" is removed: update events always read the document's current state (the former "Lookup"
   default). Saved values are ignored.
-- **"Schema Enforced" moved to the Advanced settings.** It no longer sits under the cluster type. Your saved value is
-  kept; the setting defaults to on for new sources.
 - **Views are no longer synced.** Earlier versions discovered views as streams by mistake; views cannot be read incrementally or resumed. A view stream that is still in your connection makes the sync fail ("could not be read due to catalog validation errors") until you refresh the source schema, which removes it. Sync the underlying collection instead.
 - **Time series collections are no longer synced.** Earlier versions discovered them by mistake; they have no `_id` index to resume a snapshot from and MongoDB provides no change streams for them, so changes were never delivered. Their streams disappear from the catalog when you refresh the source schema.
 - **Booleans are typed as `boolean`.** Boolean fields were previously declared as `string` in the schema while the records already carried true JSON booleans. Refresh the source schema to pick up the new type; the values themselves do not change.
@@ -66,7 +64,7 @@ This version introduces a general availability version of the MongoDB V2 source 
 reliability of syncs. This version provides better error handling, incremental delivery of data and improved
 reliability of large syncs via frequent checkpointing.
 
-MongoDB now supports incremental syncs. Alternatively you can also choose to use full refresh if your DB has lots of updates but in relatively 
+MongoDB now supports incremental syncs. Alternatively you can also choose to use full refresh if your DB has lots of updates but in relatively
 small volume.
 
 **THIS VERSION INCLUDES BREAKING CHANGES FROM PREVIOUS VERSIONS OF THE CONNECTOR!**
@@ -85,4 +83,3 @@ Worthy of specific mention, this version includes:
 - Required SSL/TLS connections
 
 Learn more about what's new in the connection, view the updated documentation [here](/integrations/sources/mongodb-v2/).
-

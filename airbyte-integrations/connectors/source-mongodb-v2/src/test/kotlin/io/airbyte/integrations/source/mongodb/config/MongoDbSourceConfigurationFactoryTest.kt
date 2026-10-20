@@ -135,8 +135,12 @@ class MongoDbSourceConfigurationFactoryTest {
         )
     }
 
+    /**
+     * `schema_enforced` is read from `database_config`, where the spec (and the legacy connector)
+     * has it; a root value, which pre-release builds wrote, is only a fallback.
+     */
     @Test
-    fun testRootSchemaEnforcedWinsOverTheLegacyNestedValue() {
+    fun testNestedSchemaEnforcedWinsOverTheRootFallback() {
         val config: MongoDbSourceConfiguration =
             make(
                 """
@@ -145,13 +149,27 @@ class MongoDbSourceConfigurationFactoryTest {
     "cluster_type": "SELF_MANAGED_REPLICA_SET",
     "connection_string": "mongodb://localhost:27017/",
     "databases": ["db1"],
-    "schema_enforced": true
+    "schema_enforced": false
+  },
+  "schema_enforced": true
+}
+""",
+            )
+        Assertions.assertFalse(config.schemaEnforced)
+        val rootOnly: MongoDbSourceConfiguration =
+            make(
+                """
+{
+  "database_config": {
+    "cluster_type": "SELF_MANAGED_REPLICA_SET",
+    "connection_string": "mongodb://localhost:27017/",
+    "databases": ["db1"]
   },
   "schema_enforced": false
 }
 """,
             )
-        Assertions.assertFalse(config.schemaEnforced)
+        Assertions.assertFalse(rootOnly.schemaEnforced)
     }
 
     @Test

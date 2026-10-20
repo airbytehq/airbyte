@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.ResourceType
 import io.airbyte.integrations.source.mongodb.MongoDbDiagnostics
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdTypes
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.annotation.PreDestroy
@@ -84,15 +85,33 @@ class MongoDbSharedState(
     }
 
     /**
-     * Logs [MongoDbDiagnostics.collectionLine] once per stream per READ, as its snapshot starts.
+     * Logs [MongoDbDiagnostics.collectionLine] once per stream per READ, as its snapshot starts;
+     * true on that first call, so the reader can warn once about the collection.
      */
-    fun logStreamStart(streamId: StreamIdentifier) {
-        if (diagnosed.add(streamId)) {
-            MongoDbDiagnostics.logGuarded(
-                "the statistics of ${streamId.namespace}.${streamId.name}"
-            ) { MongoDbDiagnostics.collectionLine(client, streamId) }
+    fun logStreamStart(streamId: StreamIdentifier): Boolean {
+        if (!diagnosed.add(streamId)) return false
+        MongoDbDiagnostics.logGuarded("the statistics of ${streamId.namespace}.${streamId.name}") {
+            MongoDbDiagnostics.collectionLine(client, streamId)
         }
+        return true
     }
+
+    /**
+     * The BSON types of the collection's `_id`s ([MongoDbIdTypes.present]); empty when they could
+     * not be read, which is a warning, never a failure: the answer only drives a warning.
+     */
+    fun idTypes(streamId: StreamIdentifier): List<String> =
+        try {
+            MongoDbIdTypes.present(
+                client.getDatabase(streamId.namespace!!).getCollection(streamId.name)
+            )
+        } catch (e: Exception) {
+            log.warn {
+                "Could not read the _id types of ${streamId.namespace}.${streamId.name} " +
+                    "(${e.message}); continuing."
+            }
+            emptyList()
+        }
 
     /** Snapshot streams that finished in this READ, so the factory stops re-planning them. */
     val completedSnapshots: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()

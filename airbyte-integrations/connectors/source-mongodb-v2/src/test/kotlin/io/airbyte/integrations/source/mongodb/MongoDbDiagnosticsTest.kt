@@ -81,21 +81,21 @@ class MongoDbDiagnosticsTest {
     }
 
     @Test
-    fun testCollectionLineCountsSizesIndexesAndTheIdKind() {
+    fun testCollectionLineCountsSizesIndexesAndTheIdTypes() {
         val line: String = MongoDbDiagnostics.collectionLine(client, stream(PEOPLE))
         Assertions.assertTrue(COLLECTION_LINE.matches(line), line)
         Assertions.assertTrue(
             line.startsWith("Snapshot of $TEST_DB.$PEOPLE: 1,500 documents, "),
             line
         )
-        Assertions.assertTrue(line.endsWith(", 2 indexes; _id kind objectId."), line)
+        Assertions.assertTrue(line.endsWith(", 2 indexes; _id types [objectId]."), line)
 
         val empty: String = MongoDbDiagnostics.collectionLine(client, stream(EMPTY))
         Assertions.assertTrue(
             empty.startsWith("Snapshot of $TEST_DB.$EMPTY: 0 documents, 0 B, "),
             empty
         )
-        Assertions.assertFalse("_id kind" in empty, empty)
+        Assertions.assertFalse("_id types" in empty, empty)
     }
 
     /** A diagnostic that cannot be built is a warning, never an exception. */
@@ -147,7 +147,7 @@ class MongoDbDiagnosticsTest {
         val COLLECTION_LINE =
             Regex(
                 """Snapshot of \S+: [\d,]+ documents, [\d.]+ (B|KB|MB|GB) \(avg [\d.]+ (B|KB|MB|GB)\), """ +
-                    """[\d.]+ (B|KB|MB|GB) on disk, \d+ indexes; _id kind \w+\."""
+                    """[\d.]+ (B|KB|MB|GB) on disk, \d+ indexes; _id types \[[\w, ]+\]\."""
             )
 
         lateinit var replicaSet: MongoDBContainer

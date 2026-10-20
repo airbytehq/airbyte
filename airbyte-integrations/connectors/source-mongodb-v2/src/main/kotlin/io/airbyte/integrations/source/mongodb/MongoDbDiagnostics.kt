@@ -8,9 +8,8 @@ import com.mongodb.client.model.Projections
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
-import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbResumeTokens
-import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdKind
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdTypes
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
@@ -123,19 +122,11 @@ object MongoDbDiagnostics {
         val size: Long = stats.long("size")
         val storageSize: Long = stats.long("storageSize")
         val indexes: Long = stats.long("nindexes")
-        val firstId: Any? =
-            database
-                .getCollection(streamId.name)
-                .find()
-                .projection(Projections.include(ID_FIELD))
-                .sort(Document(ID_FIELD, 1))
-                .limit(1)
-                .first()
-                ?.get(ID_FIELD)
+        val idTypes: List<String> = MongoDbIdTypes.present(database.getCollection(streamId.name))
         val average: String = if (count > 0) " (avg ${bytes(size / count)})" else ""
-        val idKind: String = firstId?.let { "; _id kind ${MongoDbIdKind.of(it)}" } ?: ""
+        val types: String = if (idTypes.isEmpty()) "" else "; _id types $idTypes"
         return "Snapshot of ${streamId.namespace}.${streamId.name}: ${count(count)} documents, " +
-            "${bytes(size)}$average, ${bytes(storageSize)} on disk, $indexes indexes$idKind."
+            "${bytes(size)}$average, ${bytes(storageSize)} on disk, $indexes indexes$types."
     }
 
     private fun endpointTime(oplog: MongoCollection<Document>, order: Int): BsonTimestamp =

@@ -42,8 +42,7 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertEquals("user", databaseConfig.username)
         Assertions.assertEquals("secret", databaseConfig.password)
         Assertions.assertEquals("admin", databaseConfig.authSource)
-        // `schema_enforced` used to live inside `database_config`: a saved configuration's value
-        // is still read from there and wins while the root property is absent.
+        // `schema_enforced` lives inside `database_config`, where the legacy connector had it.
         Assertions.assertNull(pojo.schemaEnforced)
         Assertions.assertEquals(false, databaseConfig.schemaEnforced)
         Assertions.assertFalse(
@@ -73,7 +72,7 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertNull(databaseConfig.password)
         // Defaults advertised by the spec.
         Assertions.assertEquals("admin", databaseConfig.authSource)
-        Assertions.assertNull(pojo.schemaEnforced)
+        Assertions.assertNull(databaseConfig.schemaEnforced)
         Assertions.assertTrue(
             MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo).schemaEnforced,
             "schema_enforced defaults to true",

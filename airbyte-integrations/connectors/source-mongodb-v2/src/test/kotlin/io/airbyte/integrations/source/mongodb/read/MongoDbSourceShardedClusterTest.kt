@@ -108,7 +108,7 @@ class MongoDbSourceShardedClusterTest {
                 line.startsWith("Snapshot of $TEST_DB.$PEOPLE: $DOCUMENTS documents, "),
                 line,
             )
-            Assertions.assertTrue(line.endsWith("; _id kind number."), line)
+            Assertions.assertTrue(line.endsWith("; _id types [number]."), line)
         }
     }
 

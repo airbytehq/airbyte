@@ -21,7 +21,6 @@ import jakarta.inject.Singleton
     value =
         [
             "database_config",
-            "schema_enforced",
             "discover_sample_size",
             "discover_timeout_seconds",
             "invalid_cdc_cursor_position_behavior",
@@ -39,15 +38,12 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     lateinit var databaseConfig: DatabaseConfigSpecification
 
     /**
-     * Null when absent so the factory can fall back to a `schema_enforced` saved inside
-     * `database_config`; the schema's default is `true`.
+     * Not in the spec: `schema_enforced` lives inside `database_config`, where the legacy connector
+     * had it, so the form shows and re-saves a saved `false` (a root field would make the form
+     * inject its default and drop the nested value, flipping a schemaless source). Read only as a
+     * fallback for configurations saved by pre-release builds that had it here.
      */
-    @JsonProperty("schema_enforced")
-    @JsonSchemaTitle("Schema Enforced (Advanced)")
-    @JsonSchemaDescription(
-        "When enabled, syncs will validate and structure records against the stream's schema.",
-    )
-    @JsonSchemaInject(json = """{"default":true,"always_show":true,"order":9,"group":"advanced"}""")
+    @JsonProperty("schema_enforced", access = JsonProperty.Access.WRITE_ONLY)
     var schemaEnforced: Boolean? = null
 
     @JsonProperty("discover_sample_size")
@@ -122,7 +118,6 @@ sealed interface DatabaseConfigSpecification {
     val username: String?
     val password: String?
     val authSource: String?
-    /** Read from saved configurations that carry `schema_enforced` here; not in the spec. */
     val schemaEnforced: Boolean?
 
     companion object {
@@ -140,6 +135,7 @@ sealed interface DatabaseConfigSpecification {
             "username",
             "password",
             "auth_source",
+            "schema_enforced",
         ],
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
@@ -180,7 +176,12 @@ class AtlasReplicaSetSpecification : DatabaseConfigSpecification {
     @JsonSchemaInject(json = """{"default":"admin","examples":["admin"],"order":6}""")
     override var authSource: String = MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE
 
-    @JsonProperty("schema_enforced", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty("schema_enforced")
+    @JsonSchemaTitle("Schema Enforced")
+    @JsonSchemaDescription(
+        "When enabled, syncs will validate and structure records against the stream's schema.",
+    )
+    @JsonSchemaInject(json = """{"default":true,"always_show":true,"order":7}""")
     override var schemaEnforced: Boolean? = null
 }
 
@@ -194,6 +195,7 @@ class AtlasReplicaSetSpecification : DatabaseConfigSpecification {
             "username",
             "password",
             "auth_source",
+            "schema_enforced",
         ],
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
@@ -235,6 +237,11 @@ class SelfManagedReplicaSetSpecification : DatabaseConfigSpecification {
     @JsonSchemaInject(json = """{"default":"admin","examples":["admin"],"order":6}""")
     override var authSource: String? = MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE
 
-    @JsonProperty("schema_enforced", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty("schema_enforced")
+    @JsonSchemaTitle("Schema Enforced")
+    @JsonSchemaDescription(
+        "When enabled, syncs will validate and structure records against the stream's schema.",
+    )
+    @JsonSchemaInject(json = """{"default":true,"always_show":true,"order":7}""")
     override var schemaEnforced: Boolean? = null
 }

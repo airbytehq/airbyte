@@ -51,9 +51,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
 - `src/test/resources/expected-spec.json` is a snapshot of this connector's generated `spec`;
   `MongoDbSourceSpecTest` fails if it drifts. It keeps the legacy property names, titles, descriptions, defaults and
   `database_config` oneOf so saved v2 configurations load unchanged, minus the dropped properties
-  (`initial_waiting_seconds`, `queue_size`, `update_capture_mode`). `schema_enforced` moved from the
-  `database_config` variants to the root (advanced group, default `true`); a saved configuration's nested value is
-  still read, and the root value wins when both are present. Rendering follows the Bulk CDK generator like every
+  (`initial_waiting_seconds`, `queue_size`, `update_capture_mode`). `schema_enforced` stays inside the
+  `database_config` variants, where v2 had it: the form then shows and re-saves a saved `false`, whereas a root
+  field with a default would make the form inject `true` and drop the nested value on any edit, flipping a
+  schemaless source into "refresh schema and reset". A root `schema_enforced` is still read, write-only, as a
+  fallback for configurations saved by pre-release builds that had it there; the nested value wins. Rendering follows the Bulk CDK generator like every
   other Bulk
   CDK source (`"type": "object"` on oneOf variants, discriminators as a single-value `enum` +
   `default`, no `changelogUrl`) — byte-for-byte parity with v2's hand-written `spec.json` is not a
@@ -227,12 +229,17 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   **One `_id` kind per collection is assumed.** The resume filter is a plain
   `{_id: {$gt: <checkpoint>}}`, which MongoDB type-brackets: it only matches `_id`s of the
   checkpoint's own BSON type, so a collection mixing e.g. integer and string `_id`s reads every
-  document in an uncut round but only the integers after a checkpoint on one (v2 behaved the same
-  and only warned). The reader logs the kind of the collection's smallest `_id` once per READ — one
-  index-only seek, part of the collection diagnostic — so a missing kind can be traced; it does
-  not fail (`testMixedIdKindsReadWholeUncutAndOneKindAfterACheckpoint`). Numbers of any width
-  (`int`, `long`, `double`, `decimal`) are one kind, as they are for the comparison — drivers
-  routinely mix them (`testNumericIdWidthsAreOneType`). At READ time the metadata querier serves
+  document in an uncut round but only the integers after a checkpoint on one. This is v2's
+  behaviour, reproduced exactly: `MongoDbIdTypes.present` is a port of 2.1.1's
+  `InitialSnapshotHandler.getIdFieldTypes` (the smallest and largest `_id` from two covered index
+  seeks pin one type; otherwise one `$type` probe per candidate), run once per stream per READ as
+  part of the collection diagnostic (`_id types [number, string]`), and a mix logs v2's warning
+  "The _id fields in this collection are not consistently typed, which may lead to data loss" and
+  emits v2's `db-sources-mongo-multiple-id-types` analytics trace; it does not fail
+  (`testMixedIdKindsReadWholeUncutAndOneKindAfterACheckpoint`, `MongoDbIdTypesTest`). One
+  deliberate difference: numbers of any width (`int`, `long`, `double`, `decimal`) are one kind,
+  as they are for the comparison — drivers routinely mix them (`testNumericIdWidthsAreOneType`) —
+  where v2 warned about `int` + `double` too. At READ time the metadata querier serves
   `fields()` from the configured catalog rather than re-sampling.
 - **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the change stream with the native
   driver `watch()` — **not Debezium**. With one configured database the stream is opened on that

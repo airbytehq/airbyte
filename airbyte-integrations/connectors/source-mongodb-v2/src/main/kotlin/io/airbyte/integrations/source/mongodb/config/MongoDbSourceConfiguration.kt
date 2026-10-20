@@ -150,7 +150,7 @@ constructor(
             username = databaseConfig.username,
             password = databaseConfig.password,
             authSource = databaseConfig.authSource ?: Spec.DEFAULT_AUTH_SOURCE,
-            schemaEnforced = pojo.schemaEnforced ?: databaseConfig.schemaEnforced ?: true,
+            schemaEnforced = databaseConfig.schemaEnforced ?: pojo.schemaEnforced ?: true,
             discoverSampleSize = pojo.discoverSampleSize ?: Spec.DEFAULT_DISCOVER_SAMPLE_SIZE,
             discoverTimeout =
                 Duration.ofSeconds(
