@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
 from pytest import fixture
-from source_microsoft_dataverse.source import MicrosoftDataverseStream
+from requests import Response
+from source_microsoft_dataverse.source import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 @fixture
@@ -28,12 +30,21 @@ def incremental_config():
     [
         ({"stream_slice": None, "stream_state": {}, "next_page_token": None}, {}),
         ({"stream_slice": None, "stream_state": {}, "next_page_token": {"$skiptoken": "skiptoken"}}, {"$skiptoken": "skiptoken"}),
-        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"}),
+        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {}),
     ],
 )
 def test_request_params(inputs, expected_params, incremental_config):
     stream = MicrosoftDataverseStream(**incremental_config)
     assert stream.request_params(**inputs) == expected_params
+
+
+def test_stream_resumability(incremental_config):
+    stream = MicrosoftDataverseStream(**incremental_config)
+    assert stream.is_resumable is False
+    assert stream.get_cursor() is None
+
+    incremental_stream = IncrementalMicrosoftDataverseStream(**incremental_config, config_cursor_field=["test_cursor_field"])
+    assert incremental_stream.is_resumable is True
 
 
 @pytest.mark.parametrize(
@@ -85,23 +96,17 @@ def test_http_method(incremental_config):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (200, ResponseAction.SUCCESS),
+        (400, ResponseAction.FAIL),
+        (429, ResponseAction.RATE_LIMITED),
+        (500, ResponseAction.RETRY),
     ],
 )
-def test_should_retry(incremental_config, http_status, should_retry):
-    response_mock = MagicMock()
+def test_error_handler(incremental_config, http_status, expected_action):
+    response_mock = Response()
     response_mock.status_code = http_status
     stream = MicrosoftDataverseStream(**incremental_config)
-    assert stream.should_retry(response_mock) == should_retry
-
-
-def test_backoff_time(incremental_config):
-    response_mock = MagicMock()
-    stream = MicrosoftDataverseStream(**incremental_config)
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    error_handler = stream.get_error_handler() or stream._http_client._error_handler
+    assert error_handler.interpret_response(response_mock).response_action == expected_action
