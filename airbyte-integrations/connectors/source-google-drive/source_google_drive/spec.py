@@ -129,5 +129,13 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
         dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
+        dpath.util.new(schema, "properties/streams/items/properties/format/default", "csv")
+        schema["properties"]["streams"]["default"] = [{"name": "files", "globs": ["**"], "format": {"filetype": "csv"}}]
+        dpath.util.new(schema, "properties/streams/items/properties/name/title", "Stream Name")
+        dpath.util.new(
+            schema,
+            "properties/streams/items/properties/name/description",
+            "The name of this stream in the destination, for example the table name. This is not a file name or pattern; use Globs to choose which files to read.",
+        )
 
         return schema

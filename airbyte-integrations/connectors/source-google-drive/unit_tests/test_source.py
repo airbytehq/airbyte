@@ -20,6 +20,14 @@ def test_source_spec():
     spec = source.spec()
     assert isinstance(spec, ConnectorSpecification)
     assert spec.documentationUrl == "https://docs.airbyte.com/integrations/sources/google-drive"
+    streams = spec.connectionSpecification["properties"]["streams"]
+    assert streams["default"] == [{"name": "files", "globs": ["**"], "format": {"filetype": "csv"}}]
+    assert streams["items"]["properties"]["name"]["title"] == "Stream Name"
+    assert (
+        streams["items"]["properties"]["name"]["description"]
+        == "The name of this stream in the destination, for example the table name. This is not a file name or pattern; use Globs to choose which files to read."
+    )
+    assert streams["items"]["properties"]["format"]["default"] == "csv"
 
 
 def test_check_connection_rejects_invalid_folder_url_before_api_call(mocker):

@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.42 | 2026-10-20 | [89552](https://github.com/airbytehq/airbyte/pull/89552) | Default new streams to CSV format and pre-fill one stream in the setup form; rename stream `name` title to Stream Name |
 | 0.5.41 | 2026-10-20 | [89509](https://github.com/airbytehq/airbyte/pull/89509) | Accept more folder link formats (no scheme, http, open?id=) and report invalid folder URLs clearly in check |
 | 0.5.40 | 2026-10-20 | [89242](https://github.com/airbytehq/airbyte/pull/89242) | Update dependencies |
 | 0.5.39 | 2026-10-13 | [88658](https://github.com/airbytehq/airbyte/pull/88658) | Update dependencies |
