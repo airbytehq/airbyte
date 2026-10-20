@@ -10,6 +10,18 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
+    # Opt-in `ticket_audits_per_ticket` stream: one request per created/updated ticket, counted
+    # against the account-wide plan limit (Team, the lowest current plan, allows 200 req/min). The
+    # default of 100 req/min leaves half of a Team plan's budget for the other streams and for any
+    # other integration on the account; higher plans can raise it in the source settings. Kept
+    # first because the first matching policy wins.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ config.get('ticket_audits_per_ticket_requests_per_minute', 100) }}"
+          interval: PT1M
+      matchers:
+        - url_path_pattern: '^/api/v2/tickets/\d+/audits(\.json)?$'
+
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 10
@@ -1074,6 +1086,82 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # Opt-in `ticket_audits_per_ticket` stream, only discovered when `enable_ticket_audits_per_ticket`
+  # is true (see the ConditionalStreams entry in `streams`). `ticket_audits` reads the account-wide
+  # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` incremental export
+  # returns, and that endpoint does return audits for archived tickets. The cost is one request per
+  # created or updated ticket, so the endpoint has its own `api_budget` policy.
+  # Each changed ticket re-emits all of its audits; `id` deduplicates them. The cursor mirrors the
+  # stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`),
+  # but uses a global substream cursor: a per-ticket state would grow one entry per ticket.
+  ticket_audits_per_ticket_stream:
+    type: DeclarativeStream
+    name: "ticket_audits_per_ticket"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_audits_per_ticket"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      cursor_field: "_ab_updated_at"
+      start_datetime:
+        datetime: "0" # the parent `tickets` stream applies `start_date`; this cursor only tracks state
+      global_substream_cursor: true
+    retriever:
+      type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/audits.json"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          # Keyed on the status code only: Zendesk does not guarantee a JSON body on these
+          # responses, and a refusal is scoped to one ticket, not to the stream. See AGENTS.md §5.
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403]
+              action: IGNORE
+              error_message: "Skipping audits for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Skipping audits for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
+      # Cursor pagination (page[size] up to 100, meta.has_more, links.next). Zendesk returns audits
+      # for archived tickets unpaginated; with no `meta.has_more` the paginator stops after one page.
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["audits"]
+        schema_normalization: Default
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            extra_fields:
+              - ["generated_timestamp"]
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "_ab_updated_at"
+            value: "{{ stream_slice.extra_fields['generated_timestamp'] }}"
+            value_type: "integer"
+
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -1501,6 +1589,12 @@ streams:
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"
+  # Opt-in streams. Gated on config rather than left to stream selection, because "propagate
+  # stream changes" can enable a newly discovered stream without the user choosing it.
+  - type: ConditionalStreams
+    condition: "{{ config.get('enable_ticket_audits_per_ticket', false) }}"
+    streams:
+      - $ref: "#/definitions/ticket_audits_per_ticket_stream"
   # todo: The following streams are enterprise-only streams. However, the low-code CDK does not support
   #  ConditionalStreams based on an API endpoint. These should be under that component once the CDK supports it.
   # - $ref: "#/definitions/ticket_forms_stream"
@@ -1734,6 +1828,34 @@ spec:
           updates (those never change `updated_at`) — use the default `tickets` stream if you
           need complete change tracking.
         order: 5
+      enable_ticket_audits_per_ticket:
+        type: boolean
+        title: Enable Per-Ticket Ticket Audits Stream
+        default: false
+        description: >-
+          Adds the opt-in `ticket_audits_per_ticket` stream, which reads audits ticket by ticket and,
+          unlike `ticket_audits`, includes archived tickets. It costs one API request per ticket
+          created or updated since the last sync (the first sync makes one request per ticket
+          updated since Start Date). These requests count against your Zendesk plan's account-wide
+          rate limit, not the incremental export limit, so a large update can make a sync take
+          hours. Leave this off unless you need audits for archived tickets.
+        order: 6
+      ticket_audits_per_ticket_requests_per_minute:
+        type: integer
+        title: Per-Ticket Ticket Audits Requests per Minute
+        minimum: 1
+        maximum: 2500
+        default: 100
+        examples:
+          - 100
+          - 300
+          - 600
+        description: >-
+          Only applies to the opt-in `ticket_audits_per_ticket` stream. The maximum number of
+          per-ticket audit requests the connector sends per minute. The default of 100 is half of
+          the Team plan's 200 requests per minute. Raise it if your plan allows more, leaving room
+          for the connector's other streams and any other integrations on your account.
+        order: 7
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3390,6 +3512,38 @@ schemas:
                 - "null"
                 - integer
           additionalProperties: true
+  # Same record shape as `ticket_audits` plus the `_ab_updated_at` cursor. Each property points at
+  # the `ticket_audits` definition so the two schemas cannot drift (a unit test checks that every
+  # `ticket_audits` property is listed here); `ticket_audits` itself is unchanged.
+  ticket_audits_per_ticket:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      events:
+        $ref: "#/schemas/ticket_audits/properties/events"
+      author_id:
+        $ref: "#/schemas/ticket_audits/properties/author_id"
+      metadata:
+        $ref: "#/schemas/ticket_audits/properties/metadata"
+      id:
+        $ref: "#/schemas/ticket_audits/properties/id"
+      created_at:
+        $ref: "#/schemas/ticket_audits/properties/created_at"
+      ticket_id:
+        $ref: "#/schemas/ticket_audits/properties/ticket_id"
+      via:
+        $ref: "#/schemas/ticket_audits/properties/via"
+      attachments:
+        $ref: "#/schemas/ticket_audits/properties/attachments"
+      _ab_updated_at:
+        description:
+          Cursor field managed by Airbyte. The `generated_timestamp` of the parent ticket when its
+          audits were read.
+        type:
+          - "null"
+          - integer
   ticket_comments:
     $schema: https://json-schema.org/draft-07/schema#
     type:

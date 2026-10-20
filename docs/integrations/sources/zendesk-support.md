@@ -106,7 +106,9 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4 and the minimum is 2. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
 9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
 10. (Optional) For **Tickets Search Lookback Window (days)**, enter the number of days the `tickets_search` stream re-scans on each sync. The default is 0. This setting only affects the opt-in `tickets_search` stream. See [Tickets stream: change tracking](#tickets-stream-change-tracking).
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) Turn on **Enable Per-Ticket Ticket Audits Stream** to add the `ticket_audits_per_ticket` stream, which includes audits for archived tickets. It's off by default because it makes one API request per created or updated ticket. See [Ticket audits for archived tickets](#ticket-audits-for-archived-tickets).
+12. (Optional) For **Per-Ticket Ticket Audits Requests per Minute**, enter the maximum number of requests per minute the `ticket_audits_per_ticket` stream sends. The default is 100. This setting only affects that stream.
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -162,6 +164,7 @@ The Zendesk Support source connector supports the following streams:
 - [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
 - [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Client-Side Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+- [Ticket Audits per Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) \(Incremental\) \(Opt-in\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Client-Side Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Client-Side Incremental\) \(Enterprise only\)
@@ -205,6 +208,26 @@ The former Export Search Results behavior is preserved as the **`tickets_search`
 
 `tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
+### Ticket audits for archived tickets
+
+Zendesk [automatically archives](https://support.zendesk.com/hc/en-us/articles/4408887617050-About-ticket-archiving) tickets about 120 days after they close. The `ticket_audits` stream reads the [List All Ticket Audits](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-all-ticket-audits) endpoint, which Zendesk documents as excluding archived tickets. So `ticket_audits` returns no audits for archived tickets, including audits added after a ticket was archived, for example by a bulk update.
+
+The opt-in `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) for every ticket the `tickets` stream's incremental export returns, and that endpoint includes archived tickets. Its records have the same fields as `ticket_audits`, plus an `_ab_updated_at` cursor that holds the parent ticket's `generated_timestamp`.
+
+The stream only appears in your connection's **Schema** tab after you turn on **Enable Per-Ticket Ticket Audits Stream** in the source settings. It's gated by this setting, not just by stream selection, so that a connection that automatically enables new streams doesn't start making the extra requests without you choosing to.
+
+Before you turn it on, consider its cost:
+
+- Each sync makes one request for every ticket created or updated since the previous sync, plus one more for every 100 audits on a ticket. A bulk update that touches 100,000 tickets costs 100,000 requests on the next sync.
+- The first sync reads every ticket updated since **Start Date** (or in the last two years if it's blank), one request each. To recover audits for archived tickets changed since a given date, set **Start Date** to that date before you turn the stream on.
+- These requests count against your Zendesk plan's account-wide rate limit, which the connector's other streams and your other integrations share. The connector caps the stream at **Per-Ticket Ticket Audits Requests per Minute** (default 100, half of the Team plan's limit), so 100,000 tickets take about 17 hours at the default.
+- The stream reads its parent tickets with a separate pass over the incremental ticket export, which shares the 10 requests per minute limit with the `tickets` stream.
+- Whenever a ticket changes, the stream emits all of that ticket's audits again. Use **Incremental | Append + Deduped** to keep one row per audit `id`.
+
+If you turn the setting off again, refresh your connection's schema so the stream is removed from the connection.
+
+`ticket_audits` is unchanged, so you can keep using it, switch to `ticket_audits_per_ticket`, or sync both. Both streams share audit `id` values, so you can combine them downstream.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -227,7 +250,7 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 
 The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The minimum is 2 and the maximum is 40. A single thread leaves no other stream emitting while the `tickets` stream reads, so a saved value of 1 is treated as 2 from the first sync after upgrading to 5.6.0, and the stored configuration is updated to match. If the source settings form flags the field before that first sync, set it to 2 or more.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The opt-in `ticket_audits_per_ticket` stream makes one request per ticket against your plan's limit and is capped at **Per-Ticket Ticket Audits Requests per Minute** (default 100). The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
@@ -284,6 +307,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.0 | 2026-10-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add the opt-in `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. Turn it on with **Enable Per-Ticket Ticket Audits Stream**. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |
