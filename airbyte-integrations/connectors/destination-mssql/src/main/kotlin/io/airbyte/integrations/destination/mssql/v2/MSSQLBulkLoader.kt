@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
+import io.airbyte.integrations.destination.mssql.v2.MSSQLStreamStateAwait.awaitStreamState
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLBulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsConfiguredForBulkLoad

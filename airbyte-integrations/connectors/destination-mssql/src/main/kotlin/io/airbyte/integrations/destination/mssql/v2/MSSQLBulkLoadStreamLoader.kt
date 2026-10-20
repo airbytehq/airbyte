@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.state.StreamProcessingFailed
@@ -82,24 +83,27 @@ data class MSSQLDirectLoaderStreamState(
     val sqlBuilder: MSSQLQueryBuilder,
 ) : MSSQLStreamState
 
-/**
- * With socket data channels, a loader can be created for a stream on one channel before the stream
- * loader's `start()` (driven by another channel) has populated the store, so suspend until the
- * state is available rather than failing.
- */
-suspend fun StreamStateStore<MSSQLStreamState>.awaitStreamState(
-    stream: DestinationStream.Descriptor,
-    timeout: Duration = 1.hours,
-    pollInterval: Duration = 100.milliseconds,
-): MSSQLStreamState =
-    withTimeoutOrNull(timeout) {
-        var state = get(stream)
-        while (state == null) {
-            delay(pollInterval)
-            state = get(stream)
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
+object MSSQLStreamStateAwait {
+    /**
+     * With socket data channels, a loader can be created for a stream on one channel before the
+     * stream loader's `start()` (driven by another channel) has populated the store, so suspend
+     * until the state is available rather than failing.
+     */
+    suspend fun StreamStateStore<MSSQLStreamState>.awaitStreamState(
+        stream: DestinationStream.Descriptor,
+        timeout: Duration = 1.hours,
+        pollInterval: Duration = 100.milliseconds,
+    ): MSSQLStreamState =
+        withTimeoutOrNull(timeout) {
+            var state = get(stream)
+            while (state == null) {
+                delay(pollInterval)
+                state = get(stream)
+            }
+            state
         }
-        state
-    }
-        ?: throw IllegalStateException(
-            "Timed out after $timeout waiting for stream $stream to be initialized.",
-        )
+            ?: throw IllegalStateException(
+                "Timed out after $timeout waiting for stream $stream to be initialized.",
+            )
+}

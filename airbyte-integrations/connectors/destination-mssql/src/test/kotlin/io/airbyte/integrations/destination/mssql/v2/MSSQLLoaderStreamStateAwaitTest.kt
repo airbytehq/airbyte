@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.mssql.v2.MSSQLStreamStateAwait.awaitStreamState
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLBulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.mockk.coEvery

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.mssql.v2.MSSQLStreamStateAwait.awaitStreamState
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsNotConfiguredForBulkLoad
 import io.github.oshai.kotlinlogging.KotlinLogging
