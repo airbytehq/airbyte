@@ -40,7 +40,7 @@ class AirbyteValueProtobufEncoder {
     fun encode(
         value: Any?,
         airbyteSchemaType: AirbyteSchemaType,
-        builder: AirbyteValueProtobuf.Builder? = null
+        builder: AirbyteValueProtobuf.Builder? = null,
     ): AirbyteValueProtobuf.Builder {
         val b = (builder ?: AirbyteValueProtobuf.newBuilder()).clear()
 
@@ -72,7 +72,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeBoolean(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         require(value is Boolean) { "Expected Boolean, got ${value::class.simpleName}" }
         return b.setBoolean(value)
@@ -80,7 +80,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeString(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         require(value is String) { "Expected String, got ${value::class.simpleName}" }
         return b.setString(value)
@@ -88,7 +88,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeInteger(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         return when (value) {
             is BigInteger -> {
@@ -107,7 +107,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeNumber(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         return when (value) {
             is BigDecimal -> b.setBigDecimal(value.toPlainString())
@@ -119,7 +119,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeDate(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val localDate =
             when (value) {
@@ -132,7 +132,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeTimeWithTimezone(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         require(value is OffsetTime) { "Expected OffsetTime, got ${value::class.simpleName}" }
         val offsetTimeMsg =
@@ -145,7 +145,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeTimeWithoutTimezone(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val localTime =
             when (value) {
@@ -158,7 +158,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeTimestampWithTimezone(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val offsetDateTime =
             when (value) {
@@ -166,7 +166,7 @@ class AirbyteValueProtobufEncoder {
                 is java.sql.Timestamp -> OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC)
                 else ->
                     error(
-                        "Expected OffsetDateTime or java.sql.Timestamp, got ${value::class.simpleName}"
+                        "Expected OffsetDateTime or java.sql.Timestamp, got ${value::class.simpleName}",
                     )
             }
         val instant = offsetDateTime.toInstant()
@@ -181,7 +181,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeTimestampWithoutTimezone(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val localDateTime =
             when (value) {
@@ -189,7 +189,7 @@ class AirbyteValueProtobufEncoder {
                 is java.sql.Timestamp -> value.toLocalDateTime()
                 else ->
                     error(
-                        "Expected LocalDateTime or java.sql.Timestamp, got ${value::class.simpleName}"
+                        "Expected LocalDateTime or java.sql.Timestamp, got ${value::class.simpleName}",
                     )
             }
         val localDateTimeMsg =
@@ -202,7 +202,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeJson(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val jsonBytes =
             when (value) {
@@ -217,7 +217,7 @@ class AirbyteValueProtobufEncoder {
 
     private fun encodeBinary(
         value: Any,
-        b: AirbyteValueProtobuf.Builder
+        b: AirbyteValueProtobuf.Builder,
     ): AirbyteValueProtobuf.Builder {
         val base64String =
             when (value) {
@@ -225,7 +225,7 @@ class AirbyteValueProtobufEncoder {
                 is ByteBuffer -> Base64.getEncoder().encodeToString(value.array())
                 else ->
                     error(
-                        "Expected ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}"
+                        "Expected ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}",
                     )
             }
         return b.setString(base64String)

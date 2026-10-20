@@ -8,7 +8,7 @@ from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
@@ -36,6 +36,13 @@ _UPDATED = "2026-01-02T00:00:00.000000+0000"
 _STATE_CURSOR = "2026-01-01T00:00:00.000000+0000"
 _LATEST_UPDATED = "2026-01-03T00:00:00.000000+0000"
 _RETRY_STREAM = EMPTY_STREAMS[0]
+_INCREMENTAL_EMPTY_STREAMS = tuple(stream for stream in EMPTY_STREAMS if stream not in UptickRequestBuilder.FULL_REFRESH_STREAMS)
+_EMPTY_STREAM_SYNC_MODES = [
+    (stream, sync_mode)
+    for stream in EMPTY_STREAMS
+    for sync_mode in (SyncMode.incremental, SyncMode.full_refresh)
+    if sync_mode == SyncMode.full_refresh or stream in _INCREMENTAL_EMPTY_STREAMS
+]
 _MODELS = {stream: fields[0] for stream, fields in UptickRequestBuilder.FIELDS.items()}
 _EXPECTED_RELATIONSHIPS = {
     "creditnotelineitems": ("creditnote", "product"),
@@ -60,10 +67,8 @@ def _record(
     updated: str = _UPDATED,
     null_relationship: str | None = None,
 ) -> dict[str, Any]:
-    attributes: dict[str, Any] = {
-        "created": _CREATED,
-        "updated": updated,
-    }
+    # majorservices has no created/updated timestamps.
+    attributes: dict[str, Any] = {} if stream == "majorservices" else {"created": _CREATED, "updated": updated}
     relationships: dict[str, Any] = {}
     if stream == "creditnotelineitems":
         attributes.update(
@@ -189,8 +194,7 @@ def _mock_token(http_mocker: HttpMocker) -> None:
     )
 
 
-@pytest.mark.parametrize("stream", EMPTY_STREAMS)
-@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+@pytest.mark.parametrize("stream,sync_mode", _EMPTY_STREAM_SYNC_MODES)
 def test_empty_streams_read_two_pages(stream: str, sync_mode: SyncMode) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
@@ -209,13 +213,13 @@ def test_empty_streams_read_two_pages(stream: str, sync_mode: SyncMode) -> None:
 
         assert output.errors == []
         assert [message.record.data["id"] for message in output.records] == [1, 2, 3]
-        assert all(message.record.data["updated"] for message in output.records)
+        if stream in _INCREMENTAL_EMPTY_STREAMS:
+            assert all(message.record.data["updated"] for message in output.records)
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
 
 
-@pytest.mark.parametrize("stream", EMPTY_STREAMS)
-@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+@pytest.mark.parametrize("stream,sync_mode", _EMPTY_STREAM_SYNC_MODES)
 def test_empty_streams_complete_without_records(stream: str, sync_mode: SyncMode) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
@@ -229,7 +233,7 @@ def test_empty_streams_complete_without_records(stream: str, sync_mode: SyncMode
         assert output.get_stream_statuses(stream)[-1].name == "COMPLETE"
 
 
-@pytest.mark.parametrize("stream", EMPTY_STREAMS)
+@pytest.mark.parametrize("stream", (*_INCREMENTAL_EMPTY_STREAMS, "servicegroups", "accreditationtypes"))
 def test_incremental_uses_state_cursor(stream: str) -> None:
     state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
     with HttpMocker() as http_mocker:
@@ -254,44 +258,15 @@ def test_incremental_uses_state_cursor(stream: str) -> None:
         http_mocker.assert_number_of_calls(first_page, 1)
 
 
-@pytest.mark.parametrize("stream", ["servicegroups", "accreditationtypes"])
-def test_servicegroups_client_side_incremental_filters_old_records(stream: str) -> None:
-    state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
-    records = [
-        _record(stream, 1, updated="2025-12-31T00:00:00.000000+0000"),
-        _record(stream, 2, updated=_LATEST_UPDATED),
-    ]
-    with HttpMocker() as http_mocker:
-        _mock_token(http_mocker)
-        first_page = UptickRequestBuilder.collection(stream, updatedsince=_STATE_CURSOR)
-        http_mocker.get(first_page, _response(records))
+def test_majorservices_is_full_refresh_only() -> None:
+    # The endpoint has no `updated` timestamp, so there is no cursor to sync from.
+    config = ConfigBuilder().build()
+    catalog = discover(get_source(config=config), config=config).catalog.catalog
+    stream = next(stream for stream in catalog.streams if stream.name == "majorservices")
 
-        output = _read(stream, state=state)
-
-        assert output.errors == []
-        assert [message.record.data["id"] for message in output.records] == [2]
-        assert output.most_recent_state.stream_descriptor.name == stream
-        assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
-        http_mocker.assert_number_of_calls(first_page, 1)
-
-
-def test_non_client_side_incremental_does_not_filter_old_records() -> None:
-    stream = "majorservices"
-    state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
-    records = [
-        _record(stream, 1, updated="2025-12-31T00:00:00.000000+0000"),
-        _record(stream, 2, updated=_LATEST_UPDATED),
-    ]
-    with HttpMocker() as http_mocker:
-        _mock_token(http_mocker)
-        first_page = UptickRequestBuilder.collection(stream, updatedsince=_STATE_CURSOR)
-        http_mocker.get(first_page, _response(records))
-
-        output = _read(stream, state=state)
-
-        assert output.errors == []
-        assert [message.record.data["id"] for message in output.records] == [1, 2]
-        http_mocker.assert_number_of_calls(first_page, 1)
+    assert stream.supported_sync_modes == [SyncMode.full_refresh]
+    assert not stream.source_defined_cursor
+    assert "updated" not in stream.json_schema["properties"]
 
 
 @pytest.mark.parametrize(
@@ -383,8 +358,9 @@ def test_flattens_jsonapi_record(stream: str) -> None:
         for record_number, message in enumerate(output.records, start=1):
             record = message.record.data
             assert record["id"] == record_number
-            assert record["created"] == _CREATED
-            assert record["updated"] == _UPDATED
+            if stream in _INCREMENTAL_EMPTY_STREAMS:
+                assert record["created"] == _CREATED
+                assert record["updated"] == _UPDATED
             assert "attributes" in record
             assert "relationships" in record
             for relationship_name in relationship_names:

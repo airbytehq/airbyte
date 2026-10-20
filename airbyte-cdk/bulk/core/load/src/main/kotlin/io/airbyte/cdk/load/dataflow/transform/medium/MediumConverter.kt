@@ -18,11 +18,12 @@ interface MediumConverter {
      * data.
      *
      * @param input a {@link ConversionInput} object containing the raw destination record,
-     * partition key,
+     *   partition key,
      * ```
      *              and optionally the source record to be transformed.
      * @return
      * ```
+     *
      * a map where keys are string representations of the column names and values are the converted
      * values.
      */

@@ -15,7 +15,7 @@ class ResourceReservingPartitionedQueue<T>(
     val ratioOfTotalMemoryToReserve: Double,
     val numConsumers: Int,
     val numProducers: Int,
-    val expectedResourceUsagePerUnit: Long
+    val expectedResourceUsagePerUnit: Long,
 ) : PartitionedQueue<T> {
 
     private val requestedResourceAmount =
@@ -40,7 +40,7 @@ class ResourceReservingPartitionedQueue<T>(
         StrictPartitionedQueue<T>(
             (0 until numConsumers)
                 .map { ChannelMessageQueue<T>(Channel(queuePartitionCapacity)) }
-                .toTypedArray()
+                .toTypedArray(),
         )
 
     override val partitions: Int = numConsumers
