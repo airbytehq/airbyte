@@ -75,7 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.1.61 | 2026-10-20 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Update to airbyte-cdk v7 and Python 3.13 base image; expired access tokens are refreshed through the CDK error handler |
+| 0.1.61 | 2026-10-20 | [89539](https://github.com/airbytehq/airbyte/pull/89539) | Update to airbyte-cdk v7 and Python 3.13 base image; expired access tokens are refreshed through the CDK error handler |
 | 0.1.60 | 2026-10-07 | [88198](https://github.com/airbytehq/airbyte/pull/88198) | Fix placeholder `documentationUrl` in spec and give a clearer error when Kyriba returns 403 on login |
 | 0.1.59 | 2025-10-14 | [68065](https://github.com/airbytehq/airbyte/pull/68065) | Update dependencies |
 | 0.1.58 | 2025-10-07 | [67525](https://github.com/airbytehq/airbyte/pull/67525) | Update dependencies |
