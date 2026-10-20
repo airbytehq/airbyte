@@ -41,7 +41,9 @@ The connector authenticates with HTTP basic authentication, using your email add
 | tickets | id | DefaultPaginator | ✅ |  ✅  |
 | messages | id | DefaultPaginator | ✅ |  ✅  |
 | users | id | DefaultPaginator | ✅ |  ✅  |
-| views_items | id | DefaultPaginator | ✅ |  ✅  |
+| views_items | view_id, id | DefaultPaginator | ✅ |  ✅  |
+
+The `views_items` stream reads the items of every view returned by the `views` stream and adds the parent view's `view_id` to each record. Because the same item can appear in more than one view, the stream uses `view_id` and `id` together as its primary key.
 
 ## Rate limits
 
@@ -106,6 +108,7 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.58 | 2026-10-20 | [89237](https://github.com/airbytehq/airbyte/pull/89237) | Update dependencies |
 | 0.1.57 | 2026-10-13 | [88643](https://github.com/airbytehq/airbyte/pull/88643) | Update dependencies |
 | 0.1.56 | 2026-10-06 | [87876](https://github.com/airbytehq/airbyte/pull/87876) | Update dependencies |
 | 0.1.55 | 2026-09-29 | [87230](https://github.com/airbytehq/airbyte/pull/87230) | Update dependencies |

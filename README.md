@@ -76,7 +76,7 @@ For more details on contribution requirements, please see our [contribution work
 
 ### Security
 
-Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. Email `security@airbyte.io` if you believe you have uncovered a vulnerability. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. If you believe you have uncovered a vulnerability, read the vulnerability disclosure policy for the affected product and report it as described on [Report a security vulnerability](https://airbyte.com/security/vdp).
 
 [Airbyte Enterprise](https://airbyte.com/airbyte-enterprise) also offers additional security features (among others) on top of Airbyte open-source.
 

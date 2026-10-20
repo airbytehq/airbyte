@@ -2,6 +2,30 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 19, 2026
+
+Platform
+
+- If turning on **Agent access** for a source or destination fails, the status icon next to the toggle now shows a readable error message. Previously, it could show an internal message code instead.
+
+## October 16, 2026
+
+Platform
+
+- When an AI agent using the Airbyte MCP tries to read from a source or destination that doesn't have agent access turned on, the link it gives you now opens a page where you can confirm and turn on direct access for that connector. If your organization hasn't turned on the context layer yet, an organization admin can turn it on from the same page. Previously, the link opened the connector's settings page.
+- The **Agent access** descriptions on the **Context layer** page and on source and destination settings now correctly say that agents can only read from your sources and destinations. Previously, they said agents could also write to them.
+
+## October 14, 2026
+
+Platform
+
+- You can no longer delete the only workspace in your organization, because an organization must keep at least one workspace. On your last workspace, the **Delete your workspace** button is now disabled with an explanation, and deleting it through the API returns an error. To remove it, create another workspace first, or contact Airbyte support if your plan allows only one workspace.
+- If you no longer have access to any organization, for example because the only workspace you belonged to was deleted, Airbyte now shows a message asking you to get an invitation from an organization admin, and you can accept that invitation to join the organization. Previously, the app failed to load and you could get an error when accepting a new invitation.
+
+API
+
+- Error responses from the Airbyte API now include clearer, more actionable descriptions in the `detail` field that explain what went wrong and how to fix it, for example for authentication failures, missing permissions, sync schedules that run more often than your plan allows, and streams that conflict with another connection. Error types, titles, and HTTP status codes are unchanged. For some validation errors, the description now appears only in `detail` and is no longer repeated in `data.message`.
+
 ## October 13, 2026
 
 Connections
