@@ -1,12 +1,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs
 
 import pytest
 import yaml
 
-from airbyte_cdk.models import FailureType, SyncMode, Type
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -77,18 +78,34 @@ def _read_users(get_source, config=CONFIG, expecting_exception=False):
     return read(get_source(config), config=config, catalog=catalog, expecting_exception=expecting_exception)
 
 
-def _saved_configs(output):
-    return [message.control.connectorConfig.config for message in output.get_message_by_types([Type.CONTROL])]
+def _saved_configs(capsys):
+    # Since airbyte-cdk 7.37.1 the rotated-token CONNECTOR_CONFIG message is printed to stdout
+    # instead of going through the read() output (airbyte-python-cdk#1145), so read it from there.
+    saved_configs = []
+    for line in capsys.readouterr().out.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if not isinstance(message, dict) or message.get("type") != "CONTROL":
+            continue
+
+        control = message.get("control")
+        if isinstance(control, dict) and control.get("type") == "CONNECTOR_CONFIG":
+            saved_configs.append(control["connectorConfig"]["config"])
+
+    return saved_configs
 
 
-def test_rotated_tokens_are_saved_to_config(requests_mock, get_source):
+def test_rotated_tokens_are_saved_to_config(requests_mock, get_source, capsys):
     token_requests = _register_token_endpoint(requests_mock)
     requests_mock.get(USERS_URL, json=_users_page(1))
 
     output = _read_users(get_source)
 
     assert [parse_qs(request.text) for request in token_requests] == [_refresh_request_body("test-refresh-token")]
-    saved_configs = _saved_configs(output)
+    saved_configs = _saved_configs(capsys)
     assert saved_configs, "expected a CONNECTOR_CONFIG control message that saves the rotated tokens"
     assert saved_configs[-1]["refresh_token"] == "refresh-token-1"
     assert saved_configs[-1]["access_token"] == "token-1"
@@ -98,7 +115,7 @@ def test_rotated_tokens_are_saved_to_config(requests_mock, get_source):
     assert [record.record.data["id"] for record in output.records] == [1]
 
 
-def test_401_mid_sync_refreshes_with_the_latest_refresh_token(requests_mock, get_source):
+def test_401_mid_sync_refreshes_with_the_latest_refresh_token(requests_mock, get_source, capsys):
     token_requests = _register_token_endpoint(requests_mock)
     sent_auth_headers = []
 
@@ -127,7 +144,7 @@ def test_401_mid_sync_refreshes_with_the_latest_refresh_token(requests_mock, get
     assert sent_auth_headers == ["Bearer token-1", "Bearer token-1", "Bearer token-2", "Bearer token-2"]
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1, 2, 3]
-    saved_config = _saved_configs(output)[-1]
+    saved_config = _saved_configs(capsys)[-1]
     assert (saved_config["refresh_token"], saved_config["access_token"]) == ("refresh-token-2", "token-2")
 
 
@@ -178,10 +195,11 @@ def test_refresh_rejection_asks_to_reauthenticate(status_code, error, requests_m
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
 
 
-def test_next_sync_reuses_the_saved_access_token(requests_mock, get_source):
+def test_next_sync_reuses_the_saved_access_token(requests_mock, get_source, capsys):
     token_requests = _register_token_endpoint(requests_mock)
     requests_mock.get(USERS_URL, json=_users_page(1))
-    saved_config = _saved_configs(_read_users(get_source))[-1]
+    _read_users(get_source)
+    saved_config = _saved_configs(capsys)[-1]
     sent_auth_headers = []
 
     def users_callback(request, context):
@@ -194,7 +212,8 @@ def test_next_sync_reuses_the_saved_access_token(requests_mock, get_source):
 
     assert len(token_requests) == 1, "the second sync should not ask for a new token"
     assert sent_auth_headers == ["Bearer token-1"]
-    assert not _saved_configs(output)
+    assert not output.errors
+    assert not _saved_configs(capsys), "the second sync should not save a new config"
 
 
 def test_every_stream_uses_the_shared_requester(connector_path):
