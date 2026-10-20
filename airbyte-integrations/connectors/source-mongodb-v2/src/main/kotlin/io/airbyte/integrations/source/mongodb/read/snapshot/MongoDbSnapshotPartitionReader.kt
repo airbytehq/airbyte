@@ -52,14 +52,14 @@ class MongoDbSnapshotPartitionReader(
     }
     /**
      * `_ab_cdc_cursor` for this snapshot: the time of the resume token the `Global` feed saved
-     * before the snapshots started ([MongoDbCdcState.snapshotCursorTime]); none without CDC.
+     * before the snapshots started ([MongoDbCdcState.cdcSyncedUntil]); none without CDC.
      */
     private val snapshotCursor: BsonTimestamp? by lazy {
         feedBootstrap.feeds
             .filterIsInstance<Global>()
             .firstOrNull()
             ?.let { MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState(it)) }
-            ?.snapshotCursorTime
+            ?.cdcSyncedUntil
             ?.let { BsonTimestamp(it.epochSecond.toInt(), 0) }
     }
 

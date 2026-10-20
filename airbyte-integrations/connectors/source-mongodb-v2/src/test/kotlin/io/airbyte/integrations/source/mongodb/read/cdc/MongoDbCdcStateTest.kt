@@ -23,7 +23,7 @@ class MongoDbCdcStateTest {
                 Instant.parse("2026-10-18T10:00:00Z"),
             )
         val json = state.toOpaqueStateValue()
-        Assertions.assertEquals("2026-10-18T10:00:00Z", json["snapshotCursorTime"].asText())
+        Assertions.assertEquals("2026-10-18T10:00:00Z", json["cdcSyncedUntil"].asText())
         val parsed = MongoDbCdcState.fromOpaqueStateValue(json)
         Assertions.assertEquals(state, parsed)
         Assertions.assertEquals(TOKEN, parsed!!.resumeTokenBson()!!.getString("_data").value)

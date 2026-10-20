@@ -16,8 +16,8 @@ import org.bson.RawBsonDocument
 /**
  * `Global` (change-stream) feed state: the resume token, the `schema_enforced` it was captured
  * under and the token's oplog time. Written as `{"resumeToken": {"_data": ..}, "schemaEnforced":
- * .., "snapshotCursorTime": "2026-..Z"}`; also read from the Debezium offset shape `{"state":
- * {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":..}"}, "schema_enforced": ..}`.
+ * .., "cdcSyncedUntil": "2026-..Z"}`; also read from the Debezium offset shape `{"state": {<key>:
+ * "{\"sec\":..,\"ord\":..,\"resume_token\":..}"}, "schema_enforced": ..}`.
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
@@ -30,9 +30,9 @@ data class MongoDbCdcState(
      * readers take it from the `Global` feed's checkpoint, which precedes them; null for a migrated
      * Debezium offset (its first checkpoint sets it).
      */
-    @JsonProperty("snapshotCursorTime")
+    @JsonProperty("cdcSyncedUntil")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    val snapshotCursorTime: Instant? = null,
+    val cdcSyncedUntil: Instant? = null,
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
@@ -50,12 +50,12 @@ data class MongoDbCdcState(
         fun of(
             resumeToken: BsonDocument?,
             schemaEnforced: Boolean,
-            snapshotCursorTime: Instant?,
+            cdcSyncedUntil: Instant?,
         ): MongoDbCdcState =
             MongoDbCdcState(
                 resumeToken = resumeToken?.let { Jsons.readTree(it.toJson()) },
                 schemaEnforced = schemaEnforced,
-                snapshotCursorTime = snapshotCursorTime,
+                cdcSyncedUntil = cdcSyncedUntil,
             )
 
         /**

@@ -252,7 +252,7 @@ class MongoDbSourceReadTest {
         // second, which is enough: every later change is strictly past the position).
         Assertions.assertEquals(
             Instant.ofEpochSecond(savedPosition.time.toLong()),
-            cdcState.snapshotCursorTime,
+            cdcState.cdcSyncedUntil,
         )
         Assertions.assertEquals(
             setOf(BsonTimestamp(savedPosition.time, 0).value),

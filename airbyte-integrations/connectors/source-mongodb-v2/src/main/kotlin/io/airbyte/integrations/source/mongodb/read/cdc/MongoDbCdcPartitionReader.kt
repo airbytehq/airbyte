@@ -67,9 +67,13 @@ class MongoDbCdcPartitionReader(
     }
 
     @Volatile private var numRecords = 0L
+    private var inserts = 0L
+    private var updates = 0L
+    private var deletes = 0L
+    private var discarded = 0L
     @Volatile private var resumeToken: BsonDocument? = null
-    /** Oplog time (seconds) of [resumeToken]; see [MongoDbCdcState.snapshotCursorTime]. */
-    @Volatile private var snapshotCursorTime: Instant? = null
+    /** Oplog time (seconds) of [resumeToken]; see [MongoDbCdcState.cdcSyncedUntil]. */
+    @Volatile private var cdcSyncedUntil: Instant? = null
 
     override suspend fun run() {
         val priorToken: BsonDocument? =
@@ -123,20 +127,22 @@ class MongoDbCdcPartitionReader(
                         resumeToken = cursor.resumeToken
                         break
                     }
-                    if (emit(event)) numRecords++
+                    if (emit(event)) numRecords++ else discarded++
                     resumeToken = event.resumeToken
                     val clusterTime: BsonTimestamp? = event.clusterTime
                     if (clusterTime != null && clusterTime > target) break
                 }
             }
         }
-        snapshotCursorTime =
+        cdcSyncedUntil =
             Instant.ofEpochSecond(
                 MongoDbResumeTokens.timestamp(checkNotNull(resumeToken)).time.toLong()
             )
         log.info {
             if (resumeAfter == null) "CDC cold start; captured resume token."
-            else "CDC read drained $numRecords change(s) up to the target."
+            else
+                "CDC read drained $numRecords change(s) up to the target: $inserts insert(s), " +
+                    "$updates update(s), $deletes delete(s); $discarded event(s) discarded."
         }
     }
 
@@ -191,17 +197,23 @@ class MongoDbCdcPartitionReader(
         val converter: MongoDbRecordConverter = target.converter
         val changedAt: String = clusterTime(event)
         fun deleted(): NativeRecordPayload =
-            converter.changePayload(
-                event.fullDocumentBeforeChange ?: event.documentKey ?: BsonDocument(),
-                deletedAt = changedAt,
-            )
+            converter
+                .changePayload(
+                    event.fullDocumentBeforeChange ?: event.documentKey ?: BsonDocument(),
+                    deletedAt = changedAt,
+                )
+                .also { deletes++ }
         val payload: NativeRecordPayload =
             when (event.operationType) {
                 OperationType.INSERT ->
-                    converter.changePayload(event.fullDocument ?: return false, deletedAt = null)
+                    converter
+                        .changePayload(event.fullDocument ?: return false, deletedAt = null)
+                        .also { inserts++ }
                 OperationType.UPDATE,
                 OperationType.REPLACE ->
-                    event.fullDocument?.let { converter.changePayload(it, deletedAt = null) }
+                    event.fullDocument?.let {
+                        converter.changePayload(it, deletedAt = null).also { updates++ }
+                    }
                         ?: deleted()
                 OperationType.DELETE -> deleted()
                 else -> return false
@@ -238,7 +250,7 @@ class MongoDbCdcPartitionReader(
             MongoDbCdcState.of(
                     resumeToken,
                     configuration.schemaEnforced,
-                    snapshotCursorTime,
+                    cdcSyncedUntil,
                 )
                 .toOpaqueStateValue(),
             numRecords,

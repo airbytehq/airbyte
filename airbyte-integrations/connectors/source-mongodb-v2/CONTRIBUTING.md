@@ -261,7 +261,7 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   migration guide. `_ab_cdc_cursor` is a
   MongoDB oplog time as a long (`BsonTimestamp.value`), stamped per record by the readers: the
   event's own time on a change, the time of the change-stream position this READ saved
-  (`MongoDbCdcState.snapshotCursorTime`, decoded from the captured or checkpointed token and
+  (`MongoDbCdcState.cdcSyncedUntil`, decoded from the captured or checkpointed token and
   persisted with it; the snapshot readers take it from the `Global` feed's checkpoint, to the
   second) on a snapshot row. Every event a later sync replays is strictly after that position, so a change
   always sorts above the snapshot row it supersedes whichever node served the snapshot (the
