@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.7.2"
+version = "1.7.3"
 name = "source-asana"
 description = "Source implementation for asana."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_asana"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.10,<3.14"
 airbyte-cdk = "^7.13.0"
 
 [tool.poetry.scripts]
