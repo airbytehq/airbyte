@@ -38,6 +38,9 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: true
+        empty_streams:
+          - name: "users/🪦/tblf0p02nFaloKU96"
+            bypass_reason: "This table in the test base has no records; it also returns none with the master manifest (verified 2026-10-16)."
       # Skipping to pass FAST Tests -- engineer should verify
       # connector works w/ oauth in Airbyte Cloud before merging.
       # - config_path: "secrets/config_oauth.json"
@@ -49,4 +52,4 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-    bypass_reason: "Incremental syncs are not supported on this connector."
+    bypass_reason: "Incremental is covered by unit_tests/test_incremental.py; the synthetic cursor is the sync-window end time, which the CAT incremental test does not model."
