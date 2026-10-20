@@ -15,12 +15,14 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsNotConfiguredF
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.SQLException
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class MSSQLDirectLoader(
     config: MSSQLConfiguration,
-    stateStore: StreamStateStore<MSSQLStreamState>,
+    private val stateStore: StreamStateStore<MSSQLStreamState>,
     private val streamDescriptor: DestinationStream.Descriptor,
     private val batch: Int,
     private val parent: MSSQLDirectLoaderFactory,
@@ -32,23 +34,46 @@ class MSSQLDirectLoader(
     private var rows: Long = 0
     private var dataSize: Long = 0
 
-    private val state =
-        (stateStore.get(streamDescriptor) as MSSQLDirectLoaderStreamState?)
-            ?: throw IllegalStateException("No state found for stream $streamDescriptor.")
-    private val sqlBuilder = state.sqlBuilder
-    private val connection = state.dataSource.connection.also { it.autoCommit = false }
-    private val preparedStatement =
-        connection.prepareStatement(state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent())
+    private class Batch(
+        val sqlBuilder: MSSQLQueryBuilder,
+        val connection: Connection,
+        val preparedStatement: PreparedStatement,
+    )
+
+    private var openBatch: Batch? = null
+
+    private suspend fun awaitBatch(): Batch =
+        openBatch
+            ?: run {
+                val state = stateStore.awaitStreamState(streamDescriptor)
+                check(state is MSSQLDirectLoaderStreamState) {
+                    "Unexpected state ${state::class.simpleName} for stream $streamDescriptor."
+                }
+                val connection = state.dataSource.connection.also { it.autoCommit = false }
+                Batch(
+                    state.sqlBuilder,
+                    connection,
+                    connection.prepareStatement(
+                        state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent(),
+                    ),
+                )
+            }
+                .also { openBatch = it }
 
     override suspend fun accept(
         record: DestinationRecordRaw,
     ): DirectLoader.DirectLoadResult {
-        sqlBuilder.populateStatement(preparedStatement, record, sqlBuilder.finalTableSchema)
-        preparedStatement.addBatch()
+        val batch = awaitBatch()
+        batch.sqlBuilder.populateStatement(
+            batch.preparedStatement,
+            record,
+            batch.sqlBuilder.finalTableSchema,
+        )
+        batch.preparedStatement.addBatch()
 
         // Periodically execute the batch to avoid too-large batches
         if (++rows % recordCommitBatchSize == 0L) {
-            executeBatchSafely()
+            executeBatchSafely(batch)
         }
 
         // Periodically complete the batch and ack underlying records.
@@ -62,7 +87,8 @@ class MSSQLDirectLoader(
         return DirectLoader.Incomplete
     }
 
-    private fun executeBatchSafely() {
+    private fun executeBatchSafely(batch: Batch) {
+        val preparedStatement = batch.preparedStatement
         // This is to prevent deadlock errors that will nuke the transaction.
         // TODO: Promote direct loader to use suspend functions so this can use a suspending mutex
         synchronized(parent) {
@@ -73,28 +99,30 @@ class MSSQLDirectLoader(
             }
             preparedStatement.clearBatch()
             preparedStatement.clearParameters()
-            connection.commit()
+            batch.connection.commit()
         }
     }
 
     override suspend fun finish() {
         log.info { "Finishing batch $batch for stream $streamDescriptor" }
 
+        val batch = awaitBatch()
+
         // Execute remaining records if any
-        executeBatchSafely()
-        preparedStatement.close()
+        executeBatchSafely(batch)
+        batch.preparedStatement.close()
 
         // If CDC is enabled, remove stale records
-        if (sqlBuilder.hasCdc) {
-            sqlBuilder.deleteCdc(connection)
+        if (batch.sqlBuilder.hasCdc) {
+            batch.sqlBuilder.deleteCdc(batch.connection)
         }
 
-        connection.commit()
+        batch.connection.commit()
     }
 
     override fun close() {
         log.info { "Closing connection for batch $batch" }
-        connection.close()
+        openBatch?.connection?.close()
     }
 }
 

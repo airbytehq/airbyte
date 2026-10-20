@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsConfiguredForB
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import javax.sql.DataSource
 
 @Singleton class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
@@ -30,18 +31,32 @@ import jakarta.inject.Singleton
 class MSSQLBulkLoader(
     private val azureBlobClient: AzureBlobClient,
     private val stream: DestinationStream,
-    private val mssqlBulkLoadHandler: MSSQLBulkLoadHandler,
-    private val formatFilePath: String,
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
+    private val createBulkLoadHandler: (DataSource) -> MSSQLBulkLoadHandler,
 ) : BulkLoader<AzureBlob> {
     private val log = KotlinLogging.logger {}
+
+    private var target: Pair<MSSQLBulkLoadHandler, String>? = null
+
+    private suspend fun target(): Pair<MSSQLBulkLoadHandler, String> =
+        target
+            ?: run {
+                val state = streamStateStore.awaitStreamState(stream.mappedDescriptor)
+                check(state is MSSQLBulkLoaderStreamState) {
+                    "Stream state not properly initialized for stream ${stream.mappedDescriptor}"
+                }
+                createBulkLoadHandler(state.dataSource) to state.formatFilePath
+            }
+                .also { target = it }
 
     override suspend fun load(remoteObject: AzureBlob) {
         val dataFilePath = remoteObject.key
         try {
+            val (mssqlBulkLoadHandler, formatFilePath) = target()
             if (stream.importType is Dedupe) {
-                handleDedup(dataFilePath)
+                handleDedup(mssqlBulkLoadHandler, dataFilePath, formatFilePath)
             } else {
-                handleAppendOverwrite(dataFilePath)
+                handleAppendOverwrite(mssqlBulkLoadHandler, dataFilePath, formatFilePath)
             }
         } finally {
             // Best-effort cleanup of the data blob
@@ -53,7 +68,11 @@ class MSSQLBulkLoader(
      * Merges upsert data by creating a temporary table, bulk-loading the CSV, and then MERGEing
      * into the destination table using the PK columns.
      */
-    private fun handleDedup(dataFilePath: String) {
+    private fun handleDedup(
+        mssqlBulkLoadHandler: MSSQLBulkLoadHandler,
+        dataFilePath: String,
+        formatFilePath: String,
+    ) {
         log.info { "Deduplicating $dataFilePath into table for ${stream.mappedDescriptor}" }
         val importType = stream.importType as Dedupe
         val primaryKey =
@@ -79,7 +98,11 @@ class MSSQLBulkLoader(
     }
 
     /** Performs a simple bulk insert (append-overwrite behavior). */
-    private fun handleAppendOverwrite(dataFilePath: String) {
+    private fun handleAppendOverwrite(
+        mssqlBulkLoadHandler: MSSQLBulkLoadHandler,
+        dataFilePath: String,
+        formatFilePath: String,
+    ) {
         log.info { "Loading $dataFilePath into table for ${stream.mappedDescriptor}" }
         mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
@@ -128,18 +151,14 @@ class MSSQLBulkLoaderFactory(
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<AzureBlob> {
         val stream = catalog.getStream(key.stream)
-        val mssqlBulkLoadHandler =
+        return MSSQLBulkLoader(azureBlobClient, stream, streamStateStore) { dataSource ->
             MSSQLBulkLoadHandler(
-                streamStateStore.get(key.stream)!!.dataSource,
+                dataSource,
                 stream.mappedDescriptor.namespace ?: defaultSchema,
                 stream.mappedDescriptor.name,
                 bulkLoadConfig.dataSource,
                 MSSQLQueryBuilder(config.schema, stream),
             )
-        val state = streamStateStore.get(key.stream)
-        check(state != null && state is MSSQLBulkLoaderStreamState) {
-            "Stream state not properly initialized for stream ${key.stream}"
         }
-        return MSSQLBulkLoader(azureBlobClient, stream, mssqlBulkLoadHandler, state.formatFilePath)
     }
 }

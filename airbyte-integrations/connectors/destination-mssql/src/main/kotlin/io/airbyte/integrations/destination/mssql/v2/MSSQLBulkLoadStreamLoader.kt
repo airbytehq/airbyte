@@ -9,7 +9,12 @@ import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamStateStore
 import javax.sql.DataSource
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MSSQLBulkLoadStreamLoader(
     override val stream: DestinationStream,
@@ -76,3 +81,25 @@ data class MSSQLDirectLoaderStreamState(
     override val dataSource: DataSource,
     val sqlBuilder: MSSQLQueryBuilder,
 ) : MSSQLStreamState
+
+/**
+ * With socket data channels, a loader can be created for a stream on one channel before the stream
+ * loader's `start()` (driven by another channel) has populated the store, so suspend until the
+ * state is available rather than failing.
+ */
+suspend fun StreamStateStore<MSSQLStreamState>.awaitStreamState(
+    stream: DestinationStream.Descriptor,
+    timeout: Duration = 1.hours,
+    pollInterval: Duration = 100.milliseconds,
+): MSSQLStreamState =
+    withTimeoutOrNull(timeout) {
+        var state = get(stream)
+        while (state == null) {
+            delay(pollInterval)
+            state = get(stream)
+        }
+        state
+    }
+        ?: throw IllegalStateException(
+            "Timed out after $timeout waiting for stream $stream to be initialized.",
+        )
