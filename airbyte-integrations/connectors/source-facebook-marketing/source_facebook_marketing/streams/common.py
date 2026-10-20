@@ -252,6 +252,11 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type = FailureType.system_error
         error_code = fb_exception.api_error_code() if fb_exception.api_error_code() else fb_exception.http_status()
         friendly_msg = f"Error code {error_code}: {msg}."
+        user_facing_details = _get_user_facing_error_details(fb_exception)
+        if user_facing_details:
+            error_subcode = fb_exception.api_error_subcode()
+            subcode_part = f" (subcode {error_subcode})" if error_subcode else ""
+            friendly_msg = f"Error code {error_code}{subcode_part}: {msg}. Facebook details: {user_facing_details}"
 
     return AirbyteTracedException(
         message=friendly_msg or msg,
@@ -259,3 +264,16 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type=failure_type,
         exception=fb_exception,
     )
+
+
+def _get_user_facing_error_details(fb_exception: FacebookRequestError) -> str:
+    """Return Meta's localized `error_user_title` / `error_user_msg` text, if the Graph API error includes it."""
+    error = fb_exception._error if isinstance(fb_exception._error, dict) else {}
+    parts = []
+    for key in ("error_user_title", "error_user_msg"):
+        value = error.get(key)
+        if isinstance(value, str) and value.strip():
+            text = value.strip().rstrip(".")
+            if text not in parts:
+                parts.append(text)
+    return f"{'. '.join(parts)}." if parts else ""

@@ -249,29 +249,88 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         assert output.errors == []
         assert len(output.records) == 2
 
-    def test_when_read_with_updated_at_field_before_bulk_request_window_start_date(self) -> None:
-        """ "
-        The motivation of this test is https://github.com/airbytehq/oncall/issues/6874
+    def test_given_checkpointed_job_canceled_with_no_url_when_read_then_rerun_slice_without_checkpointing(self) -> None:
+        """
+        See https://github.com/airbytehq/oncall/issues/13569
 
-        In this scenario we end having stream_slices method to generate same slice N times.
-        Our checkpointing logic will trigger when job_checkpoint_interval is passed, but there may be the case that such checkpoint
-        has the same value as the current slice start date so we would end requesting same job.
+        The job is self-canceled on checkpointing, but the API returns no `url` / `partialDataUrl`.
+        The same slice is expected to be requested again and to run to completion (without the second cancelation).
+        """
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="16000")
 
-        In this test:
-        1. First job requires to checkpoint as we pass the 1500 limit, it cancels the bulk job and checkpoints from last cursor value.
-        2. Next job just goes "fine".
-        3. Now in the third and N job is where the behavior described above occurs, I just set it to happen a fixed N times as the
-        test depends on we keep feeding responses in the order of status running/canceled, but you can observe the repeated slices in the
-        logging.
+    def test_given_checkpointed_job_canceled_with_no_url_and_lower_object_count_when_read_then_rerun_slice(self) -> None:
+        """
+        The CANCELED job can report the `objectCount` below the checkpoint threshold,
+        the slice is still expected to be re-run, since the job was self-canceled on checkpointing.
+        """
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="1700")
 
-        e.g.
+    def test_given_checkpointed_job_canceled_with_url_but_no_records_when_read_then_rerun_slice_without_checkpointing(self) -> None:
+        """
+        The job is self-canceled on checkpointing and the API returns the `url`, but the result has no records,
+        so there is no checkpointed cursor to resume from. The same slice is expected to be requested again.
+        """
+        canceled_result_url = _JOB_RESULT_URL.replace("bulk-4476008693949.jsonl", "bulk-4476008693948.jsonl")
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="16000", canceled_result_url=canceled_result_url)
 
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders` requesting BULK Job for period: 2024-05-02T17:30:00+00:00 -- 2024-05-03T17:30:00+00:00. Slice size: `P1D`. The BULK checkpoint after `15000` lines."}}
-        ...
-        {"type":"LOG","log":{"level":"INFO","message":"Stream metafield_orders, continue from checkpoint: `2024-05-02T17:30:00+00:00`."}}
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders` requesting BULK Job for period: 2024-05-02T17:30:00+00:00 -- 2024-05-03T17:30:00+00:00. Slice size: `P1D`. The BULK checkpoint after `15000` lines."}}
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders`, the BULK Job: `gid://shopify/BulkOperation/4472588009771` is CREATED"}}
-        ...
+    def _assert_slice_rerun_after_checkpoint_without_url(
+        self, canceled_object_count: str, canceled_result_url: Optional[str] = None
+    ) -> None:
+        job_created_at = (_INCREMENTAL_JOB_END_DATE - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        next_bulk_operation_id = "gid://shopify/BulkOperation/4472588009771"
+        # both jobs are requested for the same slice
+        self._http_mocker.post(
+            create_job_creation_request(_SHOP_NAME, _INCREMENTAL_JOB_START_DATE, _INCREMENTAL_JOB_END_DATE),
+            [
+                JobCreationResponseBuilder(job_created_at=job_created_at).with_bulk_operation_id(_BULK_OPERATION_ID).build(),
+                JobCreationResponseBuilder(job_created_at=job_created_at).with_bulk_operation_id(next_bulk_operation_id).build(),
+            ],
+        )
+        # 1st job: self-canceled on checkpointing, no result (or a result with no records) is returned
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            [
+                JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
+                JobStatusResponseBuilder()
+                .with_canceled_status(_BULK_OPERATION_ID, canceled_result_url, object_count=canceled_object_count)
+                .build(),
+            ],
+        )
+        if canceled_result_url:
+            # the result of the 1st job has no records to checkpoint from
+            self._http_mocker.get(HttpRequest(canceled_result_url), MetafieldOrdersJobResponseBuilder().build())
+        self._http_mocker.post(create_job_cancel_request(_SHOP_NAME, _BULK_OPERATION_ID), [HttpResponse(json.dumps({}), status_code=200)])
+        # 2nd job: passes the checkpoint threshold, but is not canceled (no cancel request is mocked for it) and completes
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, next_bulk_operation_id),
+            [
+                JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="16000").build(),
+                JobStatusResponseBuilder().with_completed_status(next_bulk_operation_id, _JOB_RESULT_URL, object_count="16000").build(),
+            ],
+        )
+        self._http_mocker.get(HttpRequest(_JOB_RESULT_URL), MetafieldOrdersJobResponseBuilder().with_record().with_record().build())
+
+        metafield_orders_orders_state = {
+            "orders": {"updated_at": _INCREMENTAL_JOB_START_DATE_ISO, "deleted": {"deleted_at": ""}},
+            "updated_at": _INCREMENTAL_JOB_START_DATE_ISO,
+        }
+        stream_state = StateBuilder().with_stream_state(_BULK_STREAM, metafield_orders_orders_state).build()
+        config_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(weeks=104)
+        output = self._read(
+            _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
+        )
+
+        assert output.errors == []
+        assert len(output.records) == 2
+        assert output.most_recent_state.stream_state.updated_at > _INCREMENTAL_JOB_START_DATE_ISO
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
+
+    def test_when_read_with_stale_updated_at_checkpoint_before_slice_start_reruns_slice(self) -> None:
+        """
+        See https://github.com/airbytehq/oncall/issues/6874
+
+        A checkpoint cursor at or before the slice start (stale, from an earlier slice) must not rewind the slice.
+        The slice is re-run with the checkpointing disabled instead of raising the checkpoint collision error.
         """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
@@ -297,6 +356,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
                 # this will complete the job
                 JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, _JOB_RESULT_URL, object_count="1700").build(),
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
             ],
         )
         # mock the cancel operation request as we passed the 15000 rows
@@ -394,11 +454,8 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
         )
 
-        expected_error_message = "The stream: `metafield_orders` checkpoint collision is detected."
-        result = output.errors[0].trace.error.internal_message
-
-        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError`
-        assert result is not None and expected_error_message in result
+        assert output.errors == []
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
 
     def _read(self, config, sync_mode=SyncMode.full_refresh, state: Optional[List[AirbyteStateMessage]] = None):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, sync_mode).build()
@@ -410,10 +467,11 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         output = read(SourceShopify(), config, catalog, state=state)
         return output
 
-    def test_when_read_with_updated_at_field_before_bulk_request_window_start_date_customer_address(self):
+    def test_customer_address_with_stale_filter_checkpoint_before_slice_start_reruns_slice(self):
         """
-        The test logic is identical to the test above but with the another stream type, where cursor field is ID
-        and filter_checkpointed_cursor value should be used as the value to adjust slice end.
+        See https://github.com/airbytehq/oncall/issues/6874
+
+        Same as above, for the stream with the ID cursor, where `filter_checkpointed_cursor` is compared to the slice start.
         """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
@@ -439,6 +497,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
                 # this will complete the job
                 JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, _JOB_RESULT_URL, object_count="1700").build(),
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
             ],
         )
         # mock the cancel operation request as we passed the 15000 rows
@@ -533,8 +592,5 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
         )
 
-        expected_error_message = "The stream: `customer_address` checkpoint collision is detected."
-        result = output.errors[0].trace.error.internal_message
-
-        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError`
-        assert result is not None and expected_error_message in result
+        assert output.errors == []
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)

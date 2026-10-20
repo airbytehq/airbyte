@@ -27,7 +27,7 @@ class DevNullAggregateFactory(
                     streamDescriptor = key,
                     maxLogCount = type.maxEntryCount,
                     sampleRate = type.sampleRate,
-                    seed = type.seed
+                    seed = type.seed,
                 )
             }
             is Silent -> {
@@ -51,7 +51,7 @@ class LoggingAggregate(
     private val streamDescriptor: DestinationStream.Descriptor,
     private val maxLogCount: Int = 1000,
     private val sampleRate: Double = 1.0,
-    seed: Long? = null
+    seed: Long? = null,
 ) : Aggregate {
     private val log = KotlinLogging.logger {}
     private var recordCount: Long = 0L
@@ -98,7 +98,7 @@ class ThrottledAggregate(private val millisPerRecord: Long) : Aggregate {
 
 class FailingAggregate(
     private val streamDescriptor: DestinationStream.Descriptor,
-    private val failAfter: Int
+    private val failAfter: Int,
 ) : Aggregate {
     private val log = KotlinLogging.logger {}
     private var recordCount: Long = 0L
