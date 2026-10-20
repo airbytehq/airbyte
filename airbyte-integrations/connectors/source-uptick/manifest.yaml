@@ -169,6 +169,8 @@ spec:
     properties:
       base_url:
         type: string
+        minLength: 1
+        pattern: "\\S"
         description: Root URL of your Uptick workspace, e.g. https://demo-fire.onuptick.com.
         order: 0
         title: Base URL
@@ -435,6 +437,16 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "password"
+      - type: ConfigMigration
+        description: Remove legacy fields that the connector no longer reads (end_date, start_date, oauth_access_token, oauth_token_expiry_date, client_refresh_token).
+        transformations:
+          - type: ConfigRemoveFields
+            field_pointers:
+              - ["end_date"]
+              - ["start_date"]
+              - ["oauth_access_token"]
+              - ["oauth_token_expiry_date"]
+              - ["client_refresh_token"]
 streams:
   - type: DeclarativeStream
     name: tasks
@@ -2738,8 +2750,11 @@ streams:
               - "null"
           tracking_categories:
             type:
-              - object
+              - array
               - "null"
+            items:
+              type: object
+              additionalProperties: true
           branch_id:
             type:
               - integer
@@ -4350,8 +4365,11 @@ streams:
               - "null"
           tracking_categories:
             type:
-              - object
+              - array
               - "null"
+            items:
+              type: object
+              additionalProperties: true
           extra_fields:
             type:
               - object

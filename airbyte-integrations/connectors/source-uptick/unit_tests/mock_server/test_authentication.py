@@ -67,6 +67,32 @@ def _source_with_migration_controls(config: dict):
     return source, controls
 
 
+def test_unused_legacy_config_fields_are_removed() -> None:
+    legacy_fields = (
+        "end_date",
+        "start_date",
+        "oauth_access_token",
+        "oauth_token_expiry_date",
+        "client_refresh_token",
+    )
+    config = ConfigBuilder().build()
+    config.update({field: "legacy-value" for field in legacy_fields})
+    _, migration_controls = _source_with_migration_controls(config)
+
+    migrated_configs = [message["control"]["connectorConfig"]["config"] for message in migration_controls]
+    migrated = next(migrated_config for migrated_config in migrated_configs if all(field not in migrated_config for field in legacy_fields))
+
+    assert migrated["base_url"] == config["base_url"]
+    assert "credentials" in migrated
+
+
+def test_config_without_unused_legacy_fields_emits_no_migration_control() -> None:
+    config = ConfigBuilder().with_password_credentials().build()
+    _, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls == []
+
+
 @pytest.mark.parametrize(
     "credential_value, wire_value",
     [

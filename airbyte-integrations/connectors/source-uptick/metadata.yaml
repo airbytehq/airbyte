@@ -33,7 +33,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 2.1.0
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
@@ -44,6 +44,15 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message: "This release changes the type of `tracking_categories` on the `costcentres` and `products` streams from object to an array of objects, matching what the Uptick API returns. Users syncing these streams must update downstream references and refresh the source schema after upgrading. It also removes unused legacy fields from stored configurations and rejects an empty `base_url`; existing working configurations need no changes. See the [Uptick migration guide](https://docs.airbyte.com/integrations/sources/uptick-migrations#upgrading-to-300) for details."
+        upgradeDeadline: "2026-11-30"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - costcentres
+              - products
       2.0.0:
         message: "This release upgrades the Uptick API from v2.15 to v2.16, which removes `properties.access_signaturereq` and `servicetasks.from_stock`. It also changes the type of `properties.address`, `properties.coords` and `branches.business_hours` from string to object and `servicequotes.product_subtotal` from string to number, and makes `majorservices` full refresh only because the endpoint has no `updated` timestamp. Users syncing these streams must update downstream references and refresh the source schema after upgrading. Users syncing `majorservices` incrementally must switch it to full refresh. See the [Uptick migration guide](https://docs.airbyte.com/integrations/sources/uptick-migrations#upgrading-to-200) for details."
         upgradeDeadline: "2026-11-16"

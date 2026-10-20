@@ -2,6 +2,32 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Uptick Migration Guide
 
+## Upgrading to 3.0.0
+
+Version 3.0.0 changes the `tracking_categories` schema on two streams, removes unused legacy configuration fields, and rejects an empty or whitespace-only `base_url`.
+
+### What changed
+
+The `costcentres.tracking_categories` and `products.tracking_categories` fields change from an object to an array of objects, matching what the Uptick API returns. Destinations with typed columns will see the column type change.
+
+The connector automatically removes the unused legacy configuration fields `end_date`, `start_date`, `oauth_access_token`, `oauth_token_expiry_date`, and `client_refresh_token` from stored configurations.
+
+The connector rejects an empty or whitespace-only `base_url`. Existing working configurations are unaffected.
+
+### Who is affected
+
+This change affects users who sync `costcentres` or `products` and have destinations with typed columns, or downstream queries, dashboards, and transformations that expect `tracking_categories` to be an object. Connections with an empty or whitespace-only `base_url` must also be updated to use a valid workspace URL.
+
+### Required actions
+
+After upgrading to version 3.0.0:
+
+1. Refresh the source schema for connections syncing `costcentres` or `products`.
+2. For either affected stream, clear or reset the destination data, or update downstream references to handle `tracking_categories` as an array of objects.
+3. Run a sync and verify downstream models against the updated schemas.
+
+No action is needed for the removed legacy configuration fields or for existing valid `base_url` values.
+
 ## Upgrading to 2.0.0
 
 Version 2.0.0 upgrades the connector from Uptick API v2.15 to v2.16, corrects the types of several fields, and makes the `majorservices` stream full refresh only.
