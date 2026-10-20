@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 1.0.3 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Python 3.13 and airbyte-cdk 7 |
+| 1.0.3 | 2026-10-20 | [89562](https://github.com/airbytehq/airbyte/pull/89562) | Upgrade to Python 3.13 and airbyte-cdk 7 |
 | 1.0.2 | 2026-06-07 | [79143](https://github.com/airbytehq/airbyte/pull/79143) | Revert connector base image to 4.0.0 (4.1.0 ships Python 3.13, incompatible with the connector's pinned CDK). |
 | 1.0.1 | 2026-06-02 | [78805](https://github.com/airbytehq/airbyte/pull/78805) | Update dependencies |
 | 1.0.0 | 2026-05-13 | [77565](https://github.com/airbytehq/airbyte/pull/77565) | Map DateOnly fields to `date` format instead of `date-time`. Add `$select` projection to discovery to reduce metadata payload size. Streams with DateOnly fields require a schema refresh and data reset. |
