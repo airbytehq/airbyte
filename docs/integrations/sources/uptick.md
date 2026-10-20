@@ -4,27 +4,57 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- Credentials for one of the two authentication methods below. OAuth 2.0 is recommended; the username and password method remains available for existing connections.
+
+### OAuth 2.0 (recommended)
+
+On Airbyte Cloud, the **Authenticate with Uptick** button uses Airbyte's Uptick app, so the Airbyte app must be enabled in your Uptick account before you authenticate. If it is not enabled, ask your Uptick administrator to enable it. Then enter your **Base URL** (your Uptick instance URL in the form `https://<name>.onuptick.com`), choose **Authenticate with Uptick** under Authentication, click **Authenticate**, and approve the consent page that Uptick shows. For OAuth, the Base URL must be `https://<workspace>.onuptick.com`. The connector stores the resulting tokens in your connection's `credentials` block. The connector requests only Uptick's read-only `read` scope.
+
+On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then enter your Base URL, choose **Authenticate with Uptick**, and complete the flow.
+
+### Username & password
+
 The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
 - An OAuth Client ID and Client Secret generated from your Uptick instance.
 - The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started). Existing connections that use the top-level `client_id`, `client_secret`, `username`, and `password` fields continue to work; on the first run after upgrading to 2.1.0, the connector copies them under Authentication (`credentials`) and saves the migrated config — the original fields are kept, so pinning back to 2.0.x keeps working.
 
-## Configuration
+The Uptick user account needs read access to each module you want to sync; in practice `task_profitability` has required the Intelligence reports permission.
+
+## Setup guide
+
+### Set up the Uptick source in Airbyte
+
+1. In Airbyte, go to **Sources** and select **+ New source**.
+2. Search for and select **Uptick** as the source type.
+3. Enter your **Base URL** and choose an **Authentication** method, then fill in the fields from the configuration table below. For **Authenticate with Uptick**, click **Authenticate** and approve the consent page; for **Username & password**, fill in `client_id`, `client_secret`, `username`, and `password`. Consider creating a dedicated Uptick service user for the connector: the API token inherits that user's permissions, so a service user keeps access scoped to exactly what you sync.
+4. Select **Set up source** to test the connection.
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. The connector keeps only the host and always connects over HTTPS, so any scheme, path, or trailing slash you enter is ignored. | |
-| `client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. | |
-| `client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. | |
-| `username` | `string` | Email address for an Uptick user account with API access. Synced data is limited to what this user can see in Uptick. | |
-| `password` | `string` | Password for the Uptick user account. | |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for both authentication methods. Syncs normalize the value automatically. | |
+| `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
+| `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.refresh_token` | `string` | Refresh token obtained by authenticating with Uptick. Required for `oauth2.0`; filled automatically by the OAuth flow. | |
+| `credentials.username` | `string` | Email address for an Uptick user account with API access. Required for `password`. Synced data is limited to what this user can see in Uptick. | |
+| `credentials.password` | `string` | Password for the Uptick user account. Required for `password`. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 | `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
 
-## Streams
+## Supported sync modes
+
+| Sync mode | Supported |
+| --------- | --------- |
+| Full Refresh Sync | ✅ |
+| Incremental Sync | ✅ |
+
+Every stream except `majorservices` supports both full refresh and incremental sync on the `updated` cursor; `majorservices` has no `updated` timestamp and is full refresh only. Among the JSON:API streams, only those marked ✅ in the **Reports deletions** column below expose a `deleted` timestamp; on the streams marked ❌ there, an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
+
+## Supported Streams
 
 The Uptick connector syncs data from the following streams, organized by functional area:
 
@@ -106,63 +136,63 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 ### Stream details
 
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
-| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `clients` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `properties` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `invoices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `projects` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `suppliers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `routines` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcards` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `users` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `costcentres` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `accreditations` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `branches` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `products` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `contractors` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `appointments` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
-| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
-| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) |
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | Reports deletions |
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- | ------------------- |
+| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `clients` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `properties` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `invoices` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `projects` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `suppliers` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `routines` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcards` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `users` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `costcentres` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `accreditations` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `branches` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `products` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `contractors` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `appointments` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservices` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ | n/a (generated report) |
+| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ | ✅ |
+| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ✅ | ❌ |
+| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) | n/a (full refresh only) |
 
 ### API version and fields
 
@@ -194,26 +224,54 @@ Before version 2.0.0, the `servicegroups` and `accreditationtypes` endpoints ign
 
 The `majorservices` endpoint has no `updated` timestamp, so there is no cursor to sync from. From version 2.0.0 the connector offers this stream in full refresh mode only.
 
-Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream except `majorservices`. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
+Airbyte still offers incremental sync in the UI for the streams marked ❌ under **Reports deletions**, because the connector defines the `updated` cursor for every stream except `majorservices`. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
 
-## Rate limits and performance
+## Data type map
+
+| Connector schema type | Airbyte type |
+| --------------------- | ------------ |
+| string | string |
+| integer | integer |
+| number | number |
+| decimal | string (airbyte_type `decimal`) |
+| boolean | boolean |
+| date | string (format `date`) |
+| datetime | string (format `date-time`, airbyte_type `timestamp_with_timezone`) |
+| object | object |
+| array | array |
+
+## Limitations & Troubleshooting
+
+### Permission errors (403)
+
+If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. The connector fails with a configuration error instead of retrying. Grant the missing module permission in Uptick or deselect the stream.
+
+**`403 Access denied … required licenses (FIELD, DESK, CONTRACTOR)` after logging in during "Authenticate with Uptick".** The Uptick user you signed in with has no licence in that workspace. Ask your Uptick administrator to grant one (for example, DESK), or use username/password authentication instead.
+
+### Authentication errors
+
+Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings. Provider error: invalid_grant` (or `invalid_client`). For connections that use **Authenticate with Uptick**, re-authenticate so the stored tokens are refreshed. For username and password connections, check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
+
+Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with the configuration error `Refreshed OAuth access token is rejected by the API.` Update the credentials and run the sync again.
+
+For **Authenticate with Uptick**, the Base URL must be `https://<workspace>.onuptick.com`. If it points anywhere else, the connection check fails with a hint to correct the Base URL and the connector sends no request to that host.
+
+### Deleted records
+
+Streams marked ❌ under **Reports deletions** in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a **Full Refresh | Overwrite** sync (Full Refresh | Append doesn't remove rows). The 12 JSON:API streams marked ✅ there expose a `deleted` timestamp on deleted records; `task_profitability` is a generated report and has no deleted state.
+
+### Rate limits
 
 Uptick enforces rate limits and reasonable-use guidelines on its API but doesn't publish a numeric limit. Uptick states that it can revoke API access without notice for applications that violate these limits, so raise the connector's request rate cautiously.
 
 Two settings control how fast the connector reads from Uptick:
 
-- `max_requests_per_minute` sets a single request budget that all streams and threads share. The default of 60 requests per minute is a conservative value that Airbyte chose, and it's the throughput ceiling for the whole sync. Large workspaces with millions of records can sync more slowly than they did before version 1.3.0. If Uptick confirms your workspace tolerates more traffic, raise this value. If Uptick returns HTTP 429 responses, lower it.
+- `max_requests_per_minute` sets a single request budget that all streams and threads share (allowed range 1–600). The default of 60 requests per minute is a conservative value that Airbyte chose, and it's the throughput ceiling for the whole sync. Large workspaces with millions of records can sync more slowly than they did before version 1.3.0. If Uptick confirms your workspace tolerates more traffic, raise this value. If Uptick returns HTTP 429 responses, lower it.
 - `num_workers` sets how many requests run at the same time. The default is 3 and the maximum is 10. Because every request still counts against `max_requests_per_minute`, adding workers only speeds up a sync when slow API responses keep the connector from using its full per-minute budget.
 
 When Uptick throttles a request and returns a `Retry-After` header, the connector waits the indicated time before retrying. If the header asks for a wait of 30 minutes or longer, the connector fails the stream with a rate-limit error instead of waiting. Without a `Retry-After` header, the connector backs off exponentially. The connector retries a failed request up to five times.
 
 To reduce API usage, sync only the streams you need and schedule syncs no more often than your reporting requires.
-
-## Troubleshooting
-
-- **Invalid credentials.** Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as configuration errors without retrying. Check the four credential fields, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
-- **HTTP 401 during a sync.** Uptick access tokens can expire or be revoked during a long sync. When a stream request returns HTTP 401, the connector requests a new token and retries the request once. If the retry also fails, or if Uptick rejects the new token request because the password changed during the sync, the sync fails with a configuration error. Update the credentials and run the sync again.
-- **HTTP 403.** The Uptick user that the connector signs in as doesn't have permission to read the endpoint behind a stream. The connector fails with a configuration error instead of retrying. Grant the user access to that data in Uptick, or deselect the stream.
 
 ## IP allow list
 
@@ -226,13 +284,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 2.1.0 | 2026-10-20 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication with the read-only scope |
+| 2.0.1 | 2026-10-20 | [89415](https://github.com/airbytehq/airbyte/pull/89415) | Update dependencies |
 | 2.0.0 | 2026-10-16 | [88925](https://github.com/airbytehq/airbyte/pull/88925) | Upgrade the Uptick API to v2.16, correct the types of object and numeric fields, make majorservices full refresh only, filter servicegroups and accreditationtypes server-side, and add product_id to invoicelineitems |
 | 1.3.3 | 2026-10-13 | [88821](https://github.com/airbytehq/airbyte/pull/88821) | Update dependencies |
 | 1.3.2 | 2026-10-06 | [88063](https://github.com/airbytehq/airbyte/pull/88063) | Update dependencies |
 | 1.3.1 | 2026-09-29 | [87373](https://github.com/airbytehq/airbyte/pull/87373) | Update dependencies |
-| 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
+| 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add a configurable request budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
-| 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim (preserve decimal strings and nulls) and allow null on attribute fields; `servicegroups`/`accreditationtypes` now honour incremental state client-side (Uptick ignores `updatedsince`) — previously every sync re-emitted the full table, so append-only destinations will see fewer duplicate rows per sync |
+| 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim and filter servicegroups and accreditationtypes incrementally |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |

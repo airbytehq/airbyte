@@ -20,9 +20,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "integration_tests/config.json"
-        timeout_seconds: 60
       - config_path: "integration_tests/multiple_pools_config.json"
-        timeout_seconds: 60
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"
