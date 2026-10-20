@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
-| 0.2.22 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Python 3.13 and airbyte-cdk 7 |
+| 0.2.22 | 2026-10-20 | [89544](https://github.com/airbytehq/airbyte/pull/89544) | Upgrade to Python 3.13 and airbyte-cdk 7 |
 | 0.2.21 | 2025-10-14 | [67754](https://github.com/airbytehq/airbyte/pull/67754) | Update dependencies |
 | 0.2.20 | 2025-10-07 | [67079](https://github.com/airbytehq/airbyte/pull/67079/) | Fix broken pagination. |
 | 0.2.19 | 2025-10-07 | [67354](https://github.com/airbytehq/airbyte/pull/67354) | Update dependencies |
