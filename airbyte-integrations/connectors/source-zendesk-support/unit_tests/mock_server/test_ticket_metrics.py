@@ -33,6 +33,8 @@ _NOW = ab_datetime_now()
 _TWO_YEARS_AGO_DATETIME = _NOW.subtract(timedelta(weeks=104))
 _EXPORT_URL = "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json"
 _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+# Start Date does not apply to `ticket_metrics`: without state the export is read from epoch 0.
+_EPOCH = 0
 # 2026-03-01T00:00:00Z, `TicketsStateMigration.BACKFILL_FLOOR`
 _TICKETS_BACKFILL_FLOOR = 1772323200
 
@@ -85,7 +87,7 @@ class TestTicketMetricsFullRefresh(TestCase):
     def test_given_one_page_when_read_then_emit_side_loaded_metric_sets_with_ticket_generated_timestamp(self, http_mocker):
         config = _config()
         http_mocker.get(
-            _export_request(_api_token_authenticator(), config["start_date"]),
+            _export_request(_api_token_authenticator(), _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(3), metric_set_id=361110475196)
             .with_ticket(2, _days_ago(2), metric_set_id=361593978316)
@@ -105,7 +107,7 @@ class TestTicketMetricsFullRefresh(TestCase):
         """`GET /ticket_metrics` leaves archived tickets out; the export side-load returns them."""
         config = _config()
         http_mocker.get(
-            _export_request(_api_token_authenticator(), config["start_date"]),
+            _export_request(_api_token_authenticator(), _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(5), status="closed")
             .with_ticket(191, _days_ago(4), status="deleted")
@@ -121,7 +123,7 @@ class TestTicketMetricsFullRefresh(TestCase):
     def test_given_ticket_without_metric_set_when_read_then_skip_it(self, http_mocker):
         config = _config()
         http_mocker.get(
-            _export_request(_api_token_authenticator(), config["start_date"]),
+            _export_request(_api_token_authenticator(), _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(5))
             .with_ticket(2, _days_ago(4), with_metric_set=False)
@@ -138,7 +140,7 @@ class TestTicketMetricsFullRefresh(TestCase):
         authenticator = _api_token_authenticator()
         # Zendesk's after_url carries the `include` parameter, as the live API does.
         http_mocker.get(
-            _export_request(authenticator, config["start_date"]),
+            _export_request(authenticator, _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(5))
             .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}&include=metric_sets")
@@ -160,7 +162,7 @@ class TestTicketMetricsFullRefresh(TestCase):
         config = _config()
         authenticator = _api_token_authenticator()
         http_mocker.get(
-            _export_request(authenticator, config["start_date"]),
+            _export_request(authenticator, _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(5))
             .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}")
@@ -179,11 +181,11 @@ class TestTicketMetricsFullRefresh(TestCase):
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsIncremental(TestCase):
     @HttpMocker()
-    def test_given_no_state_when_read_then_start_from_start_date_and_emit_plain_cursor_state(self, http_mocker):
+    def test_given_no_state_when_read_then_start_from_epoch_and_emit_plain_cursor_state(self, http_mocker):
         config = _config()
         authenticator = _api_token_authenticator()
         http_mocker.get(
-            _export_request(authenticator, config["start_date"]),
+            _export_request(authenticator, _EPOCH),
             TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
             .with_ticket(1, _days_ago(5))
             .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}&include=metric_sets")
@@ -199,6 +201,30 @@ class TestTicketMetricsIncremental(TestCase):
         assert len(output.records) == 3
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
         assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(2))}
+        _assert_no_per_ticket_requests(http_mocker)
+
+    @HttpMocker()
+    def test_given_recent_start_date_and_no_state_when_read_then_still_start_from_epoch(self, http_mocker):
+        """5.6.x never applied Start Date to `ticket_metrics`, so a recent Start Date must not drop older tickets' metric sets."""
+        config = (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_NOW.subtract(timedelta(days=7)))
+            .build()
+        )
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(400))
+            .with_ticket(2, _days_ago(1))
+            .build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config)
+
+        assert [record.record.data["ticket_id"] for record in output.records] == [1, 2]
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
         _assert_no_per_ticket_requests(http_mocker)
 
     @HttpMocker()
@@ -323,7 +349,7 @@ class TestTicketMetricsErrorHandling(TestCase):
     def test_given_403_when_read_then_fail_with_config_error(self, http_mocker):
         config = _config()
         http_mocker.get(
-            _export_request(_api_token_authenticator(), config["start_date"]),
+            _export_request(_api_token_authenticator(), _EPOCH),
             ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
         )
 

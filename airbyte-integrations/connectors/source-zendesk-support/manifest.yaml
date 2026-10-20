@@ -1285,8 +1285,14 @@ definitions:
   # export also returns archived tickets, which `GET /ticket_metrics` leaves out. Metric sets carry
   # no `generated_timestamp`, so the custom extractor stamps each one with its ticket's value as
   # `_ab_updated_at`, and the stream checkpoints on that like `tickets` does. See AGENTS.md §2.
+  # Start Date never applied to `ticket_metrics` (5.6.x read `GET /ticket_metrics` in full), so the
+  # stream starts at epoch 0, or at the saved cursor, to keep the same data scope.
   ticket_metrics_stream:
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_datetime:
+        datetime: "0"
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true

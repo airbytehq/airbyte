@@ -153,7 +153,7 @@ class TicketMetricsStateMigration(StateMigration):
     `parent_state`, so this keeps the same backfill for `ticket_metrics`.
 
     Any other shape without a usable cursor (for example a full-refresh-only state) becomes `{}`,
-    so the stream starts from `start_date`.
+    so the stream reads the export from epoch 0, as a first sync does.
     """
 
     CURSOR_FIELD = "_ab_updated_at"

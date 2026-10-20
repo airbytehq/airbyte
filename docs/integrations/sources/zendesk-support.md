@@ -211,7 +211,7 @@ The `ticket_metrics` stream reads the ticket metric sets that Zendesk [side-load
 
 - **Archived tickets are included.** The [List Ticket Metrics](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/#list-ticket-metrics) endpoint leaves out archived tickets, and Zendesk archives closed tickets 120 days after they close. The export returns them, so a full refresh now syncs their metric sets too.
 - **Deleted tickets keep their metric sets.** A deleted ticket still has a metric set in the export, and the stream syncs it, as earlier versions did.
-- **Start Date applies.** Like `tickets`, the stream syncs metric sets of tickets that changed on or after **Start Date**. Tickets that have not changed since then are not synced.
+- **Start Date does not apply.** As in earlier versions, the first sync reads the metric sets of all tickets, whatever the **Start Date**. It reads the whole export at up to 1000 tickets per request, within the export's limit of 10 requests per minute, so on a large account the first sync of this stream can take a while. Later syncs read only tickets that changed since the previous sync.
 - **Change tracking follows the ticket.** The stream's cursor, `_ab_updated_at`, is the ticket's `generated_timestamp`. A metric set is synced again whenever its ticket changes.
 
 :::note
