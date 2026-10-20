@@ -222,7 +222,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.0.14 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix sync failures for streams with arrays of objects or unions by stringifying nested array elements. |
+| 1.0.14 | 2026-10-20 | [89506](https://github.com/airbytehq/airbyte/pull/89506) | Fix sync failures for streams with arrays of objects or unions by stringifying nested array elements. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
 | 1.0.11 | 2026-09-01 | [84992](https://github.com/airbytehq/airbyte/pull/84992) | Upgrade to Bulk CDK 1.0.25. |
