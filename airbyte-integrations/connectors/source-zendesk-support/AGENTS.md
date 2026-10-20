@@ -74,11 +74,13 @@ What the CDK filter (`ClientSideIncrementalRecordFilterDecorator` → `Concurren
 
 - Keeps `cursor_start <= value <= now`. `cursor_start` is the saved state, or the configured start date on a first sync. A record equal to the state is kept, which matters because the export overlaps at the boundary.
 - Keeps a record whose cursor value is missing or matches none of `cursor_datetime_formats` (`ValueError` → kept, one warning per stream). `ticket_events.timestamp` is an integer epoch (`%s`); `ticket_metric_events.time` is an ISO string such as `2025-12-16T20:16:16Z` (`%Y-%m-%dT%H:%M:%SZ`). Both were confirmed against the live API. If Zendesk ever adds fractional seconds to `time`, nothing would match and the filter would quietly stop filtering rather than drop records.
-- Drops a record later than the current time. Such a record is not checkpointed, so it cannot push the next `start_time` into the future (the export answers a future `start_time` with a 400).
+- Drops a record later than the current time, for example an SLA breach event, which Zendesk can record ahead of the breach. Such a record is not checkpointed. Before 5.6.4 such a record pushed the state past now; the cursor then generated no slice (`ConcurrentCursor._split_per_slice_range` returns nothing when the lower boundary is after the upper one), and the stream synced nothing until the clock caught up, so changes in that gap could be missed.
 - Leaves the state unchanged. The state is the maximum of the previous state and the emitted cursor values, and every dropped record is older than the previous state, so the checkpoint is the same as before the filter.
 - Changes nothing about the requests: the same pages are fetched and paginated. Only destination volume goes down; API requests and runtime stay the same.
 
 `ticket_metric_events` had this filter before the low-code migration (the Python stream yielded only `record["time"] > state["time"]`); the migration dropped it. `ticket_events` was added after the migration and never had it.
+
+Tickets created through the Ticket Import API can carry back-dated event times. Their events may reach the export after the saved cursor while their event time is before it, and these two streams skip them; `tickets` and `ticket_comments` still carry those tickets.
 
 **Why `ticket_comments` is excluded:** it reads the same ticket events export (and has the same re-stamping exposure), but its cursor is the comment's `created_at`. A comment that is redacted or edited later is returned again with its original `created_at`, so a cursor filter could drop real changes. Whether to filter it is a separate decision.
 

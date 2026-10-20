@@ -294,8 +294,9 @@ class TestTicketMetricEventsClientSideFiltering(TestCase):
 
     @HttpMocker()
     def test_given_record_later_than_now_then_drop_it_and_do_not_move_state_past_now(self, http_mocker):
-        # The CDK filter is bounded above by the cursor's end (now). Such a record is not checkpointed either, so the
-        # next sync's start_time does not move into the future (which the export rejects with a 400).
+        # The CDK filter is bounded above by the cursor's end (now). Such a record is not checkpointed either. Without
+        # the filter it pushed the state past now, the cursor generated no slice, and the stream synced nothing until
+        # the clock caught up.
         state_cursor = string_to_datetime(self._config["start_date"]).add(timedelta(days=30))
         newer = state_cursor.add(timedelta(hours=1))
         http_mocker.get(
