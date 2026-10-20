@@ -77,6 +77,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
      * types. `ORDER BY ... DESC NULLS LAST` without it cannot use that index and reads it whole.
      */
     private fun SelectQuerySpec.maxValueByOrderingSql(column: DataField): String {
+        require(orderBy == NoOrderBy && limit == NoLimit) {
+            "a column maximum query carries no ORDER BY or LIMIT of its own: $this"
+        }
         val col: String = column.sql()
         val whereSql: String =
             when (val w = where) {
