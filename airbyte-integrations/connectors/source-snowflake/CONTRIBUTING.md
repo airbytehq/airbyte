@@ -10,6 +10,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 2. **Programmatic access-token authentication omits the JDBC username** -- Programmatic access-token authentication identifies the user from the token, rather than a JDBC username.
 3. **Metadata error tolerance is limited to discovery** -- Discovery can continue past certain object-level metadata errors, but the same tolerance does not apply to CHECK or READ.
 4. **The SSH tunnel field is retained for compatibility** -- The retained SSH field is for compatibility, not evidence that SSH tunneling is supported for Snowflake.
+5. **TIME columns use a Snowflake-specific reader** -- Snowflake `TIME` values retain fractional precision and do not round past midnight.
+6. **CHECK validates the default warehouse, database, and schema** -- By default, CHECK rejects invalid or unauthorized settings as configuration errors; JDBC URL parameters can override this validation.
+7. **Metadata schema filters disable JDBC wildcard matching** -- By default, schema names containing `_` or `%` are matched literally, avoiding broad scans and similarly named schemas.
+8. **NTZ cursor bounds are bound as TIMESTAMP_NTZ** -- Session time zone settings cannot shift an incremental cursor boundary.
 
 ## Build and unit tests
 
