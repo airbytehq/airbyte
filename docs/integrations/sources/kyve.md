@@ -33,7 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                              |
 | :------ | :--------- | :----------- | :--------------------------------------------------- |
-| 0.2.55 | 2026-10-20 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to airbyte-cdk 7 and Python 3.13 (python-connector-base 4.1.1) |
+| 0.2.55 | 2026-10-20 | [89558](https://github.com/airbytehq/airbyte/pull/89558) | Upgrade to airbyte-cdk 7 and Python 3.13 (python-connector-base 4.1.1) |
 | 0.2.54 | 2026-10-07 | [88269](https://github.com/airbytehq/airbyte/pull/88269) | Skip hash verification for bundles without a `data_hash` instead of failing with `AssertionError`; raise a descriptive error on hash mismatch |
 | 0.2.53 | 2026-10-07 | [88168](https://github.com/airbytehq/airbyte/pull/88168) | Format unit test data with the repository ruff version |
 | 0.2.52 | 2025-10-14 | [68066](https://github.com/airbytehq/airbyte/pull/68066) | Update dependencies |
