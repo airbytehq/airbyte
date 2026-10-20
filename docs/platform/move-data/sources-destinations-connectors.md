@@ -22,9 +22,21 @@ Connectors have [different support levels](/integrations/connector-support-level
 
 ### Connectors are open source
 
-Airbyte provides over 600 connectors, almost all of which are open source. You can contribute to connectors to make them better or keep them up-to-date as third-parties make changes, or fork it to make it more suitable to your particular needs. 
+Airbyte provides over 600 connectors, almost all of which are open source. You can contribute to connectors to make them better or keep them up-to-date as third-parties make changes, or fork it to make it more suitable to your particular needs.
 
 If you don't see the connector you need, you can build one from scratch. Airbyte provides a no-code and low-code [Connector Builder](../connector-development/connector-builder-ui/overview). For advanced use cases, you can use Connector Development Kits (CDKs), which are more traditional software development tools.
+
+### Connector capabilities
+
+A connector can have one or both of these capabilities:
+
+- **Data replication** moves data. The connector extracts data from a source and loads it into a destination during a sync. Everything in the [connector catalog](/integrations/) supports data replication.
+
+- **Agent access** answers questions. The connector calls a third-party system in real time and returns only the records an AI agent asks for. Some connectors, like HubSpot or Zendesk, support [agent access](/ai-agents/connectors/) as well as data replication.
+
+Each connector's page shows which capabilities it has under **Connector type**.
+
+In Airbyte Cloud, the [context layer](/platform/context-layer) lets a single source or destination you set up use both capabilities. When it's on, a connector you set up for data replication can also answer read-only requests from AI agents through the [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support the `list` and `get` actions. They don't affect your syncs.
 
 ## Add and manage sources and destinations
 

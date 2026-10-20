@@ -15,7 +15,6 @@ import binascii
 import logging
 import struct
 from dataclasses import InitVar, dataclass
-from datetime import timedelta
 from itertools import groupby
 from os import getenv
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -28,7 +27,6 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
@@ -37,7 +35,7 @@ from airbyte_cdk.sources.declarative.transformations.config_transformations.conf
     ConfigTransformation,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -322,56 +320,6 @@ class NestedGraphQLPaginationStrategy(PaginationStrategy):
             pending.append([node.get("number"), child["pageInfo"]["endCursor"]])
 
 
-@dataclass
-class NestedGraphQLRecordExtractor(RecordExtractor):
-    """Extract child records from either shape a two-level GraphQL traversal can return.
-
-    The listing query nests the child connection under every parent node:
-
-        data.repository.<list_connection>.nodes[*].<child_connection>.nodes[*]
-
-    the drill-down query returns a single parent:
-
-        data.repository.<drilldown_field>.<child_connection>.nodes[*]
-
-    A `DpathExtractor` can express either path but not both, and the records also need fields
-    that only exist on the parent node (`reviews.pull_request_url` comes from the pull
-    request's `url`), which a path-based extractor cannot reach at all. `parent_fields` maps a
-    field on the parent node to the field name to copy it into.
-    """
-
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    list_connection: str = ""
-    drilldown_field: str = ""
-    child_connection: str = ""
-    parent_fields: Optional[Mapping[str, str]] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        for field in ("list_connection", "drilldown_field", "child_connection"):
-            if not getattr(self, field):
-                raise ValueError(f"NestedGraphQLRecordExtractor requires `{field}`")
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        repository = (response.json().get("data") or {}).get("repository")
-        if not repository:
-            # GitHub answers 200 with a null repository when the token cannot see it.
-            return
-        repository_name = f"{(repository.get('owner') or {}).get('login')}/{repository.get('name')}"
-        if self.list_connection in repository:
-            parents = ((repository[self.list_connection] or {}).get("nodes")) or []
-        else:
-            parent = repository.get(self.drilldown_field)
-            parents = [parent] if parent else []
-        for parent in parents:
-            children = ((parent.get(self.child_connection) or {}).get("nodes")) or []
-            for record in children:
-                record["repository"] = repository_name
-                for source, destination in (self.parent_fields or {}).items():
-                    record[destination] = parent.get(source)
-                yield record
-
-
 # Depth-first order for the four-level reaction traversal: the deepest pending connection is
 # always drilled into first, so a comment's reactions are finished before the next pull
 # request is opened. Ported from `graphql.CursorStorage`, which built the same ordering out of
@@ -522,64 +470,6 @@ class DeepNestedGraphQLPaginationStrategy(PaginationStrategy):
 
 
 @dataclass
-class DeepNestedGraphQLRecordExtractor(RecordExtractor):
-    """Extract reaction records from any of the four roots the traversal can return.
-
-    Ported from `streams.PullRequestCommentReactions.parse_response`. Each reaction is stamped
-    with its repository and the id of the comment it belongs to; `user.type` is set because the
-    legacy record carried it and the GraphQL `user` field here is not a union.
-    """
-
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        pass
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        data = response.json().get("data") or {}
-
-        repository = data.get("repository")
-        if repository:
-            for pull_request in self._nodes(repository, "pullRequests"):
-                yield from self._from_pull_request(pull_request, repository)
-
-        node = data.get("node")
-        if node:
-            # The drill-down documents select the repository alongside the node, so the record
-            # can still be stamped with it.
-            repository = node.get("repository") or {}
-            typename = node.get("__typename")
-            if typename == "PullRequest":
-                yield from self._from_pull_request(node, repository)
-            elif typename == "PullRequestReview":
-                yield from self._from_review(node, repository)
-            elif typename == "PullRequestReviewComment":
-                yield from self._from_comment(node, repository)
-
-    def _from_pull_request(self, pull_request: Mapping[str, Any], repository: Mapping[str, Any]):
-        for review in self._nodes(pull_request, "reviews"):
-            yield from self._from_review(review, repository)
-
-    def _from_review(self, review: Mapping[str, Any], repository: Mapping[str, Any]):
-        for comment in self._nodes(review, "comments"):
-            yield from self._from_comment(comment, repository)
-
-    def _from_comment(self, comment: Mapping[str, Any], repository: Mapping[str, Any]):
-        repository_name = f"{(repository.get('owner') or {}).get('login')}/{repository.get('name')}"
-        for reaction in self._nodes(comment, "reactions"):
-            reaction["repository"] = repository_name
-            reaction["comment_id"] = comment.get("id")
-            if reaction.get("user"):
-                reaction["user"]["type"] = "User"
-            yield reaction
-
-    @staticmethod
-    def _nodes(node: Mapping[str, Any], connection: str) -> Iterable[Mapping[str, Any]]:
-        return ((node.get(connection) or {}).get("nodes")) or []
-
-
-@dataclass
 class IssueTimelineEventsExtractor(RecordExtractor):
     """Collapse an issue's timeline page into one record keyed by event type.
 
@@ -709,47 +599,6 @@ class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
 
 
 @dataclass
-class WorkflowRunsPaginationStrategy(CursorPaginationStrategy):
-    """Stop paging once the page's oldest run was created more than 32 days before the slice start.
-
-    Runs are listed newest-created first and can be re-run for 32 days, so nothing older can still
-    change: the legacy `WorkflowRuns.read_records` broke out of the page loop there.
-
-    This is a workaround for a CDK gap, not a GitHub quirk. `CursorPaginationStrategy` already
-    exposes the decoded page to `stop_condition`, but the paginator's interpolation context has no
-    `stream_slice` (only `config`, `response`, `headers`, `last_record`, `last_page_size`), so the
-    slice start cannot be compared against the page from YAML. Until that lands
-    (https://github.com/airbytehq/airbyte-python-cdk/issues/1166), the requester injects the slice
-    start as a request header GitHub ignores and this strategy reads it back from
-    `response.request`. Once `stream_slice` is available, delete this class and the header and use
-    a `stop_condition` on the built-in strategy instead.
-    """
-
-    window_header: str = "X-Airbyte-Window-Start"
-    re_run_period_days: int = 32
-
-    def next_page_token(
-        self,
-        response: requests.Response,
-        last_page_size: int,
-        last_record: Optional[Record],
-        last_page_token_value: Optional[Any] = None,
-    ) -> Optional[Any]:
-        window_start = response.request.headers.get(self.window_header) if response.request else None
-        try:
-            runs = (response.json() or {}).get("workflow_runs") or []
-        except ValueError:
-            runs = []
-        oldest = runs[-1].get("created_at") if runs and isinstance(runs[-1], Mapping) else None
-        if (
-            window_start
-            and oldest
-            and ab_datetime_parse(oldest) < ab_datetime_parse(window_start) - timedelta(days=self.re_run_period_days)
-        ):
-            return None
-        return super().next_page_token(response, last_page_size, last_record, last_page_token_value)
-
-
 class ConfigNormalization(ConfigTransformation):
     """Default/normalize `api_url` and convert the legacy `repository`/`branch` strings to collections."""
 

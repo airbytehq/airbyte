@@ -29,6 +29,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
                 selectQueryGenerator = MySqlSourceOperations(),
                 fieldTypeMapper = MySqlSourceOperations(),
                 checkQueries = JdbcCheckQueries(),
+                featureFlags = emptySet(),
             )
 
         @JvmStatic
@@ -51,7 +52,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
                 tableNames.forEach { tableName ->
                     connection.createStatement().use { stmt: Statement ->
                         stmt.execute(
-                            "CREATE TABLE IF NOT EXISTS $tableName (id INT PRIMARY KEY, name VARCHAR(255))"
+                            "CREATE TABLE IF NOT EXISTS $tableName (id INT PRIMARY KEY, name VARCHAR(255))",
                         )
                     }
                 }
