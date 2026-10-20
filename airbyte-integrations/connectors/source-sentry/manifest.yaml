@@ -80,6 +80,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
     issues:
       type: DeclarativeStream
       name: issues
@@ -301,7 +303,23 @@ definitions:
       api_token: "{{ config[\"auth_token\"] }}"
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-Sentry-Rate-Limit-Reset
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
       response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+          failure_type: transient_error
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [500, 502, 503, 504]
+          failure_type: transient_error
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [404]
@@ -374,14 +392,24 @@ spec:
         type: integer
         title: Number of concurrent workers
         description: >-
-          The number of worker threads to use for the sync. The default of 5 is
-          safe for all Sentry API plans. Testing showed concurrency of 7 is
-          optimal; increase if your Sentry plan supports higher rate limits.
+          Worker threads for concurrent stream partitions (for example, one
+          partition per configured project slug). Use 1 when syncing the events
+          stream or when Sentry returns HTTP 429/503; higher values increase
+          throughput but also rate-limit pressure.
         minimum: 1
         maximum: 20
         default: 5
         order: 5
     additionalProperties: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5
+          interval: PT1S
+      matchers: []
 
 concurrency_level:
   type: ConcurrencyLevel
