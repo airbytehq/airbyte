@@ -46,3 +46,14 @@ def expected_json_schema():
 def test_get_json_schema(json_response, expected_json_schema):
     json_schema = Helpers.get_json_schema(json_response["records"][0])
     assert json_schema == expected_json_schema
+
+
+def test_call_survey_cto_returns_records(config, requests_mock):
+    records = [{"KEY": "uuid:1", "SubmissionDate": "Jan 10, 2022 00:00:00 AM"}]
+    requests_mock.get(
+        "https://server_name.surveycto.com/api/v2/forms/data/wide/json/form_id?date=Jan 09, 2022 00:00:00 AM",
+        json=records,
+    )
+
+    assert list(Helpers.call_survey_cto(config, "form_id")) == records
+    assert requests_mock.last_request.headers["Authorization"] == "Basic " + Helpers._base64_encode("username:password")
