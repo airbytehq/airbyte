@@ -33,7 +33,7 @@ class MixpanelStreamBackoffStrategy(BackoffStrategy):
         if isinstance(response_or_exception, requests.Response):
             retry_after = response_or_exception.headers.get("Retry-After")
             if retry_after:
-                self._logger.debug(f"API responded with `Retry-After` header: {retry_after}")
+                self.stream.logger.debug(f"API responded with `Retry-After` header: {retry_after}")
                 return float(retry_after)
         return None
 
