@@ -47,7 +47,7 @@ abstract class JdbcPartitionsCreator<
                 when (streamState.streamFeedBootstrap.dataChannelMedium) {
                     SOCKET -> generatePartitionId(4)
                     STDIO -> null
-                }
+                },
             )
 
         override fun releaseResources() {}

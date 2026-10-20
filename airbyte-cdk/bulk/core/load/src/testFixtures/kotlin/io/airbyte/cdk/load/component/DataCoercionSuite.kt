@@ -49,6 +49,7 @@ interface DataCoercionSuite {
     val coercer: ValueCoercer
     val airbyteMetaColumnMapping: Map<String, String>
         get() = Meta.COLUMN_NAMES.associateWith { it }
+
     val columnNameMapping: ColumnNameMapping
         get() = ColumnNameMapping(mapOf("test" to "test"))
 
@@ -62,14 +63,14 @@ interface DataCoercionSuite {
                 opsClient,
                 testClient,
                 schemaFactory,
-                airbyteMetaColumnMapping
+                airbyteMetaColumnMapping,
             )
 
     /** Fixtures are defined in [DataCoercionIntegerFixtures]. */
     fun `handle integer values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -85,7 +86,7 @@ interface DataCoercionSuite {
     fun `handle number values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -101,7 +102,7 @@ interface DataCoercionSuite {
     fun `handle timestamptz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -117,7 +118,7 @@ interface DataCoercionSuite {
     fun `handle timestampntz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -133,7 +134,7 @@ interface DataCoercionSuite {
     fun `handle timetz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -149,7 +150,7 @@ interface DataCoercionSuite {
     fun `handle timentz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -165,7 +166,7 @@ interface DataCoercionSuite {
     fun `handle date values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -195,7 +196,7 @@ interface DataCoercionSuite {
     fun `handle string values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -211,14 +212,14 @@ interface DataCoercionSuite {
     fun `handle object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
             columnNameMapping,
             FieldType(
                 ObjectType(linkedMapOf("foo" to FieldType(StringType, true))),
-                nullable = true
+                nullable = true,
             ),
             inputValue,
             expectedValue,
@@ -230,7 +231,7 @@ interface DataCoercionSuite {
     fun `handle empty object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -246,7 +247,7 @@ interface DataCoercionSuite {
     fun `handle schemaless object values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -262,7 +263,7 @@ interface DataCoercionSuite {
     fun `handle array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -278,7 +279,7 @@ interface DataCoercionSuite {
     fun `handle schemaless array values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -298,7 +299,7 @@ interface DataCoercionSuite {
     fun `handle union values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -310,9 +311,9 @@ interface DataCoercionSuite {
                         IntegerType,
                         StringType,
                     ),
-                    isLegacyUnion = false
+                    isLegacyUnion = false,
                 ),
-                nullable = true
+                nullable = true,
             ),
             inputValue,
             expectedValue,
@@ -330,7 +331,7 @@ interface DataCoercionSuite {
     fun `handle legacy union values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,
@@ -342,9 +343,9 @@ interface DataCoercionSuite {
                         IntegerType,
                         StringType,
                     ),
-                    isLegacyUnion = true
+                    isLegacyUnion = true,
                 ),
-                nullable = true
+                nullable = true,
             ),
             inputValue,
             expectedValue,
@@ -355,7 +356,7 @@ interface DataCoercionSuite {
     fun `handle unknown values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
-        expectedChangeReason: Reason?
+        expectedChangeReason: Reason?,
     ) = runTest {
         harness.testValueCoercion(
             coercer,

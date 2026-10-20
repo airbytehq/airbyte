@@ -19,7 +19,7 @@ class JdbcDataSourceUtilsTest {
         val connectionProperties = JdbcDataSourceUtils.getConnectionProperties(validConfig)
         val validKeys = listOf("key1", "key2", "key3")
         validKeys.forEach(
-            Consumer { key: String -> Assert.assertTrue(connectionProperties.containsKey(key)) }
+            Consumer { key: String -> Assert.assertTrue(connectionProperties.containsKey(key)) },
         )
 
         // For an invalid config, there is a conflict betweeen the values of keys in jdbc_url_params
