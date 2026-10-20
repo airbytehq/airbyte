@@ -49,15 +49,13 @@ class TestProjectDetailStream(TestCase):
         assert len(output.records) >= 1, f"Expected project detail record"
         assert output.records[0].record.data["slug"] == "test-project"
 
-    def test_spec_accepts_string_or_array_project(self):
+    def test_spec_project_is_string_array(self):
         connector_spec = get_source(config={}).spec(logger=None)
 
         connection_specification = connector_spec.connectionSpecification
         project_schema = connection_specification["properties"]["project"]
 
-        project_string_schema = project_schema["oneOf"][0]
-        project_array_schema = project_schema["oneOf"][1]
-        assert project_string_schema["minLength"] == 1
-        assert project_string_schema["pattern"] == r"^.*\S.*$"
-        assert project_array_schema["minItems"] == 1
-        assert project_array_schema["items"]["minLength"] == 1
+        assert project_schema["type"] == "array"
+        assert project_schema["minItems"] == 1
+        assert project_schema["items"]["type"] == "string"
+        assert project_schema["items"]["minLength"] == 1

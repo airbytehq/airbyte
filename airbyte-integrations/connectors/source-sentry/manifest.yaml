@@ -319,23 +319,17 @@ spec:
       - project
     properties:
       project:
+        type: array
         order: 3
-        title: Project
+        title: Projects
+        minItems: 1
         description: >-
-          The slug(s) of the Sentry project(s) to sync. Enter one project slug,
-          or multiple slugs to sync events, issues, and project details for each.
-        oneOf:
-          - type: string
-            minLength: 1
-            pattern: ^.*\S.*$
-            title: Single project
-          - type: array
-            title: Multiple projects
-            minItems: 1
-            items:
-              type: string
-              minLength: 1
-              pattern: ^.*\S.*$
+          One or more Sentry project slugs. Events, issues, and project detail
+          are synced for each slug.
+        items:
+          type: string
+          minLength: 1
+          pattern: ^.*\S.*$
       hostname:
         type: string
         description: >-

@@ -11,7 +11,7 @@ class ConfigBuilder:
             "auth_token": "test_token_abc123",
             "hostname": "sentry.io",
             "organization": "test-org",
-            "project": "test-project",
+            "project": ["test-project"],
         }
 
     def with_auth_token(self, token: str) -> "ConfigBuilder":
@@ -23,7 +23,7 @@ class ConfigBuilder:
         return self
 
     def with_project(self, project: str) -> "ConfigBuilder":
-        self._config["project"] = project
+        self._config["project"] = [project]
         return self
 
     def with_projects(self, projects: list[str]) -> "ConfigBuilder":
