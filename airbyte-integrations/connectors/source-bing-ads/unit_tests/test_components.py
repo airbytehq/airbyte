@@ -959,16 +959,17 @@ def test_decoder_closes_raw_stream(components_module):
     assert raw.closed
 
 
-def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
+def test_decoder_raises_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
-    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
-    assert rows == [{}]
+    with pytest.raises(gzip.BadGzipFile):
+        list(components_module.BingAdsGzipCsvDecoder().decode(response))
 
 
 # --- BingAdsReportDownloadRequester tests ---
 
 
 POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+BULK_POLL_URL = "https://bulk.api.bingads.microsoft.com/Bulk/v13/BulkDownloadStatus/Query"
 FRESH_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=fresh_token"
 STALE_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=stale_token"
 
@@ -1093,6 +1094,22 @@ def test_get_fresh_download_url_works_without_authenticator(components_module):
     assert "Authorization" not in m.last_request.headers
 
 
+def test_get_fresh_download_url_repolls_bulk_download_status(components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = StreamSlice(
+        partition={"account_id": "ACC-1"},
+        cursor_slice={},
+        extra_fields={"creation_response": {"DownloadRequestId": "DL-123"}, "ParentCustomerId": "CUST-1"},
+    )
+
+    with rm.Mocker() as m:
+        m.post(BULK_POLL_URL, json={"RequestStatus": "Completed", "ResultFileUrl": FRESH_SAS_URL}, status_code=200)
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result == FRESH_SAS_URL
+    assert m.last_request.json() == {"RequestId": "DL-123"}
+
+
 # --- send_request() integration tests ---
 
 
@@ -1145,11 +1162,12 @@ def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
 # --- Manifest-level integration test (P1) ---
 
 
-def test_manifest_instantiates_custom_download_requester(config):
+@pytest.mark.parametrize("stream_name", ["account_performance_report_daily", "keywords"])
+def test_manifest_instantiates_custom_download_requester(config, stream_name):
     """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
 
     This test builds the full source from manifest.yaml via YamlDeclarativeSource,
-    finds a report stream, and asserts that:
+    finds a report or bulk stream, and asserts that:
     1. The download requester is an instance of BingAdsReportDownloadRequester.
     2. stream_response is True (derived from decoder in __post_init__).
     3. The report_poll_authenticator is resolved and has get_auth_header().
@@ -1165,13 +1183,13 @@ def test_manifest_instantiates_custom_download_requester(config):
     state = StateBuilder().build()
     source = YamlDeclarativeSource(path_to_yaml=str(yaml_path), catalog=catalog, config=config, state=state)
 
-    # Find a report stream that uses the async retriever with download_requester
+    # Find the stream that uses the async retriever with download_requester
     target_stream = None
     for stream in source.streams(config=config):
-        if stream.name == "account_performance_report_daily":
+        if stream.name == stream_name:
             target_stream = stream
             break
-    assert target_stream is not None, "account_performance_report_daily stream not found"
+    assert target_stream is not None, f"{stream_name} stream not found"
 
     # Navigate to the AsyncJobPartitionRouter (stream_slicer).
     # The CDK may wrap the stream as a concurrent DefaultStream or leave it as a
