@@ -31,7 +31,7 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: integration_tests/spec.json
-        # changed from "Document File Type Format (Experimental)" to "Unstructured Document Format".
+        # The relaxed folder_url pattern is a superset; the compatibility check flags the change.
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.0"
+          disable_for_version: "0.5.39"
 connector_image: airbyte/source-google-drive:dev
