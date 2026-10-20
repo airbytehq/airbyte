@@ -2,13 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 from calendar import timegm
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Mapping
 
 import feedparser
-import pytz
 import requests
 from dateutil.parser import parse
 
@@ -37,9 +35,8 @@ class CustomExtractor(RecordExtractor):
                     pass
 
             try:
-                dt = datetime.utcfromtimestamp(timegm(item.published_parsed))
-                dt_tz = dt.replace(tzinfo=pytz.UTC)
-                mapping["published"] = dt_tz.isoformat()
+                dt = datetime.fromtimestamp(timegm(item.published_parsed), tz=timezone.utc)
+                mapping["published"] = dt.isoformat()
             except (AttributeError, KeyError):
                 pass
 
