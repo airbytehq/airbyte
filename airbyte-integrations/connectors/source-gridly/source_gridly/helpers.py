@@ -6,8 +6,7 @@ from typing import Any, Dict
 
 import requests
 
-from airbyte_cdk.models import AirbyteStream
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
@@ -111,12 +110,13 @@ class Helpers(object):
 
         json_schema = Helpers.get_json_schema(view)
 
-        return AirbyteStream(
+        stream = AirbyteStream(
             name=view_name,
             json_schema=json_schema,
             supported_sync_modes=[SyncMode.full_refresh],
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
         )
+        stream.supported_destination_sync_modes = [DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup]
+        return stream
 
     @staticmethod
     def transform_record(record: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
