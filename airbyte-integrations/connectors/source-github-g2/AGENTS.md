@@ -1,5 +1,5 @@
 > Experimental / internal Airbyte use only; not publicly listed and may be removed or folded into the main GitHub source.
-
+>
 > NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
 
 # Contributing to source-github-g2
@@ -219,12 +219,12 @@ the same way; the reset wait is the correct response there.
 ## Organizations must be payload-confirmed, never taken from config text
 
 `repositories` accepts wildcard entries (`owner/*`). The owner in such an entry is only a
-*candidate* organization — GitHub has no way to tell an org from a personal account by name, so
+_candidate_ organization — GitHub has no way to tell an org from a personal account by name, so
 `GET /orgs/{login}` 404s whenever the owner is a user. Two routers exist for this reason and are
 not interchangeable:
 
 - `organization_partition_router` derives orgs from the config string. Only the `repositories`
-  stream may use it, because that stream has to *attempt* `orgs/{login}/repos` to discover
+  stream may use it, because that stream has to _attempt_ `orgs/{login}/repos` to discover
   whether the login is an organization at all.
 - `organization_resolution_partition_router` derives orgs from response payloads —
   `owner/login` on the `orgs/{org}/repos` listing, `organization/login` on

@@ -37,7 +37,7 @@ Create a [GitHub Account](https://github.com).
 
 <!-- env:oss -->
 
-**Airbyte Open Source additional setup steps**
+#### Airbyte Open Source additional setup steps
 
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 
@@ -47,7 +47,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -81,7 +81,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. All streams use the declarative manifest; raising this value may speed up syncs but increases the risk of hitting GitHub's secondary rate limits.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
@@ -156,6 +156,7 @@ This connector outputs the following incremental streams:
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Notes
@@ -245,9 +246,9 @@ This currently affects the `repositories` stream. Other streams still fall back 
 
 GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an instance in that state answers `GET /rate_limit` with `404 Rate limiting is not enabled.`. The connector reads that as "this instance does not track quotas" and continues without quota tracking — it no longer treats it as a failed connection. Requests are still authenticated, multiple tokens are still used in turn, and any rate limiting the instance *does* enforce (secondary rate limits are a separate GHES setting) is still honored through the usual retry and backoff.
 
-#### Releases stream asset limit
+#### Release asset pagination
 
-The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
+The `release_assets` stream uses GitHub's paginated REST endpoint and follows Link headers, so all release assets are emitted across pages of up to 100 assets.
 
 #### Stargazers stream requires admin or collaborator access
 
@@ -288,7 +289,7 @@ If you use OAuth authentication method, the OAuth2.0 application requests the ne
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
-- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about [GitHub access permissions](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
