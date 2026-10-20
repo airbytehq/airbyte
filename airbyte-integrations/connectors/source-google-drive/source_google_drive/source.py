@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Mapping, Optional
+import logging
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
 from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
@@ -12,6 +13,7 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from source_google_drive.spec import SourceGoogleDriveSpec
 from source_google_drive.stream_permissions_reader import SourceGoogleDriveStreamPermissionsReader
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
+from source_google_drive.utils import get_folder_id
 
 
 class SourceGoogleDrive(FileBasedSource):
@@ -25,6 +27,13 @@ class SourceGoogleDrive(FileBasedSource):
             cursor_cls=DefaultFileBasedCursor,
             stream_permissions_reader=SourceGoogleDriveStreamPermissionsReader(),
         )
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        try:
+            get_folder_id(config["folder_url"])
+        except ValueError as error:
+            return False, str(error)
+        return super().check_connection(logger, config)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
