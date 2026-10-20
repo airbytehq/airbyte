@@ -28,7 +28,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Statement
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -120,17 +119,7 @@ class MySqlSourceCdcIntegrationTest {
         }
         val errorTraces: List<AirbyteTraceMessage> =
             run2.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
-        assertTrue(
-            errorTraces.none { trace ->
-                listOfNotNull(
-                        trace.error?.message,
-                        trace.error?.internalMessage,
-                        trace.error?.stackTrace,
-                    )
-                    .any { it.contains("Incumbent CDC state is invalid") }
-            },
-            "unexpected error trace(s): $errorTraces",
-        )
+        assertEquals(emptyList<AirbyteTraceMessage>(), errorTraces)
         val insertedRecords: List<AirbyteRecordMessage> =
             run2.records().filter { it.data["k"]?.asInt() == 5 }
         assertEquals(1, insertedRecords.size, "records: ${run2.records()}")
