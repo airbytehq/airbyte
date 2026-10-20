@@ -438,12 +438,15 @@ spec:
                 path: ["credentials", "auth_type"]
                 value: "password"
       - type: ConfigMigration
-        description: Remove legacy fields that the connector no longer reads (end_date, start_date, oauth_access_token, oauth_token_expiry_date, client_refresh_token).
+        description: Remove legacy fields the connector no longer reads; the legacy OAuth-token fields are removed only once `credentials.auth_type` is set.
         transformations:
           - type: ConfigRemoveFields
             field_pointers:
               - ["end_date"]
               - ["start_date"]
+          - type: ConfigRemoveFields
+            condition: "{{ config.get('credentials', {}).get('auth_type') in ['password', 'oauth2.0'] }}"
+            field_pointers:
               - ["oauth_access_token"]
               - ["oauth_token_expiry_date"]
               - ["client_refresh_token"]
