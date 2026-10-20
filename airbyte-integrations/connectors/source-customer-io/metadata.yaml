@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 1.1.1
+  dockerImageTag: 1.1.2
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
@@ -46,6 +46,9 @@ data:
     - title: Customer.io App API reference
       url: https://docs.customer.io/integrations/api/app/
       type: api_reference
+    - title: Customer.io App API OpenAPI spec
+      url: https://docs.customer.io/files/journeys-app.json
+      type: openapi_spec
     - title: Customer.io App API authentication
       url: https://docs.customer.io/integrations/api/app/#authentication
       type: authentication_guide
