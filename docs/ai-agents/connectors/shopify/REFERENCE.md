@@ -14462,7 +14462,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "quantities": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14475,7 +14476,8 @@ await shopify.inventory_set.create(
         "name": "<str>",
         "reason": "<str>",
         "quantities": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14493,7 +14495,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "quantities": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14511,6 +14514,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.quantities.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.quantities.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.quantities.quantity` | `integer` | Yes | Absolute quantity to set |
+| `input.quantities.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>
@@ -14552,7 +14557,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "changes": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14565,7 +14571,8 @@ await shopify.inventory_adjust.create(
         "name": "<str>",
         "reason": "<str>",
         "changes": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14583,7 +14590,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "changes": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14601,6 +14609,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.changes.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.changes.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.changes.delta` | `integer` | Yes | Amount to adjust (positive to add, negative to subtract) |
+| `input.changes.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>
