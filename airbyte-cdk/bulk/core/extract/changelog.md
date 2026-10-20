@@ -7,7 +7,7 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
-### 1.2.1 — 2026-10-18
+### 1.2.1 — 2026-10-20
 
 [#88493](https://github.com/airbytehq/airbyte/pull/88493) — The connection check's zero-tables error now names the databases or schemas that were searched and the usual causes (wrong name, empty database, missing permissions, or table filters), and the unqueryable-tables error suggests checking SELECT permission.
 
