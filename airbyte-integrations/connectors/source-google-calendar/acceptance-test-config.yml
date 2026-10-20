@@ -5,6 +5,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # The credentials spec was restructured under `credentials` in 1.1.0;
+        # legacy flat configs are migrated at runtime by config_normalization_rules.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,6 +19,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
+        empty_streams:
+          - name: "acl"
+            bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
   # The CDK standard-test runner used in CI reads only the spec, connection and basic_read
   # sections; the blocks below are kept for the legacy CAT runner and local runs.
   discovery:
