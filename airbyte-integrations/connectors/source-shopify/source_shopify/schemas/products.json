@@ -646,6 +646,52 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "category": {
+      "description": "The category of a product from Shopify's Standard Product Taxonomy.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "The ID of the taxonomy category.",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the taxonomy category.",
+          "type": ["null", "string"]
+        },
+        "full_name": {
+          "description": "The full hierarchy of the taxonomy category.",
+          "type": ["null", "string"]
+        },
+        "is_leaf": {
+          "description": "Whether the category has no children.",
+          "type": ["null", "boolean"]
+        },
+        "is_root": {
+          "description": "Whether the category is a root category.",
+          "type": ["null", "boolean"]
+        },
+        "is_archived": {
+          "description": "Whether the category is archived.",
+          "type": ["null", "boolean"]
+        },
+        "level": {
+          "description": "The depth of the category in the taxonomy.",
+          "type": ["null", "integer"]
+        },
+        "parent_id": {
+          "description": "The ID of the parent taxonomy category.",
+          "type": ["null", "string"]
+        },
+        "ancestor_ids": {
+          "description": "The IDs of the category's ancestors.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }

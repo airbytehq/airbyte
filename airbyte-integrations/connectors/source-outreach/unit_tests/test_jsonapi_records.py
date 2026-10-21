@@ -12,7 +12,8 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import _YAML_FILE_PATH, get_source
+from unit_tests.conftest import _YAML_FILE_PATH
+from unit_tests.conftest import build_source as get_source
 
 
 _BASE_URL = "https://api.outreach.io/api/v2"

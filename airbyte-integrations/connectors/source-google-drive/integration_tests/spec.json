@@ -431,6 +431,14 @@
           }
         ]
       },
+      "exclude_trashed_files": {
+        "title": "Exclude Trashed Files",
+        "description": "When enabled, files in the Google Drive trash (including files inside trashed folders) are not synced. Files that were already synced before being trashed are not removed from the destination; run a refresh to remove them.",
+        "default": false,
+        "order": 2,
+        "group": "advanced",
+        "type": "boolean"
+      },
       "folder_url": {
         "title": "Folder Url",
         "description": "URL for the folder you want to sync. Using individual streams and glob patterns, it's possible to only sync a subset of all files located in the folder.",
