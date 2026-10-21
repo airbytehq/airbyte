@@ -1,3 +1,7 @@
+## Version 1.0.8
+
+[#89632](https://github.com/airbytehq/airbyte/pull/89632) — Bump `sshd-mina` 2.13.2 → 2.20.0 (CVE-2026-77185 and twelve further Apache MINA SSHD advisories), `mina-core` 2.0.27 → 2.0.31 (CVE-2026-41409, CVE-2026-41635, CVE-2026-47065) and `bcprov-jdk18on` 1.78.1 → 1.86 (CVE-2026-8763, CVE-2025-14813, CVE-2026-13506), removing the critical findings Docker Scout reports on every Bulk CDK connector image; no behaviour change expected.
+
 ## Version 1.0.7
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
