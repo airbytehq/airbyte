@@ -10,7 +10,7 @@ Version 3.0.0 changes the `tracking_categories` schema on two streams, removes u
 
 The `costcentres.tracking_categories` and `products.tracking_categories` fields change from an object to an array of objects, matching what the Uptick API returns. Destinations with typed columns will see the column type change.
 
-The connector removes `end_date` and `start_date` automatically. It removes the legacy `oauth_access_token`, `oauth_token_expiry_date`, and `client_refresh_token` fields once the configuration has a `credentials` object, which is set automatically for existing configurations.
+The connector removes `end_date` and `start_date` automatically. It removes the legacy `oauth_access_token`, `oauth_token_expiry_date`, and `client_refresh_token` fields once the configuration has `credentials.auth_type` set, which the connector adds automatically for existing username and password configurations.
 
 The connector rejects an empty or whitespace-only `base_url`. Existing working configurations are unaffected.
 
