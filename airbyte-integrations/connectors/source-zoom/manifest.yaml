@@ -27,7 +27,7 @@ definitions:
           token_expiry_date_config_path:
             - credentials
             - token_expiry_date
-        refresh_token_error_status_codes: [400, 401]
+        refresh_token_error_status_codes: [400, 401, 404]
         refresh_token_error_key: error
         refresh_token_error_values:
           - invalid_grant
@@ -58,6 +58,11 @@ definitions:
         predicate: "{{ response.code == 124 }}"
         action: REFRESH_TOKEN_THEN_RETRY
         error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+      - type: HttpResponseFilter
+        predicate: "{{ response.code == 4711 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Zoom access token lacks a required scope ('{{ response.message }}'). Add the scopes listed in the Zoom source documentation to the Zoom app and re-authenticate the source."
   requester:
     url_base: "https://api.zoom.us/v2"
     http_method: "GET"
@@ -13719,18 +13724,18 @@ spec:
               client_id:
                 type: string
                 title: Client ID
-                description: The Client ID of your Zoom Marketplace General (OAuth) app.
+                description: The Client ID of your admin-managed Zoom General app.
                 order: 1
               client_secret:
                 type: string
                 title: Client Secret
-                description: The Client Secret of your Zoom Marketplace General (OAuth) app.
+                description: The Client Secret of your admin-managed Zoom General app.
                 airbyte_secret: true
                 order: 2
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: The Refresh Token from your Zoom Marketplace General (OAuth) app.
+                description: The Refresh Token Zoom issues when an account owner or admin authorizes your Zoom General app.
                 airbyte_secret: true
                 order: 3
               access_token:
@@ -13857,24 +13862,28 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "account_id"]
                 value: "{{ config['account_id'] }}"
+                value_type: string
             condition: "{{ config.get('account_id') and not config.get('credentials', {}).get('auth_type') }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "client_id"]
                 value: "{{ config['client_id'] }}"
+                value_type: string
             condition: "{{ config.get('client_id') and not config.get('credentials', {}).get('auth_type') }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "client_secret"]
                 value: "{{ config['client_secret'] }}"
+                value_type: string
             condition: "{{ config.get('client_secret') and not config.get('credentials', {}).get('auth_type') }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "authorization_endpoint"]
                 value: "{{ config['authorization_endpoint'] }}"
+                value_type: string
             condition: "{{ config.get('authorization_endpoint') and not config.get('credentials', {}).get('auth_type') }}"
           - type: ConfigAddFields
             fields:
@@ -13888,4 +13897,4 @@ spec:
               - [client_id]
               - [client_secret]
               - [authorization_endpoint]
-            condition: "{{ config.get('credentials', {}).get('auth_type') == 'server_to_server' }}"
+            condition: "{{ config.get('credentials', {}).get('auth_type') }}"
