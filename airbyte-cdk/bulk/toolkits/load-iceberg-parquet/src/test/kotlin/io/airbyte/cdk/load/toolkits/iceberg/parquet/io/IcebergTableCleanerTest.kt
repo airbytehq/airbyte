@@ -91,7 +91,7 @@ internal class IcebergTableCleanerTest {
             catalog = catalog,
             identifier = tableIdentifier,
             io = fileIo,
-            tableLocation = tableLocation
+            tableLocation = tableLocation,
         )
 
         verify(exactly = 1) { fileIo.deletePrefix("s3://bucket/warehouse/ns/users/") }
