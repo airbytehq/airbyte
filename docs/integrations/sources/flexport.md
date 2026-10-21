@@ -53,6 +53,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.3.69 | 2026-10-20 | [89224](https://github.com/airbytehq/airbyte/pull/89224) | Update dependencies |
+| 0.3.68 | 2026-10-13 | [88589](https://github.com/airbytehq/airbyte/pull/88589) | Update dependencies |
 | 0.3.67 | 2026-10-07 | [88290](https://github.com/airbytehq/airbyte/pull/88290) | Fix `companies`, `invoices`, `locations` and `products` request paths (lost in the manifest-only migration), so `check` and syncs work again |
 | 0.3.66 | 2026-10-06 | [87852](https://github.com/airbytehq/airbyte/pull/87852) | Update dependencies |
 | 0.3.65 | 2026-09-29 | [87157](https://github.com/airbytehq/airbyte/pull/87157) | Update dependencies |

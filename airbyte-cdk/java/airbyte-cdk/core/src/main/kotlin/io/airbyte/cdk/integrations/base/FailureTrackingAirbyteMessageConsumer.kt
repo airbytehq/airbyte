@@ -7,6 +7,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
  * the [AirbyteMessageConsumer] interface. The original interface methods are wrapped in generic
@@ -15,7 +16,7 @@ private val LOGGER = KotlinLogging.logger {}
  * Two methods are intended for extension:
  *
  * * startTracked: Wraps set up of necessary infrastructure/configuration before message
- * consumption.
+ *   consumption.
  * * acceptTracked: Wraps actual processing of each [io.airbyte.protocol.models.v0.AirbyteMessage].
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See

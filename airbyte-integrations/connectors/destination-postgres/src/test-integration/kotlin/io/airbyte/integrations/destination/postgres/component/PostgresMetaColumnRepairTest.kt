@@ -52,7 +52,8 @@ class PostgresMetaColumnRepairTest(
                         "_airbyte_extracted_at" timestamp with time zone NOT NULL,
                         "${Fixtures.TEST_FIELD}" bigint
                     )
-                    """.trimIndent()
+                    """
+                        .trimIndent(),
                 )
             }
         }
@@ -67,7 +68,8 @@ class PostgresMetaColumnRepairTest(
                     INSERT INTO "${tableName.namespace}"."${tableName.name}"
                         ("_airbyte_raw_id", "_airbyte_extracted_at", "${Fixtures.TEST_FIELD}")
                     VALUES ('legacy-row', now(), $testFieldValue)
-                    """.trimIndent()
+                    """
+                        .trimIndent(),
                 )
             }
         }
