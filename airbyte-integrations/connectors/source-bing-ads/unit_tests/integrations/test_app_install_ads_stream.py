@@ -45,3 +45,14 @@ class TestAppInstallAdsStream(TestBulkStream):
         state = self._state("app_install_ads_state", self.stream_name)
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ads_with_state", state)
         assert output.most_recent_state.stream_state.states[0]["cursor"] == {self.cursor_field: "2024-01-29T12:55:12.028+0000"}
+
+    @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
+    def test_incremental_read_with_state_ignores_lookback_window(self):
+        # The mocked download request only matches a LastSyncTimeInUTC equal to the saved cursor. Moving it back by the
+        # lookback window would put it more than 30 days ago, and the request would ask for a full download instead.
+        self.mock_apis(file="app_install_ads_with_state", read_with_state=True)
+        state = self._state("app_install_ads_state", self.stream_name)
+        config = self._config
+        config["lookback_window"] = 30
+        output = self.read_stream(self.stream_name, SyncMode.incremental, config, "app_install_ads_with_state", state)
+        assert output.most_recent_state.stream_state.states[0]["cursor"] == {self.cursor_field: "2024-01-29T12:55:12.028+0000"}

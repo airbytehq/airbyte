@@ -2824,7 +2824,8 @@ definitions:
       - "%Y-%m-%dT%H:%M:%S.%_ms%z"
       - "%m/%d/%Y %H:%M:%S.%_ms"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
-    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    # No lookback_window: LastSyncTimeInUTC already returns every entity changed since the cursor, and moving it back
+    # only pushes it past the Bulk API's 30-day limit, which turns the sync into a full download.
     start_datetime:
       type: MinMaxDatetime
       # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
@@ -17799,8 +17800,8 @@ spec:
         title: Lookback window
         description: Also known as attribution or conversion window. How far into the
           past to look for records (in days). If your conversion window has an hours/minutes
-          granularity, round it up to the number of days exceeding. Used only for performance
-          report streams in incremental mode without specified Reports Start Date.
+          granularity, round it up to the number of days exceeding. Used only for report
+          streams in incremental mode.
         type: integer
         default: 0
         minimum: 0
