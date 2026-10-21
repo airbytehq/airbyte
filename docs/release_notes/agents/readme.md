@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## October 21, 2026
+
+Connectors
+
+- Your agents can now set and adjust inventory quantities in Shopify again. Previously, these requests failed after Shopify changed its API. Each request now includes a unique key so Shopify doesn't apply a retried change twice, and can optionally confirm the current quantity before changing it. This fix is also available in the SDK.
+
 ## October 15, 2026
 
 Connectors
