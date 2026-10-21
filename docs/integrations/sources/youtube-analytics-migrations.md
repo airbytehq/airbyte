@@ -1,5 +1,56 @@
 # YouTube Analytics Migration Guide
 
+## Upgrading to 2.0.0
+
+### What changed
+
+Version 2.0.0 corrects the declared types of report metric fields to match YouTube's definitions: counts are now `integer`, and rates and percentages are now `number` (the rates in `channel_province_a3` were previously `integer`). Typed destinations will change the column types for these fields.
+
+| Stream | Field | Old type | New type |
+| --- | --- | --- | --- |
+| channel_annotations_a1 | annotation_click_through_rate | string | number |
+| channel_annotations_a1 | annotation_close_rate | string | number |
+| channel_annotations_a1 | annotation_clickable_impressions | string | integer |
+| channel_annotations_a1 | annotation_clicks | string | integer |
+| channel_annotations_a1 | annotation_closable_impressions | string | integer |
+| channel_annotations_a1 | annotation_closes | string | integer |
+| channel_annotations_a1 | annotation_impressions | string | integer |
+| channel_cards_a1 | card_click_rate | string | number |
+| channel_cards_a1 | card_teaser_click_rate | string | number |
+| channel_cards_a1 | card_clicks | string | integer |
+| channel_cards_a1 | card_impressions | string | integer |
+| channel_cards_a1 | card_teaser_clicks | string | integer |
+| channel_cards_a1 | card_teaser_impressions | string | integer |
+| channel_demographics_a1 | views_percentage | string | number |
+| channel_end_screens_a1 | end_screen_element_click_rate | string | number |
+| channel_end_screens_a1 | end_screen_element_clicks | string | integer |
+| channel_end_screens_a1 | end_screen_element_impressions | string | integer |
+| channel_sharing_service_a1 | shares | string | integer |
+| channel_province_a3 | annotation_click_through_rate | integer | number |
+| channel_province_a3 | annotation_close_rate | integer | number |
+| channel_province_a3 | card_click_rate | integer | number |
+| channel_province_a3 | card_teaser_click_rate | integer | number |
+| playlist_province_a2 | playlist_saves_added | string | integer |
+| playlist_province_a2 | playlist_saves_removed | string | integer |
+| playlist_province_a2 | playlist_starts | string | integer |
+| playlist_province_a2 | views | string | integer |
+
+## Migration Steps
+
+### Refresh source schemas and clear data
+
+After upgrading, refresh the source schema and clear data for the affected streams: `channel_annotations_a1`, `channel_cards_a1`, `channel_demographics_a1`, `channel_end_screens_a1`, `channel_sharing_service_a1`, `channel_province_a3`, and `playlist_province_a2`. Follow the steps below:
+
+1. Select **Connections** in the main navbar and select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema** to bring in the schema changes. Any detected schema changes will be listed for your review.
+   2. Select **OK** to approve changes.
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Clear affected streams** option is checked.
+4. Select **Save connection**.
+
+This will clear the data in the destination for the seven streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
 ## Upgrading to 1.0.0
 
 Version 1.0.0 updates the connector to use the latest versions of YouTube's Bulk Reports API in response to YouTube's Shorts view-counting change. YouTube announced the change on March 26, 2025, Shorts view counting changed on March 31, 2025, and the Bulk Reports API was updated on June 30, 2025. See the YouTube API revision history for details.

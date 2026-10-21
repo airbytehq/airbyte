@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
-  dockerImageTag: 1.4.6
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-youtube-analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
@@ -29,6 +29,19 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      2.0.0:
+        message: "Version 2.0.0 corrects the declared types of report metric fields in seven streams to match YouTube's metric definitions: counts are now `integer` and rates and percentages are now `number` (previously `string`, or `integer` for the rate fields in `channel_province_a3`). Typed destinations store these columns with the new types. Refresh the source schema and clear the affected streams after upgrading. Follow the steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations)."
+        upgradeDeadline: "2026-11-04"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "channel_annotations_a1"
+              - "channel_cards_a1"
+              - "channel_demographics_a1"
+              - "channel_end_screens_a1"
+              - "channel_sharing_service_a1"
+              - "channel_province_a3"
+              - "playlist_province_a2"
       1.0.0:
         message: Version 1.0.0 introduces changes to BULK API reports streams due to a deprecation on API side. Users will need to Refresh Source Schema and Clear affected streams. Please, follow the Migration Steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations). For more info about this deprecation see the Youtube API docs [changelog](https://developers.google.com/youtube/reporting/revision_history#bulk-data-reports-for-youtube-analytics).
         upgradeDeadline: "2025-11-12"
