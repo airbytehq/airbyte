@@ -4,9 +4,9 @@
 
 ## 1. Schemaless mode packs fields into `data`
 
-With `schema_enforced` disabled, the catalog replaces individual document fields with a packed object field named `data`. Schema-enforced mode instead exposes discovered document fields as stream properties.
+With `schema_enforced` disabled, `MongoCatalogHelper.buildSchemalessAirbyteStream` produces a fixed schema for every collection: `_id`, a `data` object holding the whole document, and the CDC metadata columns (`_ab_cdc_updated_at`, `_ab_cdc_deleted_at`, `_ab_cdc_cursor`). The `_id` type comes from a one-document sample of the `_id` BSON type; `ObjectId` and other non-numeric types map to `string`. Schema-enforced mode instead exposes each discovered document field as a top-level property, typed from the `discover_sample_size` sample (see entry 2).
 
-**Why this matters:** These modes produce different record shapes and schemas. Code that reads or transforms source fields must not assume that fields are top-level in schemaless mode.
+**Why this matters:** Schemaless records always have `_id` and `data`, never other top-level document fields. Code that reads or transforms source fields must look inside `data` in schemaless mode.
 
 ## 2. Schema-enforced discovery samples a configurable number of documents
 

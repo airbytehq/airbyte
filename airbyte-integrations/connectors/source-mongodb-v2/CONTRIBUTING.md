@@ -6,7 +6,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-1. **Schemaless mode packs fields into `data`** -- Schemaless records nest document fields under `data`, while schema-enforced mode exposes them as properties, so code must account for both record shapes.
+1. **Schemaless mode packs fields into `data`** -- Schemaless streams always have the same schema: `_id`, a `data` object holding the document, and the CDC metadata columns. Schema-enforced mode exposes each sampled document field as a top-level property.
 2. **Schema-enforced discovery samples a configurable number of documents** -- Schema-enforced discovery infers fields from a sample, so fields unseen during discovery can be absent from the catalog.
 3. **Invalid resume tokens fail or reset according to configuration** -- Invalid saved resume tokens fail by default, with a configurable full-refresh option.
 4. **Update capture defaults to Lookup** -- Post-image capture requires MongoDB's matching change-stream configuration, or update data can be lost.
