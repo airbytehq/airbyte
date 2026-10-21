@@ -2,9 +2,9 @@
 
 """Mock-server coverage for `tracking_categories` on `costcentres` and `products`.
 
-Uptick returns the field as an array of objects (or `[]`), and 3.0.0 declares it that way. These
-tests read each stream with both shapes and assert the value is emitted unchanged, so a future
-schema or transformation edit cannot silently drop or reshape it.
+Uptick returns an object for `costcentres` and an array of objects for `products`, and 3.0.0
+declares those stream-specific shapes. These tests assert that each value is emitted unchanged,
+so a future schema or transformation edit cannot silently drop or reshape it.
 """
 
 import json
@@ -28,16 +28,20 @@ _TOKEN_REQUEST = HttpRequest(
 )
 _TOKEN_RESPONSE = HttpResponse(body=json.dumps({"access_token": "tok", "expires_in": 3600}), status_code=200)
 _MODELS = {"costcentres": "CostCentre", "products": "Product"}
-_TRACKING_CATEGORIES = [
+_PRODUCT_TRACKING_CATEGORIES = [
     pytest.param([], id="empty_array"),
     pytest.param(
         [{"id": 1, "name": "Region", "option": "North"}, {"id": 2, "name": "Department", "option": "Service"}],
         id="array_of_objects",
     ),
 ]
+_COSTCENTRE_TRACKING_CATEGORIES = [
+    pytest.param({}, id="empty_object"),
+    pytest.param({"Region": "North"}, id="populated_object"),
+]
 
 
-def _record(stream: str, tracking_categories: list[dict[str, Any]]) -> dict[str, Any]:
+def _record(stream: str, tracking_categories: list[dict[str, Any]] | dict[str, Any]) -> dict[str, Any]:
     return {
         "type": _MODELS[stream],
         "id": 1,
@@ -51,9 +55,7 @@ def _record(stream: str, tracking_categories: list[dict[str, Any]]) -> dict[str,
     }
 
 
-@pytest.mark.parametrize("stream", sorted(_MODELS))
-@pytest.mark.parametrize("tracking_categories", _TRACKING_CATEGORIES)
-def test_tracking_categories_array_is_emitted_unchanged(stream: str, tracking_categories: list[dict[str, Any]]) -> None:
+def _assert_tracking_categories_emitted_unchanged(stream: str, tracking_categories: list[dict[str, Any]] | dict[str, Any]) -> None:
     config = ConfigBuilder().build()
     catalog = CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
     page_request = UptickRequestBuilder.collection(stream)
@@ -73,3 +75,13 @@ def test_tracking_categories_array_is_emitted_unchanged(stream: str, tracking_ca
     assert [message.record.data["tracking_categories"] for message in output.records] == [tracking_categories]
     assert not [log for log in output.logs if "does not conform to schema" in log.log.message]
     assert output.get_stream_statuses(stream)[-1].name == "COMPLETE"
+
+
+@pytest.mark.parametrize("tracking_categories", _PRODUCT_TRACKING_CATEGORIES)
+def test_products_tracking_categories_array_is_emitted_unchanged(tracking_categories: list[dict[str, Any]]) -> None:
+    _assert_tracking_categories_emitted_unchanged("products", tracking_categories)
+
+
+@pytest.mark.parametrize("tracking_categories", _COSTCENTRE_TRACKING_CATEGORIES)
+def test_costcentres_tracking_categories_object_is_emitted_unchanged(tracking_categories: dict[str, Any]) -> None:
+    _assert_tracking_categories_emitted_unchanged("costcentres", tracking_categories)

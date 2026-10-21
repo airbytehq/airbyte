@@ -284,7 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 3.0.0 | 2026-10-20 | [89505](https://github.com/airbytehq/airbyte/pull/89505) | Change `tracking_categories` on `costcentres` and `products` to an array, remove legacy config fields, and reject an empty `base_url` |
+| 3.0.0 | 2026-10-20 | [89505](https://github.com/airbytehq/airbyte/pull/89505) | Change `tracking_categories` on `products` to an array, remove legacy config fields, and reject an empty `base_url` |
 | 2.1.0 | 2026-10-20 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication with the read-only scope |
 | 2.0.1 | 2026-10-20 | [89415](https://github.com/airbytehq/airbyte/pull/89415) | Update dependencies |
 | 2.0.0 | 2026-10-16 | [88925](https://github.com/airbytehq/airbyte/pull/88925) | Upgrade the Uptick API to v2.16, correct the types of object and numeric fields, make majorservices full refresh only, filter servicegroups and accreditationtypes server-side, and add product_id to invoicelineitems |

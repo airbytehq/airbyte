@@ -133,16 +133,19 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert "regex_replace" not in oauth_input["access_token_url"]
 
 
-def test_discover_uses_array_schema_for_tracking_categories() -> None:
+def test_discover_uses_stream_specific_tracking_categories_schemas() -> None:
     config = base_config()
     catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
     streams = {stream.name: stream for stream in catalog.streams}
 
-    for stream_name in ("costcentres", "products"):
-        field_schema = streams[stream_name].json_schema["properties"]["tracking_categories"]
-        assert field_schema["type"] == ["array", "null"]
-        assert field_schema["items"]["type"] == "object"
-        assert field_schema["items"]["additionalProperties"] is True
+    products_schema = streams["products"].json_schema["properties"]["tracking_categories"]
+    assert products_schema["type"] == ["array", "null"]
+    assert products_schema["items"]["type"] == "object"
+    assert products_schema["items"]["additionalProperties"] is True
+
+    costcentres_schema = streams["costcentres"].json_schema["properties"]["tracking_categories"]
+    assert costcentres_schema["type"] == ["object", "null"]
+    assert "items" not in costcentres_schema
 
 
 @pytest.mark.parametrize(
