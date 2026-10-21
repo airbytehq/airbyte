@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import jsonschema
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -22,6 +21,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 CONFIG = {
@@ -99,7 +100,7 @@ def _state(cursor_value):
                         "use_global_cursor": True,
                         "state": {"updated_at": cursor_value},
                         "parent_state": {
-                            "workflow_runs_for_attempts": {
+                            "workflow_runs": {
                                 "use_global_cursor": False,
                                 "states": [{"partition": {"repository": "org/repos"}, "cursor": {"updated_at": cursor_value}}],
                                 "state": {"updated_at": cursor_value},
@@ -151,7 +152,7 @@ def _bounded_responder(attempt, repeats_before_giving_up=3):
 
 def _read(config, state=None):
     catalog = _catalog()
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     records, statuses, states = [], [], []
     for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
         if message.type == Type.RECORD:
@@ -176,7 +177,7 @@ def test_primary_key_is_composite(rate_limit_mock_response, requests_mock):
     This is the whole point of oncall#8827 — the reported fix (adding `run_attempt` to
     `workflow_runs`' key) could not help, because that stream never emits an earlier attempt."""
     _mock_repository(requests_mock)
-    source = SourceGithub(config=dict(CONFIG), catalog=_catalog(), state=None)
+    source = make_source(config=dict(CONFIG), catalog=_catalog(), state=None)
 
     stream = next(s for s in source.discover(logging.getLogger("airbyte"), dict(CONFIG)).streams if s.name == "workflow_run_attempts")
 
@@ -308,7 +309,7 @@ def test_state_tracks_the_run_cursor_and_carries_parent_state(rate_limit_mock_re
     # No per-run entry: `global_substream_cursor` keeps the state one value wide however many runs
     # the sync walked.
     assert not hasattr(final, "states")
-    parent = final.parent_state["workflow_runs_for_attempts"]
+    parent = final.parent_state["workflow_runs"]
     assert parent["states"] == [{"partition": {"repository": "org/repos"}, "cursor": {"updated_at": "2022-02-02T11:05:00Z"}}]
 
 
@@ -343,9 +344,10 @@ def test_the_listing_is_never_filtered_server_side(rate_limit_mock_response, req
 
 
 def test_pagination_stops_below_the_32_day_rerun_window(rate_limit_mock_response, requests_mock):
-    """The legacy pagination break. GitHub refuses to re-run a workflow more than 32 days after it
-    was created, so a page that ends below `start_date - 32 days` is the last page worth reading —
-    nothing further down the `created_at`-descending listing can have been updated since."""
+    """The `workflow_runs` pagination break. GitHub refuses to re-run a workflow more than 32 days
+    after it was created, so a page that ends below `slice start - 32 days` is the last page worth
+    reading — nothing further down the `created_at`-descending listing can have been updated
+    since."""
     _mock_repository(requests_mock)
     config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
     # 2022-05-13 is one day below the window, which opens at 2022-05-14.
@@ -422,7 +424,7 @@ def test_discovered_schema_is_valid_and_describes_the_records(rate_limit_mock_re
     is a *manifest* reference inside a manifest, and the resolver replaces such a property with the
     bare string, so the published schema silently stops being JSON Schema at all."""
     _mock_repository(requests_mock)
-    source = SourceGithub(config=dict(CONFIG), catalog=_catalog(), state=None)
+    source = make_source(config=dict(CONFIG), catalog=_catalog(), state=None)
 
     schema = next(
         stream for stream in source.discover(logging.getLogger("airbyte"), dict(CONFIG)).streams if stream.name == "workflow_run_attempts"
@@ -439,13 +441,15 @@ def test_discovered_schema_is_valid_and_describes_the_records(rate_limit_mock_re
     jsonschema.Draft7Validator(schema).validate({**record, "head_commit": None, "referenced_workflows": None, "pull_requests": None})
 
 
-def test_internal_parent_is_not_exposed_in_the_catalog(rate_limit_mock_response, requests_mock):
+def test_both_workflow_run_streams_are_in_the_catalog(rate_limit_mock_response, requests_mock):
+    """`workflow_runs` is the parent and stays a catalog stream of its own; the attempts stream is
+    added next to it, not in its place."""
     _mock_repository(requests_mock)
-    source = SourceGithub(config=dict(CONFIG), catalog=_catalog(), state=None)
+    source = make_source(config=dict(CONFIG), catalog=_catalog(), state=None)
 
     names = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(CONFIG)).streams]
 
-    assert "workflow_runs_for_attempts" not in names
+    assert "workflow_runs" in names
     assert "workflow_run_attempts" in names
 
 
@@ -550,7 +554,7 @@ def test_each_repository_is_partitioned_and_checkpointed_separately(rate_limit_m
     records, _, states = _read(config)
 
     assert _keys(records) == [(1, 1), (5, 1)]
-    parent = states[-1].parent_state["workflow_runs_for_attempts"]
+    parent = states[-1].parent_state["workflow_runs"]
     assert sorted(entry["partition"]["repository"] for entry in parent["states"]) == ["org/other", "org/repos"]
 
 
@@ -943,7 +947,7 @@ def test_the_discovered_schema_covers_exactly_the_attempt_payload(rate_limit_moc
     repository has no workflow runs at all — so nothing else would notice a property being dropped
     or a new one going undeclared."""
     _mock_repository(requests_mock)
-    source = SourceGithub(config=dict(CONFIG), catalog=_catalog(), state=None)
+    source = make_source(config=dict(CONFIG), catalog=_catalog(), state=None)
 
     schema = next(
         stream for stream in source.discover(logging.getLogger("airbyte"), dict(CONFIG)).streams if stream.name == "workflow_run_attempts"

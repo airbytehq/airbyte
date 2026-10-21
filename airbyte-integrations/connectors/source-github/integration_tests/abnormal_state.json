@@ -241,7 +241,7 @@
         "use_global_cursor": true,
         "state": { "updated_at": "2121-12-31T23:59:59Z" },
         "parent_state": {
-          "workflow_runs_for_attempts": {
+          "workflow_runs": {
             "use_global_cursor": false,
             "states": [
               {

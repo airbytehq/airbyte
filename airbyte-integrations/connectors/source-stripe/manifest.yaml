@@ -35,6 +35,9 @@ definitions:
     authenticator:
       $ref: "#/definitions/bearer_authenticator"
     http_method: GET
+    use_tcp_keepalive: true
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 80
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
@@ -1468,6 +1471,8 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             path: events
+            request_parameters:
+              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
           record_selector:
             type: RecordSelector
             extractor:
@@ -1482,33 +1487,66 @@ definitions:
                   - lines
                   - data
                 remain_original_record: true
+                truncation_indicator_path:
+                  - data
+                  - object
+                  - lines
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: invoices/{{ stream_slice['parent_record']['data']['object']['id'] }}/lines
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             transform_before_filtering: true
           paginator:
             $ref: "#/definitions/base_paginator"
-          $parameters:
-            request_parameters:
-              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/invoice_line_items"
         transformations:
+          # Events render lines at the account's default Stripe API version. Before 2019-12-03, line ids are legacy
+          # (ii_/sub_/su_/sli_; sub_ and su_ are the subscription id) and the il_ id is in `unique_id`.
+          # Keep `unique_id` and `unique_line_item_id` on the record (undeclared, so the platform drops them).
+          # Pinned-version /lines records have no `unique_id` (no-op).
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription
+                value: "{{ record.get('id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') and record.get('type') == 'subscription' and not record.get('subscription') and (record.get('id') or '').startswith(('sub_', 'su_')) }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - id
+                value: "{{ record.get('unique_id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') }}"
           - type: AddFields
             fields:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - invoice_updated
-                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
               - path:
                   - invoice_id
-                value: "{{ record['original_record'].get('data', {}).get('object', {}).get('id') }}"
-            condition: "{{ record.get('original_record') }}"
+                value: "{{ (record.get('original_record') or {}).get('data', {}).get('object', {}).get('id') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record
@@ -1666,14 +1704,14 @@ definitions:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - subscription_updated
-                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
-            condition: "{{ record.get('original_record') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record

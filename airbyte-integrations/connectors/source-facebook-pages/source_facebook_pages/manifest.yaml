@@ -21,10 +21,17 @@ definitions:
           error_message_contains: Tried accessing nonexisting field
           failure_type: config_error
           error_message: Request contains invalid/deprecated field.
+        # Meta returns this intermittently (error code 1, often with HTTP 500) when a response is
+        # too large to build in time, so it is retried rather than failed.
         - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
-          action: FAIL
-          failure_type: config_error
-          error_message: Facebook API response data exceeds the request limit.
+          action: RETRY
+          failure_type: transient_error
+          error_message: >-
+            Facebook could not return the requested data because the response was too large or
+            timed out (Facebook error: "Please reduce the amount of data you're asking for, then
+            retry your request"). Airbyte retried the request several times without success. Lower
+            the Page Size option in the source settings or deselect unneeded fields in the
+            connection's Schema tab, then retry the sync.
         # Meta rejects the whole Insights request when any single requested metric is
         # invalid. This is permanent, so it must not fall through to the blanket 400 filter
         # below, which would otherwise hide the API's own message.
@@ -117,7 +124,6 @@ definitions:
       - country_page_likes
       - cover
       - culinary_team
-      - current_location
       - delivery_and_pickup_option_info
       - description
       - description_html
@@ -135,7 +141,6 @@ definitions:
       - founded
       - general_info
       - general_manager
-      - genre
       - global_brand_page_name
       - global_brand_root_id
       - has_added_app
@@ -171,12 +176,10 @@ definitions:
       - mpg
       - name
       - name_with_location_descriptor
-      - network
       - new_like_count
       - offer_eligible
       - overall_star_rating
       - page_token
-      - parking
       - payment_options
       - personal_info
       - personal_interests
@@ -203,7 +206,6 @@ definitions:
       - season
       - single_line_address
       - starring
-      - start_info
       - store_code
       - store_location_descriptor
       - store_number
@@ -230,7 +232,6 @@ definitions:
       - image_copyrights
       - indexed_videos
       - likes
-      - live_videos
       - photos
       - posts
       - published_posts
