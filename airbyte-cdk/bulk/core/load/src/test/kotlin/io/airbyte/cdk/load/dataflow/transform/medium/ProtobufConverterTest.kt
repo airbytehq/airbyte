@@ -93,7 +93,7 @@ class ProtobufConverterTest {
         values: List<AirbyteRecordMessage.AirbyteValueProtobuf>,
         emittedAtMs: Long = System.currentTimeMillis(),
         metaChanges: List<AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange> =
-            emptyList()
+            emptyList(),
     ): DestinationRecordProtobufSource {
         val metaProto =
             AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
@@ -117,7 +117,7 @@ class ProtobufConverterTest {
     private fun metaChange(
         field: String,
         change: AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType,
-        reason: AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+        reason: AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType,
     ) =
         AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
             .setField(field)
@@ -131,7 +131,7 @@ class ProtobufConverterTest {
         generationId: Long = 1L,
         syncId: Long = 2L,
         unknownChanges: List<Meta.Change> = emptyList(),
-        columnNameMapper: ((String) -> String)? = null
+        columnNameMapper: ((String) -> String)? = null,
     ): DestinationRecordRaw {
         val destinationStream =
             mockk<DestinationStream> {
@@ -182,9 +182,9 @@ class ProtobufConverterTest {
                 fa(
                     "union_field",
                     UnionType.of(ObjectType(linkedMapOf("u" to FieldType(IntegerType, false)))),
-                    12
+                    12,
                 ),
-                fa("unknown_field", UnknownType(Jsons.emptyObject()), 13)
+                fa("unknown_field", UnknownType(Jsons.emptyObject()), 13),
             )
 
         val protoValues =
@@ -200,14 +200,14 @@ class ProtobufConverterTest {
                 vTsTz(
                     OffsetDateTime.of(
                         LocalDateTime.parse("2025-06-17T23:59:59"),
-                        ZoneOffset.ofHours(2)
-                    )
+                        ZoneOffset.ofHours(2),
+                    ),
                 ),
                 vTsNoTz(LocalDateTime.parse("2025-06-17T23:59:59")),
                 vJson("""["a","b"]"""),
                 vJson("""{"k":"v"}"""),
                 vJson("""{"u":1}"""),
-                vNull()
+                vNull(),
             )
 
         val msg = mockMsgWithStream(accessors, buildProtoSource(protoValues.map { it.build() }))
@@ -234,25 +234,25 @@ class ProtobufConverterTest {
         assertTrue(result["time_tz_field"] is TimeWithTimezoneValue)
         assertEquals(
             "23:59:59+02:00",
-            (result["time_tz_field"] as TimeWithTimezoneValue).value.toString()
+            (result["time_tz_field"] as TimeWithTimezoneValue).value.toString(),
         )
 
         assertTrue(result["time_no_tz_field"] is TimeWithoutTimezoneValue)
         assertEquals(
             "23:59:59",
-            (result["time_no_tz_field"] as TimeWithoutTimezoneValue).value.toString()
+            (result["time_no_tz_field"] as TimeWithoutTimezoneValue).value.toString(),
         )
 
         assertTrue(result["ts_tz_field"] is TimestampWithTimezoneValue)
         assertEquals(
             "2025-06-17T23:59:59+02:00",
-            (result["ts_tz_field"] as TimestampWithTimezoneValue).value.toString()
+            (result["ts_tz_field"] as TimestampWithTimezoneValue).value.toString(),
         )
 
         assertTrue(result["ts_no_tz_field"] is TimestampWithoutTimezoneValue)
         assertEquals(
             "2025-06-17T23:59:59",
-            (result["ts_no_tz_field"] as TimestampWithoutTimezoneValue).value.toString()
+            (result["ts_no_tz_field"] as TimestampWithoutTimezoneValue).value.toString(),
         )
 
         assertTrue(result.containsKey("array_field"))
@@ -281,7 +281,7 @@ class ProtobufConverterTest {
                 fa("small_decimal", NumberType, 0),
                 fa("large_decimal", NumberType, 1),
                 fa("scientific_decimal", NumberType, 2),
-                fa("negative_decimal", NumberType, 3)
+                fa("negative_decimal", NumberType, 3),
             )
 
         val protoValues =
@@ -289,7 +289,7 @@ class ProtobufConverterTest {
                 vBigDecimal("0.0001"),
                 vBigDecimal("123456789.987654321"),
                 vBigDecimal("1.23E-10"),
-                vBigDecimal("-999.999")
+                vBigDecimal("-999.999"),
             )
 
         val msg =
@@ -302,7 +302,7 @@ class ProtobufConverterTest {
         assertTrue(result["large_decimal"] is NumberValue)
         assertEquals(
             BigDecimal("123456789.987654321"),
-            (result["large_decimal"] as NumberValue).value
+            (result["large_decimal"] as NumberValue).value,
         )
 
         assertTrue(result["scientific_decimal"] is NumberValue)
@@ -379,7 +379,7 @@ class ProtobufConverterTest {
                         ) {
                             ValidationResult.ShouldNullify(
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
                             )
                         } else {
                             ValidationResult.Valid
@@ -421,7 +421,7 @@ class ProtobufConverterTest {
                 source = buildProtoSource(protoValues.map { it.build() }),
                 columnNameMapper = { columnName ->
                     if (columnName == "original_name") "mapped_name" else columnName
-                }
+                },
             )
 
         val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
@@ -470,14 +470,14 @@ class ProtobufConverterTest {
                     "x",
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                        .DESTINATION_SERIALIZATION_ERROR
+                        .DESTINATION_SERIALIZATION_ERROR,
                 ),
                 metaChange(
                     "y",
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                        .SOURCE_SERIALIZATION_ERROR
-                )
+                        .SOURCE_SERIALIZATION_ERROR,
+                ),
             )
 
         val invalidBigInteger =
@@ -490,8 +490,8 @@ class ProtobufConverterTest {
                 Meta.Change(
                     "unknown_field",
                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                    AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR
-                )
+                    AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR,
+                ),
             )
 
         val msg =
@@ -501,8 +501,8 @@ class ProtobufConverterTest {
                 source =
                     buildProtoSource(
                         protoValues.map { it.build() },
-                        metaChanges = sourceSideChanges
-                    )
+                        metaChanges = sourceSideChanges,
+                    ),
             )
 
         val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
@@ -526,7 +526,8 @@ class ProtobufConverterTest {
         val msg =
             mockMsgWithStream(
                 accessors,
-                source = buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs)
+                source =
+                    buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs),
             )
 
         val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
@@ -535,7 +536,7 @@ class ProtobufConverterTest {
         assertTrue(extractedAt is TimestampWithTimezoneValue)
         assertEquals(
             emittedAtMs,
-            (extractedAt as TimestampWithTimezoneValue).value.toInstant().toEpochMilli()
+            (extractedAt as TimestampWithTimezoneValue).value.toInstant().toEpochMilli(),
         )
     }
 
@@ -553,7 +554,8 @@ class ProtobufConverterTest {
         val msg =
             mockMsgWithStream(
                 accessors,
-                source = buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs)
+                source =
+                    buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs),
             )
 
         val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))

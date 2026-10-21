@@ -66,7 +66,7 @@ class DynamoDbJsonTest {
         Assertions.assertEquals("-7", DynamoDbJson.numberNode("-7").toString())
         Assertions.assertEquals(
             "9223372036854775807",
-            DynamoDbJson.numberNode("9223372036854775807").toString()
+            DynamoDbJson.numberNode("9223372036854775807").toString(),
         )
         // Beyond a long: exact, not a double.
         Assertions.assertEquals(
