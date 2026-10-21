@@ -18,8 +18,9 @@ dependencies {
     // Keep in step with the Debezium version of the Bulk CDK extract-cdc toolkit. Since extract
     // 1.2.1 the CDK no longer imports the Debezium BOM, so the connector artifact has its own pin.
     implementation 'io.debezium:debezium-connector-postgres:3.4.3.Final'
-    // The PostgreSQL JDBC driver version comes transitively from debezium-connector-postgres.
-    implementation 'org.postgresql:postgresql'
+    // Pinned above the 42.7.7 that debezium-connector-postgres 3.4.3 manages: Docker Scout flags
+    // 42.7.7 for CVE-2026-42198 (fixed in 42.7.11). Keep at or above the Debezium-managed version.
+    implementation 'org.postgresql:postgresql:42.7.14'
 
     testImplementation("io.mockk:mockk:1.14.11")
 
