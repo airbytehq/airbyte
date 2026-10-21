@@ -76,13 +76,15 @@ data:
           affected count and size fields as int32, so they are now typed as integers instead of
           numbers: `profile.messagesTotal`, `profile.threadsTotal`; `labels_details.messagesTotal`,
           `messagesUnread`, `threadsTotal`, `threadsUnread`; `messages_details.sizeEstimate` and
-          nested `payload.body.size`; and `threads_details.messages[].sizeEstimate` and nested
-          `messages[].payload.body.size`. Users syncing the `profile`, `labels_details`,
-          `messages_details`, or `threads_details` streams should refresh the source schema and
-          follow the stream refresh steps in the
+          the nested `payload.body.size` and `payload.parts[].body.size` fields; and
+          `threads_details.messages[].sizeEstimate` and the same nested fields under
+          `messages[].payload`. The values don't change. If you sync the `profile`,
+          `labels_details`, `messages_details` or `threads_details` streams, refresh the source
+          schema after upgrading. Most destinations convert the columns automatically; a data
+          refresh is needed only if a sync then fails with a schema-evolution error. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/gmail-migrations#upgrading-to-100).
-        upgradeDeadline: "2026-11-03"
-        deadlineAction: disable
+        upgradeDeadline: "2026-11-04"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:

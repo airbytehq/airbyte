@@ -384,12 +384,13 @@ def test_profile_primary_key_and_integer_schema_types(base_config):
     discovered_streams = {stream.name: stream for stream in catalog.streams}
     assert discovered_streams["profile"].source_defined_primary_key == [["emailAddress"]]
     schemas = {stream.name: stream.json_schema for stream in catalog.streams}
-    assert all(
-        "number" not in (node_type if isinstance(node_type, list) else [node_type])
-        for schema in schemas.values()
-        for _, node in _schema_nodes(schema)
-        if (node_type := node.get("type")) is not None
-    )
+    number_typed_paths = [
+        (stream_name, path)
+        for stream_name, schema in schemas.items()
+        for path, node in _schema_nodes(schema)
+        if "number" in (node.get("type") if isinstance(node.get("type"), list) else [node.get("type")])
+    ]
+    assert number_typed_paths == []
 
     expected_integer_paths = {
         "profile": {

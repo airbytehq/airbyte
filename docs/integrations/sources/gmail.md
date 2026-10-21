@@ -87,7 +87,7 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 
 | Stream             | Primary Key | Sync Mode                   | Description                                                                              |
 |--------------------|:-----------:|-----------------------------|------------------------------------------------------------------------------------------|
-| `profile`          | _(none)_    | Full Refresh                | The authenticated user's Gmail profile, including email address and history ID.          |
+| `profile`          | `emailAddress` | Full Refresh                | The authenticated user's Gmail profile, including email address and history ID.          |
 | `drafts`           | `id`        | Full Refresh                | Stub records (`id`, `message.id`, `message.threadId`) returned by `users.drafts.list`.   |
 | `labels`           | `id`        | Full Refresh                | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels.|
 | `labels_details`   | `id`        | Full Refresh                | Per-label metadata such as message and thread counts. Substream of `labels`.             |

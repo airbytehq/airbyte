@@ -4,9 +4,15 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 
+:::danger Risk of permanent data loss
+Only run **Refresh stream and remove records** if step 3 below tells you to. It deletes the existing destination rows before re-syncing, and Gmail can only return messages that still exist in the mailbox and are allowed by the connection's start date and spam/trash settings. Messages that were deleted, trashed or marked as spam since the original sync don't come back. Back up the affected tables before removing records if you need that data.
+:::
+
+Version 1.0.0 declares the count and size fields of four streams as integers, and gives the `profile` stream a primary key. The values themselves don't change: Gmail documents these fields as int32 integers, and the connector already emitted whole numbers. Only the declared type changes, so typed destinations change the matching columns from a decimal or float type to an integer type.
+
 ### What changes
 
-The `profile` stream now uses `emailAddress` as its primary key. The following fields change from `number` to `integer`; their nullable values are unchanged:
+The `profile` stream now uses `emailAddress` as its primary key. The following fields change from `number` to `integer`; they stay nullable:
 
 - `profile`: `messagesTotal`, `threadsTotal`
 - `labels_details`: `messagesTotal`, `messagesUnread`, `threadsTotal`, `threadsUnread`
@@ -15,23 +21,36 @@ The `profile` stream now uses `emailAddress` as its primary key. The following f
 
 ### Why
 
-The [Gmail API](https://gmail.googleapis.com/$discovery/rest?version=v1) documents the affected count and size values as int32 integers. The profile endpoint returns one record for the authenticated mailbox, and `emailAddress` identifies that record so destinations can deduplicate profile syncs.
+The Gmail API documents these fields as int32 integers in its [`users.getProfile`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/getProfile), [`users.labels`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.labels) and [`users.messages`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages) references. The profile endpoint returns one record for the authenticated mailbox, and `emailAddress` identifies that record, so you can now select a deduplicated sync mode for `profile`.
 
 ### Who is affected
 
-This affects connections syncing `profile`, `labels_details`, `messages_details`, or `threads_details`. Typed destinations and downstream queries or models that expect decimal count/size columns or the previous profile row identity may need updates. Only `messages_details` supports incremental sync; the other affected streams use full refresh. This is especially relevant to `messages_details` using **Incremental | Append + Deduped** and `profile` using **Full Refresh | Overwrite + Deduped**.
+Connections that sync at least one of `profile`, `labels_details`, `messages_details` or `threads_details`. Connections that sync only `drafts`, `labels`, `messages` or `threads` aren't affected and need no action.
 
-### Steps
+Among affected connections:
+
+- **Destinations that type their columns** (BigQuery, Snowflake, Postgres, Redshift, MSSQL, ClickHouse and similar) change `messagesTotal`, `messagesUnread`, `threadsTotal`, `threadsUnread` and `sizeEstimate` from a decimal or float column to an integer column. The nested `payload` and `messages` objects are stored as JSON, so their `size` fields don't change a column type. Most of these destinations convert the existing column in place on the next sync.
+- **S3 Data Lake (Iceberg)** can't convert a double column to a long column in place. Streams in an Append or Append + Deduped mode fail with a schema-evolution error until you refresh them; see step 3.
+- **Object storage and file destinations** that write JSON or CSV aren't affected: the values are written the same way as before.
+- **`profile` in Full Refresh | Append** keeps one row per sync, as before. Connections that set their own primary key for `profile` now use `emailAddress`.
+
+### Upgrade steps
 
 1. Upgrade the Gmail source to version 1.0.0.
 2. Refresh the source schema for each affected connection and review the detected changes before saving.
-3. For affected streams using append-based modes, including incremental `messages_details`, or for destinations that cannot safely evolve the typed columns in place, rebuild the stream data using **Refresh stream** → **Refresh stream and remove records**. A normal sync rebuilds streams using **Full Refresh | Overwrite**, so those streams do not need a separate data refresh.
-4. Update downstream queries, models, or exports that depend on the changed column types or profile key.
+3. Run a sync. Most destinations convert the columns automatically and no further action is needed. If the sync fails with a schema-evolution error, for example on S3 Data Lake in an Append or Append + Deduped mode, refresh only that stream with **Refresh stream** → **Refresh stream and remove records**. Read the warning at the top of this guide first: a `messages_details` re-sync reads every message from your start date again, one `messages.get` call per message, so large mailboxes take a long time and messages deleted from the mailbox don't come back. Streams in **Full Refresh | Overwrite** are rebuilt by every sync and never need a separate refresh.
+4. Update downstream queries, models and exports that depend on the changed columns or on the `profile` key.
 
-:::danger
-**Refresh stream and remove records** deletes the existing destination rows before re-syncing. Gmail can only return messages that are still available and allowed by the connection's start date and spam/trash settings; deleted or excluded messages may not be recoverable from the source. Back up affected destination data before removing records if you need to preserve it.
-:::
+### Update downstream queries
+
+The five typed columns listed above become integer columns (for example `INT64` in BigQuery, `NUMBER(38,0)` in Snowflake, `BIGINT` in Postgres). Check:
+
+- Divisions between two of these columns. In Postgres, `messagesUnread / messagesTotal` on integer columns truncates to `0`; cast one side to a decimal type first.
+- Casts and type checks that expected a decimal or float column, such as `CAST(messagesTotal AS INTEGER)`, which are no longer needed.
+- Models or dashboards that deduplicate `profile` on a key of their own; the stream's key is now `emailAddress`.
 
 For more information about refresh options, see [Refresh data](/platform/operator-guides/refreshes).
+
+## Connector upgrade guide
 
 <MigrationGuide />

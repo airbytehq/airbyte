@@ -718,6 +718,8 @@ schemas:
         type:
           - integer
           - "null"
+    required:
+      - emailAddress
   drafts:
     type: object
     $schema: http://json-schema.org/schema#
