@@ -482,6 +482,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -995,6 +997,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1045,6 +1049,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1261,6 +1267,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1319,6 +1327,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1470,6 +1480,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1629,6 +1641,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1820,6 +1834,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1987,6 +2003,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2158,6 +2176,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2224,6 +2244,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2324,6 +2346,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2397,6 +2421,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2451,6 +2477,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2510,6 +2538,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2569,6 +2599,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           subtotal:
             type: [string, "null"]
           id:
@@ -2680,6 +2712,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2808,6 +2842,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2858,6 +2894,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2950,6 +2988,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3084,6 +3124,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3272,6 +3314,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3367,6 +3411,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3475,6 +3521,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3588,6 +3636,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3704,6 +3754,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3880,6 +3932,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4081,6 +4135,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4176,6 +4232,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4681,6 +4739,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4790,6 +4850,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5011,6 +5073,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5197,6 +5261,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5600,6 +5666,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5741,6 +5809,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5844,6 +5914,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5957,6 +6029,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6072,6 +6146,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6168,6 +6244,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6394,6 +6472,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6462,6 +6542,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6591,6 +6673,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6700,6 +6784,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6827,6 +6913,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6975,6 +7063,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7110,6 +7200,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7193,6 +7285,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7395,6 +7489,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7490,6 +7586,8 @@ streams:
           relationships:
             type: [object, "null"]
             additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer

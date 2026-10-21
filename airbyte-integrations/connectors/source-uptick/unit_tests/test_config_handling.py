@@ -151,6 +151,13 @@ def test_discover_declares_jsonapi_objects_and_missing_fields() -> None:
     config = base_config()
     catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
     streams = {stream.name: stream for stream in catalog.streams}
+    streams_that_remove_type = {
+        "accreditationtypes",
+        "billingcontracts",
+        "billingcontractlineitems",
+        "products",
+        "promptquestions",
+    }
 
     for name, stream in streams.items():
         if name == "task_profitability":
@@ -158,6 +165,8 @@ def test_discover_declares_jsonapi_objects_and_missing_fields() -> None:
         properties = stream.json_schema["properties"]
         assert properties["attributes"] == {"type": ["object", "null"], "additionalProperties": True}
         assert properties["relationships"] == {"type": ["object", "null"], "additionalProperties": True}
+        if name not in streams_that_remove_type:
+            assert properties["type"] == {"type": ["string", "null"]}
 
     assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["type"] == ["string", "null"]
     assert streams["properties"].json_schema["properties"]["address"]["properties"]["place_id"]["type"] == [
