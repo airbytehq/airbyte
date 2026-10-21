@@ -77,7 +77,7 @@ Both **view** and **edit** access levels are supported. Accounts with view-only 
 :::
 
 :::important
-Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent, and using or refreshing the token does not extend that date. Tokens issued before July 30, 2026 do not expire unless access is revoked. When a refresh token expires, syncs fail with a configuration error asking you to re-authenticate. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
 :::
 
 ## Supported sync modes
