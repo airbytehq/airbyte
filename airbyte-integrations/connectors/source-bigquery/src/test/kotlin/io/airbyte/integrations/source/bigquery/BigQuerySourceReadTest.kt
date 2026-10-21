@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -413,6 +414,53 @@ class BigQuerySourceReadTest {
             output.dump(),
         )
         Assertions.assertTrue(error.error.message.contains("not found"), output.dump())
+    }
+
+    /** Pre-1.0.0 catalogs omit ARRAY items; READ must ask for schema refresh instead of failing. */
+    @Test
+    fun testLegacyArrayWithoutItemsAsksForSchemaRefresh() {
+        val catalog: AirbyteCatalog = discover()
+        val legacyStream: AirbyteStream =
+            Jsons.readValue(
+                Jsons.writeValueAsString(catalog.stream("all_types")),
+                AirbyteStream::class.java,
+            )
+        val properties: ObjectNode = legacyStream.jsonSchema["properties"] as ObjectNode
+        properties.set<JsonNode>("tags", Jsons.readTree("""{"type":"array"}"""))
+        properties.set<JsonNode>("line_items", Jsons.readTree("""{"type":"array"}"""))
+        val configured =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        configured(legacyStream, SyncMode.FULL_REFRESH),
+                        configured(catalog.stream("with_pk"), SyncMode.FULL_REFRESH),
+                    ),
+                )
+        val output: BufferingOutputConsumer = read(configured)
+
+        Assertions.assertEquals(3, output.recordsByStream()["with_pk"]!!.size, output.dump())
+        Assertions.assertTrue(output.recordsByStream()["all_types"].isNullOrEmpty(), output.dump())
+        Assertions.assertEquals(
+            listOf(
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
+            ),
+            output.statuses("all_types"),
+            output.dump(),
+        )
+        val error: AirbyteTraceMessage =
+            output.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }.single()
+        Assertions.assertEquals("all_types", error.error.streamDescriptor.name, output.dump())
+        Assertions.assertEquals(
+            io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            error.error.failureType,
+            output.dump(),
+        )
+        Assertions.assertTrue(
+            error.error.message.contains("Refresh the source schema to continue syncing this stream"),
+            output.dump(),
+        )
+        Assertions.assertTrue(error.error.message.contains("Field 'tags'"), output.dump())
     }
 
     private fun discover(): AirbyteCatalog =
