@@ -23,6 +23,8 @@ Bad credentials surface on the token endpoint (`invalid_grant` for a wrong usern
 
 `config_migrations` copies the pre-2.1.0 top-level `client_id`, `client_secret`, `username`, and `password` under `credentials` with `auth_type: password` when `username` is present and `credentials.auth_type` is not. It is copy-only: the top-level fields are kept (hidden in the spec; `client_id`, `client_secret`, and `password` stay `airbyte_secret`) so a config still validates on 2.0.x after a rollback. Values are copied as `string` to avoid Jinja literal-evaluating numeric passwords. The migrated config is emitted as a control message; a config that already has `credentials.auth_type` is left untouched.
 
+A second migration removes legacy top-level fields that the connector no longer reads. It always removes `start_date` and `end_date`. It removes `oauth_access_token`, `oauth_token_expiry_date` and `client_refresh_token` only when `credentials.auth_type` is `password` or `oauth2.0`, so they are kept until the credentials migration has run. Migrations run in list order on the same config.
+
 ## Config normalization
 
 `config_normalization_rules` runs four `ConfigAddFields` steps in memory on every run; the CDK does not persist them (see the control-message caveat under OAuth host pinning). The first normalizes `base_url`: it is trimmed, the scheme and any path are stripped, and it is prefixed with `https://`. The other three derive `oauth_token_url` and clear the OAuth expiry on a host mismatch, as described under [OAuth host pinning](#oauth-host-pinning). `metadata.yaml` sets `allowedHosts: ${base_url}`; the platform strips the scheme itself.
