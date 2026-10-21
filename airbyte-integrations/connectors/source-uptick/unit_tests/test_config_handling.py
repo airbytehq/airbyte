@@ -118,6 +118,7 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert spec["connection_specification"]["required"] == ["base_url"]
     assert spec["connection_specification"]["properties"]["base_url"]["pattern"] == r"\S"
     assert spec["connection_specification"]["properties"]["base_url"]["minLength"] == 1
+    assert spec["connection_specification"]["properties"]["base_url"]["pattern_descriptor"] == "https://<workspace>.onuptick.com"
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
     assert user_input["required"] == ["base_url"]
     assert user_input["properties"]["base_url"]["path_in_connector_config"] == ["base_url"]
