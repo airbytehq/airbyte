@@ -42,10 +42,15 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
 ## Deletions
 
-Reddit v3 list endpoints expose neither hard-deleted entities nor an
-include-deleted parameter, so the connector does not emit deletions. Entities
-that change status remain in the listing with their status fields. Use a full
-refresh when you need to detect removals.
+The connector does not detect or emit deletions. In Reddit's OpenAPI spec, the
+`configured_status` and `effective_status` enums of ads, ad groups and campaigns
+include `DELETED`, and the ads list endpoint accepts `effective_status` (and
+`configured_status`) filters that include `DELETED`; the ad group and campaign
+list endpoints have no status filter. The connector sends no status filter, so it
+doesn't request `DELETED` items explicitly, and it is unverified whether the
+default list responses include them. Items Reddit lists are synced with their
+status fields. If Reddit stops listing an item, its last-synced row stays in the
+destination until a full refresh with overwrite replaces the table.
 
 ## Verification note
 
