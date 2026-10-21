@@ -101,8 +101,8 @@ class BigQueryDatabaseHandler(
                         .setLocation(datasetLocation)
                         .setJob(queryId.toString())
                         .build(),
-                    QueryJobConfiguration.of(statement)
-                )
+                    QueryJobConfiguration.of(statement),
+                ),
             )
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
         while (JobStatus.State.DONE != job.status.state) {
@@ -111,7 +111,7 @@ class BigQueryDatabaseHandler(
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
-                BigQueryException(listOf(job.status.error) + job.status.executionErrors)
+                BigQueryException(listOf(job.status.error) + job.status.executionErrors),
             )
         }
 
@@ -139,7 +139,7 @@ class BigQueryDatabaseHandler(
                                 .replace("\\s+".toRegex(), " ")
                                 .substring(
                                     0,
-                                    min(100.0, configuration.query.length.toDouble()).toInt()
+                                    min(100.0, configuration.query.length.toDouble()).toInt(),
                                 )
                         if (truncatedQuery != configuration.query) {
                             truncatedQuery += "..."

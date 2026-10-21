@@ -1,4 +1,4 @@
-version: 7.28.4
+version: 7.33.0
 
 type: DeclarativeSource
 
@@ -24,7 +24,15 @@ definitions:
           - 403
         action: FAIL
         failure_type: config_error
-        error_message: "Harvest v3 list endpoint denied: missing OAuth scope or authorizing user is not a Site Admin."
+        # Stream name is not available here because every stream shares this filter by $ref,
+        # so the remedy branches on the authentication method instead.
+        error_message: >-
+          {{ 'Greenhouse denied access to a Harvest API endpoint (HTTP 403): the custom integration credential lacks
+          the required Harvest scope, or the Site Admin user ID is not a Site Admin. Grant the scope to the credential
+          in Greenhouse under Configure > Dev Center > API Credential Management, or clear or correct the Site Admin user ID.'
+          if config['credentials']['auth_type'] == 'ClientCredentials' else
+          'Greenhouse denied access to a Harvest API endpoint (HTTP 403): the OAuth token lacks the required Harvest scope
+          or the authorizing user is not a Site Admin. Re-authenticate this source as a Greenhouse Site Admin.' }}
       - type: HttpResponseFilter
         http_codes:
           - 422
