@@ -6,7 +6,7 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-## GitHub Gen 2 flat contract
+## GitHub (Experimental, Gen 2) flat contract
 
 Forked from `source-github` 2.7.9 on 2026-10-20. Every stream has a deterministic flat schema:
 root `additionalProperties: false`; scalar fields and arrays of scalars only; nested value
