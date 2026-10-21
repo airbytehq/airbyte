@@ -4,16 +4,18 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - "*.googleapis.com"
+      - youtubereporting.googleapis.com
+      - oauth2.googleapis.com
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
-  dockerImageTag: 1.4.6
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-youtube-analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
   icon: youtube-analytics.svg
   license: ELv2
+  maxSecondsBetweenMessages: 86400
   name: YouTube Analytics
   remoteRegistries:
     pypi:
@@ -32,6 +34,15 @@ data:
       1.0.0:
         message: Version 1.0.0 introduces changes to BULK API reports streams due to a deprecation on API side. Users will need to Refresh Source Schema and Clear affected streams. Please, follow the Migration Steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations). For more info about this deprecation see the Youtube API docs [changelog](https://developers.google.com/youtube/reporting/revision_history#bulk-data-reports-for-youtube-analytics).
         upgradeDeadline: "2025-11-12"
+  suggestedStreams:
+    streams:
+      - channel_basic_a3
+      - channel_combined_a3
+      - channel_traffic_source_a3
+      - channel_device_os_a3
+      - channel_playback_location_a3
+      - playlist_basic_a2
+      - channel_demographics_a1
   supportLevel: community
   tags:
     - cdk:low-code
@@ -45,16 +56,19 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.38.0@sha256:36a3f1e2519a13f216331303c14dbe94ba325a9fa6489c5fa6f3c9eb51680246
   externalDocumentationUrls:
-    - title: YouTube Analytics API
-      url: https://developers.google.com/youtube/analytics
+    - title: YouTube Reporting API reference
+      url: https://developers.google.com/youtube/reporting/v1/reference/rest
       type: api_reference
-    - title: YouTube API changelog
-      url: https://developers.google.com/youtube/v3/revision_history
+    - title: YouTube Reporting API Discovery document
+      url: https://youtubereporting.googleapis.com/$discovery/rest?version=v1
+      type: other
+    - title: YouTube Analytics and Reporting APIs revision history
+      url: https://developers.google.com/youtube/reporting/revision_history
       type: api_release_history
-    - title: Google OAuth 2.0
-      url: https://developers.google.com/identity/protocols/oauth2
+    - title: YouTube Reporting API authorization
+      url: https://developers.google.com/youtube/reporting/guides/authorization
       type: authentication_guide
     - title: YouTube API quotas
       url: https://developers.google.com/youtube/v3/getting-started#quota

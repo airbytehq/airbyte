@@ -102,22 +102,12 @@ class JobRequester(ContentOwnerRequester):
             log_formatter,
         )
 
-        response_json = response.json()
+        # Later pages are only fetched by the paginator after the first page already made sure
+        # the job exists.
+        if next_page_token:
+            return response
 
-        # Handle error responses from the API
-        if "error" in response_json:
-            error_details = response_json["error"]
-            error_code = error_details.get("code", "unknown")
-            api_message = error_details.get("message", str(error_details))
-            error_message = f"YouTube Reporting API Error (code {error_code}): {api_message}. "
-            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
-
-        # Handle the case where API returns {} instead of {"jobs": []}
-        # This can happen when no jobs exist yet - treat as empty list
-        jobs_list = response_json.get("jobs", [])
-        stream_job = [r for r in jobs_list if r["reportTypeId"] == self._parameters["report_type_id"]]
-
-        if not stream_job:
+        if not self._job_exists(response, path, stream_state, stream_slice, request_headers, request_params, log_formatter):
             self._http_client.send_request(
                 http_method="post",
                 url=self._get_url(
@@ -146,6 +136,52 @@ class JobRequester(ContentOwnerRequester):
             )
 
         return response
+
+    def _job_exists(
+        self,
+        response: requests.Response,
+        path: Optional[str],
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
+        request_headers: Optional[Mapping[str, Any]],
+        request_params: Optional[Mapping[str, Any]],
+        log_formatter: Optional[Callable[[requests.Response], Any]],
+    ) -> bool:
+        """Whether a job for this stream's report type is on any page of `jobs.list`.
+
+        The job can be on a later page than the first, and creating a second job for the same
+        report type is wasted quota, so every page is checked before deciding to create one.
+        """
+        while True:
+            response_json = self._parse_jobs_page(response)
+            # The API returns {} instead of {"jobs": []} when no jobs exist yet.
+            if any(job.get("reportTypeId") == self._parameters["report_type_id"] for job in response_json.get("jobs", [])):
+                return True
+            next_page = response_json.get("nextPageToken")
+            if not next_page:
+                return False
+            response = super().send_request(
+                stream_state,
+                stream_slice,
+                {"next_page_token": next_page},
+                path,
+                request_headers,
+                {**(request_params or {}), "pageToken": next_page},
+                None,
+                None,
+                log_formatter,
+            )
+
+    @staticmethod
+    def _parse_jobs_page(response: requests.Response) -> Mapping[str, Any]:
+        response_json = response.json()
+        if "error" in response_json:
+            error_details = response_json["error"]
+            error_code = error_details.get("code", "unknown")
+            api_message = error_details.get("message", str(error_details))
+            error_message = f"YouTube Reporting API Error (code {error_code}): {api_message}. "
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+        return response_json
 
 
 class ReportsStateMigration(StateMigration):
