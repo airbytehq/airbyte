@@ -40,12 +40,12 @@ class MySqlSourceMetadataQuerier(
                     Triple(
                         "binlog_format",
                         "show variables where Variable_name = 'binlog_format'",
-                        "ROW"
+                        "ROW",
                     ),
                     Triple(
                         "binlog_row_image",
                         "show variables where Variable_name = 'binlog_row_image'",
-                        "FULL"
+                        "FULL",
                     ),
                 )
 
@@ -67,7 +67,7 @@ class MySqlSourceMetadataQuerier(
                     }
                 } catch (ex: SQLException) {
                     throw ConfigErrorException(
-                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode.",
                     )
                 }
             }
@@ -78,7 +78,7 @@ class MySqlSourceMetadataQuerier(
         variable: String,
         sql: String,
         expectedValue: String,
-        conn: Connection
+        conn: Connection,
     ) {
         try {
             conn.createStatement().use { stmt: Statement ->
@@ -170,8 +170,7 @@ class MySqlSourceMetadataQuerier(
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
                         pkRows
                             .sortedBy { it.position }

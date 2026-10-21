@@ -101,16 +101,15 @@ interface AirbyteType {
                     getArray(schema)
                 } else {
                     AirbyteProtocolType.Companion.fromJson(
-                        getTrimmedJsonSchema(schema, typeOptions[0])
+                        getTrimmedJsonSchema(schema, typeOptions[0]),
                     )
                 }
             }
 
             // Recurse into a schema that forces a specific one of each option
-            val options =
-                typeOptions.map { typeOption: String ->
-                    fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
-                }
+            val options = typeOptions.map { typeOption: String ->
+                fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
+            }
 
             return Union(options)
         }

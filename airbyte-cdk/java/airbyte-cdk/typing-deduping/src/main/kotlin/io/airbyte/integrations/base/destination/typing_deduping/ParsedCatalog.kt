@@ -27,8 +27,8 @@ class ParsedCatalog(val streams: List<StreamConfig>) {
                         .map { stream: StreamConfig ->
                             stream.id.originalNamespace + "." + stream.id.originalName
                         }
-                        .toList()
-                )
+                        .toList(),
+                ),
             )
     }
 }

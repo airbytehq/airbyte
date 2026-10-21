@@ -79,7 +79,7 @@ class PostgresTestTableOperationsClient(
                     FROM information_schema.columns
                     WHERE table_schema = '${table.namespace}'
                     AND table_name = '${table.name}'
-                """
+                """,
                     )
                     .use { resultSet ->
                         while (resultSet.next()) {
@@ -96,7 +96,7 @@ class PostgresTestTableOperationsClient(
         statement: java.sql.PreparedStatement,
         index: Int,
         value: AirbyteValue?,
-        columnType: String?
+        columnType: String?,
     ) {
         // If column is jsonb, serialize any value as JSON
         if (columnType == "jsonb") {
@@ -192,7 +192,7 @@ class PostgresTestTableOperationsClient(
                                         if (value != null) {
                                             val formattedTimestamp =
                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
-                                                    value.withOffsetSameInstant(ZoneOffset.UTC)
+                                                    value.withOffsetSameInstant(ZoneOffset.UTC),
                                                 )
                                             row[columnName] = formattedTimestamp
                                         }
@@ -203,7 +203,7 @@ class PostgresTestTableOperationsClient(
                                             val localDateTime = value.toLocalDateTime()
                                             row[columnName] =
                                                 DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
-                                                    localDateTime
+                                                    localDateTime,
                                                 )
                                         }
                                     }

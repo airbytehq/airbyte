@@ -17,7 +17,7 @@ import org.mockito.kotlin.any
 internal class SwitchingDestinationTest {
     internal enum class SwitchingEnum {
         INSERT,
-        COPY
+        COPY,
     }
 
     private lateinit var insertDestination: Destination
@@ -27,7 +27,7 @@ internal class SwitchingDestinationTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     fun setUp() {
         insertDestination = Mockito.mock(Destination::class.java)
@@ -37,7 +37,7 @@ internal class SwitchingDestinationTest {
                 SwitchingEnum.INSERT,
                 insertDestination,
                 SwitchingEnum.COPY,
-                copyDestination
+                copyDestination,
             )
     }
 
@@ -48,13 +48,13 @@ internal class SwitchingDestinationTest {
             SwitchingDestination(
                 SwitchingEnum::class.java,
                 { SwitchingEnum.INSERT },
-                destinationMap
+                destinationMap,
             )
 
         switchingDestination.getConsumer(
             Mockito.mock(JsonNode::class.java),
             Mockito.mock(ConfiguredAirbyteCatalog::class.java),
-            mock()
+            mock(),
         )
 
         Mockito.verify(insertDestination, Mockito.times(1)).getConsumer(any(), any(), any())
@@ -75,7 +75,7 @@ internal class SwitchingDestinationTest {
         switchingDestination.getConsumer(
             Mockito.mock(JsonNode::class.java),
             Mockito.mock(ConfiguredAirbyteCatalog::class.java),
-            Mockito.mock()
+            Mockito.mock(),
         )
 
         Mockito.verify(insertDestination, Mockito.times(0)).getConsumer(any(), any(), any())

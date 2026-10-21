@@ -71,7 +71,11 @@ def test_manifest_has_no_custom_components():
     assert "CustomAuthenticator" not in manifest_text
     assert not (_MANIFEST_DIR / "components.py").exists()
     manifest = yaml.safe_load(manifest_text)
-    assert manifest["definitions"]["authenticator"]["type"] == "OAuthAuthenticator"
+    authenticator = manifest["definitions"]["authenticator"]
+    assert authenticator["type"] == "SelectiveAuthenticator"
+    authenticators = authenticator["authenticators"]
+    assert set(authenticators) == {"oauth2.0", "server_to_server"}
+    assert all(branch["type"] == "OAuthAuthenticator" for branch in authenticators.values())
 
 
 def test_token_is_requested_with_account_credentials_grant_and_used_as_bearer():

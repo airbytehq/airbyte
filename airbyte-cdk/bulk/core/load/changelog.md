@@ -7,9 +7,21 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.6 — 2026-10-16
+### 1.1.9 — 2026-10-21
 
 [#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.
+
+### 1.1.8 — 2026-10-16
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
+### 1.1.7 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
+### 1.1.6 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and extract 1.1.20; no runtime behaviour change in load.
 
 ### 1.1.5 — 2026-10-15
 
