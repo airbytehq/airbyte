@@ -102,7 +102,7 @@ definitions:
           path: ""
           http_method: GET
           request_parameters:
-            filterByFormula: "{% if stream_interval.start_time > '1970-01-01T00:00:00Z' %}OR(IS_AFTER(LAST_MODIFIED_TIME(), '{{ stream_interval.start_time }}'), IS_AFTER(CREATED_TIME(), '{{ stream_interval.start_time }}')){% endif %}"
+            filterByFormula: "{% if stream_interval.start_time > '1970-01-01T00:00:00Z' %}IS_AFTER(IF(LAST_MODIFIED_TIME(), LAST_MODIFIED_TIME(), CREATED_TIME()), '{{ stream_interval.start_time }}'){% endif %}"
         record_selector:
           type: RecordSelector
           schema_normalization: Default

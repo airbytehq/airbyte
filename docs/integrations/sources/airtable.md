@@ -89,7 +89,7 @@ The Airtable source connector supports the following [sync modes](https://docs.a
 - [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key)
 
-Incremental sync filters records with Airtable's `LAST_MODIFIED_TIME()` and `CREATED_TIME()` functions in `filterByFormula`. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
+Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
 
 ## Supported Streams
 
