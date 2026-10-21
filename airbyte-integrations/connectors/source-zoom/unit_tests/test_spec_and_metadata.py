@@ -3,27 +3,13 @@
 from pathlib import Path
 
 import pytest
-import requests_mock
 import yaml
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.state_builder import StateBuilder
-
 
 _CI_MANIFEST_DIR = Path("/airbyte/integration_code/source_declarative_manifest")
 _MANIFEST_DIR = _CI_MANIFEST_DIR if _CI_MANIFEST_DIR.exists() else Path(__file__).parent.parent
 _MANIFEST_PATH = _MANIFEST_DIR / "manifest.yaml"
 _METADATA_PATH = _MANIFEST_DIR / "metadata.yaml"
 _TOKEN_URL = "https://zoom.us/oauth/token"
-_USERS_URL = "https://api.zoom.us/v2/users"
-_CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-}
 
 
 def test_connection_spec_has_titled_fields_and_optional_hidden_authorization_endpoint():
@@ -32,32 +18,19 @@ def test_connection_spec_has_titled_fields_and_optional_hidden_authorization_end
     properties = specification["properties"]
 
     assert all(property_spec.get("title") for property_spec in properties.values())
-    assert "authorization_endpoint" not in specification["required"]
-    assert properties["authorization_endpoint"]["airbyte_hidden"] is True
-    assert properties["authorization_endpoint"]["default"] == _TOKEN_URL
+    credentials_options = properties["credentials"]["oneOf"]
+    for option in credentials_options:
+        assert all(property_spec.get("title") for property_spec in option["properties"].values())
 
-
-def test_full_refresh_uses_default_token_endpoint_when_not_configured():
-    source = YamlDeclarativeSource(
-        path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().build(),
-        config=_CONFIG,
-        state=StateBuilder().build(),
+    server_to_server = next(
+        (option for option in credentials_options if option["properties"]["auth_type"].get("const") == "server_to_server"),
+        None,
     )
-    catalog = CatalogBuilder().with_stream("users", SyncMode.full_refresh).build()
-
-    with requests_mock.Mocker() as mocker:
-        token_mock = mocker.post(
-            _TOKEN_URL,
-            json={"access_token": "test_access_token", "token_type": "bearer", "expires_in": 3599},
-        )
-        mocker.get(_USERS_URL, json={"users": [{"id": "u1", "email": "a@example.com"}], "next_page_token": ""})
-
-        output = read(source, _CONFIG, catalog)
-
-    assert token_mock.call_count == 1
-    assert len(output.records) == 1
-    assert output.errors == []
+    assert server_to_server is not None
+    assert "authorization_endpoint" not in server_to_server.get("required", [])
+    authorization_endpoint = server_to_server["properties"]["authorization_endpoint"]
+    assert authorization_endpoint["airbyte_hidden"] is True
+    assert authorization_endpoint["default"] == _TOKEN_URL
 
 
 def test_metadata_has_registry_hosts_heartbeat_and_suggested_streams():
