@@ -2608,6 +2608,17 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Azure Blob Storage rejects expired SAS download URLs with 403 AuthenticationFailed.
+  # The 403 is handed back to the custom download requesters, which re-poll for a fresh URL.
+  download_url_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: "Download URL was rejected by Azure Blob Storage; requesting a fresh download URL."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2655,6 +2666,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2718,9 +2731,13 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsBulkDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder

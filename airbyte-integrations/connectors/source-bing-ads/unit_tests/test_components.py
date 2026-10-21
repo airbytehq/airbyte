@@ -1145,15 +1145,8 @@ def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
 # --- Manifest-level integration test (P1) ---
 
 
-def test_manifest_instantiates_custom_download_requester(config):
-    """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
-
-    This test builds the full source from manifest.yaml via YamlDeclarativeSource,
-    finds a report stream, and asserts that:
-    1. The download requester is an instance of BingAdsReportDownloadRequester.
-    2. stream_response is True (derived from decoder in __post_init__).
-    3. The report_poll_authenticator is resolved and has get_auth_header().
-    """
+def _get_download_requester(config, stream_name):
+    """Build the source from manifest.yaml and return the download requester of an async stream."""
     from pathlib import Path
 
     from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -1165,13 +1158,8 @@ def test_manifest_instantiates_custom_download_requester(config):
     state = StateBuilder().build()
     source = YamlDeclarativeSource(path_to_yaml=str(yaml_path), catalog=catalog, config=config, state=state)
 
-    # Find a report stream that uses the async retriever with download_requester
-    target_stream = None
-    for stream in source.streams(config=config):
-        if stream.name == "account_performance_report_daily":
-            target_stream = stream
-            break
-    assert target_stream is not None, "account_performance_report_daily stream not found"
+    target_stream = next((stream for stream in source.streams(config=config) if stream.name == stream_name), None)
+    assert target_stream is not None, f"{stream_name} stream not found"
 
     # Navigate to the AsyncJobPartitionRouter (stream_slicer).
     # The CDK may wrap the stream as a concurrent DefaultStream or leave it as a
@@ -1191,7 +1179,19 @@ def test_manifest_instantiates_custom_download_requester(config):
             break
     assert job_repository is not None, "Could not find job_repository in factory closure"
 
-    download_requester = job_repository.download_retriever.requester
+    return job_repository.download_retriever.requester
+
+
+def test_manifest_instantiates_custom_download_requester(config):
+    """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
+
+    This test builds the full source from manifest.yaml via YamlDeclarativeSource,
+    finds a report stream, and asserts that:
+    1. The download requester is an instance of BingAdsReportDownloadRequester.
+    2. stream_response is True (derived from decoder in __post_init__).
+    3. The report_poll_authenticator is resolved and has get_auth_header().
+    """
+    download_requester = _get_download_requester(config, "account_performance_report_daily")
 
     # Assert the requester is our custom class (not plain HttpRequester)
     import components as components_mod
@@ -1204,3 +1204,142 @@ def test_manifest_instantiates_custom_download_requester(config):
     # Assert report_poll_authenticator is resolved and usable
     assert download_requester.report_poll_authenticator is not None
     assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")
+
+
+# --- Expired SAS URL handling (bulk + report download requesters) ---
+
+
+TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+BULK_STATUS_URL = "https://bulk.api.bingads.microsoft.com/Bulk/v13/BulkDownloadStatus/Query"
+BULK_FRESH_SAS_URL = "https://bingadsappsstorageprod.blob.core.windows.net/bulkdownloadresultfiles/file.zip?sig=fresh_token"
+BULK_STALE_SAS_URL = "https://bingadsappsstorageprod.blob.core.windows.net/bulkdownloadresultfiles/file.zip?sig=stale_token"
+AZURE_EXPIRED_SIGNATURE_BODY = (
+    '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>'
+    "<Message>Server failed to authenticate the request. Make sure the value of Authorization header is formed "
+    "correctly including the signature.</Message><AuthenticationErrorDetail>Signature not valid in the specified "
+    "time frame: Start [Tue, 20 Oct 2026 19:33:45 GMT] - Expiry [Tue, 20 Oct 2026 19:58:45 GMT] - Current "
+    "[Tue, 20 Oct 2026 20:05:41 GMT]</AuthenticationErrorDetail></Error>"
+)
+BULK_CSV = "Type,Status,Id,Parent Id\nFormat Version,,,6.0\nKeyword,Active,111,222\n"
+
+
+def _expired_sas_response():
+    return {
+        "status_code": 403,
+        "text": AZURE_EXPIRED_SIGNATURE_BODY,
+        "headers": {"x-ms-error-code": "AuthenticationFailed", "Content-Type": "application/xml"},
+    }
+
+
+def _make_bulk_stream_slice(download_target=BULK_STALE_SAS_URL):
+    return StreamSlice(
+        partition={"account_id": "ACC-1"},
+        cursor_slice={},
+        extra_fields={
+            "creation_response": {"DownloadRequestId": "BULK-REQ-1"},
+            "ParentCustomerId": "CUST-1",
+            "download_target": download_target,
+        },
+    )
+
+
+def test_manifest_bulk_stream_uses_refreshing_download_requester(config):
+    download_requester = _get_download_requester(config, "keywords")
+
+    import components as components_mod
+
+    assert isinstance(download_requester, components_mod.BingAdsBulkDownloadRequester)
+    assert download_requester.stream_response is True
+    assert download_requester.report_poll_authenticator is not None
+
+
+def test_bulk_download_refreshes_expired_sas_url(config, requests_mock):
+    """Reproduces oncall#13802: the bulk ResultFileUrl expired before the download started."""
+    requests_mock.post(TOKEN_URL, json={"access_token": "test", "expires_in": "900", "refresh_token": "test"})
+    requests_mock.post(
+        BULK_STATUS_URL,
+        json={"RequestStatus": "Completed", "PercentComplete": 100, "ResultFileUrl": BULK_FRESH_SAS_URL},
+    )
+    requests_mock.get(BULK_STALE_SAS_URL, **_expired_sas_response())
+    requests_mock.get(BULK_FRESH_SAS_URL, body=io.BytesIO(gzip.compress(BULK_CSV.encode("utf-8"))))
+
+    download_requester = _get_download_requester(config, "keywords")
+    response = download_requester.send_request(stream_slice=_make_bulk_stream_slice())
+
+    assert response.status_code == 200
+    assert response.url == BULK_FRESH_SAS_URL
+    status_request = next(r for r in requests_mock.request_history if r.url == BULK_STATUS_URL)
+    assert status_request.json() == {"RequestId": "BULK-REQ-1"}
+    assert status_request.headers["CustomerAccountId"] == "ACC-1"
+    assert status_request.headers["CustomerId"] == "CUST-1"
+    assert status_request.headers["DeveloperToken"] == "fake_developer_token"
+    assert status_request.headers["Authorization"] == "Bearer test"
+
+    import components as components_mod
+
+    records = list(components_mod.BingAdsGzipCsvDecoder().decode(response))
+    assert {"Type": "Keyword", "Status": "Active", "Id": "111", "Parent Id": "222"} in records
+
+
+def test_report_download_repolls_when_fresh_url_expires_during_retries(config, requests_mock):
+    """Reproduces attempt 1 of oncall#13802: the URL from the initial re-poll expired before the
+    download succeeded (e.g. after read-timeout retries), so the requester must re-poll again."""
+    first_url = "https://blobstorage.blob.core.windows.net/report?sig=first_token"
+    second_url = "https://blobstorage.blob.core.windows.net/report?sig=second_token"
+    requests_mock.post(TOKEN_URL, json={"access_token": "test", "expires_in": "900", "refresh_token": "test"})
+    requests_mock.post(
+        POLL_URL,
+        [
+            {"json": {"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": first_url}}},
+            {"json": {"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": second_url}}},
+        ],
+    )
+    requests_mock.get(first_url, **_expired_sas_response())
+    requests_mock.get(second_url, content=b"report-bytes")
+
+    download_requester = _get_download_requester(config, "account_performance_report_daily")
+    response = download_requester.send_request(stream_slice=_make_stream_slice())
+
+    assert response.status_code == 200
+    assert response.url == second_url
+    assert [r.url for r in requests_mock.request_history if r.method == "GET"] == [first_url, second_url]
+
+
+def test_download_raises_transient_error_when_sas_url_keeps_expiring(config, requests_mock):
+    from airbyte_cdk.models import FailureType
+    from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+    requests_mock.post(TOKEN_URL, json={"access_token": "test", "expires_in": "900", "refresh_token": "test"})
+    requests_mock.post(
+        BULK_STATUS_URL,
+        json={"RequestStatus": "Completed", "PercentComplete": 100, "ResultFileUrl": BULK_STALE_SAS_URL},
+    )
+    requests_mock.get(BULK_STALE_SAS_URL, **_expired_sas_response())
+
+    download_requester = _get_download_requester(config, "keywords")
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        download_requester.send_request(stream_slice=_make_bulk_stream_slice())
+
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert exc_info.value.message == "Bing Ads download URL is expired or rejected by Azure Blob Storage."
+    assert "Signature not valid in the specified time frame" in exc_info.value.internal_message
+    downloads = [r for r in requests_mock.request_history if r.method == "GET"]
+    assert len(downloads) == download_requester.max_download_attempts
+
+
+def test_bulk_get_fresh_download_url(components_module):
+    requester = components_module.BingAdsBulkDownloadRequester(
+        name="test_bulk_download_requester",
+        url_base="{{download_target}}",
+        config={"developer_token": "fake_dev_token"},
+        parameters={},
+        report_poll_authenticator=_FakeAuthenticator(),
+    )
+
+    with rm.Mocker() as m:
+        m.post(BULK_STATUS_URL, json={"RequestStatus": "Completed", "ResultFileUrl": BULK_FRESH_SAS_URL})
+        result = requester._get_fresh_download_url(_make_bulk_stream_slice())
+
+    assert result == BULK_FRESH_SAS_URL
+    assert m.last_request.json() == {"RequestId": "BULK-REQ-1"}
+    assert m.last_request.headers["Authorization"] == "Bearer fake_access_token"
