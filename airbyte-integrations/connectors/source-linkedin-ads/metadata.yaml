@@ -24,6 +24,9 @@ data:
     - title: API Versioning
       url: https://learn.microsoft.com/en-us/linkedin/marketing/versioning
       type: api_reference
+    - title: Authentication
+      url: https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication
+      type: authentication_guide
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
   license: ELv2
