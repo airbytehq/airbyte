@@ -567,7 +567,9 @@ definitions:
                   - 404
                 error_message: >-
                   Skipping a YouTube report file that is no longer available for download
-                  (HTTP 404). YouTube may have removed it after its retention period.
+                  (HTTP 404), most likely because YouTube removed it after its retention
+                  period. The rows in that file are not synced; the rest of the sync continues
+                  so one missing file does not fail every stream.
           - $ref: "#/definitions/base_error_handler"
     record_selector:
       type: RecordSelector
