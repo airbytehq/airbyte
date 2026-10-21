@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-track-pms
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0@sha256:2661f795934fad7a6f6d33aaaf9dca074d2421c52e32e0a8c1a9ccd5bcf61129
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: aa0373c1-a7a6-48ff-8277-e5fe6cecff75
