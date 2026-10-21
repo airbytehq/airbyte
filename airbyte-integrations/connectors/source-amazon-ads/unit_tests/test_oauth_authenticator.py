@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from importlib.metadata import version
 
 import pytest
 
@@ -10,15 +9,6 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from unit_tests.integrations.ad_requests import OAuthRequestBuilder
 from unit_tests.integrations.config import ConfigBuilder
 from unit_tests.integrations.utils import read_stream
-
-
-# The connector runs on CDK 7.x (the source-declarative-manifest base image), but unit_tests/poetry.lock
-# still pins CDK 6.x, which ignores refresh_token_error_* on OAuthAuthenticator. Remove this guard once
-# the test dependencies are on CDK 7.
-pytestmark = pytest.mark.skipif(
-    int(version("airbyte-cdk").split(".")[0]) < 7,
-    reason="refresh_token_error_* on OAuthAuthenticator needs the CDK 7 runtime",
-)
 
 
 @pytest.mark.parametrize(
