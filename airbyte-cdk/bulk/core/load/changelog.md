@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.9 — 2026-10-21
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Dependency CVE fixes, no code change. Compile against bulk-cdk-core-base 1.0.8 (sshd-mina 2.20.0, mina-core 2.0.31, bcprov 1.86). legacy-task-load-parquet: Hadoop 3.4.0 → 3.4.3 (protobuf 3.21 → 3.25 shade, drops commons-beanutils, brings dnsjava 3.6.1 and nimbus-jose-jwt 10.4) with Hadoop's embedded Jetty 9.4 excluded, Parquet 1.15.1 → 1.18.1 (shaded parquet-jackson moves to jackson 2.22.2, aircompressor 2.0.3), constraint on jline 3.30.17; lz4-java stays 1.8.0 because 1.8.1 is POM-only on Maven Central. load-iceberg-parquet: Hadoop 3.4.1 → 3.4.3 (Jetty excluded), constraints on zookeeper 3.8.6, httpcore5/httpcore5-h2 5.4.4 and Parquet 1.18.1 (Iceberg stays 1.11.0). load-fusion: AWS SDK BOM 2.31.54 → 2.57.2. legacy-task-load-avro: Avro 1.11.0 → 1.11.4. A netty-bom 4.1.139.Final floor is declared on the toolkits that bring netty in (load-fusion, legacy-task-load-parquet, load-iceberg-parquet, legacy-task-load-azure-blob-storage); connectors on Micronaut 4.10.31 already resolve netty 4.2.19.
+
 ### 1.1.8 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
