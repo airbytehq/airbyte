@@ -73,6 +73,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
 - [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
 - [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
+- [channel_reach_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-reports) - Video thumbnail impressions and impressions click-through rate.
+- [channel_reach_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-reports) - Video thumbnail impressions and impressions click-through rate by traffic source, device type and operating system.
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
 - [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
 - [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
@@ -112,6 +114,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.5.0 | 2026-10-21 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
 | 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
 | 1.4.5 | 2026-10-13 | [88882](https://github.com/airbytehq/airbyte/pull/88882) | Update dependencies |
 | 1.4.4 | 2026-10-06 | [88106](https://github.com/airbytehq/airbyte/pull/88106) | Update dependencies |
