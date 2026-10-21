@@ -376,6 +376,7 @@ def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:
         url="https://localhost:8000/api/v2.16/tasks/",
         query_params={
             "ordering": "-updated",
+            "page[size]": "1000",
             "show_deleted": "true",
             f"fields[{model}]": fields,
             "updatedsince": UptickRequestBuilder.START_DATE,

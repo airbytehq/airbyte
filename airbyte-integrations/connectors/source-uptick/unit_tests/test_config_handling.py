@@ -147,6 +147,25 @@ def test_discover_declares_tracking_categories_as_object() -> None:
     assert "items" not in costcentres_schema
 
 
+def test_discover_declares_jsonapi_objects_and_missing_fields() -> None:
+    config = base_config()
+    catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
+    streams = {stream.name: stream for stream in catalog.streams}
+
+    for name, stream in streams.items():
+        if name == "task_profitability":
+            continue
+        properties = stream.json_schema["properties"]
+        assert properties["attributes"] == {"type": ["object", "null"], "additionalProperties": True}
+        assert properties["relationships"] == {"type": ["object", "null"], "additionalProperties": True}
+
+    assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["type"] == ["string", "null"]
+    assert streams["properties"].json_schema["properties"]["address"]["properties"]["place_id"]["type"] == [
+        "string",
+        "null",
+    ]
+
+
 @pytest.mark.parametrize(
     "base_url",
     [

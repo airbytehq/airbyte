@@ -30,6 +30,10 @@ class UptickRequestBuilder:
             "PromptQuestion",
             "id,created,updated,deleted,label,type,ref,order,config,section",
         ),
+        "promptanswergroups": (
+            "PromptAnswerGroup",
+            "id,created,updated,servicetask,task,section,key,order,group_type,guid",
+        ),
         "promptanswers": (
             "PromptAnswer",
             "id,created,updated,value,question,answergroup,performed_date,guid",
@@ -82,6 +86,7 @@ class UptickRequestBuilder:
             "show_deleted": "true",
             f"fields[{model}]": fields,
             "updatedsince": updatedsince,
+            "page[size]": "1000",
         }
         if stream in cls.FULL_REFRESH_STREAMS:
             query_params["ordering"] = "id"

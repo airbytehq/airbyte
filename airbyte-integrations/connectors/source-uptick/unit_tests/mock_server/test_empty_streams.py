@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import UptickRequestBuilder
@@ -20,6 +21,7 @@ EMPTY_STREAMS = (
     "remarkevents",
     "majorservices",
     "promptquestions",
+    "promptanswergroups",
     "promptanswers",
     "servicequotefixedlineitems",
     "servicequotedoandchargelineitems",
@@ -34,6 +36,7 @@ _TOKEN_RESPONSE = {
 _CREATED = "2026-01-01T00:00:00.000000+0000"
 _UPDATED = "2026-01-02T00:00:00.000000+0000"
 _STATE_CURSOR = "2026-01-01T00:00:00.000000+0000"
+_DATE_ONLY_STATE_CURSOR = "2025-09-03"
 _LATEST_UPDATED = "2026-01-03T00:00:00.000000+0000"
 _RETRY_STREAM = EMPTY_STREAMS[0]
 _INCREMENTAL_EMPTY_STREAMS = tuple(stream for stream in EMPTY_STREAMS if stream not in UptickRequestBuilder.FULL_REFRESH_STREAMS)
@@ -49,6 +52,7 @@ _EXPECTED_RELATIONSHIPS = {
     "remarkevents": ("remark", "task", "servicetask", "account"),
     "majorservices": ("asset", "routineserviceleveltype"),
     "promptquestions": ("section",),
+    "promptanswergroups": ("servicetask", "task", "section"),
     "promptanswers": ("question", "answergroup"),
     "servicequotefixedlineitems": ("servicequote",),
     "servicequotedoandchargelineitems": ("servicequote",),
@@ -123,6 +127,20 @@ def _record(
             }
         )
         relationships = {"section": _relationship()}
+    elif stream == "promptanswergroups":
+        attributes.update(
+            {
+                "key": "answer_group",
+                "order": 1,
+                "group_type": "default",
+                "guid": "00000000-0000-4000-8000-000000000001",
+            }
+        )
+        relationships = {
+            "servicetask": _relationship(),
+            "task": _relationship(),
+            "section": _relationship(),
+        }
     elif stream == "promptanswers":
         attributes.update(
             {
@@ -186,9 +204,7 @@ def _mock_token(http_mocker: HttpMocker) -> None:
     http_mocker.post(
         HttpRequest(
             url=UptickRequestBuilder.token_endpoint(),
-            body=(
-                "grant_type=password&client_id=test-client-id&client_secret=test-client-secret" "&username=test-user&password=test-password"
-            ),
+            body="grant_type=password&client_id=test-client-id&client_secret=test-client-secret&username=test-user&password=test-password",
         ),
         HttpResponse(body=json.dumps(_TOKEN_RESPONSE), status_code=200),
     )
@@ -253,6 +269,27 @@ def test_incremental_uses_state_cursor(stream: str) -> None:
 
         assert output.errors == []
         assert [message.record.data["id"] for message in output.records] == [1, 2]
+        assert output.most_recent_state.stream_descriptor.name == stream
+        assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+def test_incremental_accepts_date_only_state_cursor() -> None:
+    stream = "servicegroups"
+    state = StateBuilder().with_stream_state(stream, {"updated": _DATE_ONLY_STATE_CURSOR}).build()
+    first_page = HttpRequest(
+        url=f"{UptickRequestBuilder.BASE_URL}/api/v2.16/{stream}/",
+        query_params=ANY_QUERY_PARAMS,
+        headers={"Authorization": f"Bearer {UptickRequestBuilder.ACCESS_TOKEN}"},
+    )
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        http_mocker.get(first_page, _response([_record(stream, 1, updated=_LATEST_UPDATED)]))
+
+        output = _read(stream, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == [1]
         assert output.most_recent_state.stream_descriptor.name == stream
         assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
         http_mocker.assert_number_of_calls(first_page, 1)
