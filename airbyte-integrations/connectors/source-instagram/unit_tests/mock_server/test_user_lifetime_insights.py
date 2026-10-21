@@ -64,6 +64,31 @@ class TestFullRefresh(TestCase):
             expecting_exception=expecting_exception,
         )
 
+    @staticmethod
+    def _mock_responses_with_city_record(http_mocker: HttpMocker, shape: dict[str, object]) -> None:
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        for breakdown in ["country", "age,gender"]:
+            http_mocker.get(
+                _get_request().with_custom_param("breakdown", breakdown).build(),
+                _get_response().with_record(_record()).build(),
+            )
+
+        record = {
+            "name": "follower_demographics",
+            "period": "lifetime",
+            "title": "Follower demographics",
+            "description": "description.",
+            "id": "id/insights/follower_demographics/lifetime",
+            **shape,
+        }
+        http_mocker.get(
+            _get_request().with_custom_param("breakdown", "city").build(),
+            HttpResponse(json.dumps({"data": [record]}), 200),
+        )
+
     @HttpMocker()
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
@@ -155,3 +180,60 @@ class TestFullRefresh(TestCase):
         }
         city_record = next(r for r in output.records if r.record.data["breakdown"] == "city")
         assert city_record.record.data["value"]["London, England"] == 7
+
+    @HttpMocker()
+    def test_breakdown_without_results_is_skipped(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": [{"dimension_keys": ["city"]}]}},
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+
+    @HttpMocker()
+    def test_breakdown_with_null_results_is_skipped(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": [{"dimension_keys": ["city"], "results": None}]}},
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+
+    @HttpMocker()
+    def test_empty_breakdowns_is_skipped(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": []}},
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+
+    @HttpMocker()
+    def test_missing_total_value_is_skipped(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(http_mocker, {})
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+
+    @HttpMocker()
+    def test_breakdown_with_empty_results_emits_empty_value(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": [{"dimension_keys": ["city"], "results": []}]}},
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 3
+        city_record = next(r for r in output.records if r.record.data["breakdown"] == "city")
+        assert city_record.record.data["value"] == {}

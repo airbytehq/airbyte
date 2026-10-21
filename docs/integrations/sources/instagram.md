@@ -119,6 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.49 | 2026-10-21 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Skip `user_lifetime_insights` records that have no follower demographics breakdown results instead of failing the sync |
 | 4.2.48 | 2026-10-20 | [89265](https://github.com/airbytehq/airbyte/pull/89265) | Update dependencies |
 | 4.2.47 | 2026-10-13 | [88126](https://github.com/airbytehq/airbyte/pull/88126) | Fix `user_lifetime_insights` dropping the gender dimension of the `age,gender` breakdown |
 | 4.2.46 | 2026-10-13 | [88648](https://github.com/airbytehq/airbyte/pull/88648) | Update dependencies |

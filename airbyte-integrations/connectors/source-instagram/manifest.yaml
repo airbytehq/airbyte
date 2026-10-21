@@ -283,6 +283,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ ((record.get('total_value') or {}).get('breakdowns') or [{}])[0].get('results') is not none }}"
         partition_router:
           - type: ListPartitionRouter
             values:
