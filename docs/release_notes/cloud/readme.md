@@ -2,6 +2,26 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 21, 2026
+
+Platform
+
+- If your organization is on the Standard or Plus plan and you can manage billing, the **Set up billing alerts** link on the Usage and Notifications pages now takes you to the billing alerts section of your organization's Billing page, where you can manage your alerts. Previously, the link opened a separate external form.
+- Setting up single sign-on (SSO) for your organization for the first time works again. Previously, setup could fail with an error.
+
+## October 19, 2026
+
+Platform
+
+- If turning on **Agent access** for a source or destination fails, the status icon next to the toggle now shows a readable error message. Previously, it could show an internal message code instead.
+
+## October 16, 2026
+
+Platform
+
+- When an AI agent using the Airbyte MCP tries to read from a source or destination that doesn't have agent access turned on, the link it gives you now opens a page where you can confirm and turn on direct access for that connector. If your organization hasn't turned on the context layer yet, an organization admin can turn it on from the same page. Previously, the link opened the connector's settings page.
+- The **Agent access** descriptions on the **Context layer** page and on source and destination settings now correctly say that agents can only read from your sources and destinations. Previously, they said agents could also write to them.
+
 ## October 14, 2026
 
 Platform

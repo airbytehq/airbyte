@@ -1,5 +1,8 @@
 {
   "bucket": "a-bucket",
+  "credentials": {
+    "auth_type": "default_credentials"
+  },
   "streams": [
     {
       "name": "output-stream-name",

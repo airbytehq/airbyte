@@ -6,9 +6,13 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 import yaml
 
 from airbyte_cdk.models import ConnectorSpecification, FailureType, Status, SyncMode
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -306,3 +310,37 @@ def test_unhandled_error_code_surfaces_tiktok_code_in_message(requests_mock):
     ]
     assert stream_errors, f"Expected the TikTok error code in the message, got {[e.trace.error.message for e in output.errors]}"
     assert all(error_msg.trace.error.failure_type == FailureType.system_error for error_msg in stream_errors)
+
+
+def _walk_error_handlers(value):
+    if isinstance(value, dict):
+        if value.get("type") == "DefaultErrorHandler" and isinstance(value.get("response_filters"), list):
+            yield value
+        for child in value.values():
+            yield from _walk_error_handlers(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk_error_handlers(child)
+
+
+@pytest.mark.parametrize("code", [51001, 51043])
+def test_internal_service_timeout_codes_are_retried(config, code):
+    response = requests.Response()
+    response.status_code = 200
+    response._content = json.dumps({"code": code, "message": "internal service timeout", "request_id": "1"}).encode()
+    factory = ModelToComponentFactory()
+
+    error_handlers = list(_walk_error_handlers(get_source(config=config, state=None).resolved_manifest))
+    assert error_handlers
+    for error_handler_definition in error_handlers:
+        error_handler_definition = {
+            **error_handler_definition,
+            "response_filters": [
+                {"type": "HttpResponseFilter", **response_filter} for response_filter in error_handler_definition["response_filters"]
+            ],
+        }
+        error_handler = factory.create_component(DefaultErrorHandlerModel, error_handler_definition, config)
+        resolution = error_handler.interpret_response(response)
+        assert resolution.response_action == ResponseAction.RETRY
+        assert f"code {code}" in resolution.error_message
+        assert "transient" in resolution.error_message

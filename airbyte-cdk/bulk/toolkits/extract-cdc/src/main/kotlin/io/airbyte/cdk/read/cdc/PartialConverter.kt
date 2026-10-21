@@ -62,7 +62,7 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
     /** Factory method for generating a [CustomConverter.Converter] for a [RelationalColumn]. */
     fun build(
         column: RelationalColumn,
-        partialConverters: List<PartialConverter>
+        partialConverters: List<PartialConverter>,
     ): CustomConverter.Converter {
         val noDefaultConverter = Converter(column, partialConverters, NoConversion)
         if (column.isOptional || !column.hasDefaultValue()) {
