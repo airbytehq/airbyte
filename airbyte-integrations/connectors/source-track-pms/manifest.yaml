@@ -10650,13 +10650,13 @@ streams:
             type:
               - number
               - "null"
-          unit_id:
-            type:
-              - number
-              - "null"
           endDate:
             type:
               - string
+              - "null"
+          unit_id:
+            type:
+              - number
               - "null"
           estimate:
             type:
@@ -31766,9 +31766,9 @@ spec:
     properties:
       api_key:
         type: string
-        airbyte_secret: true
         order: 1
         title: API Key
+        airbyte_secret: true
       api_secret:
         type: string
         order: 2
@@ -32017,13 +32017,13 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups_blocks:
+      isStale: false
       hasRecords: true
       streamHash: 6eb270f08b2fdafe5a6984cd2a8e0bd132db961e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
     lodging_types:
       hasRecords: true
       streamHash: f470e47770066280db2e8fa7f208308adb0db042
