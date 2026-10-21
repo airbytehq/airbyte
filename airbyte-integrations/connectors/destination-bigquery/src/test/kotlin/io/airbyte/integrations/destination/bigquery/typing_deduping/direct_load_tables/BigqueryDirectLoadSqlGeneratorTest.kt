@@ -15,12 +15,69 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class BigqueryDirectLoadSqlGeneratorTest {
+    @Test
+    fun testUpsertTableWithRowNumberUserColumn() {
+        val stream =
+            DestinationStream(
+                "ns",
+                "stream",
+                Dedupe(
+                    primaryKey = listOf(listOf("id")),
+                    cursor = listOf("updated_at"),
+                ),
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "updated_at" to FieldType(IntegerType, nullable = true),
+                        "row_number" to FieldType(IntegerType, nullable = true),
+                    ),
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 12,
+                namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
+            )
+        val columnNameMapping =
+            ColumnNameMapping(
+                mapOf(
+                    "id" to "id",
+                    "updated_at" to "updated_at",
+                    "row_number" to "row_number",
+                ),
+            )
+        val sql =
+            BigqueryDirectLoadSqlGenerator(
+                projectId = "my-project",
+                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+            )
+                .upsertTable(
+                    stream,
+                    columnNameMapping,
+                    TableName("ns", "tmp"),
+                    TableName("ns", "final"),
+                )
+                .transactions
+                .flatten()
+                .joinToString("\n")
+
+        assertTrue(sql.contains(") AS _airbyte_row_number"))
+        assertTrue(sql.contains("WHERE _airbyte_row_number = 1"))
+        assertFalse(sql.contains("AS row_number"))
+        assertFalse(sql.contains("WHERE row_number = 1"))
+        assertTrue(sql.contains("`row_number`"))
+        assertEquals(2, sql.split("_airbyte_row_number").size - 1)
+    }
+
     @Test
     fun testClusteringColumnsAppend() {
         val clusteringColumns =

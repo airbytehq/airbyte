@@ -290,12 +290,12 @@ class BigqueryDirectLoadSqlGenerator(
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
                    PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
-                 ) AS row_number
+                 ) AS _airbyte_row_number
                  FROM records
                )
                SELECT $columnList _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
                FROM numbered_rows
-               WHERE row_number = 1
+               WHERE _airbyte_row_number = 1
                """
             .trimIndent()
     }
