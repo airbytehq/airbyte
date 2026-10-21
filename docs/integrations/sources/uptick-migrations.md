@@ -2,43 +2,6 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Uptick Migration Guide
 
-## Upgrading to 3.0.0
-
-Version 3.0.0 changes the `tracking_categories` schema on the `products` stream, removes unused legacy configuration fields, and rejects an empty or whitespace-only `base_url`.
-
-### What changed
-
-`products.tracking_categories` changes from an object to an array of objects, matching what the Uptick API returns. Destinations with typed columns will see the column type change.
-
-`costcentres.tracking_categories` is unchanged and stays an object.
-
-Earlier versions declared `products.tracking_categories` as an object while the API returned an array. Destinations on the current bulk-load CDK (for example BigQuery, Snowflake, Postgres, MSSQL, and S3 Data Lake) wrote `null` for it and recorded the change in `_airbyte_meta.changes`. From 3.0.0, `products.tracking_categories` values arrive as arrays.
-
-The connector removes `end_date` and `start_date` automatically. It removes the legacy `oauth_access_token`, `oauth_token_expiry_date`, and `client_refresh_token` fields once the configuration has `credentials.auth_type` set, which the connector adds automatically for existing username and password configurations.
-
-The connector rejects an empty or whitespace-only `base_url`. Existing working configurations are unaffected.
-
-### Who is affected
-
-This change affects users who sync `products` and have destinations with typed columns, or downstream queries, dashboards, and transformations that expect `tracking_categories` to be an object. S3 Data Lake and other Iceberg destinations cannot change the column type in place, so the `products` stream must be cleared or refreshed after the upgrade. Connections with an empty or whitespace-only `base_url` must also be updated to use a valid workspace URL.
-
-### Required actions
-
-Before upgrading, update downstream queries, dashboards, and transformations that read `products.tracking_categories` so they treat it as an array of objects. The field can also be an empty array.
-
-After upgrading to version 3.0.0:
-
-1. Refresh the source schema for connections syncing `products`.
-2. Clear the `products` stream, or run **Refresh (remove records)** on it, so rows synced before 3.0.0 get their `tracking_categories` values:
-   - **Required** for S3 Data Lake and other Iceberg destinations, unless the stream uses **Full refresh | Overwrite**. These destinations can't change the column from a string to a list in place, so the next sync fails until the stream is cleared or refreshed.
-   - **Recommended** for other destinations with typed columns. Rows written before 3.0.0 may have a `null` `tracking_categories`, and incremental syncs only update products that change in Uptick.
-   - Not needed for streams that use **Full refresh | Overwrite**, because every sync rebuilds them.
-
-   A clear doesn't lose history. The connector re-reads every product from Uptick, including deleted ones.
-3. Run a sync and verify downstream models against the updated schemas.
-
-No action is needed for the removed legacy configuration fields or for existing valid `base_url` values.
-
 ## Upgrading to 2.0.0
 
 Version 2.0.0 upgrades the connector from Uptick API v2.15 to v2.16, corrects the types of several fields, and makes the `majorservices` stream full refresh only.

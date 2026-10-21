@@ -133,15 +133,14 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert "regex_replace" not in oauth_input["access_token_url"]
 
 
-def test_discover_uses_stream_specific_tracking_categories_schemas() -> None:
+def test_discover_declares_tracking_categories_as_object() -> None:
     config = base_config()
     catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
     streams = {stream.name: stream for stream in catalog.streams}
 
     products_schema = streams["products"].json_schema["properties"]["tracking_categories"]
-    assert products_schema["type"] == ["array", "null"]
-    assert products_schema["items"]["type"] == "object"
-    assert products_schema["items"]["additionalProperties"] is True
+    assert products_schema["type"] == ["object", "null"]
+    assert "items" not in products_schema
 
     costcentres_schema = streams["costcentres"].json_schema["properties"]["tracking_categories"]
     assert costcentres_schema["type"] == ["object", "null"]

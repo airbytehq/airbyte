@@ -4366,11 +4366,8 @@ streams:
               - "null"
           tracking_categories:
             type:
-              - array
+              - object
               - "null"
-            items:
-              type: object
-              additionalProperties: true
           extra_fields:
             type:
               - object
