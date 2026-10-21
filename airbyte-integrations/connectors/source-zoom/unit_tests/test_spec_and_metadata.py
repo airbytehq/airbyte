@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+
 _CI_MANIFEST_DIR = Path("/airbyte/integration_code/source_declarative_manifest")
 _MANIFEST_DIR = _CI_MANIFEST_DIR if _CI_MANIFEST_DIR.exists() else Path(__file__).parent.parent
 _MANIFEST_PATH = _MANIFEST_DIR / "manifest.yaml"
