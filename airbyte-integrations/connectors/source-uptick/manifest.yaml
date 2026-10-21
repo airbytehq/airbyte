@@ -172,7 +172,7 @@ spec:
         minLength: 1
         pattern: "\\S"
         pattern_descriptor: "https://<workspace>.onuptick.com"
-        description: Root URL of your Uptick workspace, e.g. https://demo-fire.onuptick.com. It cannot be empty.
+        description: Root URL of your Uptick workspace, e.g. https://demo-fire.onuptick.com. It cannot be empty or contain only whitespace.
         order: 0
         title: Base URL
       client_id:
