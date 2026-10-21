@@ -64,6 +64,18 @@ What `airbytehq/oncall#13250` establishes is narrower than the mechanism above: 
 
 **Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
 
+## 7. Incremental Event Exports Repeat Events at Page Boundaries
+
+`ticket_comments` and `ticket_events` read `GET /incremental/ticket_events.json`. Zendesk's `next_page` URL is the same request with `start_time=<end_time>` of the current page, and `start_time` is inclusive, so events at that timestamp can be emitted again at the top of the next page. Zendesk keeps events that share a timestamp on one page, so a page can also exceed `per_page`. Live comparisons on `ticket_comments` showed duplicate primary keys fall roughly in proportion to the page size (100 to 1000) but not to zero, with the same set of unique records.
+
+**Why this matters:** duplicate `id`s from these streams are expected, and destinations dedupe on `id`. Do not "fix" them by moving the next page to `end_time + 1`: events that share that timestamp but did not fit on the page would be skipped. A larger `page_size` means fewer page boundaries and fewer duplicates.
+
+## 8. OAuth Configs Are Single-Use Outside the Platform
+
+The OAuth authenticator declares `refresh_token_updater`, so every token refresh returns a new refresh token and the old one stops working. Inside the platform the connector emits the new token as a control message and it is persisted. A live regression test, `airbyte-cdk connector test` or a local read does not write it back: the run spends the stored refresh token, and the next run with the same config fails with `invalid_grant` ("Refresh token was rejected by the OAuth provider"). When the config was fetched from a Cloud connection, that connection is the one left with the dead token.
+
+**Why this matters:** in a regression run the control and target versions share one config, so whichever refreshes second fails `check` with `invalid_grant` while the other passes. That reads as a regression in the new version, but it is the test using up the token. Run live comparisons on API-token connections. If an OAuth connection is unavoidable, expect it to need re-authentication afterwards and treat its results as inconclusive.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
