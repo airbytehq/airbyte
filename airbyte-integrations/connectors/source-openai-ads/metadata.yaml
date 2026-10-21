@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a152c0b0-6c5d-43d6-a74c-72df24dae70e
-  dockerImageTag: 0.1.7
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-openai-ads
   githubIssueLabel: source-openai-ads
   icon: icon.svg
@@ -25,6 +25,15 @@ data:
   name: OpenAI Ads
   releaseDate: 2026-10-08
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The `start_date` and `end_date` fields of the `spend_limit_windows` stream are now typed as dates instead of strings. Users syncing `spend_limit_windows` must refresh the source schema and reset the stream after upgrading. Saved conversions state and configurations are migrated automatically. For more information, see the [OpenAI Ads migration guide](https://docs.airbyte.com/integrations/sources/openai-ads-migrations)."
+        upgradeDeadline: "2026-11-04"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "spend_limit_windows"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/openai-ads
   suggestedStreams:
