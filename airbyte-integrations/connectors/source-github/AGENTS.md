@@ -265,9 +265,17 @@ it for all three. Any org-scoped stream migrated from here on needs the same `$r
 `workflow_run_attempts` is a substream of `workflow_runs`, wired like `workflow_jobs`
 (`incremental_dependency: true`, `global_substream_cursor: true`). The listing returns only the
 latest attempt of each run, so the child requests `/attempts/{run_attempt}` and follows
-`previous_attempt_url` back to attempt 1. Both traps below are pinned by
-`unit_tests/test_workflow_run_attempts.py`; if a test there starts failing, read this before
-"fixing" it.
+`previous_attempt_url` back to attempt 1. A run that was never re-run costs no request:
+`components.WorkflowRunAttemptsRetriever` (a `CustomRetriever`) emits its only attempt from the
+parent record, which reaches it whole through `extra_fields: [[]]` (dpath resolves the empty path
+to the record; the router keys it by the empty string). Compared live, that record differs from
+`GET .../attempts/1` only in the attempt-scoped `jobs_url`/`logs_url`, which the retriever
+rebuilds, and in `created_at`/`updated_at`, which the attempt endpoint rounds up a second for
+about a quarter of runs. Being a `CustomRetriever`, the factory hands it no client-side
+incremental filter and no transformations, and its paginator needs `$parameters.url_base`.
+
+Both traps below are pinned by `unit_tests/test_workflow_run_attempts.py`; if a test there starts
+failing, read this before "fixing" it.
 
 **Never filter the child on the attempt's own cursor.** A sync landing between the first attempt
 finishing and the re-run starting leaves the cursor above attempt 1's `updated_at`. If the child

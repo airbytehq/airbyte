@@ -17790,12 +17790,18 @@ definitions:
     # Every attempt of a run carries the same `id`, so `run_attempt` is what makes a record unique.
     primary_key: ["id", "run_attempt"]
     retriever:
-      type: SimpleRetriever
+      # A SimpleRetriever that emits a never-re-run run's only attempt straight from the parent
+      # listing item instead of requesting `/attempts/1`; see its docstring for how the two
+      # differ. Most runs have one attempt, so this saves about one request per run. Being a
+      # CustomRetriever, it gets no client-side incremental filter and no transformations from
+      # the factory - this stream needs neither.
+      type: CustomRetriever
+      class_name: source_declarative_manifest.components.WorkflowRunAttemptsRetriever
       requester:
         $ref: "#/definitions/requester_base"
         # `run_url` is the parent's absolute `url` and HttpRequester._join_url lets it win, so
-        # GitHub Enterprise Server is followed too. The first request targets the latest attempt
-        # and the paginator walks back, costing `run_attempt` requests per run. `or 1` because
+        # GitHub Enterprise Server is followed too. For a re-run the first request targets the
+        # latest attempt and the paginator walks back, costing `run_attempt` requests. `or 1` because
         # `run_attempt` is optional in GitHub's schema and a missing extra field renders as the
         # literal "None", which would 404 the whole run; such a run has exactly one attempt.
         path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt or 1 }}"
@@ -17820,6 +17826,10 @@ definitions:
         # `previous_attempt_url` is the documented back-link, null on attempt 1 - the chain is
         # literally cursor pagination. There is no "list attempts" endpoint to page instead.
         type: DefaultPaginator
+        $parameters:
+          # The factory fills this in for a SimpleRetriever but not for a CustomRetriever's
+          # nested paginator, which then fails to build. Same expression as `requester_base`.
+          url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
         page_token_option:
           type: RequestPath
         pagination_strategy:
@@ -17849,10 +17859,12 @@ definitions:
               $ref: "#/definitions/workflow_runs_stream"
             parent_key: "url"
             partition_field: "run_url"
-            # Latest attempt number, addressing the first request of the chain. Already in the
-            # listing, so it costs no extra call.
+            # Latest attempt number, addressing the first request of the chain, and the whole
+            # run (the empty path resolves to the record itself), from which the retriever emits
+            # a single-attempt run without a request. Both are already in the listing.
             extra_fields:
               - - run_attempt
+              - []
             # What makes the stream incremental: the parent picks runs by the run's own
             # `updated_at` and every attempt of a chosen run is emitted, whatever that attempt's
             # `updated_at` says. Filtering the attempts would drop exactly the records this

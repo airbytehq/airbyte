@@ -165,16 +165,18 @@ This connector outputs the following incremental streams:
    need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, with each attempt's own
    `created_at`, `conclusion`, `logs_url` and `jobs_url`.
 
-   `workflow_run_attempts` is by far the more expensive of the two, because GitHub has no endpoint that lists attempts:
-   every attempt costs one request, including the single attempt of a workflow that was never re-run. Which runs fall in
+   GitHub has no endpoint that lists attempts, so each attempt of a re-run workflow costs one request. A run that was
+   never re-run costs nothing beyond the run listing: its only attempt is emitted from the listing record, with
+   `logs_url` and `jobs_url` scoped to the attempt. Its `created_at` and `updated_at` then match `workflow_runs`, and can
+   be one second earlier than GitHub's attempt endpoint reports for the same attempt. Which runs fall in
    the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
    run's attempts are then emitted, including ones last updated before the cursor.
 
    Three things worth planning for before you enable it:
 
-   - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every attempt of every run
-     created since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000
-     requests an hour, which puts a 100,000-run repository at roughly 20 hours. That work does not accumulate across
+   - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every run created since the
+     **Start Date**, so budget one listing request per 100 runs plus one request per attempt of every re-run run. An
+     authenticated token is limited to 5,000 requests an hour. That work does not accumulate across
      syncs: a repository's cursor only advances once that repository has been read to the end, so a sync interrupted
      part-way through one starts that repository over. Repositories that did finish are not re-read. Enabling the stream
      on a connection that already syncs `workflow_runs` still starts from the **Start Date**: it keeps its own cursor.

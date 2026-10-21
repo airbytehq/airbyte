@@ -216,21 +216,51 @@ def test_every_attempt_of_a_rerun_is_emitted(rate_limit_mock_response, requests_
     ]
 
 
-def test_run_that_was_never_rerun_costs_a_single_request(rate_limit_mock_response, requests_mock):
-    """A run with one attempt still costs one request: the declarative retriever has no way to emit
-    a parent record as a child record, so the attempt endpoint is called even though the listing
-    payload already differs only in `logs_url` and `jobs_url`."""
+def test_run_that_was_never_rerun_is_emitted_from_the_listing_without_a_request(rate_limit_mock_response, requests_mock):
+    """Most runs have a single attempt, and its listing item is that attempt: `GET .../attempts/1`
+    differs only in the attempt-scoped `logs_url` and `jobs_url`, which `WorkflowRunAttemptsRetriever`
+    rebuilds, and in timestamps the attempt endpoint sometimes rounds up by a second. No attempt
+    endpoint is mocked, so a request for one fails the test."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1)])
-    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")])
+    run = _run(1)
+    _mock_runs(requests_mock, [run])
 
-    records, _, _ = _read(CONFIG)
+    records, statuses, _ = _read(CONFIG)
 
-    assert _keys(records) == [(1, 1)]
-    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/1/attempts/1"]
-    # Attempt-scoped URLs, not the run-scoped ones the listing carries.
-    assert records[0]["logs_url"] == f"{RUNS_URL}/1/attempts/1/logs"
-    assert records[0]["jobs_url"] == f"{RUNS_URL}/1/attempts/1/jobs"
+    assert statuses[-1] == "COMPLETE"
+    assert _attempt_requests(requests_mock) == []
+    assert records == [
+        {
+            **run,
+            "logs_url": f"{RUNS_URL}/1/attempts/1/logs",
+            "jobs_url": f"{RUNS_URL}/1/attempts/1/jobs",
+        }
+    ]
+
+
+def test_only_reruns_cost_requests(rate_limit_mock_response, requests_mock):
+    """A single-attempt run beside a re-run: the re-run walks its chain, the other costs nothing."""
+    _mock_repository(requests_mock)
+    _mock_runs(
+        requests_mock,
+        [_run(1), _run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")],
+    )
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z", conclusion="failure"),
+            _attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z"),
+        ],
+    )
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1), (2, 1), (2, 2)]
+    assert sorted(_attempt_requests(requests_mock)) == [
+        "/repos/org/repos/actions/runs/2/attempts/1",
+        "/repos/org/repos/actions/runs/2/attempts/2",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -506,10 +536,11 @@ def test_a_403_on_one_repository_does_not_fail_the_stream(rate_limit_mock_respon
 def test_a_200_that_is_not_a_run_is_not_emitted(rate_limit_mock_response, requests_mock):
     """`field_path: []` emits the whole body, and GitHub answers 200 with a `{"message": ...}`
     envelope on some redirect and deprecation paths. Without the record filter that lands in the
-    destination as a row whose entire primary key is null."""
+    destination as a row whose entire primary key is null. A re-run, because a single-attempt run
+    is emitted from the listing without calling the attempt endpoint."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1)])
-    requests_mock.get(f"{RUNS_URL}/1/attempts/1", json={"message": "Moved Permanently", "url": "https://api.github.com/x"})
+    _mock_runs(requests_mock, [_run(1, run_attempt=2)])
+    requests_mock.get(f"{RUNS_URL}/1/attempts/2", json={"message": "Moved Permanently", "url": "https://api.github.com/x"})
 
     records, statuses, _ = _read(CONFIG)
 
@@ -566,16 +597,25 @@ def test_every_request_stays_on_a_github_enterprise_host(rate_limit_mock_respons
     requests_mock.get(f"{api}/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
     _mock_repository(requests_mock, api=api)
     ghe_runs_url = f"{api}/repos/org/repos/actions/runs"
-    _mock_runs(requests_mock, [_run(1, runs_url=ghe_runs_url)], api=api)
+    # A re-run, so the attempt path is actually requested; a single-attempt run never is.
+    _mock_runs(requests_mock, [_run(1, run_attempt=2, runs_url=ghe_runs_url)], api=api)
+    requests_mock.get(
+        f"{ghe_runs_url}/1/attempts/2",
+        json=_attempt(1, 2, "2022-02-01T10:05:00Z", "2022-02-01T10:00:00Z", runs_url=ghe_runs_url),
+    )
     requests_mock.get(
         f"{ghe_runs_url}/1/attempts/1",
-        json=_attempt(1, 1, "2022-02-01T10:05:00Z", "2022-02-01T10:00:00Z", runs_url=ghe_runs_url),
+        json=_attempt(1, 1, "2022-02-01T10:04:00Z", "2022-02-01T10:00:00Z", runs_url=ghe_runs_url),
     )
     config = {**CONFIG, "api_url": api}
 
     records, _, _ = _read(config)
 
-    assert _keys(records) == [(1, 1)]
+    assert _keys(records) == [(1, 1), (1, 2)]
+    assert _attempt_requests(requests_mock) == [
+        "/api/v3/repos/org/repos/actions/runs/1/attempts/2",
+        "/api/v3/repos/org/repos/actions/runs/1/attempts/1",
+    ]
     assert {request.hostname for request in requests_mock.request_history} == {"ghe.example.com"}
 
 
@@ -791,7 +831,7 @@ def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_l
     "endpoint",
     [
         pytest.param("/repos/org/repos/actions/runs", id="run_listing"),
-        pytest.param("/repos/org/repos/actions/runs/1/attempts/1", id="attempt"),
+        pytest.param("/repos/org/repos/actions/runs/1/attempts/2", id="attempt"),
     ],
 )
 @patch("time.sleep")
@@ -810,15 +850,16 @@ def test_a_secondary_rate_limit_is_waited_out_not_skipped(sleep_mock, rate_limit
         "headers": {"X-RateLimit-Remaining": "4999", "X-RateLimit-Reset": "0"},
         "json": {"message": "You have exceeded a secondary rate limit. Please wait a few minutes before you try again."},
     }
-    listing = {"json": {"total_count": 1, "workflow_runs": [_run(1)]}}
-    attempt = {"json": _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")}
+    # A re-run whose latest attempt reports no predecessor, so the attempt endpoint is called once.
+    listing = {"json": {"total_count": 1, "workflow_runs": [_run(1, run_attempt=2)]}}
+    attempt = {"json": _attempt(1, 2, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z", has_previous=False)}
     requests_mock.get(RUNS_URL, [throttled, listing] if endpoint.endswith("runs") else [listing])
-    requests_mock.get(f"{RUNS_URL}/1/attempts/1", [throttled, attempt] if endpoint.endswith("1") else [attempt])
+    requests_mock.get(f"{RUNS_URL}/1/attempts/2", [throttled, attempt] if endpoint.endswith("2") else [attempt])
 
     records, statuses, _ = _read(CONFIG)
 
     assert statuses[-1] == "COMPLETE"
-    assert _keys(records) == [(1, 1)]
+    assert _keys(records) == [(1, 2)]
     assert sleep_mock.called
 
 
@@ -826,9 +867,10 @@ def test_a_403_on_one_attempt_does_not_fail_the_stream(rate_limit_mock_response,
     """A fine-grained token can list a repository's runs and still be denied `Actions: read` on
     one of them. The shared handler would turn that into a `config_error` that ends the sync."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1), _run(2, updated_at="2022-02-03T10:05:00Z", created_at="2022-02-03T10:00:00Z")])
-    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")])
-    requests_mock.get(f"{RUNS_URL}/2/attempts/1", status_code=403, json={"message": "Resource not accessible by integration"})
+    # Run 1 has a single attempt and is emitted from the listing; run 2 is a re-run, so its
+    # attempt endpoint is called and denied.
+    _mock_runs(requests_mock, [_run(1), _run(2, run_attempt=2, updated_at="2022-02-03T10:05:00Z", created_at="2022-02-03T10:00:00Z")])
+    requests_mock.get(f"{RUNS_URL}/2/attempts/2", status_code=403, json={"message": "Resource not accessible by integration"})
 
     records, statuses, _ = _read(CONFIG)
 
@@ -853,20 +895,20 @@ def test_a_200_carrying_retry_after_is_kept(sleep_mock, rate_limit_mock_response
     throttle = {"Retry-After": "120"}
     _mock_runs(
         requests_mock,
-        [_run(1)],
+        [_run(1, run_attempt=2)],
         headers=throttle if throttled_endpoint == "listing" else {},
     )
     requests_mock.get(
-        f"{RUNS_URL}/1/attempts/1",
-        json=_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z"),
+        f"{RUNS_URL}/1/attempts/2",
+        json=_attempt(1, 2, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z", has_previous=False),
         headers=throttle if throttled_endpoint == "attempt" else {},
     )
 
     records, statuses, _ = _read(CONFIG)
 
     assert statuses[-1] == "COMPLETE"
-    assert _keys(records) == [(1, 1)]
-    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/1/attempts/1"]
+    assert _keys(records) == [(1, 2)]
+    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/1/attempts/2"]
     # `time.sleep` is patched so that losing the short-circuit fails in seconds rather than after
     # the full retry ladder — a ten-minute red build reads as a hang, not as a regression.
     assert not sleep_mock.called
