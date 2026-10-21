@@ -30,7 +30,7 @@ Connections that sync at least one of `profile`, `labels_details`, `messages_det
 Among affected connections:
 
 - **Destinations that type their columns** (BigQuery, Snowflake, Postgres, Redshift, MSSQL, ClickHouse and similar) change `messagesTotal`, `messagesUnread`, `threadsTotal`, `threadsUnread` and `sizeEstimate` from a decimal or float column to an integer column. The nested `payload` and `messages` objects are stored as JSON, so their `size` fields don't change a column type. Most of these destinations convert the existing column in place on the next sync.
-- **S3 Data Lake (Iceberg)** can't convert a double column to a long column in place. Streams in an Append or Append + Deduped mode fail with a schema-evolution error until you refresh them; see step 3.
+- **S3 Data Lake (Iceberg)** types nested fields too, and can't convert a double column to a long column in place. All four streams in an Append or Append + Deduped mode fail with `Schema evolution for column "..." between double and long is not allowed` until you refresh them; see step 3. **Refresh stream and remove records** recreates the table with the new column types.
 - **Object storage and file destinations** that write JSON or CSV aren't affected: the values are written the same way as before.
 - **`profile` in Full Refresh | Append** keeps one row per sync, as before. Connections that set their own primary key for `profile` now use `emailAddress`.
 
@@ -43,7 +43,7 @@ Among affected connections:
 
 ### Update downstream queries
 
-The five typed columns listed above become integer columns (for example `INT64` in BigQuery, `NUMBER(38,0)` in Snowflake, `BIGINT` in Postgres). Check:
+On destinations that type their columns, these seven columns become integer columns (for example `INT64` in BigQuery, `NUMBER(38,0)` in Snowflake, `BIGINT` in Postgres): `profile.messagesTotal`, `profile.threadsTotal`, `labels_details.messagesTotal`, `labels_details.messagesUnread`, `labels_details.threadsTotal`, `labels_details.threadsUnread` and `messages_details.sizeEstimate`. Check:
 
 - Divisions between two of these columns. In Postgres, `messagesUnread / messagesTotal` on integer columns truncates to `0`; cast one side to a decimal type first.
 - Casts and type checks that expected a decimal or float column, such as `CAST(messagesTotal AS INTEGER)`, which are no longer needed.
