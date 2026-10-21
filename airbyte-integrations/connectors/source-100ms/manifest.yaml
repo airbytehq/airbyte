@@ -431,6 +431,7 @@ spec:
           Recommended. See
           https://www.100ms.live/docs/concepts/v2/concepts/security-and-tokens#management-token-for-rest-api
         order: 0
+        airbyte_secret: true
       app_secret:
         type: string
         title: App Secret
