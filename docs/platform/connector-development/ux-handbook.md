@@ -456,7 +456,7 @@ aws_region_name: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor (adapted from source-aws-cloudtrail):**
+**Poor:**
 
 ```json
 {
@@ -471,7 +471,7 @@ aws_region_name: str = Field(
 }
 ```
 
-**Good (adapted from source-aws-cloudtrail):**
+**Good:**
 
 ```kotlin
 @JsonProperty("aws_region_name")
