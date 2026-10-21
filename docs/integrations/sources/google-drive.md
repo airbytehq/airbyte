@@ -330,7 +330,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.6.0 | 2026-10-21 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add optional "Exclude Trashed Files" setting to skip files in the Google Drive trash |
+| 0.6.0 | 2026-10-21 | [89595](https://github.com/airbytehq/airbyte/pull/89595) | Add optional "Exclude Trashed Files" setting to skip files in the Google Drive trash |
 | 0.5.40 | 2026-10-20 | [89242](https://github.com/airbytehq/airbyte/pull/89242) | Update dependencies |
 | 0.5.39 | 2026-10-13 | [88658](https://github.com/airbytehq/airbyte/pull/88658) | Update dependencies |
 | 0.5.38 | 2026-10-06 | [87880](https://github.com/airbytehq/airbyte/pull/87880) | Update dependencies |
