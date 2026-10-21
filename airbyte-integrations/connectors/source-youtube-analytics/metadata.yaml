@@ -32,6 +32,7 @@ data:
       2.0.0:
         message: "Version 2.0.0 corrects the declared types of report metric fields in seven streams to match YouTube's metric definitions: counts are now `integer` and rates and percentages are now `number` (previously `string`, or `integer` for the rate fields in `channel_province_a3`). Typed destinations store these columns with the new types. Refresh the source schema and clear the affected streams after upgrading. Follow the steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations)."
         upgradeDeadline: "2026-11-04"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
