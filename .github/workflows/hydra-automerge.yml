@@ -484,6 +484,9 @@ jobs:
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
 
+      # A missing structured output is a real failure, so fail the job after
+      # recording `success=false`; `Update status comment on Devin error`
+      # still runs and reports it on the PR.
       - name: Check for structured output
         if: steps.devin.outputs.session-id
         id: check-output
@@ -495,6 +498,7 @@ jobs:
           else
             echo "::error::Devin session completed but did not produce structured output."
             echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
 
       # ── Evaluate structured output ─────────────────────────────────
