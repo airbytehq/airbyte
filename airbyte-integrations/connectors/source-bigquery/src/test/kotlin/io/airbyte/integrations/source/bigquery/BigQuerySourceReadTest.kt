@@ -457,7 +457,9 @@ class BigQuerySourceReadTest {
             output.dump(),
         )
         Assertions.assertTrue(
-            error.error.message.contains("Refresh the source schema to continue syncing this stream"),
+            error.error.message.contains(
+                "Refresh the source schema to continue syncing this stream",
+            ),
             output.dump(),
         )
         Assertions.assertTrue(error.error.message.contains("Field 'tags'"), output.dump())
