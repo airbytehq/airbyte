@@ -101,6 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.0 | 2026-10-21 | [89592](https://github.com/airbytehq/airbyte/pull/89592) | Add `on_demand_usage`, `devin_mode`, `origin`, `category`, `subcategory`, `automation_id`, and `security_profile` to `sessions` and `sessions_insights`; add `analysis_status` to `sessions_insights` |
 | 0.2.19 | 2026-10-20 | [89148](https://github.com/airbytehq/airbyte/pull/89148) | Update dependencies |
 | 0.2.18 | 2026-10-13 | [88586](https://github.com/airbytehq/airbyte/pull/88586) | Update dependencies |
 | 0.2.17 | 2026-10-06 | [87810](https://github.com/airbytehq/airbyte/pull/87810) | Update dependencies |
