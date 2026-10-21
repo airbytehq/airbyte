@@ -463,7 +463,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/tasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/tasks/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -978,7 +978,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/taskcategories/'
+        url: '{{ config["base_url"] }}/api/v2.16/taskcategories/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1030,7 +1030,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clients/'
+        url: '{{ config["base_url"] }}/api/v2.16/clients/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1248,7 +1248,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clientgroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/clientgroups/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1308,7 +1308,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/properties/'
+        url: '{{ config["base_url"] }}/api/v2.16/properties/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1461,7 +1461,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/invoices/'
+        url: '{{ config["base_url"] }}/api/v2.16/invoices/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1622,7 +1622,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/projects/'
+        url: '{{ config["base_url"] }}/api/v2.16/projects/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1815,7 +1815,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -1984,7 +1984,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/defectquotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/defectquotes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2157,7 +2157,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/suppliers/'
+        url: '{{ config["base_url"] }}/api/v2.16/suppliers/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2225,7 +2225,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorders/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorders/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2327,7 +2327,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routines/'
+        url: '{{ config["base_url"] }}/api/v2.16/routines/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2402,7 +2402,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcards/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcards/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2458,7 +2458,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbills/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbills/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2519,7 +2519,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderdockets/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderdockets/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2580,7 +2580,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/invoicelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/invoicelineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2694,7 +2694,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/users/'
+        url: '{{ config["base_url"] }}/api/v2.16/users/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2824,7 +2824,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicegroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicegroups/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2876,7 +2876,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/costcentres/'
+        url: '{{ config["base_url"] }}/api/v2.16/costcentres/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -2970,7 +2970,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderlineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3106,7 +3106,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbilllineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbilllineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3231,7 +3231,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/accreditationtypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/accreditationtypes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3296,7 +3296,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/accreditations/'
+        url: '{{ config["base_url"] }}/api/v2.16/accreditations/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3393,7 +3393,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/branches/'
+        url: '{{ config["base_url"] }}/api/v2.16/branches/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3503,7 +3503,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/creditnotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/creditnotes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3618,7 +3618,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/creditnotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/creditnotelineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3736,7 +3736,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/remarks/'
+        url: '{{ config["base_url"] }}/api/v2.16/remarks/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -3914,7 +3914,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assettypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/assettypes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -4117,7 +4117,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assettypevariants/'
+        url: '{{ config["base_url"] }}/api/v2.16/assettypevariants/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -4214,7 +4214,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assets/'
+        url: '{{ config["base_url"] }}/api/v2.16/assets/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -4514,7 +4514,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/products/'
+        url: '{{ config["base_url"] }}/api/v2.16/products/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -4721,7 +4721,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/rounds/'
+        url: '{{ config["base_url"] }}/api/v2.16/rounds/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -4832,7 +4832,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/tasksessions/'
+        url: '{{ config["base_url"] }}/api/v2.16/tasksessions/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5055,7 +5055,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/contractors/'
+        url: '{{ config["base_url"] }}/api/v2.16/contractors/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5243,7 +5243,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/appointments/'
+        url: '{{ config["base_url"] }}/api/v2.16/appointments/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5378,7 +5378,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcontracts/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcontracts/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5552,7 +5552,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcontractlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcontractlineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5648,7 +5648,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/defectquotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/defectquotelineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5791,7 +5791,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotefixedlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotefixedlineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -5896,7 +5896,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotedoandchargelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotedoandchargelineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6011,7 +6011,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequoteproductlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequoteproductlineitems/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6128,7 +6128,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/remarkevents/'
+        url: '{{ config["base_url"] }}/api/v2.16/remarkevents/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6226,7 +6226,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicetasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicetasks/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6454,7 +6454,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/majorservices/'
+        url: '{{ config["base_url"] }}/api/v2.16/majorservices/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: id
@@ -6524,7 +6524,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservices/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservices/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6655,7 +6655,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservicelevels/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservicelevels/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6766,7 +6766,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservicetypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservicetypes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -6895,7 +6895,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineserviceleveltypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineserviceleveltypes/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7045,7 +7045,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/subtasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/subtasks/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7182,7 +7182,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clientcontacts/'
+        url: '{{ config["base_url"] }}/api/v2.16/clientcontacts/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7267,7 +7267,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/propertycontacts/'
+        url: '{{ config["base_url"] }}/api/v2.16/propertycontacts/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7384,7 +7384,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptquestions/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptquestions/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7471,7 +7471,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptanswergroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptanswergroups/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated
@@ -7568,7 +7568,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptanswers/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptanswers/?page[cursor]'
         request_parameters:
           page[size]: "1000"
           ordering: -updated

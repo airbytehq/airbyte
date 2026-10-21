@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 from typing import Any
+from urllib.parse import urlencode
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -10,6 +11,7 @@ class UptickRequestBuilder:
 
     BASE_URL = "https://test-tenant.onuptick.com"
     ACCESS_TOKEN = "tok"
+    NEXT_PAGE_CURSOR = "next-page-cursor"
     START_DATE = "2000-01-01T00:00:00.000000+0000"
     # Streams without an `updated` cursor: full refresh only, ordered by id, no updatedsince.
     FULL_REFRESH_STREAMS = frozenset({"majorservices"})
@@ -92,13 +94,17 @@ class UptickRequestBuilder:
             query_params["ordering"] = "id"
             del query_params["updatedsince"]
         if page > 1:
-            query_params["page"] = str(page)
+            query_params["page[cursor]"] = cls.NEXT_PAGE_CURSOR
+        query = urlencode(query_params)
+        url = f"{cls.BASE_URL}/api/v2.16/{stream}/?"
+        if page == 1:
+            url += "page[cursor]&"
+        url += query
         return HttpRequest(
-            url=f"{cls.BASE_URL}/api/v2.16/{stream}/",
-            query_params=query_params,
+            url=url,
             headers={"Authorization": f"Bearer {token}"},
         )
 
     @classmethod
     def next_page_url(cls, stream: str) -> str:
-        return f"{cls.BASE_URL}/api/v2.16/{stream}/?page=2"
+        return f"{cls.BASE_URL}/api/v2.16/{stream}/?page%5Bcursor%5D={cls.NEXT_PAGE_CURSOR}&page%5Bsize%5D=1000"
