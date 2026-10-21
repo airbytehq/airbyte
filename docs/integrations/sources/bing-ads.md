@@ -321,7 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.16 | 2026-10-21 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix bulk streams falling back to full downloads when lookback_window is set by applying it only to report streams, as documented |
+| 3.0.16 | 2026-10-21 | [89620](https://github.com/airbytehq/airbyte/pull/89620) | Fix bulk streams falling back to full downloads when lookback_window is set by applying it only to report streams, as documented |
 | 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
 | 3.0.14 | 2026-10-13 | [88521](https://github.com/airbytehq/airbyte/pull/88521) | Update dependencies |
 | 3.0.13 | 2026-10-06 | [87771](https://github.com/airbytehq/airbyte/pull/87771) | Update dependencies |
