@@ -173,6 +173,8 @@ If a resource is inaccessible or no longer exists (error 40002), the connector s
 
 If TikTok returns a permission error (error 40001), the connector fails the sync with a configuration error rather than retrying. This means the access token can't call an endpoint that a selected stream needs. Check that the developer application's permissions include the data you're syncing, re-authorize the connector, and run the sync again. The `PixelEventsStatistics` stream is the exception: if an advertiser has no permission to read a pixel, the connector skips that advertiser and continues.
 
+If TikTok returns any other error code, the connector fails the sync. The error message includes TikTok's error code and message, for example `TikTok Marketing API returned an error (code 40105): Access token is incorrect or has been revoked.` To find the cause of a code, see the **Return codes** appendix in the [TikTok API for Business documentation](https://business-api.tiktok.com/portal/docs).
+
 ### Query size limits for daily reports
 
 TikTok rejects a daily report request that is too large with error 40067 ("query too large"). This typically affects accounts with many ads or ad groups. When this happens, the connector splits that advertiser's date range in half and requests each half separately, repeating down to a single day if needed. Other advertisers aren't affected, and you don't need to change any settings.
