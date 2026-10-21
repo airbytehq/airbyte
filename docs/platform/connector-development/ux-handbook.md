@@ -43,9 +43,7 @@ The hierarchy of user needs is security, data integrity, reliability, speed, eas
 - **`airbyte_hidden`**: Hides a field from the form.
 - **`oneOf`**: Renders a selector for the alternatives. Each option's `title` is its selector label. `oneOf` blocks and groups other than resource allocation are always expanded.
 - **`enum`**: Renders a dropdown for a scalar field.
-<!-- vale Vale.Spelling = NO -->
-- **`examples`**: Displays example values in the field's info tooltip after the description.
-<!-- vale Vale.Spelling = YES -->
+- **`examples`**: Displays example values next to the field's description when users open the field's info icon.
 - **`type: string` with `format: date` or `format: date-time`**: Renders a date picker; `date-time` includes a time control. `pattern` alone does not select the date picker.
 - **`pattern` and `pattern_descriptor`**: `pattern` validates the value. `pattern_descriptor` displays a readable format hint beside the field.
 - **`airbyte_secret`**: Uses a secret input that masks the value.
@@ -75,15 +73,10 @@ The hierarchy of user needs is security, data integrity, reliability, speed, eas
 
 **Exceptions:** A `oneOf` selector and its discriminator `const` fields do not need their own title and description.
 
-<!-- markdownlint-disable MD036 -->
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -93,9 +86,7 @@ spec:
         enum: [csv, json]
 ```
 
-**Good (adapted from source-aws-cloudtrail, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -109,15 +100,11 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 max_retries: Optional[PositiveInt] = Field(...)
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
@@ -128,9 +115,7 @@ access_token: Optional[str] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "properties": {
     "query_timeout_seconds": {
@@ -141,16 +126,14 @@ access_token: Optional[str] = Field(
 }
 ```
 
-**Good (adapted from source-mysql):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-mysql)"
 @JsonProperty("database")
 @JsonSchemaTitle("Database name")
 @JsonPropertyDescription("Name of the database that contains the tables to replicate. Enter the name shown in your database management console.")
 lateinit var database: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["database"],
   "properties": {
@@ -174,14 +157,10 @@ lateinit var database: String
 
 **Exceptions:** Preserve capitalization in product names and acronyms, such as “API key” and “Azure Blob Storage.”
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -192,9 +171,7 @@ spec:
         description: Name to assign to the account created by this connector.
 ```
 
-**Good:**
-
-```yaml
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -208,9 +185,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Poor (adapted from source-facebook-marketing, spec.py)"
 access_token: Optional[str] = Field(
     title="Access Token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
@@ -218,9 +193,7 @@ access_token: Optional[str] = Field(
 )
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
@@ -231,9 +204,7 @@ access_token: Optional[str] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor (adapted from source-mysql):**
-
-```json
+```json title="Poor (adapted from source-mysql)"
 {
   "required": ["ca_certificate"],
   "properties": {
@@ -247,9 +218,7 @@ access_token: Optional[str] = Field(
 }
 ```
 
-**Good (adapted from source-mysql):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-mysql)"
 @JsonProperty("ca_certificate")
 @JsonSchemaTitle("CA certificate")
 @JsonPropertyDescription("Certificate used to verify the database server's TLS identity. Obtain it from your database provider's SSL/TLS settings.")
@@ -257,7 +226,7 @@ access_token: Optional[str] = Field(
 lateinit var sslCertificate: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["ca_certificate"],
   "properties": {
@@ -280,14 +249,10 @@ lateinit var sslCertificate: String
 
 **Why:** A description that repeats the label does not help users decide what to enter.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor (adapted from source-linkedin-ads, manifest.yaml):**
-
-```yaml
+```yaml title="Poor (adapted from source-linkedin-ads, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -298,9 +263,7 @@ spec:
         description: Lookback window in days.
 ```
 
-**Good (adapted from source-bing-ads, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-bing-ads, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -314,18 +277,14 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 lookback_window: Optional[PositiveInt] = Field(
     title="Lookback window",
     description="Lookback window",
 )
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
@@ -336,16 +295,14 @@ client_secret: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```kotlin
+```kotlin title="Poor: Kotlin"
 @JsonProperty("project_id")
 @JsonSchemaTitle("Project ID")
 @JsonPropertyDescription("Project ID.")
 lateinit var projectId: String
 ```
 
-```json
+```json title="Poor: spec.json"
 {
   "required": ["project_id"],
   "properties": {
@@ -358,16 +315,14 @@ lateinit var projectId: String
 }
 ```
 
-**Good (adapted from source-bigquery):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-bigquery)"
 @JsonProperty("project_id")
 @JsonSchemaTitle("Project ID")
 @JsonPropertyDescription("Google Cloud project ID containing the BigQuery datasets to read. Find it in Google Cloud Console, then follow the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">BigQuery setup guide</a>.")
 lateinit var projectId: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["project_id"],
   "properties": {
@@ -389,14 +344,10 @@ lateinit var projectId: String
 
 **Why:** A safe default pre-fills the form and saves users from choosing a value that works for most configurations.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -408,9 +359,7 @@ spec:
         description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
 ```
 
-**Good (adapted from source-aws-cloudtrail, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -426,9 +375,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 aws_region_name: str = Field(
     ...,
     title="AWS region",
@@ -436,9 +383,7 @@ aws_region_name: str = Field(
 )
 ```
 
-**Good (adapted from source-file, spec.json):**
-
-```json
+```json title="Good (adapted from source-file, spec.json)"
 {
   "required": ["format"],
   "properties": {
@@ -456,9 +401,7 @@ aws_region_name: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "required": ["aws_region_name"],
   "properties": {
@@ -471,9 +414,7 @@ aws_region_name: str = Field(
 }
 ```
 
-**Good:**
-
-```kotlin
+```kotlin title="Good: Kotlin"
 @JsonProperty("aws_region_name")
 @JsonSchemaTitle("AWS region")
 @JsonPropertyDescription("AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.")
@@ -481,7 +422,7 @@ aws_region_name: str = Field(
 var awsRegionName: String = "us-east-1"
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["aws_region_name"],
   "properties": {
@@ -504,14 +445,10 @@ var awsRegionName: String = "us-east-1"
 
 **Why:** The form shows a readable hint beside the field when `pattern_descriptor` is set or the web application recognizes the pattern. An explicit descriptor keeps other patterns understandable.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -523,9 +460,7 @@ spec:
         pattern: "^[A-Z]{3}-[0-9]{4}$"
 ```
 
-**Good:**
-
-```yaml
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -541,9 +476,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-google-ads, spec.json):**
-
-```json
+```json title="Poor (adapted from source-google-ads, spec.json)"
 {
   "properties": {
     "customer_id": {
@@ -556,9 +489,7 @@ spec:
 }
 ```
 
-**Good (adapted from source-google-ads, spec.json):**
-
-```json
+```json title="Good (adapted from source-google-ads, spec.json)"
 {
   "properties": {
     "customer_id": {
@@ -576,9 +507,7 @@ spec:
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor (adapted from destination-clickhouse, spec.json):**
-
-```kotlin
+```kotlin title="Poor: Kotlin (adapted from destination-clickhouse, spec.json)"
 @JsonProperty("cluster_name")
 @JsonSchemaTitle("Cluster name")
 @JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
@@ -586,7 +515,7 @@ spec:
 lateinit var clusterName: String
 ```
 
-```json
+```json title="Poor: spec.json"
 {
   "required": ["cluster_name"],
   "properties": {
@@ -600,9 +529,7 @@ lateinit var clusterName: String
 }
 ```
 
-**Good (adapted from destination-clickhouse, spec.json):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from destination-clickhouse, spec.json)"
 @JsonProperty("cluster_name")
 @JsonSchemaTitle("Cluster name")
 @JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
@@ -610,7 +537,7 @@ lateinit var clusterName: String
 lateinit var clusterName: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["cluster_name"],
   "properties": {
@@ -634,14 +561,10 @@ lateinit var clusterName: String
 
 **Why:** Unmarked credentials appear in a regular text control instead of a masked secret control.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor (adapted from source-aws-cloudtrail, manifest.yaml):**
-
-```yaml
+```yaml title="Poor (adapted from source-aws-cloudtrail, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -653,9 +576,7 @@ spec:
         description: Used to sign CloudTrail API requests. Create an access key for the connector's IAM user in AWS IAM.
 ```
 
-**Good (adapted from source-aws-cloudtrail, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -671,18 +592,14 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Poor (adapted from source-facebook-marketing, spec.py)"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
 )
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
@@ -693,16 +610,14 @@ client_secret: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor (adapted from source-mysql):**
-
-```kotlin
+```kotlin title="Poor: Kotlin (adapted from source-mysql)"
 @JsonProperty("password")
 @JsonSchemaTitle("Password")
 @JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
 lateinit var password: String
 ```
 
-```json
+```json title="Poor: spec.json"
 {
   "required": ["password"],
   "properties": {
@@ -715,9 +630,7 @@ lateinit var password: String
 }
 ```
 
-**Good (adapted from source-mysql):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-mysql)"
 @JsonProperty("password")
 @JsonSchemaTitle("Password")
 @JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
@@ -725,7 +638,7 @@ lateinit var password: String
 lateinit var password: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["password"],
   "properties": {
@@ -752,14 +665,10 @@ lateinit var password: String
 Do not move existing optional fields with defaults into `required` yet. Today, required fields always show in the main form. Making an existing field required is a breaking change because API and Terraform updates of saved configurations that lack the field fail validation.
 :::
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor (adapted from source-amazon-seller-partner, manifest.yaml):**
-
-```yaml
+```yaml title="Poor (adapted from source-amazon-seller-partner, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -771,9 +680,7 @@ spec:
         default: 2
 ```
 
-**Good (adapted from source-aws-cloudtrail, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -789,9 +696,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Poor (adapted from source-facebook-marketing, spec.py)"
 time_increment: Optional[PositiveInt] = Field(
     default=1,
     title="Time increment",
@@ -801,9 +706,7 @@ time_increment: Optional[PositiveInt] = Field(
 )
 ```
 
-**Good (adapted from source-file, spec.json):**
-
-```json
+```json title="Good (adapted from source-file, spec.json)"
 {
   "required": ["format"],
   "properties": {
@@ -821,9 +724,7 @@ time_increment: Optional[PositiveInt] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor (adapted from source-mongodb-v2, spec.json):**
-
-```kotlin
+```kotlin title="Poor: Kotlin (adapted from source-mongodb-v2, spec.json)"
 @JsonProperty("discover_timeout_seconds")
 @JsonSchemaTitle("Discovery timeout")
 @JsonPropertyDescription("Number of seconds to wait for the connector to discover available schemas.")
@@ -831,7 +732,7 @@ time_increment: Optional[PositiveInt] = Field(
 var discoverTimeoutSeconds: Int? = 600
 ```
 
-```json
+```json title="Poor: spec.json"
 {
   "properties": {
     "discover_timeout_seconds": {
@@ -844,9 +745,7 @@ var discoverTimeoutSeconds: Int? = 600
 }
 ```
 
-**Good (adapted from destination-mssql):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from destination-mssql)"
 @JsonProperty("schema")
 @JsonSchemaTitle("Schema name")
 @JsonPropertyDescription("Name of the SQL Server schema where the destination creates tables. The public schema is a common default when no custom schema is needed.")
@@ -854,7 +753,7 @@ var discoverTimeoutSeconds: Int? = 600
 var schema: String = "public"
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["schema"],
   "properties": {
@@ -877,14 +776,10 @@ var schema: String = "public"
 
 **Why:** A vague label or short description leaves users guessing about the effect of a setting.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor (adapted from source-linkedin-ads, manifest.yaml):**
-
-```yaml
+```yaml title="Poor (adapted from source-linkedin-ads, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -895,9 +790,7 @@ spec:
         description: Number of days before the cursor to check for records.
 ```
 
-**Good (adapted from source-bing-ads, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-bing-ads, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -911,18 +804,14 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 lookback_window: Optional[PositiveInt] = Field(
     title="Lookback window",
     description="Number of days before the cursor to check for records.",
 )
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 insights_lookback_window: Optional[PositiveInt] = Field(
     title="Insights lookback window",
     maximum=28,
@@ -937,16 +826,14 @@ insights_lookback_window: Optional[PositiveInt] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```kotlin
+```kotlin title="Poor: Kotlin"
 @JsonProperty("connection_timeout_seconds")
 @JsonSchemaTitle("Connection timeout")
 @JsonPropertyDescription("Timeout in seconds for connection requests.")
 var connectionTimeoutSeconds: Int? = null
 ```
 
-```json
+```json title="Poor: spec.json"
 {
   "properties": {
     "connection_timeout_seconds": {
@@ -958,9 +845,7 @@ var connectionTimeoutSeconds: Int? = null
 }
 ```
 
-**Good (adapted from source-bigquery):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-bigquery)"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Without a valid key, the connector cannot read the dataset. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -968,7 +853,7 @@ var connectionTimeoutSeconds: Int? = null
 lateinit var credentialsJson: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["credentials_json"],
   "properties": {
@@ -993,14 +878,10 @@ lateinit var credentialsJson: String
 
 **Exceptions:** Do not apply this rule to fields OAuth fills in through `advanced_auth.complete_oauth_output_specification`.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor (adapted from source-gong, manifest.yaml):**
-
-```yaml
+```yaml title="Poor (adapted from source-gong, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -1013,9 +894,7 @@ spec:
         airbyte_secret: true
 ```
 
-**Good (adapted from source-amplitude, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-amplitude, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -1031,9 +910,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 access_key: str = Field(
     title="Gong access key",
     description="Key used to authenticate requests to the Gong API.",
@@ -1041,9 +918,7 @@ access_key: str = Field(
 )
 ```
 
-**Good (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (adapted from source-facebook-marketing, spec.py)"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
@@ -1054,9 +929,7 @@ access_token: Optional[str] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "required": ["credentials_json"],
   "properties": {
@@ -1070,9 +943,7 @@ access_token: Optional[str] = Field(
 }
 ```
 
-**Good (adapted from source-bigquery):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-bigquery)"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -1080,7 +951,7 @@ access_token: Optional[str] = Field(
 lateinit var credentialsJson: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["credentials_json"],
   "properties": {
@@ -1103,14 +974,10 @@ lateinit var credentialsJson: String
 
 **Why:** An anchored link takes users directly to the instructions they need.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -1123,9 +990,7 @@ spec:
         airbyte_secret: true
 ```
 
-**Good (adapted from source-amplitude, manifest.yaml):**
-
-```yaml
+```yaml title="Good (adapted from source-amplitude, manifest.yaml)"
 spec:
   connection_specification:
     type: object
@@ -1141,9 +1006,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-facebook-marketing, spec.py):**
-
-```python
+```python title="Poor (adapted from source-facebook-marketing, spec.py)"
 access_token: str = Field(
     ...,
     title="Access token",
@@ -1152,9 +1015,7 @@ access_token: str = Field(
 )
 ```
 
-**Good (adapted from source-google-ads, spec.json):**
-
-```json
+```json title="Good (adapted from source-google-ads, spec.json)"
 {
   "properties": {
     "customer_id": {
@@ -1172,9 +1033,7 @@ access_token: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "required": ["credentials_json"],
   "properties": {
@@ -1188,9 +1047,7 @@ access_token: str = Field(
 }
 ```
 
-**Good (adapted from source-bigquery):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from source-bigquery)"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -1198,7 +1055,7 @@ access_token: str = Field(
 lateinit var credentialsJson: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["credentials_json"],
   "properties": {
@@ -1223,14 +1080,10 @@ lateinit var credentialsJson: String
 
 **Exceptions:** Deliberately optional credentials, such as a public API key or a database password that can be omitted, are still reported. You can ignore the finding when the connector intentionally supports that configuration.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -1261,9 +1114,7 @@ spec:
                 const: NO_AUTH
 ```
 
-**Good:**
-
-```yaml
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -1298,9 +1149,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor:**
-
-```python
+```python title="Poor"
 credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
     title="Authentication",
     description="Credentials for connecting to the Facebook Marketing API.",
@@ -1308,9 +1157,7 @@ credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Fiel
 )
 ```
 
-**Good (source-facebook-marketing, spec.py):**
-
-```python
+```python title="Good (source-facebook-marketing, spec.py)"
 credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
     title="Authentication",
     description="Credentials for connecting to the Facebook Marketing API",
@@ -1321,9 +1168,7 @@ credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "properties": {
     "credentials": {
@@ -1359,9 +1204,7 @@ credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
 }
 ```
 
-**Good (adapted from the bulk CDK SSH tunnel method configuration):**
-
-```kotlin
+```kotlin title="Good: Kotlin (adapted from the bulk CDK SSH tunnel method configuration)"
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = ApiKeyCredentials::class, name = "API_KEY"),
@@ -1391,7 +1234,7 @@ class SourceSpec {
 }
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["credentials"],
   "properties": {
@@ -1437,14 +1280,10 @@ class SourceSpec {
 
 **Why:** The date picker requires the string type and date format. A pattern without a format renders a plain text field.
 
-**Examples:**
-
 <Tabs groupId="cdk">
-<TabItem value="yaml" label="YAML (manifest)">
+<TabItem value="yaml" label="YAML">
 
-**Poor:**
-
-```yaml
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -1457,9 +1296,7 @@ spec:
         pattern_descriptor: YYYY-MM-DD
 ```
 
-**Good (adapted from source-google-ads, spec.json):**
-
-```yaml
+```yaml title="Good (adapted from source-google-ads, spec.json)"
 spec:
   connection_specification:
     type: object
@@ -1476,9 +1313,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-**Poor (adapted from source-google-ads, spec.json):**
-
-```json
+```json title="Poor (adapted from source-google-ads, spec.json)"
 {
   "properties": {
     "start_date": {
@@ -1492,9 +1327,7 @@ spec:
 }
 ```
 
-**Good (adapted from source-google-ads, spec.json):**
-
-```json
+```json title="Good (adapted from source-google-ads, spec.json)"
 {
   "properties": {
     "start_date": {
@@ -1513,9 +1346,7 @@ spec:
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-**Poor:**
-
-```json
+```json title="Poor"
 {
   "required": ["start_date"],
   "properties": {
@@ -1530,9 +1361,7 @@ spec:
 }
 ```
 
-**Good:**
-
-```kotlin
+```kotlin title="Good: Kotlin"
 @JsonProperty("start_date")
 @JsonSchemaTitle("Start date")
 @JsonPropertyDescription("Date from which to start syncing records; earlier records are not replicated.")
@@ -1546,7 +1375,7 @@ lateinit var startDate: String
 lateinit var createdAt: String
 ```
 
-```json
+```json title="Good: spec.json"
 {
   "required": ["start_date", "created_at"],
   "properties": {
@@ -1572,8 +1401,6 @@ lateinit var createdAt: String
 
 </TabItem>
 </Tabs>
-
-<!-- markdownlint-enable MD036 -->
 
 ## Other form guidance
 
@@ -1615,9 +1442,7 @@ With ETL, if the “T” ever needs to change, then we need to re-extract all da
 
 ### Describe output schemas as completely and reliably as possible
 
-<!-- vale Vale.Spelling = NO -->
-Our most popular destinations are strongly typed like Postgres, BigQuery, Parquet, and Avro.
-<!-- vale Vale.Spelling = YES -->
+Our most popular destinations use strongly typed systems such as Postgres and BigQuery, and file formats such as Parquet.
 
 Being strongly typed enables optimizations and syntactic sugar to make it very easy and efficient for the user to query data.
 
@@ -1660,12 +1485,10 @@ Write external-facing connector documentation on [docs.airbyte.com](https://docs
 
 When writing documentation ask: who is the intended target persona for a piece of documentation, and what information do they need to understand how this connector impacts their workflows?
 
-<!-- vale Vale.Spelling = NO -->
-For example, data analysts & analytics engineers probably don’t care if we use Debezium for database replication. To them, the important thing is that we provide Change Data Capture (CDC) -- Debezium is an implementation detail. Therefore, when communicating information about our database replication logic, we should emphasize the end behaviors, rather than implementation details.
+For example, data analysts and analytics engineers probably do not care which implementation we use for database replication. To them, the important thing is that we provide Change Data Capture (CDC). The implementation is a detail. Therefore, when communicating information about database replication, we should emphasize the end behaviors rather than implementation details.
 
-**Example**: Don’t say: “Debezium cannot process UTF-16 character set“.
+**Example**: Don’t say: “The CDC implementation cannot process UTF-16 characters.”
 
-Instead, say: “When using CDC, UTF-16 characters are not currently supported”
+Instead, say: “When using CDC, UTF-16 characters are not currently supported.”
 
-A user who doesn’t already know what Debezium is might be left confused by the first phrasing, so we should use the second phrasing.
-<!-- vale Vale.Spelling = YES -->
+A user who does not know which implementation we use might be confused by the first phrasing, so we should use the second phrasing.
