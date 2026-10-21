@@ -35,9 +35,9 @@ Version 2.0.0 corrects the declared types of report metric fields to match YouTu
 | playlist_province_a2 | playlist_starts | string | integer |
 | playlist_province_a2 | views | string | integer |
 
-## Migration Steps
+### Migration steps
 
-### Refresh source schemas and clear data
+#### Refresh source schemas and clear data
 
 After upgrading, refresh the source schema and clear data for the affected streams: `channel_annotations_a1`, `channel_cards_a1`, `channel_demographics_a1`, `channel_end_screens_a1`, `channel_sharing_service_a1`, `channel_province_a3`, and `playlist_province_a2`. Follow the steps below:
 

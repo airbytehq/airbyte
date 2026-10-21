@@ -112,7 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
-| 2.0.0 | 2026-10-21 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Correct the declared types of report metric fields to match YouTube's metric definitions |
+| 2.0.0 | 2026-10-21 | [89628](https://github.com/airbytehq/airbyte/pull/89628) | Correct the declared types of report metric fields to match YouTube's metric definitions |
 | 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
 | 1.4.5 | 2026-10-13 | [88882](https://github.com/airbytehq/airbyte/pull/88882) | Update dependencies |
 | 1.4.4 | 2026-10-06 | [88106](https://github.com/airbytehq/airbyte/pull/88106) | Update dependencies |
