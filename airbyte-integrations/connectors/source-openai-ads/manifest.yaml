@@ -285,7 +285,7 @@ definitions:
           - 403
         error_message: >-
           Skipping spend_limit_windows: the API answered 403
-          ({{ (response.get("error") or {}).get("message") or "no error message" }}).
+          ({{ (response.error.message or "no error message") if response is mapping and response.error is mapping else (response.error if response is mapping and response.error is string and response.error else "no error message") }}).
           OpenAI documents this endpoint only for ad accounts on postpaid invoice billing
           and for API keys with permission to manage billing.
 

@@ -4,8 +4,8 @@ products: oss-community
 
 # Use the Airbyte MCP with Airbyte Core
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change.
+:::info Open beta
+The Airbyte MCP is in open beta. Features and tools may change.
 :::
 
 :::caution Known issues
@@ -81,6 +81,7 @@ Keep your client secret out of the chat and out of version control. Your agent c
 - **Last job status is empty.** When your agent lists connections, the status of the last job may be empty even after a successful sync. Your agent can still check individual jobs and read their logs.
 - **Billing and usage tools don't work.** These features only exist in Airbyte Cloud.
 - **No context layer.** Direct reads and connector skills aren't available.
+- **No knowledge search.** The `search_airbyte_knowledge_sources` tool is only available in the hosted Airbyte MCP. To give your agent Airbyte documentation and knowledge, also connect the [Airbyte knowledge MCP server](/community/mcp-servers/airbyte-knowledge-mcp).
 - **No browser sign-in.** The local server signs in with your application's client ID and client secret, not with OAuth or single sign-on.
 
 If you find other problems, [open an Airbyte MCP beta issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml). Don't include secrets or credentials in these issues, as they're publicly viewable.

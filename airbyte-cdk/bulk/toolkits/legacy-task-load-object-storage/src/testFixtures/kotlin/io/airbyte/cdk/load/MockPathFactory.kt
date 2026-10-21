@@ -22,7 +22,7 @@ open class MockPathFactory : PathFactory {
 
     override fun getFinalDirectory(
         stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean
+        substituteStreamAndNamespaceOnly: Boolean,
     ): String {
         return "$finalPrefix/${fromStream(stream)}"
     }
@@ -30,7 +30,7 @@ open class MockPathFactory : PathFactory {
     override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        extension: String?
+        extension: String?,
     ): String {
         val prefix = getFinalDirectory(stream)
         return "${prefix}file"
@@ -44,14 +44,14 @@ open class MockPathFactory : PathFactory {
 
     override fun getPathMatcher(
         stream: DestinationStream,
-        suffixPattern: String? // ignored
+        suffixPattern: String?, // ignored
     ): PathMatcher {
         return PathMatcher(
             regex =
                 Regex(
-                    "$finalPrefix/(${stream.mappedDescriptor.namespace})/(${stream.mappedDescriptor.name})/(.*)-(.*)$"
+                    "$finalPrefix/(${stream.mappedDescriptor.namespace})/(${stream.mappedDescriptor.name})/(.*)-(.*)$",
                 ),
-            variableToIndex = mapOf("part_number" to 4)
+            variableToIndex = mapOf("part_number" to 4),
         )
     }
 }

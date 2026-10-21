@@ -25,7 +25,7 @@ import jakarta.inject.Singleton
 @Singleton
 class GcsDataLakeTableSchemaMapper(
     private val config: GcsDataLakeConfiguration,
-    private val tempTableNameGenerator: TempTableNameGenerator
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : TableSchemaMapper {
 
     override fun toFinalTableName(desc: DestinationStream.Descriptor): TableName {

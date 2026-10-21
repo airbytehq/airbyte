@@ -22,12 +22,19 @@ TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 def create_reader(
-    config=SourceGoogleDriveSpec(
-        folder_url="https://drive.google.com/drive/folders/1Z2Q3",
-        streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
-        credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
-    ),
+    config=None,
+    exclude_trashed_files=None,
 ):
+    if config is None:
+        config = SourceGoogleDriveSpec(
+            folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+            streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+            credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+            **({"exclude_trashed_files": exclude_trashed_files} if exclude_trashed_files is not None else {}),
+        )
+    elif exclude_trashed_files is not None:
+        config = config.copy(update={"exclude_trashed_files": exclude_trashed_files})
+
     reader = SourceGoogleDriveStreamReader()
     reader.config = config
 
@@ -749,6 +756,37 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     assert files_service.list.call_count == len(listing_results)
     assert matched_files == found_files
     assert files_service.list_next.call_count == len(flattened_results)
+
+
+@pytest.mark.parametrize(
+    "exclude_trashed_files, expected_queries",
+    [
+        (True, ["'1Z2Q3' in parents and trashed = false", "'subfolder-id' in parents and trashed = false"]),
+        (False, ["'1Z2Q3' in parents", "'subfolder-id' in parents"]),
+        (None, ["'1Z2Q3' in parents", "'subfolder-id' in parents"]),
+    ],
+    ids=["enabled", "disabled", "unset"],
+)
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_matching_files_exclude_trashed_files_queries(mock_build_service, mock_service_account, exclude_trashed_files, expected_queries):
+    mock_request = MagicMock()
+    mock_request.execute.side_effect = [
+        {"files": [{"id": "subfolder-id", "name": "subfolder", "mimeType": "application/vnd.google-apps.folder"}]},
+        {"files": []},
+    ]
+    files_service = MagicMock()
+    files_service.list.return_value = mock_request
+    files_service.list_next.return_value = None
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    reader = create_reader(exclude_trashed_files=exclude_trashed_files)
+
+    list(reader.get_matching_files(["**/*"], None, MagicMock()))
+
+    assert [call.kwargs["q"] for call in files_service.list.call_args_list] == expected_queries
 
 
 @pytest.mark.parametrize(

@@ -1,14 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import copy
 from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
+from jsonschema import Draft7Validator
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import Level, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
@@ -20,6 +22,14 @@ _STREAM_NAME = "project_detail"
 _ORGANIZATION = "test-org"
 _PROJECT = "test-project"
 _AUTH_TOKEN = "test_token_abc123"
+_RAGE_CLICK_OPTION = "sentry:replay_rage_click_issues"
+# Sentry returns project options as booleans, including the rage-click toggle.
+_PROJECT_OPTIONS = {
+    _RAGE_CLICK_OPTION: True,
+    "sentry:reprocessing_active": False,
+    "filters:react-hydration-errors": True,
+    "filters:error_messages": "",
+}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -69,3 +79,29 @@ class TestProjectDetailStream(TestCase):
         output = read(source, config=self._config(), catalog=catalog)
 
         assert any(log.type == Type.LOG and log.log.level == Level.ERROR and error_message in log.log.message for log in output.logs)
+
+    @HttpMocker()
+    def test_boolean_replay_rage_click_option_matches_stream_schema(self, http_mocker: HttpMocker):
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False, body_overrides={"options": _PROJECT_OPTIONS}),
+        )
+
+        source = get_source(config=self._config())
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=self._config(), catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["options"][_RAGE_CLICK_OPTION] is True
+
+        discovered = discover(get_source(config=self._config()), config=self._config())
+        schema = next(stream.json_schema for stream in discovered.catalog.catalog.streams if stream.name == _STREAM_NAME)
+        assert schema["properties"]["options"]["properties"][_RAGE_CLICK_OPTION]["type"] == ["boolean", "null"]
+        assert list(Draft7Validator(schema).iter_errors(record)) == []
+
+        # The previous integer typing rejects the value the API actually returns.
+        integer_schema = copy.deepcopy(schema)
+        integer_schema["properties"]["options"]["properties"][_RAGE_CLICK_OPTION]["type"] = ["integer", "null"]
+        errors = list(Draft7Validator(integer_schema).iter_errors(record))
+        assert [list(error.absolute_path) for error in errors] == [["options", _RAGE_CLICK_OPTION]]
