@@ -47,7 +47,7 @@ abstract class JdbcPartitionsCreator<
                 when (streamState.streamFeedBootstrap.dataChannelMedium) {
                     SOCKET -> generatePartitionId(4)
                     STDIO -> null
-                }
+                },
             )
 
         override fun releaseResources() {}
@@ -85,7 +85,7 @@ abstract class JdbcPartitionsCreator<
             return
         }
         val cursorUpperBound: JsonNode? =
-            Jsons.valueToTree(record.fields().asSequence().firstOrNull()?.value)
+            Jsons.valueToTree(record.properties().asSequence().firstOrNull()?.value)
         if (cursorUpperBound == null) {
             log.warn { "No cursor column value found in '${stream.label}'." }
             return

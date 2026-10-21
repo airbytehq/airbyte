@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## October 15, 2026
+
+Connectors
+
+- Your agents can now list the call recordings in your Twilio account even when one of them has an error code, such as a recording that failed. Previously, a single recording like this caused the whole request to fail. This fix is also available in the SDK.
+- Your agents can now read the custom metafields on your Shopify product images. Previously, this request always failed. This fix is also available in the SDK.
+
 ## October 7, 2026
 
 Connectors

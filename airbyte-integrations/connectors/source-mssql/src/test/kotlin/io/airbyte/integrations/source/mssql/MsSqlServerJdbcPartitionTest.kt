@@ -166,7 +166,7 @@ class MsSqlServerJdbcPartitionTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
-                ResourceAcquirer(emptyList())
+                ResourceAcquirer(emptyList()),
             )
         }
 
@@ -176,7 +176,7 @@ class MsSqlServerJdbcPartitionTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("dbo").withName("campaign")
+                        StreamDescriptor().withNamespace("dbo").withName("campaign"),
                     ),
                 schema = setOf(datetimeField),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -186,7 +186,7 @@ class MsSqlServerJdbcPartitionTest {
 
         private fun streamFeedBootstrap(
             stream: Stream,
-            incumbentStateValue: OpaqueStateValue? = null
+            incumbentStateValue: OpaqueStateValue? = null,
         ) =
             StreamFeedBootstrap(
                 outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
@@ -199,14 +199,14 @@ class MsSqlServerJdbcPartitionTest {
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: com.fasterxml.jackson.databind.node.ObjectNode
+                            recordData: com.fasterxml.jackson.databind.node.ObjectNode,
                         ) {}
 
                         override fun decorateRecordData(
                             timestamp: OffsetDateTime,
                             globalStateValue: OpaqueStateValue?,
                             stream: Stream,
-                            recordData: NativeRecordPayload
+                            recordData: NativeRecordPayload,
                         ) {}
                     },
                 stateManager =
@@ -219,7 +219,7 @@ class MsSqlServerJdbcPartitionTest {
             )
 
         private fun streamState(
-            incumbentStateValue: OpaqueStateValue? = null
+            incumbentStateValue: OpaqueStateValue? = null,
         ): DefaultJdbcStreamState {
             val shared = sharedState()
             return DefaultJdbcStreamState(
@@ -253,7 +253,7 @@ class MsSqlServerJdbcPartitionTest {
             sql.contains("<="),
             "Query must not contain '<=' ceiling clause. " +
                 "A ceiling would miss datetime2(7) rows whose 7th digit exceeds the " +
-                "6-digit-truncated max. Got: $sql"
+                "6-digit-truncated max. Got: $sql",
         )
         // The query must still have a > lower bound
         assertTrue(sql.contains(">"), "Query must contain '>' lower bound clause. Got: $sql")
@@ -282,7 +282,7 @@ class MsSqlServerJdbcPartitionTest {
         // With cutoffTime, predicate should be `cursor > lower AND cursor < cutoff`
         assertFalse(
             sql.contains("<="),
-            "Query with cutoffTime must not contain '<=' ceiling. Got: $sql"
+            "Query with cutoffTime must not contain '<=' ceiling. Got: $sql",
         )
         assertTrue(sql.contains(">"), "Query must contain '>' lower bound. Got: $sql")
         assertTrue(sql.contains("<"), "Query with cutoffTime must contain '<' cutoff. Got: $sql")
@@ -308,7 +308,7 @@ class MsSqlServerJdbcPartitionTest {
         assertNull(
             partition.upperBound,
             "CursorIncrementalPartition.upperBound must be null to avoid excluding " +
-                "datetime2(7) rows whose 7th fractional digit exceeds the truncated max"
+                "datetime2(7) rows whose 7th fractional digit exceeds the truncated max",
         )
     }
 }
