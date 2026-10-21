@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a152c0b0-6c5d-43d6-a74c-72df24dae70e
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-openai-ads
   githubIssueLabel: source-openai-ads
   icon: icon.svg
