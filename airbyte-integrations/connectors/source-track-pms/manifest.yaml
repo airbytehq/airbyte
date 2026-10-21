@@ -10650,6 +10650,10 @@ streams:
             type:
               - number
               - "null"
+          unit_id:
+            type:
+              - number
+              - "null"
           endDate:
             type:
               - string
@@ -10692,7 +10696,7 @@ streams:
         fields:
           - type: AddedFieldDefinition
             path:
-              - unitId
+              - unit_id
             value: >-
               {{ ((record.get('_embedded') or {}).get('unit') or {}).get('id')
               }}
