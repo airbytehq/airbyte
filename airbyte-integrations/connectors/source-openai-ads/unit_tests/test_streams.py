@@ -5,6 +5,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from freezegun import freeze_time
 from requests_mock import ANY, Mocker
 
 from airbyte_cdk.models import Status, SyncMode
@@ -12,6 +13,12 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
+
+
+try:
+    from jsonschema import Draft7Validator
+except ImportError:
+    Draft7Validator = None
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -68,6 +75,10 @@ def _mock_insights(requests_mock: Mocker, *rows: dict) -> None:
     requests_mock.get(f"{_URL}/ad_account/insights", [{"json": {**_page(list(rows)), "count": len(rows)}}, _UNEXPECTED_REQUEST])
 
 
+def _mock_empty_insights(requests_mock: Mocker) -> None:
+    requests_mock.get(f"{_URL}/ad_account/insights", json={**_page([]), "count": 0})
+
+
 def _insights_query(requests_mock: Mocker) -> dict:
     [request] = [r for r in requests_mock.request_history if r.path == "/v1/ad_account/insights"]
     return parse_qs(urlsplit(request.url).query)
@@ -83,15 +94,98 @@ def test_discover_publishes_keys_schemas_and_cursors() -> None:
     assert all(cursor == (["date"] if name.endswith("_conversions") else ["readable_time"]) for name, cursor in cursors.items())
 
 
+def test_discover_declares_documented_custom_audience_and_ad_account_fields() -> None:
+    streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
+
+    assert set(streams["custom_audiences"].json_schema["properties"]) == {
+        "id",
+        "created_at",
+        "updated_at",
+        "name",
+        "description",
+        "status",
+        "hash_spec_version",
+        "uploaded_identifier_count_range",
+        "matched_identifier_count_range",
+        "matched_user_count_range",
+        "invalid_identifier_count_range",
+        "membership_revision",
+    }
+    assert {"legal_name", "account_name", "brand_name"} <= set(streams["ad_account"].json_schema["properties"])
+
+
+def test_discover_types_documented_nested_fields() -> None:
+    streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
+
+    ad_group_properties = streams["ad_groups"].json_schema["properties"]
+    assert set(ad_group_properties["bidding_config"]["properties"]["custom_audience_bid_multipliers"]["items"]["properties"]) == {
+        "custom_audience_id",
+        "bid_multiplier_micros",
+    }
+    assert set(ad_group_properties["product_set"]["properties"]["filters"]["items"]["properties"]) == {
+        "field",
+        "operator",
+        "values",
+    }
+    assert set(streams["conversion_event_settings"].json_schema["properties"]["campaigns"]["items"]["properties"]) == {
+        "id",
+        "name",
+    }
+    for stream_name in ("campaigns", "ad_groups", "ads"):
+        assert set(streams[stream_name].json_schema["properties"]["landing_page_configuration"]["properties"]) == {"query_string_template"}
+
+
 def test_check_and_ad_account_read_the_root_object(requests_mock: Mocker) -> None:
-    account = {"id": "act_1", "name": "Acme", "currency_code": "USD", "timezone": "America/Los_Angeles"}
+    account = {
+        "id": "act_1",
+        "name": "Acme",
+        "legal_name": "Acme Corporation",
+        "account_name": "Acme Ads",
+        "brand_name": "Acme",
+        "currency_code": "USD",
+        "timezone": "America/Los_Angeles",
+    }
     requests_mock.get(f"{_URL}/ad_account", json=account)
 
     status = _source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
+    streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
 
     assert status.status == Status.SUCCEEDED
     assert _records(_read("ad_account")) == [account]
+    assert set(account) <= set(streams["ad_account"].json_schema["properties"])
     assert all(request.headers["Authorization"] == "Bearer test-key" for request in requests_mock.request_history)
+
+
+def test_custom_audiences_read_keeps_documented_fields(requests_mock: Mocker) -> None:
+    audience = {
+        "id": "aud_1",
+        "created_at": 1780000000,
+        "updated_at": 1780003600,
+        "name": "Acme customers",
+        "description": None,
+        "status": "ready",
+        "hash_spec_version": "sha256",
+        "uploaded_identifier_count_range": "1000-5000",
+        "matched_identifier_count_range": "1000-5000",
+        "matched_user_count_range": "500-1000",
+        "invalid_identifier_count_range": "0-100",
+        "membership_revision": 7,
+    }
+    requests_mock.get(f"{_URL}/custom_audiences?limit=500", complete_qs=True, json=_page([audience]))
+    streams = {stream.name: stream for stream in _source(_CONFIG).discover(logging.getLogger("airbyte"), _CONFIG).streams}
+    properties = set(streams["custom_audiences"].json_schema["properties"])
+
+    [record] = _records(_read("custom_audiences"))
+    assert record == {key: value for key, value in audience.items() if key != "description"}
+    assert set(record) == properties - {"description"}
+    # The Airbyte protocol serializer omits null values from record data.
+    normalized_record = {**record, "description": None}
+
+    assert normalized_record == audience
+    assert set(normalized_record) == properties
+    if Draft7Validator is not None:
+        Draft7Validator(streams["custom_audiences"].json_schema).validate(audience)
+        Draft7Validator(streams["custom_audiences"].json_schema).validate(record)
 
 
 @pytest.mark.parametrize(
@@ -195,3 +289,72 @@ def test_spend_limit_windows_reads_data_and_skips_a_403(requests_mock: Mocker) -
 
     assert _records(_read("spend_limit_windows")) == [window]
     assert _records(_read("spend_limit_windows")) == []
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+@pytest.mark.parametrize(
+    "end_date,expected_end",
+    [
+        ("2026-12-31", "2026-09-14"),
+        (None, "2026-09-14"),
+        ("2026-09-10", "2026-09-10"),
+    ],
+    ids=["future-end-date-is-clamped", "default-end-date-uses-utc-minus-12", "past-end-date-is-honoured"],
+)
+def test_incremental_insights_end_date_controls_all_slices(requests_mock: Mocker, end_date: str | None, expected_end: str) -> None:
+    _mock_empty_insights(requests_mock)
+    config = {"api_key": "test-key", "start_date": "2026-08-25"}
+    if end_date is not None:
+        config["end_date"] = end_date
+
+    _read("campaign_insights", SyncMode.incremental, config=config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history for value in parse_qs(urlsplit(request.url).query).get("time_ranges[]", [])
+    ]
+    assert sorted(actual_time_ranges) == sorted(
+        [
+            '{"type":"date_range","since":"2026-08-25","until":"2026-09-07"}',
+            f'{{"type":"date_range","since":"2026-09-08","until":"{expected_end}"}}',
+        ]
+    )
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+def test_incremental_conversions_end_date_is_clamped_and_state_stays_in_range(requests_mock: Mocker) -> None:
+    _mock_page(requests_mock, "/campaigns?limit=500", "cmpn_1")
+    row = {"entity_id": "cmpn_1", "date": "2026-09-13", "conversions": 3}
+    requests_mock.post(
+        f"{_URL}/conversions/insights",
+        json={"object": "list", "data": [row], "count": 1, "account_currency": "USD"},
+    )
+    config = {"api_key": "test-key", "start_date": "2026-09-01", "end_date": "2026-12-31"}
+
+    output = _read("campaign_conversions", SyncMode.incremental, config=config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history if request.method == "POST" for value in request.json()["time_ranges"]
+    ]
+    assert actual_time_ranges == ['{"type":"date_range","since":"2026-09-01","until":"2026-09-14"}']
+    [partition_state] = output.most_recent_state.stream_state.states
+    assert partition_state["cursor"]["date"] <= "2026-09-14"
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+def test_incremental_insights_default_lookback_is_32_days(requests_mock: Mocker) -> None:
+    _mock_empty_insights(requests_mock)
+    state = StateBuilder().with_stream_state("campaign_insights", {"readable_time": "2026-09-13"}).build()
+    config = {"api_key": "test-key"}
+
+    _read("campaign_insights", SyncMode.incremental, state, config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history for value in parse_qs(urlsplit(request.url).query).get("time_ranges[]", [])
+    ]
+    assert sorted(actual_time_ranges) == sorted(
+        [
+            '{"type":"date_range","since":"2026-08-12","until":"2026-08-25"}',
+            '{"type":"date_range","since":"2026-08-26","until":"2026-09-08"}',
+            '{"type":"date_range","since":"2026-09-09","until":"2026-09-14"}',
+        ]
+    )

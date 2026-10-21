@@ -845,6 +845,9 @@ definitions:
             value: "{{ (record.get('commit') or {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+      # GitLab omits earlier attempts of retried jobs unless include_retried=true.
+      request_parameters:
+        include_retried: "true"
     schema_loader:
       type: InlineSchemaLoader
       schema:
