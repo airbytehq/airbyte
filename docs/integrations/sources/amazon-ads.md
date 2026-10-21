@@ -118,7 +118,7 @@ The Attribution report streams (`attribution_report_products`, `attribution_repo
 
 If a sync produces no Attribution records, check the sync logs for these messages. A 401 response usually means Amazon Attribution isn't enabled for the profile, or your Amazon Ads API app doesn't have access to the Attribution API.
 
-The Attribution report streams support incremental syncs. Each record gets a `reportDate` field set to the sync's end date, which is the stream's cursor. The first sync requests the same window as a full refresh: from `start_date` (no earlier than 60 days ago) to today, or only today when `start_date` isn't set. Later syncs request reports from the saved cursor minus the larger of `look_back_window` and 14 days, because Attribution metrics use a 14-day attribution window and recent days keep changing. The streams have no primary key, so re-read days are appended again rather than deduplicated.
+The Attribution report streams support incremental syncs. Each record gets a `reportDate` field set to the sync's end date in UTC, which is the stream's cursor. For profiles in timezones behind UTC, `reportDate` can be one day after the last day the report covers. The first sync requests the same window as a full refresh: from `start_date` (no earlier than 60 days ago) to today, or only today when `start_date` isn't set. Later syncs request reports from the saved cursor minus the larger of `look_back_window` and 14 days, but no earlier than `start_date` or 60 days ago. This lookback is needed because Attribution metrics use a 14-day attribution window and recent days keep changing. The streams have no primary key, so re-read days are appended again rather than deduplicated.
 :::
 
 :::note
