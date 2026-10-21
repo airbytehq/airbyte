@@ -112,7 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
-| 1.5.0 | 2026-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
+| 1.5.0 | 2026-10-21 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
 | 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
 | 1.4.5 | 2026-10-13 | [88882](https://github.com/airbytehq/airbyte/pull/88882) | Update dependencies |
 | 1.4.4 | 2026-10-06 | [88106](https://github.com/airbytehq/airbyte/pull/88106) | Update dependencies |
