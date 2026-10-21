@@ -113,6 +113,7 @@ class TestFullRefresh(TestCase):
             assert "metric" in record.record.data
             assert record.record.data["page_id"] is not None
             assert record.record.data["business_account_id"] is not None
+        assert not any("Skipping user_lifetime_insights record" in log.log.message for log in output.logs)
 
     @HttpMocker()
     def test_substream_with_multiple_parent_accounts(self, http_mocker: HttpMocker) -> None:
@@ -180,6 +181,7 @@ class TestFullRefresh(TestCase):
         }
         city_record = next(r for r in output.records if r.record.data["breakdown"] == "city")
         assert city_record.record.data["value"]["London, England"] == 7
+        assert not any("Skipping user_lifetime_insights record" in log.log.message for log in output.logs)
 
     @HttpMocker()
     def test_breakdown_without_results_is_skipped(self, http_mocker: HttpMocker) -> None:
@@ -194,10 +196,35 @@ class TestFullRefresh(TestCase):
         assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
 
     @HttpMocker()
+    def test_breakdown_without_results_is_skipped_and_logs_response_filter(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": [{"dimension_keys": ["city"]}]}},
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+        assert any("Skipping user_lifetime_insights record" in log.log.message for log in output.logs)
+
+    @HttpMocker()
     def test_breakdown_with_null_results_is_skipped(self, http_mocker: HttpMocker) -> None:
         self._mock_responses_with_city_record(
             http_mocker,
             {"total_value": {"breakdowns": [{"dimension_keys": ["city"], "results": None}]}},
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert len(output.records) == 2
+        assert {r.record.data["breakdown"] for r in output.records} == {"country", "age,gender"}
+
+    @HttpMocker()
+    def test_breakdown_with_null_breakdown_entry_is_skipped(self, http_mocker: HttpMocker) -> None:
+        self._mock_responses_with_city_record(
+            http_mocker,
+            {"total_value": {"breakdowns": [None]}},
         )
 
         output = self._read(config_=config())
