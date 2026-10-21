@@ -4,8 +4,8 @@ products: cloud
 
 # Manage context layer access
 
-:::info Private beta
-The context layer is in private beta. Features may change. It's available to Airbyte Cloud organizations enrolled in the beta. Self-managed deployments of Airbyte aren't supported.
+:::info Open beta
+The context layer is in open beta. Features may change. It's available to all Airbyte Cloud organizations. Self-managed deployments of Airbyte aren't supported.
 :::
 
 Control which sources and destinations AI agents can read directly through the [Airbyte MCP](../airbyte-mcp/readme.md). First, an organization admin turns on the context layer for the organization. Then, choose which sources and destinations agents can access.

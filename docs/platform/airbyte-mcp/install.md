@@ -4,8 +4,8 @@ products: cloud
 
 # Install the Airbyte MCP
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
+:::info Open beta
+The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
 :::
 
 The Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
@@ -16,7 +16,7 @@ https://mcp.airbyte.com/mcp
 
 ## Prerequisites
 
-- An [Airbyte Cloud](https://cloud.airbyte.com) account in an organization enrolled in the private beta.
+- An [Airbyte Cloud](https://cloud.airbyte.com) account.
 - An MCP client that supports remote MCP servers with OAuth and the Streamable HTTP transport.
 - To read data directly from sources and destinations, an organization admin must [enable the context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
 
@@ -25,6 +25,8 @@ https://mcp.airbyte.com/mcp
 The first time your client connects, it opens the Airbyte Cloud sign-in page in your browser. Sign in with the account you use for Airbyte Cloud and grant access.
 
 If your organization uses [single sign-on](/platform/access-management/sso), select **Sign in with SSO** and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud sign-in page. If you don't know it, ask your Airbyte organization admin.
+
+Your client finds the Airbyte MCP's authorization and token endpoints and registers itself automatically, so you only need the server URL. If your client has optional OAuth settings, like a client ID, client secret, authorization URL, or token URL, leave them blank.
 
 Your client keeps you signed in while you use the Airbyte MCP. If you don't use it for 14 days, you may need to sign in again.
 
@@ -216,7 +218,7 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
 
 1. [Create an application](/platform/using-airbyte/configuring-api-access) and copy its client ID and client secret. The application acts with the permissions of the user who created it, so consider using a service account.
 
-2. Send the client ID and client secret in the `Client-Id` and `Client-Secret` headers of every request to the Airbyte MCP. The Airbyte MCP exchanges them for a new access token on each request, so your agent doesn't need to refresh tokens.
+2. Send the client ID and client secret in the `Client-Id` and `Client-Secret` headers of every request to the Airbyte MCP. The Airbyte MCP exchanges them for a new access token on each request, so your agent doesn't need a token endpoint, an authorization endpoint, or to refresh tokens.
 
    ```json
    {
@@ -233,6 +235,8 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
    ```
 
 3. Optional: to choose a workspace or organization other than your default, add the `X-Airbyte-Workspace-Id` or `X-Airbyte-Organization-Id` header.
+
+Don't enter the application's client ID and client secret in your client's OAuth settings. The Airbyte MCP only accepts them in request headers.
 
 Treat the client secret like a password. Keep it out of version control, and use your client's secret storage or environment variables if it supports them.
 

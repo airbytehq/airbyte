@@ -15,21 +15,21 @@ import java.io.OutputStream
 class BigQueryBulkOneShotUploaderStep<K : WithStream, O : OutputStream>(
     private val bigQueryOneShotUploader: BigQueryBulkOneShotUploader<O>,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    override val numWorkers: Int
+    override val numWorkers: Int,
 ) : LoadPipelineStep {
 
     override fun taskForPartition(partition: Int): Task {
         return taskFactory.createFirstStep<
             BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<O>,
             StreamKey,
-            BulkLoaderTableLoader.LoadResult
+            BulkLoaderTableLoader.LoadResult,
         >(
             bigQueryOneShotUploader,
             null, // No output partitioner needed - this is the final step
             null, // No output queue needed - this is the final step
             partition,
             numWorkers,
-            null
+            null,
         )
     }
 }
