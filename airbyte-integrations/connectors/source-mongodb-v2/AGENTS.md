@@ -10,7 +10,7 @@ With `schema_enforced` disabled, `MongoCatalogHelper.buildSchemalessAirbyteStrea
 
 ## 2. Schema-enforced discovery samples a configurable number of documents
 
-Schema-enforced discovery samples `discover_sample_size` documents to infer each collection's fields; the default is 10,000. Fields absent from the sample may not appear in the discovered schema. Schemaless mode uses a one-document sample to inspect `_id` information, not the schema-enforced sample size.
+MongoDB does not enforce a fixed schema or field types, so to approximate each collection's document structure, schema-enforced discovery samples `discover_sample_size` documents (default 10,000) and infers field names and types from them. Fields absent from the sample may not appear in the discovered schema. Schemaless mode uses a one-document sample to inspect `_id` information, not the schema-enforced sample size.
 
 **Why this matters:** Discovery is sample-based, not a complete inventory of all fields in a collection. Changes to the sampling pipeline or defaults can alter schema coverage and should preserve the distinct schemaless behavior.
 
