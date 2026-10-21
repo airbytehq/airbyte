@@ -24,8 +24,8 @@ interface ValueCoercer {
      *
      * @param airbyteType The original Airbyte type from the schema
      * @return The target AirbyteValue class to use, or null for default behavior
-     *
      * @example
+     *
      * ```kotlin
      * override fun representAs(airbyteType: AirbyteType): Class<out AirbyteValue>? {
      *     return when (airbyteType) {
@@ -50,8 +50,8 @@ interface ValueCoercer {
      *
      * @param value The enriched Airbyte value to transform
      * @return The transformed EnrichedAirbyteValue
-     *
      * @example
+     *
      * ```kotlin
      * override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
      *     return when (value.type) {
@@ -73,8 +73,8 @@ interface ValueCoercer {
      *
      * @param value The enriched Airbyte value to validate
      * @return The [ValidationResult] indicating whether the value is valid or not, and if so, why
-     *
      * @example
+     *
      * ```kotlin
      * override fun validate(value: EnrichedAirbyteValue): ValidationResult =
      *     when (val abValue = value.abValue) {
@@ -109,6 +109,6 @@ sealed interface ValidationResult {
     /** Value should be replaced with the new, truncated value and reason */
     data class ShouldTruncate(
         val truncatedValue: AirbyteValue,
-        val reason: AirbyteRecordMessageMetaChange.Reason
+        val reason: AirbyteRecordMessageMetaChange.Reason,
     ) : ValidationResult
 }

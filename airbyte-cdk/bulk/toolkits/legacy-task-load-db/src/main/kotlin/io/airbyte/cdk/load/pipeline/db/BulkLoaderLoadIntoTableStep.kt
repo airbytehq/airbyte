@@ -27,6 +27,7 @@ class BulkLoaderLoadIntoTableStep<K : WithStream, T : RemoteObject<*>>(
     val taskFactory: LoadPipelineStepTaskFactory,
 ) : LoadPipelineStep {
     override val numWorkers: Int = bulkLoader.maxNumConcurrentLoads
+
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createFinalStep(tableLoader, inputQueue, partition, numWorkers)
     }
