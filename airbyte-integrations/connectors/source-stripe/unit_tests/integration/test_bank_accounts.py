@@ -67,15 +67,17 @@ def _created_slice_bounds(start_date: datetime, end_date: datetime) -> list[tupl
     return bounds
 
 
-def _customers_slice_request(start_timestamp: int, end_timestamp: int):
-    return (
+def _customers_slice_request(start_timestamp: int, end_timestamp: int, starting_after: Optional[str] = None) -> HttpRequest:
+    request = (
         _customers_request()
         .with_expands(_EXPANDS)
         .with_created_gte(datetime.fromtimestamp(start_timestamp, tz=timezone.utc))
         .with_created_lte(datetime.fromtimestamp(end_timestamp, tz=timezone.utc))
         .with_limit(100)
-        .build()
     )
+    if starting_after is not None:
+        request.with_starting_after(starting_after)
+    return request.build()
 
 
 def _customers_bank_accounts_request(customer_id: str) -> StripeRequestBuilder:
@@ -209,6 +211,55 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
+    def test_given_multiple_customers_pages_when_read_then_query_pagination_on_parent(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=10)
+        slice_bounds = _created_slice_bounds(start_date, _NOW)[0]
+        http_mocker.get(
+            _customers_slice_request(*slice_bounds),
+            _customers_response()
+            .with_pagination()
+            .with_record(
+                _a_customer()
+                .with_id("customer_page_1")
+                .with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _customers_slice_request(*slice_bounds, starting_after="customer_page_1"),
+            _customers_response()
+            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .build(),
+        )
+
+        output = self._read(_config_with_start_date(start_date))
+
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_empty_customer_slice_emits_no_records_or_errors(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=10)
+        http_mocker.get(_customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0]), _customers_response().build())
+
+        output = self._read(_config_with_start_date(start_date))
+
+        assert output.records == []
+        assert output.errors == []
+
+    @HttpMocker()
+    def test_empty_sources_without_has_more_emits_no_records_or_errors(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=10)
+        http_mocker.get(
+            _customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0]),
+            _customers_response().with_record(_a_customer().with_field(_SOURCES_FIELD, {"data": [], "has_more": False})).build(),
+        )
+
+        output = self._read(_config_with_start_date(start_date))
+
+        assert output.records == []
+        assert output.errors == []
+
+    @HttpMocker()
     def test_mid_month_start_date_uses_integer_contiguous_slices(self, http_mocker: HttpMocker) -> None:
         start_date = (_NOW - timedelta(days=65)).replace(hour=12, minute=34, second=56, microsecond=0)
         slices = _created_slice_bounds(start_date, _NOW)
@@ -291,13 +342,43 @@ class FullRefreshTest(TestCase):
     def test_http_400_on_customers_fails_sync(self, http_mocker: HttpMocker) -> None:
         start_date = _NOW - timedelta(days=10)
         http_mocker.get(
-            _customers_request().with_any_query_params().build(),
+            _customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0]),
             a_response_with_status(400),
         )
         output = self._read(_config_with_start_date(start_date), expecting_exception=True)
 
         assert output.errors
+        assert any(
+            error.trace.error.failure_type == FailureType.system_error and "HTTP Status Code: 400" in error.trace.error.message
+            for error in output.errors
+        )
+        assert output.records == []
+
+    @HttpMocker()
+    def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=10)
+        http_mocker.get(
+            _customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0]),
+            a_response_with_status(401),
+        )
+
+        output = self._read(_config_with_start_date(start_date), expecting_exception=True)
+
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        assert output.records == []
+
+    @HttpMocker()
+    def test_given_http_status_500_when_read_then_raise_config_error(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=10)
+        request = _customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0])
+        http_mocker.get(request, [a_response_with_status(500) for _ in range(6)])
+
+        with patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep"):
+            output = self._read(_config_with_start_date(start_date), expecting_exception=True)
+
+        http_mocker.assert_number_of_calls(request, 6)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert output.records == []
 
     @HttpMocker()
     def test_http_403_and_404_on_customers_are_ignored(self, http_mocker: HttpMocker) -> None:
@@ -320,7 +401,7 @@ class FullRefreshTest(TestCase):
     def test_rate_limited_customers_request_retries_and_returns_records(self, http_mocker: HttpMocker) -> None:
         start_date = _NOW - timedelta(days=10)
         http_mocker.get(
-            _customers_request().with_any_query_params().build(),
+            _customers_slice_request(*_created_slice_bounds(start_date, _NOW)[0]),
             [
                 a_response_with_status(429),
                 _customers_response()
