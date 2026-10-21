@@ -11,6 +11,8 @@ class UptickRequestBuilder:
     BASE_URL = "https://test-tenant.onuptick.com"
     ACCESS_TOKEN = "tok"
     START_DATE = "2000-01-01T00:00:00.000000+0000"
+    # Streams without an `updated` cursor: full refresh only, ordered by id, no updatedsince.
+    FULL_REFRESH_STREAMS = frozenset({"majorservices"})
     FIELDS = {
         "creditnotelineitems": (
             "CreditNoteLineItem",
@@ -22,7 +24,7 @@ class UptickRequestBuilder:
         ),
         "majorservices": (
             "MajorService",
-            "id,created,updated,asset,routineserviceleveltype,due,status",
+            "id,asset,routineserviceleveltype,due,status",
         ),
         "promptquestions": (
             "PromptQuestion",
@@ -52,6 +54,14 @@ class UptickRequestBuilder:
             "AccreditationType",
             "id,created,updated,name,type,property_specific,extra_fields",
         ),
+        "costcentres": (
+            "CostCentre",
+            "id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory",
+        ),
+        "products": (
+            "Product",
+            "id,created,updated,deleted,name,type,description,code,sku,upc,account_code,expense_account_code,default_taxcode,internal_note,is_starred,is_active,is_stocked,cost_price,unit_description,unit_price,current_price,category,subcategory,markup,estimated_time,partner_uid,autocomplete_label,tracking_categories,extra_fields,supplier,accounting_organisation,is_attendancefee,included_labour,included_travel,labour_increment,last_used,latest_unit_cost",
+        ),
     }
 
     @classmethod
@@ -73,14 +83,17 @@ class UptickRequestBuilder:
             f"fields[{model}]": fields,
             "updatedsince": updatedsince,
         }
+        if stream in cls.FULL_REFRESH_STREAMS:
+            query_params["ordering"] = "id"
+            del query_params["updatedsince"]
         if page > 1:
             query_params["page"] = str(page)
         return HttpRequest(
-            url=f"{cls.BASE_URL}/api/v2.15/{stream}/",
+            url=f"{cls.BASE_URL}/api/v2.16/{stream}/",
             query_params=query_params,
             headers={"Authorization": f"Bearer {token}"},
         )
 
     @classmethod
     def next_page_url(cls, stream: str) -> str:
-        return f"{cls.BASE_URL}/api/v2.15/{stream}/?page=2"
+        return f"{cls.BASE_URL}/api/v2.16/{stream}/?page=2"

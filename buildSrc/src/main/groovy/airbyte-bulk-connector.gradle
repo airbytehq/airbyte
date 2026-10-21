@@ -89,6 +89,12 @@ class AirbyteBulkConnectorExtension {
             kspTestFixtures "io.micronaut:micronaut-inject-kotlin"
             kspTest platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
             kspTest "io.micronaut:micronaut-inject-kotlin"
+            // KSP 2 no longer applies the `ksp` configuration to the other compilations (KSP 1 did,
+            // through its deprecated ksp.allow.all.target.configuration default).
+            kspIntegrationTest platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            kspIntegrationTest "io.micronaut:micronaut-inject-kotlin"
+            kspIntegrationTestLegacy platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            kspIntegrationTestLegacy "io.micronaut:micronaut-inject-kotlin"
         }
 
         // For local development, explicitly add base from source
@@ -291,6 +297,10 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
         project.tasks.named('check').configure {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
+
+        // Connectors compile against the published CDK but run the Micronaut KSP processor declared
+        // above, so their own bean definitions need the same load check as the CDK modules.
+        io.airbyte.gradle.MicronautBeanDefinitionVerification.configure(project)
 
         boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
         project.tasks.matching {
