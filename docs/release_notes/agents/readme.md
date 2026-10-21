@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## October 16, 2026
+
+Web app
+
+- Airbyte Agents is being discontinued. A banner in the app now lets you know and links you to Airbyte Cloud, where you can get started connecting your AI agents to your data.
+- Fixed an issue where you couldn't sign in to Airbyte Agents if your Airbyte account had the workspace source editor or workspace destination editor role.
+
 ## October 15, 2026
 
 Connectors
