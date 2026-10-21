@@ -51,7 +51,7 @@ class S3AssumeRoleCredentialConfig(private val roleArn: String, environment: Map
                 AWSSecurityTokenServiceClient.builder()
                     .withRegion(Regions.DEFAULT_REGION)
                     .withCredentials(getCredentialProvider(environment))
-                    .build()
+                    .build(),
             )
             .withAsyncRefreshExecutor(Executors.newSingleThreadExecutor(DaemonThreadFactory()))
             .build()
@@ -63,8 +63,8 @@ class S3AssumeRoleCredentialConfig(private val roleArn: String, environment: Map
             return AWSStaticCredentialsProvider(
                 BasicAWSCredentials(
                     environment.getValue("AWS_ACCESS_KEY_ID"),
-                    environment.getValue("AWS_SECRET_ACCESS_KEY")
-                )
+                    environment.getValue("AWS_SECRET_ACCESS_KEY"),
+                ),
             )
         }
     }

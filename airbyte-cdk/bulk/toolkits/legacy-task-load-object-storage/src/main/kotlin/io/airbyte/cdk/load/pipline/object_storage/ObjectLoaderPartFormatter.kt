@@ -42,14 +42,14 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     // TODO: This doesn't need to be "DestinationState", just a couple of utility classes
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
-    val batchSizeOverride: Long? = null,
-    @Named("objectLoaderClampedPartSizeBytes") val clampedPartSizeBytes: Long
+    val batchSizeOverride: Long?,
+    @Named("objectLoaderClampedPartSizeBytes") val clampedPartSizeBytes: Long,
 ) :
     BatchAccumulator<
         ObjectLoaderPartFormatter.State<T>,
         StreamKey,
         DestinationRecordRaw,
-        ObjectLoaderPartFormatter.FormattedPart
+        ObjectLoaderPartFormatter.FormattedPart,
     > {
     private val log = KotlinLogging.logger {}
 
@@ -59,7 +59,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     data class State<T : OutputStream>(
         val stream: DestinationStream,
         val writer: BufferedFormattingWriter<T>,
-        val partFactory: PartFactory
+        val partFactory: PartFactory,
     ) : AutoCloseable {
         override fun close() {
             writer.close()
@@ -68,7 +68,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     data class FormattedPart(
         val part: Part,
-        override val state: BatchState = BatchState.PROCESSED
+        override val state: BatchState = BatchState.PROCESSED,
     ) : WithBatchState
 
     private suspend fun newState(stream: DestinationStream): State<T> {
@@ -134,7 +134,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: State<T>
+        state: State<T>,
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
         state.writer.accept(input)
         val dataSufficient =

@@ -43,7 +43,7 @@ class CheckpointManagerUTest {
             generationId = 10L,
             minimumGenerationId = 10L,
             syncId = 101L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private val stream2 =
@@ -55,7 +55,7 @@ class CheckpointManagerUTest {
             generationId = 10L,
             minimumGenerationId = 10L,
             syncId = 101L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     @BeforeEach
@@ -73,14 +73,14 @@ class CheckpointManagerUTest {
             outputConsumer,
             timeProvider,
             true,
-            NamespaceMapper(NamespaceDefinitionType.SOURCE)
+            NamespaceMapper(NamespaceDefinitionType.SOURCE),
         )
     }
 
     private fun makeKey(index: Int, id: String? = null) =
         CheckpointKey(
             checkpointIndex = CheckpointIndex(index),
-            checkpointId = CheckpointId(id ?: index.toString())
+            checkpointId = CheckpointId(id ?: index.toString()),
         )
 
     @Test
@@ -109,12 +109,12 @@ class CheckpointManagerUTest {
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(1, "one"),
-            mockk(relaxed = true)
+            mockk(relaxed = true),
         )
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(2, "two"),
-            mockk(relaxed = true)
+            mockk(relaxed = true),
         )
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
@@ -264,6 +264,6 @@ class CheckpointManagerUTest {
     }
 
     private fun mockMessage(
-        checkpointMessage: CheckpointMessage? = null
+        checkpointMessage: CheckpointMessage? = null,
     ): Reserved<CheckpointMessage> = Reserved(value = checkpointMessage ?: mockk(relaxed = true))
 }
