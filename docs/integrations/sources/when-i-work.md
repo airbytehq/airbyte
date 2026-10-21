@@ -13,7 +13,8 @@ You have to give your login email and password used with `when-i-work` account f
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `email` | `string` | Email of your When I Work account. |  |
+| `password` | `string` | Password for your When I Work account. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -42,6 +43,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.70 | 2026-10-20 | [89466](https://github.com/airbytehq/airbyte/pull/89466) | Update dependencies |
+| 0.0.69 | 2026-10-13 | [88859](https://github.com/airbytehq/airbyte/pull/88859) | Update dependencies |
 | 0.0.68 | 2026-10-06 | [88107](https://github.com/airbytehq/airbyte/pull/88107) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87430](https://github.com/airbytehq/airbyte/pull/87430) | Update dependencies |
 | 0.0.66 | 2026-09-22 | [86881](https://github.com/airbytehq/airbyte/pull/86881) | Update dependencies |

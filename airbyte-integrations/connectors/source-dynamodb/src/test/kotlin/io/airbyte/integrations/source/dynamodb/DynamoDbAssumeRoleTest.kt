@@ -45,7 +45,7 @@ class DynamoDbAssumeRoleTest {
             Assertions.assertEquals(listOf(TABLE), querier.listTables())
             Assertions.assertEquals(
                 listOf(listOf("id")),
-                querier.primaryKey(querier.streamNames(null).single())
+                querier.primaryKey(querier.streamNames(null).single()),
             )
         }
     }
@@ -63,7 +63,7 @@ class DynamoDbAssumeRoleTest {
                 LocalStackContainer(DockerImageName.parse("localstack/localstack:4.4.0"))
                     .withServices(
                         LocalStackContainer.Service.STS,
-                        LocalStackContainer.Service.DYNAMODB
+                        LocalStackContainer.Service.DYNAMODB,
                     )
                     .also { it.start() }
             DynamoDbClient.builder()
@@ -71,7 +71,7 @@ class DynamoDbAssumeRoleTest {
                 .region(Region.of(localstack.region))
                 .credentialsProvider(
                     StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.accessKey, localstack.secretKey)
+                        AwsBasicCredentials.create(localstack.accessKey, localstack.secretKey),
                     ),
                 )
                 .build()
