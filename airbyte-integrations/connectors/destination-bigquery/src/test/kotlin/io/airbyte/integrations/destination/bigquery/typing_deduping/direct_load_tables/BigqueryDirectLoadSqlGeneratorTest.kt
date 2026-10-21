@@ -57,9 +57,9 @@ class BigqueryDirectLoadSqlGeneratorTest {
             )
         val sql =
             BigqueryDirectLoadSqlGenerator(
-                projectId = "my-project",
-                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
-            )
+                    projectId = "my-project",
+                    cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+                )
                 .upsertTable(
                     stream,
                     columnNameMapping,
