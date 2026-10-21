@@ -2603,6 +2603,7 @@ streams:
             type: [string, "null"]
           subtotal:
             type: [string, "null"]
+            airbyte_type: decimal
           id:
             type:
               - integer

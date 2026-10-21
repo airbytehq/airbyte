@@ -75,7 +75,7 @@ def test_task_profitability_accepts_date_only_state_cursor() -> None:
     token_request = HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY)
     stream_request = HttpRequest(
         f"{_BASE_URL}/api/v2/intelligencereports/profitability_by_task/",
-        query_params=ANY_QUERY_PARAMS,
+        query_params={"updatedsince": "2025-09-03T00:00:00.000000+0000"},
     )
     with HttpMocker() as http_mocker:
         http_mocker.post(token_request, HttpResponse('{"access_token": "token", "expires_in": 3600}', 200))

@@ -23,7 +23,7 @@ from urllib.parse import parse_qs
 import pytest
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import Status, SyncMode, Type
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, _run_command, make_file, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -53,8 +53,23 @@ def _token_bodies(http_mocker: HttpMocker) -> list[dict[str, list[str]]]:
     return [parse_qs(request.body) for request in http_mocker._mocker.request_history if request.url == _TOKEN_URL]
 
 
-def _control_messages(output: EntrypointOutput) -> list:
-    return output.get_message_by_types([Type.CONTROL])
+def _control_messages(stdout: str) -> list[dict]:
+    messages = []
+    for line in stdout.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if message.get("type") == "CONTROL":
+            messages.append(message)
+    return messages
+
+
+def _with_control_messages(operation) -> tuple[EntrypointOutput, list[dict]]:
+    stdout = StringIO()
+    with redirect_stdout(stdout):
+        output = operation()
+    return output, _control_messages(stdout.getvalue())
 
 
 def _source_with_migration_controls(config: dict):
@@ -145,9 +160,11 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
         )
         http_mocker.get(check_request, _tasks_page())
 
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        output, control_messages = _with_control_messages(
+            lambda: _run_command(
+                source,
+                ["check", "--config", make_file(tmp_path / "config.json", config)],
+            )
         )
 
     statuses = output.connection_status_messages
@@ -162,7 +179,7 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
     http_mocker.assert_number_of_calls(check_request, 1)
     # The legacy shape is migrated once: exactly one CONTROL copies the credentials under
     # `credentials` while keeping the top-level fields (rollback-safe for <=2.0.x).
-    assert _control_messages(output) == []
+    assert control_messages == []
     assert len(migration_controls) == 1
     migrated = migration_controls[0]["control"]["connectorConfig"]["config"]
     credentials = migrated["credentials"]
@@ -190,7 +207,9 @@ def test_password_credentials_use_password_grant() -> None:
         )
         http_mocker.get(page_request, _tasks_page())
 
-        output = read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        output, control_messages = _with_control_messages(
+            lambda: read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        )
 
     assert output.errors == []
     assert output.get_stream_statuses("servicegroups")[-1].name == "COMPLETE"
@@ -201,7 +220,7 @@ def test_password_credentials_use_password_grant() -> None:
     # No migration fires for this shape, so 0 CONTROL.
     assert source._config["base_url"] == "https://test-tenant.onuptick.com"
     assert migration_controls == []
-    assert _control_messages(output) == []
+    assert control_messages == []
 
 
 def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None:
@@ -245,7 +264,9 @@ def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
         )
         http_mocker.get(page_request, _tasks_page())
 
-        output = read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        output, control_messages = _with_control_messages(
+            lambda: read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        )
 
     assert output.errors == []
     assert output.get_stream_statuses("servicegroups")[-1].name == "COMPLETE"
@@ -260,10 +281,9 @@ def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
     assert token_bodies[0]["refresh_token"] == ["test-refresh-token"]
     assert "username" not in token_bodies[0]
     assert "password" not in token_bodies[0]
-    control_messages = _control_messages(output)
     # Exactly one CONTROL: the refresh_token_updater writing back rotated credentials.
     assert len(control_messages) == 1
-    credentials = control_messages[0].control.connectorConfig.config["credentials"]
+    credentials = control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]
     assert credentials["access_token"] == "tok"
     assert credentials["refresh_token"] == "rotated-refresh-token"
 
@@ -440,9 +460,11 @@ def test_config_with_both_credential_shapes_copies_nothing(tmp_path) -> None:
         )
         http_mocker.get(check_request, _tasks_page())
 
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        output, control_messages = _with_control_messages(
+            lambda: _run_command(
+                source,
+                ["check", "--config", make_file(tmp_path / "config.json", config)],
+            )
         )
 
     statuses = output.connection_status_messages
@@ -452,7 +474,7 @@ def test_config_with_both_credential_shapes_copies_nothing(tmp_path) -> None:
     assert len(token_bodies) == 1
     assert token_bodies[0]["grant_type"] == ["password"]
     assert migration_controls == []
-    assert _control_messages(output) == []
+    assert control_messages == []
 
 
 def test_empty_config_fails_check_without_token_request(tmp_path) -> None:
@@ -488,9 +510,11 @@ def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) ->
         )
         http_mocker.get(check_request, _tasks_page())
 
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        output, control_messages = _with_control_messages(
+            lambda: _run_command(
+                source,
+                ["check", "--config", make_file(tmp_path / "config.json", config)],
+            )
         )
 
     statuses = output.connection_status_messages
@@ -504,7 +528,7 @@ def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) ->
     # No CONTROL: the CDK's migrate-and-diff compares a shallow `dict(config)` copy, and the nested
     # object mutated in place is shared with the original, so the change is invisible to the diff.
     assert migration_controls == []
-    assert _control_messages(output) == []
+    assert control_messages == []
 
 
 def test_oauth_credentials_keep_refresh_token_when_response_omits_it() -> None:
@@ -520,12 +544,13 @@ def test_oauth_credentials_keep_refresh_token_when_response_omits_it() -> None:
         )
         http_mocker.get(page_request, _tasks_page())
 
-        output = read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        output, control_messages = _with_control_messages(
+            lambda: read(source, config=config, catalog=catalog, state=StateBuilder().build())
+        )
 
     assert output.errors == []
     assert migration_controls == []
-    control_messages = _control_messages(output)
     assert len(control_messages) == 1
-    credentials = control_messages[0].control.connectorConfig.config["credentials"]
+    credentials = control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]
     assert credentials["access_token"] == "tok"
     assert credentials["refresh_token"] == "test-refresh-token"

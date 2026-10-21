@@ -277,11 +277,7 @@ def test_incremental_uses_state_cursor(stream: str) -> None:
 def test_incremental_accepts_date_only_state_cursor() -> None:
     stream = "servicegroups"
     state = StateBuilder().with_stream_state(stream, {"updated": _DATE_ONLY_STATE_CURSOR}).build()
-    first_page = HttpRequest(
-        url=f"{UptickRequestBuilder.BASE_URL}/api/v2.16/{stream}/",
-        query_params=ANY_QUERY_PARAMS,
-        headers={"Authorization": f"Bearer {UptickRequestBuilder.ACCESS_TOKEN}"},
-    )
+    first_page = UptickRequestBuilder.collection(stream, updatedsince="2025-09-03T00:00:00.000000+0000")
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         http_mocker.get(first_page, _response([_record(stream, 1, updated=_LATEST_UPDATED)]))

@@ -169,6 +169,7 @@ def test_discover_declares_jsonapi_objects_and_missing_fields() -> None:
             assert properties["type"] == {"type": ["string", "null"]}
 
     assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["type"] == ["string", "null"]
+    assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["airbyte_type"] == "decimal"
     assert streams["properties"].json_schema["properties"]["address"]["properties"]["place_id"]["type"] == [
         "string",
         "null",
