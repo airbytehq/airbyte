@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
@@ -29,6 +30,14 @@ DEFAULT_LIMIT = 50
 # Basic full refresh stream
 class OutbrainAmplifyStream(HttpStream, ABC):
     url_base = "https://api.outbrain.com/amplify/v0.1/"
+
+    # CDK 7's auto-applied RFR cursors reject legacy full-refresh state.
+    @property
+    def is_resumable(self) -> bool:
+        return False
+
+    def get_cursor(self) -> Optional[Cursor]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.json():
