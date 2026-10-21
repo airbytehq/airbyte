@@ -54,6 +54,14 @@ class UptickRequestBuilder:
             "AccreditationType",
             "id,created,updated,name,type,property_specific,extra_fields",
         ),
+        "costcentres": (
+            "CostCentre",
+            "id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory",
+        ),
+        "products": (
+            "Product",
+            "id,created,updated,deleted,name,type,description,code,sku,upc,account_code,expense_account_code,default_taxcode,internal_note,is_starred,is_active,is_stocked,cost_price,unit_description,unit_price,current_price,category,subcategory,markup,estimated_time,partner_uid,autocomplete_label,tracking_categories,extra_fields,supplier,accounting_organisation,is_attendancefee,included_labour,included_travel,labour_increment,last_used,latest_unit_cost",
+        ),
     }
 
     @classmethod
