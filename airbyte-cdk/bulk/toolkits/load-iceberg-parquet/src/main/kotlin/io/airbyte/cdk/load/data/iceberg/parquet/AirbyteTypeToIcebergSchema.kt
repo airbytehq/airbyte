@@ -151,7 +151,8 @@ fun ObjectType.toIcebergSchema(
             } else {
                 icebergTypeConverter.convert(
                     field.type,
-                    stringifyObjects = stringifyObjects && objectMode == IcebergObjectMode.JSON_STRING,
+                    stringifyObjects =
+                        stringifyObjects && objectMode == IcebergObjectMode.JSON_STRING,
                     nestedFieldsOptional =
                         name != Meta.COLUMN_NAME_AB_META && objectMode == IcebergObjectMode.STRUCT,
                 )
