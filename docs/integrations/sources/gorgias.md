@@ -41,7 +41,9 @@ The connector authenticates with HTTP basic authentication, using your email add
 | tickets | id | DefaultPaginator | ✅ |  ✅  |
 | messages | id | DefaultPaginator | ✅ |  ✅  |
 | users | id | DefaultPaginator | ✅ |  ✅  |
-| views_items | id | DefaultPaginator | ✅ |  ✅  |
+| views_items | view_id, id | DefaultPaginator | ✅ |  ✅  |
+
+The `views_items` stream reads the items of every view returned by the `views` stream and adds the parent view's `view_id` to each record. Because the same item can appear in more than one view, the stream uses `view_id` and `id` together as its primary key.
 
 ## Rate limits
 
@@ -106,6 +108,11 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.58 | 2026-10-20 | [89237](https://github.com/airbytehq/airbyte/pull/89237) | Update dependencies |
+| 0.1.57 | 2026-10-13 | [88643](https://github.com/airbytehq/airbyte/pull/88643) | Update dependencies |
+| 0.1.56 | 2026-10-06 | [87876](https://github.com/airbytehq/airbyte/pull/87876) | Update dependencies |
+| 0.1.55 | 2026-09-29 | [87230](https://github.com/airbytehq/airbyte/pull/87230) | Update dependencies |
+| 0.1.54 | 2026-09-22 | [86646](https://github.com/airbytehq/airbyte/pull/86646) | Update dependencies |
 | 0.1.53 | 2026-09-15 | [86083](https://github.com/airbytehq/airbyte/pull/86083) | Update dependencies |
 | 0.1.52 | 2026-09-08 | [85503](https://github.com/airbytehq/airbyte/pull/85503) | Update dependencies |
 | 0.1.51 | 2026-08-25 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination, server-side date filtering, or client-side filtering. See [Incremental syncs](#incremental-syncs) for what an incremental sync no longer picks up. |

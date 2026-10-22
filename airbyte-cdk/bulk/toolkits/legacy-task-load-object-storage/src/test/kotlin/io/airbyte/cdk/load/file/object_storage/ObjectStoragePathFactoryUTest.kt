@@ -98,7 +98,7 @@ class ObjectStoragePathFactoryUTest {
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream/any_filename",
-            factory.getPathToFile(streamWithNullNamespace, 0L)
+            factory.getPathToFile(streamWithNullNamespace, 0L),
         )
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace, "(-foo)?")
@@ -120,7 +120,7 @@ class ObjectStoragePathFactoryUTest {
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream+1/any_filename",
-            factory.getPathToFile(streamWithLegalRegex, 0L)
+            factory.getPathToFile(streamWithLegalRegex, 0L),
         )
         val matcher = factory.getPathMatcher(streamWithLegalRegex, "(-foo)?")
         assertNotNull(matcher.match("prefix/stream+1/any_filename"))

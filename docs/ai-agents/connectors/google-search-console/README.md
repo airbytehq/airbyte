@@ -38,14 +38,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Sites | [List](./REFERENCE.md#sites-list), [Get](./REFERENCE.md#sites-get), [Context Store Search](./REFERENCE.md#sites-context-store-search) |
-| Sitemaps | [List](./REFERENCE.md#sitemaps-list), [Get](./REFERENCE.md#sitemaps-get), [Context Store Search](./REFERENCE.md#sitemaps-context-store-search) |
-| Search Analytics By Date | [List](./REFERENCE.md#search-analytics-by-date-list), [Context Store Search](./REFERENCE.md#search-analytics-by-date-context-store-search) |
-| Search Analytics By Country | [List](./REFERENCE.md#search-analytics-by-country-list), [Context Store Search](./REFERENCE.md#search-analytics-by-country-context-store-search) |
-| Search Analytics By Device | [List](./REFERENCE.md#search-analytics-by-device-list), [Context Store Search](./REFERENCE.md#search-analytics-by-device-context-store-search) |
-| Search Analytics By Page | [List](./REFERENCE.md#search-analytics-by-page-list), [Context Store Search](./REFERENCE.md#search-analytics-by-page-context-store-search) |
-| Search Analytics By Query | [List](./REFERENCE.md#search-analytics-by-query-list), [Context Store Search](./REFERENCE.md#search-analytics-by-query-context-store-search) |
-| Search Analytics All Fields | [List](./REFERENCE.md#search-analytics-all-fields-list), [Context Store Search](./REFERENCE.md#search-analytics-all-fields-context-store-search) |
+| Sites | [List](./REFERENCE.md#sites-list), [Get](./REFERENCE.md#sites-get), [Context Store Search](./REFERENCE.md#sites-context-store-search), [Context Store SQL Query](./REFERENCE.md#sites-context-store-sql-query) |
+| Sitemaps | [List](./REFERENCE.md#sitemaps-list), [Get](./REFERENCE.md#sitemaps-get), [Context Store Search](./REFERENCE.md#sitemaps-context-store-search), [Context Store SQL Query](./REFERENCE.md#sitemaps-context-store-sql-query) |
+| Search Analytics By Date | [List](./REFERENCE.md#search-analytics-by-date-list), [Context Store Search](./REFERENCE.md#search-analytics-by-date-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-by-date-context-store-sql-query) |
+| Search Analytics By Country | [List](./REFERENCE.md#search-analytics-by-country-list), [Context Store Search](./REFERENCE.md#search-analytics-by-country-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-by-country-context-store-sql-query) |
+| Search Analytics By Device | [List](./REFERENCE.md#search-analytics-by-device-list), [Context Store Search](./REFERENCE.md#search-analytics-by-device-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-by-device-context-store-sql-query) |
+| Search Analytics By Page | [List](./REFERENCE.md#search-analytics-by-page-list), [Context Store Search](./REFERENCE.md#search-analytics-by-page-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-by-page-context-store-sql-query) |
+| Search Analytics By Query | [List](./REFERENCE.md#search-analytics-by-query-list), [Context Store Search](./REFERENCE.md#search-analytics-by-query-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-by-query-context-store-sql-query) |
+| Search Analytics All Fields | [List](./REFERENCE.md#search-analytics-all-fields-list), [Context Store Search](./REFERENCE.md#search-analytics-all-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#search-analytics-all-fields-context-store-sql-query) |
 
 
 ## Google-Search-Console API docs
@@ -127,6 +127,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -194,9 +198,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GoogleSearchConsoleConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+
+connector = connect("google-search-console", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="google_search_console_inspect",
+    docs_tool="google_search_console_read_docs",
+)
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(framework="pydantic_ai")
+async def google_search_console_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(framework="pydantic_ai")
+async def google_search_console_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+
+connector = connect("google-search-console", workspace_name="<your_workspace_name>")
+
+@GoogleSearchConsoleConnector.agent_tool(
+    inspect_tool="google_search_console_inspect",
+    docs_tool="google_search_console_read_docs",
+)
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GoogleSearchConsoleConnector.agent_tool()
+async def google_search_console_inspect():
+    return await connector.inspect_connector()
+
+@GoogleSearchConsoleConnector.agent_tool()
+async def google_search_console_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (google_search_console_inspect, google_search_console_read_docs, google_search_console_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleSearchConsoleConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GoogleSearchConsoleConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GoogleSearchConsoleConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -383,6 +469,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -474,9 +564,103 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GoogleSearchConsoleConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+from airbyte_agent_sdk.connectors.google_search_console.models import GoogleSearchConsoleAuthConfig
+
+connector = GoogleSearchConsoleConnector(
+    auth_config=GoogleSearchConsoleAuthConfig(
+        client_id="<The client ID of your Google Search Console developer application.>",
+        client_secret="<The client secret of your Google Search Console developer application.>",
+        refresh_token="<The refresh token for obtaining new access tokens.>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="google_search_console_inspect",
+    docs_tool="google_search_console_read_docs",
+)
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(framework="pydantic_ai")
+async def google_search_console_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GoogleSearchConsoleConnector.agent_tool(framework="pydantic_ai")
+async def google_search_console_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+from airbyte_agent_sdk.connectors.google_search_console.models import GoogleSearchConsoleAuthConfig
+
+connector = GoogleSearchConsoleConnector(
+    auth_config=GoogleSearchConsoleAuthConfig(
+        client_id="<The client ID of your Google Search Console developer application.>",
+        client_secret="<The client secret of your Google Search Console developer application.>",
+        refresh_token="<The refresh token for obtaining new access tokens.>"
+    )
+)
+
+@GoogleSearchConsoleConnector.agent_tool(
+    inspect_tool="google_search_console_inspect",
+    docs_tool="google_search_console_read_docs",
+)
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GoogleSearchConsoleConnector.agent_tool()
+async def google_search_console_inspect():
+    return await connector.inspect_connector()
+
+@GoogleSearchConsoleConnector.agent_tool()
+async def google_search_console_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (google_search_console_inspect, google_search_console_read_docs, google_search_console_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleSearchConsoleConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GoogleSearchConsoleConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GoogleSearchConsoleConnector.agent_tool` above.
 
 **Pydantic AI**
 

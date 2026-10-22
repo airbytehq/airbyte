@@ -1004,6 +1004,175 @@
         }
       }
     },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "customer_email": {
+      "type": ["null", "string"]
+    },
+    "customer_accepts_marketing": {
+      "type": ["null", "boolean"]
+    },
+    "customer_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_first_name": {
+      "type": ["null", "string"]
+    },
+    "customer_last_name": {
+      "type": ["null", "string"]
+    },
+    "customer_orders_count": {
+      "type": ["null", "integer"]
+    },
+    "customer_state": {
+      "type": ["null", "string"]
+    },
+    "customer_total_spent": {
+      "type": ["null", "number"]
+    },
+    "customer_last_order_id": {
+      "type": ["null", "integer"]
+    },
+    "customer_note": {
+      "type": ["null", "string"]
+    },
+    "customer_verified_email": {
+      "type": ["null", "boolean"]
+    },
+    "customer_multipass_identifier": {
+      "type": ["null", "string"]
+    },
+    "customer_tax_exempt": {
+      "type": ["null", "boolean"]
+    },
+    "customer_phone": {
+      "type": ["null", "string"]
+    },
+    "customer_tags": {
+      "type": ["null", "string"]
+    },
+    "customer_last_order_name": {
+      "type": ["null", "string"]
+    },
+    "customer_currency": {
+      "type": ["null", "string"]
+    },
+    "customer_accepts_marketing_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_marketing_opt_in_level": {
+      "type": ["null", "string"]
+    },
+    "customer_admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "customer_default_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "customer_id": {
+          "type": ["null", "integer"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "province": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "province_code": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "country_name": {
+          "type": ["null", "string"]
+        },
+        "default": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "customer_email_marketing_consent": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "opt_in_level": {
+          "type": ["null", "string"]
+        },
+        "consent_updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "consent_collected_from": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "customer_sms_marketing_consent": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "opt_in_level": {
+          "type": ["null", "string"]
+        },
+        "consent_updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "consent_collected_from": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "customer_tax_exemptions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "discount_allocations": {
       "type": ["null", "array"],
       "items": {

@@ -98,6 +98,16 @@ class ApiTypeEnum(enum.Enum):
         return [api_type.value for api_type in ApiTypeEnum]
 
 
+GRAPHQL_THROTTLE_ERROR_CODES: Final[set] = {"THROTTLED", "MAX_COST_EXCEEDED"}
+# Shopify returns INTERNAL_SERVER_ERROR with HTTP 200 instead of 500 and documents it as retryable
+GRAPHQL_RETRYABLE_ERROR_CODES: Final[set] = GRAPHQL_THROTTLE_ERROR_CODES | {"INTERNAL_SERVER_ERROR"}
+
+
+def is_retryable_graphql_error(errors: List[Mapping[str, Any]]) -> bool:
+    """Shopify GraphQL reports transient errors as HTTP 200 with `errors[].extensions.code` in GRAPHQL_RETRYABLE_ERROR_CODES."""
+    return any((error.get("extensions") or {}).get("code") in GRAPHQL_RETRYABLE_ERROR_CODES for error in errors)
+
+
 class ShopifyRateLimiter:
     """
     Define timings for RateLimits. Adjust timings if needed.
@@ -359,5 +369,28 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
                     error_message="Persistent 500 error after reducing limit to 1",
+                )
+        return super().interpret_response(response_or_exception)
+
+
+class ShopifyGraphQlErrorHandler(HttpStatusErrorHandler):
+    """
+    Shopify GraphQL reports throttling (THROTTLED / MAX_COST_EXCEEDED) and most internal errors (INTERNAL_SERVER_ERROR)
+    as HTTP 200 with `errors[].extensions.code` (https://shopify.dev/docs/api/admin-graphql/2026-10#status-and-error-codes).
+    Retry such pages instead of treating the 200 as a success: the cost bucket refills at the shop's restore rate
+    within seconds, and an internal error is retried like an HTTP 500.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.ok:
+            try:
+                body = response_or_exception.json()
+            except requests.exceptions.RequestException:
+                body = {}
+            if is_retryable_graphql_error(body.get("errors") or [] if isinstance(body, dict) else []):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="Shopify GraphQL request hit a transient error, retrying.",
                 )
         return super().interpret_response(response_or_exception)

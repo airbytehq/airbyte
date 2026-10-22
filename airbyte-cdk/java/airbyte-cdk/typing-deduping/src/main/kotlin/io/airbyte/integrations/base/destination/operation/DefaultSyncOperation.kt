@@ -36,7 +36,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
         Executors.newFixedThreadPool(
             10,
             BasicThreadFactory.Builder().namingPattern("sync-operations-%d").build(),
-        )
+        ),
 ) : SyncOperation {
     companion object {
         // Use companion to be accessible during instantiation with init
@@ -44,6 +44,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     }
 
     private val streamOpsMap: Map<StreamId, StreamOperation<DestinationState>>
+
     init {
         streamOpsMap = createPerStreamOpClients()
     }
@@ -58,10 +59,10 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                 executorService,
                 destinationHandler,
                 migrations,
-                streamsInitialStates
+                streamsInitialStates,
             )
         destinationHandler.commitDestinationStates(
-            postMigrationInitialStates.associate { it.streamConfig.id to it.destinationState }
+            postMigrationInitialStates.associate { it.streamConfig.id to it.destinationState },
         )
 
         // Prepare raw and final schemas
@@ -78,7 +79,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                         {
                             Pair(
                                 it.streamConfig.id,
-                                streamOperationFactory.createInstance(it, disableTypeDedupe)
+                                streamOperationFactory.createInstance(it, disableTypeDedupe),
                             )
                         },
                         executorService,
@@ -96,7 +97,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                 // If we're here, then all the futures were successful, so we're in the Right case
                 // of every Either
                 .map { it.right!! }
-                .associate { (id, streamOps) -> id to streamOps.updatedDestinationState }
+                .associate { (id, streamOps) -> id to streamOps.updatedDestinationState },
         )
         return result.toMap()
     }

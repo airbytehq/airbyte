@@ -15,6 +15,16 @@ from airbyte_cdk.test.state_builder import StateBuilder
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 
+# Cached HTTP sessions (dynamic schema loaders force `use_cache=True`) fall back to one
+# in-memory SQLite database shared by the whole process, which outlives any test that leaves a
+# session open: one test's cached metadata responses then satisfy a later test's requests, and
+# that test observes no request at all. Giving each test its own cache directory isolates them.
+@pytest.fixture(autouse=True)
+def isolated_http_cache(tmp_path, monkeypatch):
+    monkeypatch.setenv("REQUEST_CACHE_PATH", str(tmp_path))
+    yield
+
+
 def _get_manifest_path() -> Path:
     source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
     if source_declarative_manifest_path.exists():

@@ -271,29 +271,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="DiscussionsSearchResult"></a>
-
-`DiscussionsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[FileContentSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -334,29 +311,6 @@ Classes
     * typing.Generic
 
 `AirbyteSearchResult[IssuesSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="IssuesSearchResult"></a>
-
-`IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -661,29 +615,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="PullRequestsSearchResult"></a>
-
-`PullRequestsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[ReleasesSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -724,29 +655,6 @@ Classes
     * typing.Generic
 
 `AirbyteSearchResult[RepositoriesSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="RepositoriesSearchResult"></a>
-
-`RepositoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -919,29 +827,6 @@ Classes
     * typing.Generic
 
 `AirbyteSearchResult[UsersSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="UsersSearchResult"></a>
-
-`UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -1404,36 +1289,6 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="DiscussionsApiSearchResultMeta"></a>
-
-`DiscussionsApiSearchResultMeta(**data: Any)`
-:   Metadata for discussions.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `end_cursor: str | None`
-    :   The type of the None singleton.
-
-    `has_next_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `total_count: int | None`
-    :   The type of the None singleton.
-
 <a id="DiscussionsListResultMeta"></a>
 
 `DiscussionsListResultMeta(**data: Any)`
@@ -1480,6 +1335,36 @@ Classes
     ### Class variables
 
     `model_config`
+    :   The type of the None singleton.
+
+<a id="DiscussionsSearchResultMeta"></a>
+
+`DiscussionsSearchResultMeta(**data: Any)`
+:   Metadata for discussions.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `end_cursor: str | None`
+    :   The type of the None singleton.
+
+    `has_next_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `total_count: int | None`
     :   The type of the None singleton.
 
 <a id="FileContentSearchData"></a>
@@ -1595,10 +1480,10 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], BranchesListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], CommentsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], CommitsListResultMeta]
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsListResultMeta]
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], IssuesApiSearchResultMeta]
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], IssuesListResultMeta]
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], IssuesSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], LabelsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], MilestonesListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], OrgRepositoriesListResultMeta]
@@ -1606,17 +1491,17 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], PrCommentsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ProjectItemsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ProjectsListResultMeta]
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsListResultMeta]
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ReleasesListResultMeta]
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesListResultMeta]
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ReviewsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], StargazersListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], TagsListResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], TeamsListResultMeta]
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], UsersApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], UsersListResultMeta]
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], UsersSearchResultMeta]
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ViewerRepositoriesListResultMeta]
 
     ### Class variables
@@ -1759,51 +1644,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="DiscussionsApiSearchResult"></a>
-
-`DiscussionsApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1849,7 +1689,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GithubExecuteResultWithMeta[list[dict[str, Any]], IssuesApiSearchResultMeta](**data: Any)`
+<a id="DiscussionsSearchResult"></a>
+
+`DiscussionsSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -1873,9 +1715,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="IssuesApiSearchResult"></a>
-
-`IssuesApiSearchResult(**data: Any)`
+`GithubExecuteResultWithMeta[list[dict[str, Any]], DiscussionsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -1921,6 +1761,51 @@ Classes
 <a id="IssuesListResult"></a>
 
 `IssuesListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`GithubExecuteResultWithMeta[list[dict[str, Any]], IssuesSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2254,51 +2139,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="PullRequestsApiSearchResult"></a>
-
-`PullRequestsApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2326,6 +2166,51 @@ Classes
 <a id="PullRequestsListResult"></a>
 
 `PullRequestsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="PullRequestsSearchResult"></a>
+
+`PullRequestsSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`GithubExecuteResultWithMeta[list[dict[str, Any]], PullRequestsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2389,51 +2274,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="RepositoriesApiSearchResult"></a>
-
-`RepositoriesApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2461,6 +2301,51 @@ Classes
 <a id="RepositoriesListResult"></a>
 
 `RepositoriesListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="RepositoriesSearchResult"></a>
+
+`RepositoriesSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`GithubExecuteResultWithMeta[list[dict[str, Any]], RepositoriesSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2659,51 +2544,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GithubExecuteResultWithMeta[list[dict[str, Any]], UsersApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="UsersApiSearchResult"></a>
-
-`UsersApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `GithubExecuteResultWithMeta[list[dict[str, Any]], UsersListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2731,6 +2571,51 @@ Classes
 <a id="UsersListResult"></a>
 
 `UsersListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`GithubExecuteResultWithMeta[list[dict[str, Any]], UsersSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3401,36 +3286,6 @@ Classes
     `title: str | None`
     :   The type of the None singleton.
 
-<a id="IssuesApiSearchResultMeta"></a>
-
-`IssuesApiSearchResultMeta(**data: Any)`
-:   Metadata for issues.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `end_cursor: str | None`
-    :   The type of the None singleton.
-
-    `has_next_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `total_count: int | None`
-    :   The type of the None singleton.
-
 <a id="IssuesListResultMeta"></a>
 
 `IssuesListResultMeta(**data: Any)`
@@ -3514,6 +3369,36 @@ Classes
 
     `url: str | None`
     :   Permalink to the issue on GitHub
+
+<a id="IssuesSearchResultMeta"></a>
+
+`IssuesSearchResultMeta(**data: Any)`
+:   Metadata for issues.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `end_cursor: str | None`
+    :   The type of the None singleton.
+
+    `has_next_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `total_count: int | None`
+    :   The type of the None singleton.
 
 <a id="LabelsListResultMeta"></a>
 
@@ -4292,36 +4177,6 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
-<a id="PullRequestsApiSearchResultMeta"></a>
-
-`PullRequestsApiSearchResultMeta(**data: Any)`
-:   Metadata for pull_requests.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `end_cursor: str | None`
-    :   The type of the None singleton.
-
-    `has_next_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `total_count: int | None`
-    :   The type of the None singleton.
-
 <a id="PullRequestsListResultMeta"></a>
 
 `PullRequestsListResultMeta(**data: Any)`
@@ -4406,6 +4261,36 @@ Classes
     `url: str | None`
     :   Permalink to the pull request on GitHub
 
+<a id="PullRequestsSearchResultMeta"></a>
+
+`PullRequestsSearchResultMeta(**data: Any)`
+:   Metadata for pull_requests.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `end_cursor: str | None`
+    :   The type of the None singleton.
+
+    `has_next_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `total_count: int | None`
+    :   The type of the None singleton.
+
 <a id="ReleasesListResultMeta"></a>
 
 `ReleasesListResultMeta(**data: Any)`
@@ -4483,36 +4368,6 @@ Classes
 
     `url: str | None`
     :   Permalink to the release on GitHub
-
-<a id="RepositoriesApiSearchResultMeta"></a>
-
-`RepositoriesApiSearchResultMeta(**data: Any)`
-:   Metadata for repositories.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `end_cursor: str | None`
-    :   The type of the None singleton.
-
-    `has_next_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `total_count: int | None`
-    :   The type of the None singleton.
 
 <a id="RepositoriesListResultMeta"></a>
 
@@ -4600,6 +4455,36 @@ Classes
 
     `url: str | None`
     :   Canonical GitHub URL for the repository
+
+<a id="RepositoriesSearchResultMeta"></a>
+
+`RepositoriesSearchResultMeta(**data: Any)`
+:   Metadata for repositories.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `end_cursor: str | None`
+    :   The type of the None singleton.
+
+    `has_next_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `total_count: int | None`
+    :   The type of the None singleton.
 
 <a id="ReviewsListResultMeta"></a>
 
@@ -4844,36 +4729,6 @@ Classes
     `url: str | None`
     :   Permalink to the team on GitHub
 
-<a id="UsersApiSearchResultMeta"></a>
-
-`UsersApiSearchResultMeta(**data: Any)`
-:   Metadata for users.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `end_cursor: str | None`
-    :   The type of the None singleton.
-
-    `has_next_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `total_count: int | None`
-    :   The type of the None singleton.
-
 <a id="UsersListResultMeta"></a>
 
 `UsersListResultMeta(**data: Any)`
@@ -4933,6 +4788,36 @@ Classes
 
     `url: str | None`
     :   Permalink to the user's profile on GitHub
+
+<a id="UsersSearchResultMeta"></a>
+
+`UsersSearchResultMeta(**data: Any)`
+:   Metadata for users.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `end_cursor: str | None`
+    :   The type of the None singleton.
+
+    `has_next_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `total_count: int | None`
+    :   The type of the None singleton.
 
 <a id="ViewerRepositoriesListResultMeta"></a>
 
