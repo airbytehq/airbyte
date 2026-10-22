@@ -17,3 +17,5 @@ For acceptance test configuration, see the
 
 This connector does not currently include additional connector-specific
 troubleshooting or testing guidance.
+
+<!-- md-only CI test for #89585; do not merge -->
