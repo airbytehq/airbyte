@@ -59,12 +59,7 @@ class TypedStructRoundTripTest {
             val writerSchema = table.schema()
             val writerUserType = writerSchema.findField("user")!!.type().asStructType()
             val writerLabelType =
-                writerSchema
-                    .findField("labels")!!
-                    .type()
-                    .asListType()
-                    .elementType()
-                    .asStructType()
+                writerSchema.findField("labels")!!.type().asListType().elementType().asStructType()
             val record =
                 GenericRecord.create(writerSchema).apply {
                     setField(
@@ -97,8 +92,7 @@ class TypedStructRoundTripTest {
             assertThat(user.getField("id")).isEqualTo(42)
             assertThat(user.getField("login")).isEqualTo("octocat")
 
-            @Suppress("UNCHECKED_CAST")
-            val labels = row.getField("labels") as List<Record>
+            @Suppress("UNCHECKED_CAST") val labels = row.getField("labels") as List<Record>
             assertThat(labels).hasSize(1)
             assertThat(labels.single().getField("id")).isEqualTo(5)
             assertThat(labels.single().getField("name")).isEqualTo("bug")
