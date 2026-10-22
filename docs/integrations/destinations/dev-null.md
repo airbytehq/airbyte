@@ -53,7 +53,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.8 | 2026-10-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139 |
+| 0.9.8 | 2026-10-22 | [89655](https://github.com/airbytehq/airbyte/pull/89655) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139 |
 | 0.9.7 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / load 1.1.7 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
 | 0.9.6 | 2026-10-09 | [88426](https://github.com/airbytehq/airbyte/pull/88426) | Upgrade to Bulk CDK 1.1.1. |
 | 0.9.5 | 2026-09-15 | [86330](https://github.com/airbytehq/airbyte/pull/86330) | Version bump to republish the Cloud-specific connector spec. |
