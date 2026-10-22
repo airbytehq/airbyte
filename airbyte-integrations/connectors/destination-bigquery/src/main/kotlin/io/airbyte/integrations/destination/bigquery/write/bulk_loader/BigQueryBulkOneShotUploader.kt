@@ -48,7 +48,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
         BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<O>,
         StreamKey,
         DestinationRecordRaw,
-        BulkLoaderTableLoader.LoadResult
+        BulkLoaderTableLoader.LoadResult,
     > {
 
     private val log = KotlinLogging.logger {}
@@ -106,7 +106,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
     }
 
     override suspend fun finish(
-        state: BigQueryOneShotUploaderState<O>
+        state: BigQueryOneShotUploaderState<O>,
     ): FinalOutput<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> =
         uploadFinalAndExecuteBigQueryLoad(partFormatter.finish(state.formatterState).output, state)
 
@@ -128,7 +128,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
 
     private suspend fun uploadFinalAndExecuteBigQueryLoad(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        bigQueryOneShotUploaderState: BigQueryOneShotUploaderState<O>
+        bigQueryOneShotUploaderState: BigQueryOneShotUploaderState<O>,
     ): FinalOutput<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> =
         coroutineScope {
             // Upload the final part
@@ -170,7 +170,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
                 FinalOutput(BulkLoaderTableLoader.LoadResult)
             } else {
                 error(
-                    "Upload completer never produced a completed GCS blob – logic bug in socket mode"
+                    "Upload completer never produced a completed GCS blob – logic bug in socket mode",
                 )
             }
         }

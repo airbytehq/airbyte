@@ -21,13 +21,15 @@ class RequestBuilder:
         return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
-    def create_report_endpoint(cls, report_name: str) -> RequestBuilder:
+    def create_report_endpoint(cls, report_name: str, report_options: Optional[dict] = None) -> RequestBuilder:
         request_body = {
             "reportType": report_name,
             "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
         }
+        if report_options is not None:
+            request_body["reportOptions"] = report_options
         return cls("reports/2021-06-30/reports").with_body(json.dumps(request_body))
 
     @classmethod
@@ -58,6 +60,14 @@ class RequestBuilder:
     @classmethod
     def vendor_orders_status_endpoint(cls) -> RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrdersStatus")
+
+    @classmethod
+    def fba_inbound_shipments_endpoint(cls) -> RequestBuilder:
+        return cls("fba/inbound/v0/shipments")
+
+    @classmethod
+    def fba_inbound_shipment_items_endpoint(cls, shipment_id: str) -> RequestBuilder:
+        return cls(f"fba/inbound/v0/shipments/{shipment_id}/items")
 
     def __init__(self, resource: str) -> None:
         self._resource = resource

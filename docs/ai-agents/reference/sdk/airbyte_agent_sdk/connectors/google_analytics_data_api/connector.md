@@ -33,8 +33,9 @@ Classes
         - start_date: Start date of the reporting period
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -45,6 +46,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against daily_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[DailyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[DailyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[DailyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], DailyActiveUsersListResultMeta]`
     :   Returns daily active user counts (1-day active users) by date.
@@ -95,8 +111,9 @@ Classes
         - total_users: Total number of unique users
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -107,6 +124,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against devices records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[DevicesListParamsDaterangesItem] | None = None, dimensions: list[DevicesListParamsDimensionsItem] | None = None, metrics: list[DevicesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], DevicesListResultMeta]`
     :   Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
@@ -147,8 +179,9 @@ Classes
         - start_date: Start date of the reporting period
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -159,6 +192,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against four_weekly_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[FourWeeklyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[FourWeeklyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[FourWeeklyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], FourWeeklyActiveUsersListResultMeta]`
     :   Returns 28-day active user counts by date.
@@ -230,12 +278,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -294,7 +343,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -307,6 +360,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -348,9 +404,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -405,7 +463,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -501,8 +559,9 @@ Classes
         - total_users: Total number of unique users
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -513,6 +572,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against locations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[LocationsListParamsDaterangesItem] | None = None, dimensions: list[LocationsListParamsDimensionsItem] | None = None, metrics: list[LocationsListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], LocationsListResultMeta]`
     :   Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
@@ -556,8 +630,9 @@ Classes
         - start_date: Start date of the reporting period
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -568,6 +643,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against pages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[PagesListParamsDaterangesItem] | None = None, dimensions: list[PagesListParamsDimensionsItem] | None = None, metrics: list[PagesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], PagesListResultMeta]`
     :   Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
@@ -617,8 +707,9 @@ Classes
         - total_users: Total number of unique users
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -629,6 +720,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against traffic_sources records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[TrafficSourcesListParamsDaterangesItem] | None = None, dimensions: list[TrafficSourcesListParamsDimensionsItem] | None = None, metrics: list[TrafficSourcesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], TrafficSourcesListResultMeta]`
     :   Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
@@ -676,8 +782,9 @@ Classes
         - total_users: Total number of unique users
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -688,6 +795,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against website_overview records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[WebsiteOverviewListParamsDaterangesItem] | None = None, dimensions: list[WebsiteOverviewListParamsDimensionsItem] | None = None, metrics: list[WebsiteOverviewListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], WebsiteOverviewListResultMeta]`
     :   Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
@@ -728,8 +850,9 @@ Classes
         - start_date: Start date of the reporting period
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -740,6 +863,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against weekly_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[WeeklyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[WeeklyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[WeeklyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], WeeklyActiveUsersListResultMeta]`
     :   Returns weekly active user counts (7-day active users) by date.

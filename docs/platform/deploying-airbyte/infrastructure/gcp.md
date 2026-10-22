@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 # Google Cloud Platform (GCP)

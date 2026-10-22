@@ -85,9 +85,9 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 
 To fill out the required information:
 
-1. Enter the hostname, port number, and name for your MySQL database.
+1. Enter the hostname, port number, and name for your MySQL database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#connection-via-ssh-tunnel), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling. On Airbyte Cloud, the connection must be encrypted: use one of these SSL modes, or an [SSH tunnel](#connection-via-ssh-tunnel).
 4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
 
 <!-- env:cloud -->
@@ -97,7 +97,11 @@ To fill out the required information:
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
+Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `required`, `verify_ca` or `verify_identity`) or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop between Airbyte Cloud and your network. The `preferred` SSL mode falls back to plaintext when the server offers no TLS, so Airbyte Cloud accepts it only together with an SSH tunnel. A database on `localhost` or on a private network is reachable from Airbyte Cloud only through an SSH tunnel to a bastion host that can reach it. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
+
+If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows the Airbyte IP addresses listed above. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
 
 <!-- /env:cloud -->
 
@@ -107,7 +111,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Change Data Capture \(CDC\)
 
-Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more about how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more about how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configuring your MySQL source with CDC whenever possible, as it provides:
 
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
@@ -130,6 +134,8 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
+Airbyte Cloud never connects to a database unencrypted: the connection must use TLS/SSL, or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop. If your MySQL server does not offer TLS, either enable it on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel; otherwise the connection test fails with `Your MySQL server does not offer TLS`. Self-managed Airbyte deployments can use the `preferred` mode without a tunnel.
+
 Here is a breakdown of available SSL connection modes:
 
 - `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
@@ -144,6 +150,8 @@ Here is a breakdown of available SSL connection modes:
 You can connect to a MySQL server via an SSH tunnel.
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+
+The SSH tunnel encrypts the hop between Airbyte and the bastion. On Airbyte Cloud, which never connects unencrypted, it is therefore the only way to use the `preferred` SSL mode against a server without TLS, and the only way to reach a database on `localhost` or on a private network that is not exposed to the internet.
 
 To connect to a MySQL server via an SSH tunnel:
 
@@ -186,7 +194,7 @@ Any database or table encoding combination of charset and collation is supported
 | `bit(1)`                                  | boolean                |                                                                                                                                                                                                                                                                                                                           |
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                                                                                                                                                                                                                           |
 | `boolean`                                 | boolean                |                                                                                                                                                                                                                                                                                                                           |
-| `tinyint(1)`                              | boolean                |                                                                                                                                                                                                                                                                                                                           |
+| `tinyint(1)`                              | boolean                | Default behavior. Enable **Treat TINYINT(1) Columns as Integers** in the source configuration to emit these columns as integers instead.                                                                                                                                                                                   |
 | `tinyint(>1)`                             | integer                |                                                                                                                                                                                                                                                                                                                           |
 | `tinyint(>=1) unsigned`                   | integer                |                                                                                                                                                                                                                                                                                                                           |
 | `smallint`                                | integer                |                                                                                                                                                                                                                                                                                                                           |
@@ -196,8 +204,6 @@ Any database or table encoding combination of charset and collation is supported
 | `float`                                   | number                 |                                                                                                                                                                                                                                                                                                                           |
 | `double`                                  | number                 |                                                                                                                                                                                                                                                                                                                           |
 | `decimal`                                 | number                 |                                                                                                                                                                                                                                                                                                                           |
-| `binary`                                  | string                 |                                                                                                                                                                                                                                                                                                                           |
-| `blob`                                    | string                 |                                                                                                                                                                                                                                                                                                                           |
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. In incremental syncs, convert to Unix Epoch (1970-01-01) if the column is mandatory. In CDC syncs, zero dates will be converted to null (regardless of the column nullability), or to the column's default value if one is defined.                      |
 | `datetime`,                               | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. In incremental syncs, convert to Unix Epoch (1970-01-01) if the column is mandatory. In CDC syncs, zero dates will be converted to null (regardless of the column nullability), or to the column's default value if one is defined.                  |
 | `timestamp`                               | string                 | ISO 8601 timestamp string. ZERO-DATE value will be converted to NULL. In incremental syncs, convert to Unix Epoch (1970-01-01) if the column is mandatory. In CDC syncs, zero timestamps are read as null during the initial snapshot and as the Unix Epoch (1970-01-01) on subsequent (binlog) syncs. |
@@ -223,7 +229,7 @@ Any database or table encoding combination of charset and collation is supported
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list. A connection test or sync that fails with `Airbyte could not reach the database at the configured host and port` usually means these addresses are blocked by a firewall or security group.
 
 ## Changelog
 
@@ -232,11 +238,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.1      | 2026-06-25 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
-| 3.53.0      | 2026-06-29 | [80950](https://github.com/airbytehq/airbyte/pull/80950)   | Promote mysql to the latest CDK                                                                                                                  |
+| 3.53.9      | 2026-10-20 | [89014](https://github.com/airbytehq/airbyte/pull/89014)   | Bump Debezium to 3.4.3 (Bulk CDK 1.2.1): CDC no longer fails with `Incumbent CDC state is invalid` when the GTID set gains a new server UUID.    |
+| 3.53.8      | 2026-10-12 | [88499](https://github.com/airbytehq/airbyte/pull/88499)       | Explain unreachable hosts and servers without TLS in connection errors, and document that Airbyte Cloud requires TLS or an SSH tunnel. Explain a connection test that finds no tables (missing SELECT grants, wrong database name, or a table filter that excludes every table), and retry a sync whose established MySQL connection is lost ("Communications link failure" after packets were received) instead of failing it as a configuration error. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
+| 3.53.7      | 2026-10-09 | [88430](https://github.com/airbytehq/airbyte/pull/88430)   | Upgrade to Bulk CDK 1.1.14.                                                                                                                      |
+| 3.53.6      | 2026-10-02 | [87650](https://github.com/airbytehq/airbyte/pull/87650)   | Classify MySQL EOF errors whose byte counts contain thousands separators, and the "Expected X bytes, received only Y bytes" format, as transient so syncs retry. |
+| 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
+| 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
+| 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
+| 3.53.2      | 2026-08-06 | [83239](https://github.com/airbytehq/airbyte/pull/83239)   | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
+| 3.53.1      | 2026-07-13 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
+| 3.53.0      | 2026-06-30 | [80950](https://github.com/airbytehq/airbyte/pull/80950)   | Promote mysql to the latest CDK                                                                                                                  |
 | 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)   | Fix the CDC docs link on the MySQL config page.                                                                                                  |
-| 3.52.2      | 2026-05-11 | [77973](https://github.com/airbytehq/airbyte/pull/77973)   | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
-| 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)   | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
+| 3.52.2      | 2026-05-12 | [77973](https://github.com/airbytehq/airbyte/pull/77973)   | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
+| 3.52.1      | 2026-05-06 | [77787](https://github.com/airbytehq/airbyte/pull/77787)   | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
 | 3.52.0      | 2026-05-05 | [77772](https://github.com/airbytehq/airbyte/pull/77772)   | Add a `treat_tinyint1_as_integer` connector setting that maps TINYINT(1) columns to integers in both snapshot and CDC reads (default unchanged). |
 | 3.51.6      | 2026-04-29 | [76050](https://github.com/airbytehq/airbyte/pull/76050)   | Handle sentinel values in GUID primary key columns during partition splitting.                                                                   |
 | 3.51.5      | 2025-11-14 | [69228](https://github.com/airbytehq/airbyte/pull/69228)   | Add table filtering                                                                                                                              |
