@@ -35,7 +35,7 @@ application {
 }
 
 val junitVersion = "5.11.4"
-val testContainersVersion = "1.20.5"
+val testContainersVersion = "1.21.4"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
@@ -58,7 +58,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("dev.failsafe:failsafe-okhttp:3.3.2")
 
-    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

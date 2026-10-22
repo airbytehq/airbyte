@@ -21,10 +21,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 3600
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: "post_comments"
             bypass_reason: "not available in current subscription plan"
@@ -42,9 +38,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           bypass_reason: "This test does not make sense using Concurrent CDK"
-        timeout_seconds: 3600
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 3600

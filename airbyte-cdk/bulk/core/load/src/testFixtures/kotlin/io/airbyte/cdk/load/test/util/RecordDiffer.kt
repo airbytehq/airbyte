@@ -51,7 +51,7 @@ class RecordDiffer(
                     is ObjectValue -> extract(next.values, path.subList(1, path.size))
                     else ->
                         throw IllegalArgumentException(
-                            "Encountered non-map entry in path: $next at ${path.first()}"
+                            "Encountered non-map entry in path: $next at ${path.first()}",
                         )
                 }
             }
@@ -66,6 +66,7 @@ class RecordDiffer(
         }
         return pks
     }
+
     private fun extractCursor(record: OutputRecord): AirbyteValue {
         return extract(record.data.values, cursor!!)
     }
@@ -76,7 +77,7 @@ class RecordDiffer(
         val pk2 = extractPrimaryKey(rec2)
         if (pk1.size != pk2.size) {
             throw IllegalStateException(
-                "Records must have the same number of primary keys. Got $pk1 and $pk2."
+                "Records must have the same number of primary keys. Got $pk1 and $pk2.",
             )
         }
 
@@ -91,7 +92,7 @@ class RecordDiffer(
                 { it: OutputRecord ->
                     (if (cursor == null) IntegerValue(0) else extractCursor(it))
                 },
-                valueComparator
+                valueComparator,
             )
             .thenComparing { it -> it.extractedAt }
 
@@ -104,7 +105,7 @@ class RecordDiffer(
     /** Returns a pretty-printed diff of the two lists, or null if they were identical */
     fun diffRecords(
         expectedRecords: List<OutputRecord>,
-        actualRecords: List<OutputRecord>
+        actualRecords: List<OutputRecord>,
     ): String? {
         val expectedRecordsSorted = expectedRecords.sortedWith(everythingComparator)
         val actualRecordsSorted = actualRecords.sortedWith(everythingComparator)
@@ -148,7 +149,7 @@ class RecordDiffer(
         if (!allowUnexpectedRecord) {
             while (actualRecordIndex < actualRecords.size) {
                 matches.add(
-                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex])
+                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex]),
                 )
                 actualRecordIndex++
             }
@@ -214,17 +215,17 @@ class RecordDiffer(
             // the destination.
             if (expectedRecord.extractedAt != actualRecord.extractedAt) {
                 diff.append(
-                    "extractedAt: Expected ${expectedRecord.extractedAt}, got ${actualRecord.extractedAt}\n"
+                    "extractedAt: Expected ${expectedRecord.extractedAt}, got ${actualRecord.extractedAt}\n",
                 )
             }
             if (expectedRecord.generationId != actualRecord.generationId) {
                 diff.append(
-                    "generationId: Expected ${expectedRecord.generationId}, got ${actualRecord.generationId}\n"
+                    "generationId: Expected ${expectedRecord.generationId}, got ${actualRecord.generationId}\n",
                 )
             }
             if (!compareMetaObjects(expectedRecord.airbyteMeta, actualRecord.airbyteMeta)) {
                 diff.append(
-                    "airbyteMeta: Expected ${expectedRecord.airbyteMeta}, got ${actualRecord.airbyteMeta}\n"
+                    "airbyteMeta: Expected ${expectedRecord.airbyteMeta}, got ${actualRecord.airbyteMeta}\n",
                 )
             }
 
@@ -240,7 +241,7 @@ class RecordDiffer(
                         // The expected record contained this key, but the actual record was missing
                         // this key.
                         diff.append(
-                            "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
+                            "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n",
                         )
                     }
                 } else if (!expectedPresent && actualPresent) {
@@ -249,7 +250,7 @@ class RecordDiffer(
                         // contained
                         // this key.
                         diff.append(
-                            "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
+                            "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n",
                         )
                     }
                 } else if (expectedPresent && actualPresent) {
@@ -281,7 +282,9 @@ class RecordDiffer(
 
     companion object {
         fun getValueComparator(nullEqualsUnset: Boolean): Comparator<AirbyteValue> =
-            Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!, nullEqualsUnset) }
+            Comparator.nullsFirst { v1, v2 ->
+                compare(v1!!, v2!!, nullEqualsUnset)
+            }
 
         /**
          * Compare each PK field in order, until we find a field that the two records differ in. If
@@ -296,8 +299,7 @@ class RecordDiffer(
                 .map { (pk1Field, pk2Field) ->
                     getValueComparator(nullEqualsUnset).compare(pk1Field, pk2Field)
                 }
-                .firstOrNull { it != 0 }
-                ?: 0)
+                .firstOrNull { it != 0 } ?: 0)
         }
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
@@ -326,7 +328,7 @@ class RecordDiffer(
                                                 }
                                                 .mapValuesTo(linkedMapOf()) { (_, v) ->
                                                     removeObjectNullValues(v)
-                                                }
+                                                },
                                         )
                                     is ArrayValue ->
                                         ArrayValue(value.values.map { removeObjectNullValues(it) })

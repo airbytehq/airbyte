@@ -10,7 +10,9 @@ from typing import Any
 
 import dpath
 import sqlalchemy
-from airbyte._processors.file.jsonl import JsonlWriter
+from airbyte import progress
+from airbyte._writers.jsonl import JsonlWriter
+from airbyte.records import StreamRecordHandler
 from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
@@ -167,7 +169,8 @@ class PGVectorProcessor(SqlProcessorBase):
     def process_record_message(
         self,
         record_msg: AirbyteRecordMessage,
-        stream_schema: dict,
+        stream_record_handler: StreamRecordHandler,
+        progress_tracker: progress.ProgressTracker,
     ) -> None:
         """Write a record to the cache.
 
@@ -198,19 +201,24 @@ class PGVectorProcessor(SqlProcessorBase):
                     data=new_data,
                     emitted_at=record_msg.emitted_at,
                 ),
-                stream_schema={
-                    "type": "object",
-                    "properties": {
-                        DOCUMENT_ID_COLUMN: {"type": "string"},
-                        CHUNK_ID_COLUMN: {"type": "string"},
-                        METADATA_COLUMN: {"type": "object"},
-                        DOCUMENT_CONTENT_COLUMN: {"type": "string"},
-                        EMBEDDING_COLUMN: {
-                            "type": "array",
-                            "items": {"type": "float"},
+                stream_record_handler=StreamRecordHandler(
+                    json_schema={
+                        "type": "object",
+                        "properties": {
+                            DOCUMENT_ID_COLUMN: {"type": "string"},
+                            CHUNK_ID_COLUMN: {"type": "string"},
+                            METADATA_COLUMN: {"type": "object"},
+                            DOCUMENT_CONTENT_COLUMN: {"type": "string"},
+                            EMBEDDING_COLUMN: {
+                                "type": "array",
+                                "items": {"type": "float"},
+                            },
                         },
                     },
-                },
+                    normalize_keys=True,
+                    prune_extra_fields=True,
+                ),
+                progress_tracker=progress_tracker,
             )
 
     def _add_missing_columns_to_table(

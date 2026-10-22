@@ -440,7 +440,7 @@ spec:
         default: 2
         minimum: 1
         maximum: 10
-        order: 9
+        order: 10
       batch_size:
         type: integer
         title: Row Batch Size
@@ -454,7 +454,7 @@ spec:
           otherwise the request returns a timeout error. In regards to this information, consider network speed and
           number of columns of the google sheet when deciding a batch_size value.
         default: 1000000
-        order: 1
+        order: 2
       spreadsheet_id:
         type: string
         title: Spreadsheet Link
@@ -462,7 +462,7 @@ spec:
           Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
         examples:
           - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
-        order: 0
+        order: 1
       names_conversion:
         type: boolean
         title: Convert Column Names to SQL-Compliant Format
@@ -470,7 +470,7 @@ spec:
           Converts column names to a SQL-compliant format (snake_case, lowercase, etc).
           If enabled, you can further customize the sanitization using the options below.
         default: false
-        order: 2
+        order: 3
       remove_leading_trailing_underscores:
         type: boolean
         title: Remove Leading and Trailing Underscores
@@ -479,7 +479,7 @@ spec:
           Example: "50th Percentile? "→ "_50_th_percentile"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 3
+        order: 4
       combine_number_word_pairs:
         type: boolean
         title: Combine Number-Word Pairs
@@ -488,7 +488,7 @@ spec:
           Example: "50th Percentile?" → "_50th_percentile_"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 4
+        order: 5
       remove_special_characters:
         type: boolean
         title: Remove All Special Characters
@@ -497,7 +497,7 @@ spec:
           Example: "Example ID*" → "example_id"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 5
+        order: 6
       combine_letter_number_pairs:
         type: boolean
         title: Combine Letter-Number Pairs
@@ -506,7 +506,7 @@ spec:
           Example: "Q3 2023" → "q3_2023"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 6
+        order: 7
       allow_leading_numbers:
         type: boolean
         title: Allow Leading Numbers
@@ -515,7 +515,7 @@ spec:
           Example: "50th Percentile" → "50_th_percentile"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 7
+        order: 8
       read_empty_header_columns:
         type: boolean
         title: Read Empty Header Columns
@@ -524,10 +524,11 @@ spec:
           and will include data from those columns using generated column names (e.g., "column_C").
           By default, the connector stops reading columns when it encounters an empty header cell.
         default: false
-        order: 8
+        order: 9
       credentials:
         type: object
         title: Authentication
+        order: 0
         description: >-
           Credentials for connecting to the Google Sheets API
         oneOf:
