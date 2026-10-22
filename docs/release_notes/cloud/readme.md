@@ -2,6 +2,17 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 22, 2026
+
+Connections
+
+- When you set up a new source or destination, the setup form now shows the connector's icon and name at the top. From this header, you can invite teammates to your workspace if you can manage workspace access, and for sources, you can fork or edit the connector in the Connector Builder. The **Copy JSON** button no longer appears on source and destination forms.
+- The refresh dialog for connections and streams is simpler and easier to read. The two refresh options are now called **Backfill missing or updated records** and **Overwrite existing data**, and the dialog links to the refresh documentation so you can learn more before you start.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, when you turn on **Compare to previous period** on a data worker usage chart, the chart now shows a loading indicator until the comparison data finishes loading. Previously, the chart could show only the current period while the previous period was still loading.
+
 ## October 21, 2026
 
 Platform
