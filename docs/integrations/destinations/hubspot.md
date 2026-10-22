@@ -117,7 +117,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
-| 0.0.13 | 2026-10-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1 |
+| 0.0.13 | 2026-10-22 | [89653](https://github.com/airbytehq/airbyte/pull/89653) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1 |
 | 0.0.12 | 2026-06-17 | [80214](https://github.com/airbytehq/airbyte/pull/80214) | Move to community support level |
 | 0.0.11 | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
 | 0.0.10 | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1 |
