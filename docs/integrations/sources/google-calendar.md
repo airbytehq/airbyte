@@ -53,7 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.2.0 | 2026-10-19 | [89078](https://github.com/airbytehq/airbyte/pull/89078) | Use Google Calendar sync tokens for incremental syncs of events, settings, calendarlist and calendars. |
+| 0.2.0 | 2026-10-22 | [89676](https://github.com/airbytehq/airbyte/pull/89676) | Use Google Calendar sync tokens for incremental syncs of events, settings, calendarlist and calendars. |
 | 0.1.2 | 2026-10-20 | [89285](https://github.com/airbytehq/airbyte/pull/89285) | Update dependencies |
 | 0.1.1 | 2026-10-13 | [88641](https://github.com/airbytehq/airbyte/pull/88641) | Update dependencies |
 | 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
