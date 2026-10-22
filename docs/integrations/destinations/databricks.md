@@ -127,7 +127,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                                |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.7 | 2026-10-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; Avro 1.11.5, Databricks JDBC 3.4.3. |
+| 4.0.7 | 2026-10-22 | [89659](https://github.com/airbytehq/airbyte/pull/89659) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; Avro 1.11.5, Databricks JDBC 3.4.3. |
 | 4.0.5 | 2026-10-02 | [87651](https://github.com/airbytehq/airbyte/pull/87651) | Fix connection checks leaving behind an `_airbyte_check_*_staging` Unity Catalog volume in the target schema on every run. |
 | 4.0.4 | 2026-09-29 | [83709](https://github.com/airbytehq/airbyte/pull/83709) | Fix Personal Access Token authentication being dropped when connecting via the JDBC driver |
 | 4.0.3 | 2026-09-01 | [84988](https://github.com/airbytehq/airbyte/pull/84988) | Upgrade to Bulk CDK 1.0.25. |
