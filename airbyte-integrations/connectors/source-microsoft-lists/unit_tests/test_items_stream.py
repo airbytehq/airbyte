@@ -91,18 +91,14 @@ def _stream_states(output) -> list[dict[str, Any]]:
     return [
         _state_payload(message)
         for message in output.state_messages
-        if message.state.type == AirbyteStateType.STREAM
-        and message.state.stream.stream_descriptor.name == "items"
+        if message.state.type == AirbyteStateType.STREAM and message.state.stream.stream_descriptor.name == "items"
     ]
 
 
 def _latest_tokens(output) -> dict[str, str]:
     states = _stream_states(output)
     assert states, "expected items stream state"
-    return {
-        item["partition"]["list"]: item["cursor"]["token"]
-        for item in states[-1]["states"]
-    }
+    return {item["partition"]["list"]: item["cursor"]["token"] for item in states[-1]["states"]}
 
 
 def _assert_no_next_link_is_committed(output, next_links: set[str]) -> None:
