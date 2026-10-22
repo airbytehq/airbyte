@@ -1117,7 +1117,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           contact_email_cc:
             type:
               - string
@@ -1138,7 +1137,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           report_email_cc:
             type:
               - string
@@ -1163,7 +1161,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           billing_email_cc:
             type:
               - string
@@ -2748,7 +2745,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           partner_uid:
             type:
               - string
@@ -3464,7 +3460,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           phone:
             type:
               - string
@@ -5122,7 +5117,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           email_cc:
             type:
               - string
@@ -7241,7 +7235,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           mobile:
             type:
               - string
@@ -7330,7 +7323,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           email_cc:
             type:
               - string
