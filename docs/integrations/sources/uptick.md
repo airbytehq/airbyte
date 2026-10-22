@@ -284,7 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 2.1.2 | 2026-10-21 | [89616](https://github.com/airbytehq/airbyte/pull/89616) | Request 1,000 records per page, declare `attributes`/`relationships`/`type` and missing fields, accept date-only cursor state, update base image and vendor docs links; reject non-Uptick Base URL on check; drop format: email from email fields (Uptick returns "" when unset); drop format: uri from tasks.workorder_url |
+| 2.1.2 | 2026-10-22 | [89616](https://github.com/airbytehq/airbyte/pull/89616) | Request 1,000 records per page, declare `attributes`/`relationships`/`type` and missing fields, accept date-only cursor state, update base image and vendor docs links; reject non-Uptick Base URL on check; drop format: email from email fields (Uptick returns "" when unset); drop format: uri from tasks.workorder_url |
 | 2.1.1 | 2026-10-21 | [89505](https://github.com/airbytehq/airbyte/pull/89505) | Reject an empty or whitespace-only `base_url` and remove unused legacy config fields |
 | 2.1.0 | 2026-10-20 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication with the read-only scope |
 | 2.0.1 | 2026-10-20 | [89415](https://github.com/airbytehq/airbyte/pull/89415) | Update dependencies |
