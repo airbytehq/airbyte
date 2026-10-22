@@ -13,6 +13,6 @@ For configuration options, see the [S3 Data Lake documentation](https://docs.air
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------|:-------------|:--------|
-| 0.1.0 | 2026-10-22 | TBD | Initial experimental release with typed Iceberg structs |
+| 0.1.0 | 2026-10-22 | [89663](https://github.com/airbytehq/airbyte/pull/89663) | Initial experimental release with typed Iceberg structs |
 
 </details>
