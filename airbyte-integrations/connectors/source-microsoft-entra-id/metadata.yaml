@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-microsoft-entra-id
   connectorBuildOptions:
-    baseImage: airbyte/source-declarative-manifest:7.37.0.post9.dev39463931382@sha256:4204e6b3366da96ed894a88db0cacc8e6c0c1c554bc4a71b2d7b146b0e194cf5
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post9.dev39463931382@sha256:4204e6b3366da96ed894a88db0cacc8e6c0c1c554bc4a71b2d7b146b0e194cf5
   connectorSubtype: api
   connectorType: source
   definitionId: 337930a3-778a-413e-99cf-e79a3fca1c74
