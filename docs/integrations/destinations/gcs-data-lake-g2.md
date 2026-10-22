@@ -13,6 +13,6 @@ For configuration options, see the [GCS Data Lake documentation](https://docs.ai
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------|:-------------|:--------|
-| 0.1.0 | 2026-10-22 | TBD | Initial experimental release with typed Iceberg structs |
+| 0.1.0 | 2026-10-22 | [89664](https://github.com/airbytehq/airbyte/pull/89664) | Initial experimental release with typed Iceberg structs |
 
 </details>
