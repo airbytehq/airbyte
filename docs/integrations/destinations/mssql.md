@@ -178,7 +178,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                   |
 |:-----------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 2.2.24 | 2026-10-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; mssql-jdbc 12.10.2. |
+| 2.2.24 | 2026-10-22 | [89656](https://github.com/airbytehq/airbyte/pull/89656) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; mssql-jdbc 12.10.2. |
 | 2.2.23 | 2026-10-01 | [87618](https://github.com/airbytehq/airbyte/pull/87618) | Upgrade to Bulk CDK 1.1.1. |
 | 2.2.22 | 2026-09-09 | [85768](https://github.com/airbytehq/airbyte/pull/85768) | Report SQL Server permission-denied and string-truncation errors as configuration errors instead of system errors. |
 | 2.2.21 | 2026-09-01 | [84990](https://github.com/airbytehq/airbyte/pull/84990) | Upgrade to Bulk CDK 1.0.25. |
