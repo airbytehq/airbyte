@@ -35,7 +35,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
         bigquery.delete(tableId(rawTableName, ""))
         bigquery.query(
             QueryJobConfiguration.of(
-                """ALTER TABLE `${rawTableName.namespace}`.`${rawTableName.name}$suffix` RENAME TO `${rawTableName.name}`"""
+                """ALTER TABLE `${rawTableName.namespace}`.`${rawTableName.name}$suffix` RENAME TO `${rawTableName.name}`""",
             ),
         )
     }
@@ -43,7 +43,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
     override fun transferFromTempRawTable(rawTableName: TableName, suffix: String) {
         if (suffix == "") {
             throw IllegalArgumentException(
-                "Cannot transfer records from temp raw table with empty suffix"
+                "Cannot transfer records from temp raw table with empty suffix",
             )
         }
         // TODO figure out how to make this work
@@ -63,8 +63,9 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
                 """
                 INSERT INTO `${rawTableName.namespace}`.`${rawTableName.name}`
                 SELECT * FROM `${rawTableName.namespace}`.`${rawTableName.name}$suffix`
-                """.trimIndent()
-            )
+                """
+                    .trimIndent(),
+            ),
         )
         bigquery.delete(tempRawTable)
     }
@@ -73,7 +74,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
         val result: TableResult =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${rawTableName.namespace}.${rawTableName.name}$suffix LIMIT 1"
+                    "SELECT _airbyte_generation_id FROM ${rawTableName.namespace}.${rawTableName.name}$suffix LIMIT 1",
                 ),
             )
         if (result.totalRows == 0L) {
