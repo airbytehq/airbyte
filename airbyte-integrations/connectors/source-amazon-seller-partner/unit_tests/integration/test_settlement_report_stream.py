@@ -3,7 +3,7 @@
 #
 
 """
-Mock-server tests for `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`.
+Mock-server tests for `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`.
 
 Settlement reports are generated automatically by Amazon and cannot be requested, so the stream
 lists existing reports (`getReports`), reads each one (`getReport`), resolves its `reportDocumentId`
@@ -29,7 +29,7 @@ from .response_builder import build_response
 from .utils import config, find_template, mock_auth, read_output
 
 
-_STREAM_NAME = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+_STREAM_NAME = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
 _RECORDS_PER_DOCUMENT = 2  # the fixture in resource/http/response contains 2 data rows
 
 _DONE_REPORT_ID = "1111111111"
@@ -260,6 +260,9 @@ def test_given_done_settlement_reports_when_read_then_documents_downloaded_and_r
     assert len(output.records) == 2 * _RECORDS_PER_DOCUMENT
     assert {record.record.data["settlement-id"] for record in output.records} == {"12345678901"}
     assert all("dataEndTime" in record.record.data for record in output.records)
+    item_rows = [record.record.data for record in output.records if record.record.data.get("posted-date")]
+    assert {row["posted-date"] for row in item_rows} == {"2023-01-03"}
+    assert {row["posted-date-time"] for row in item_rows} == {"2023-01-03T10:00:00+00:00"}
 
     # Each report resolves its own document exactly once and downloads it exactly once; the
     # CANCELLED and FATAL reports are filtered out of the listing and never reach getReport.

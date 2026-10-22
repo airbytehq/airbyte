@@ -1986,6 +1986,11 @@ schemas:
         type:
         - 'null'
         - integer
+      work_item_id:
+        description: ID of the corresponding work item (for the Work Items GraphQL API)
+        type:
+        - 'null'
+        - integer
       iid:
         description: Internal ID of the epic
         type:
@@ -2021,6 +2026,16 @@ schemas:
         type:
         - 'null'
         - boolean
+      imported:
+        description: Flag indicating if the epic was imported
+        type:
+        - 'null'
+        - boolean
+      imported_from:
+        description: Source the epic was imported from
+        type:
+        - 'null'
+        - string
       web_url:
         description: URL for viewing the epic in a web browser
         type:
@@ -2070,7 +2085,7 @@ schemas:
         - string
         - boolean
       end_date:
-        description: End date of the epic
+        description: End date of the epic. Deprecated by GitLab in favor of due_date.
         type:
         - 'null'
         - string
@@ -2149,7 +2164,7 @@ schemas:
         - 'null'
         - string
       due_date_from_milestones:
-        description: Due date linked to milestone
+        description: Due date linked to milestone. Deprecated by GitLab in favor of due_date_from_inherited_source.
         type:
         - 'null'
         - string
@@ -2181,7 +2196,7 @@ schemas:
             - 'null'
             - string
       start_date_from_milestones:
-        description: Start date linked to milestone
+        description: Start date linked to milestone. Deprecated by GitLab in favor of start_date_from_inherited_source.
         type:
         - 'null'
         - string
