@@ -37,8 +37,8 @@ class GcsPolarisWriteTest :
                         tableIdGenerator = SimpleTableIdGenerator(),
                         getCatalog = { spec ->
                             GcsDataLakeTestUtil.getCatalog(GcsDataLakeTestUtil.getConfig(spec))
-                        }
-                    )
+                        },
+                    ),
             ),
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = io.airbyte.cdk.load.data.icerberg.parquet.IcebergExpectedRecordMapper,
@@ -79,7 +79,7 @@ class GcsPolarisWriteTest :
         val firstStream =
             makeStream(
                 syncId = 42,
-                linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
+                linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType),
             )
         runSync(
             updatedConfig,
@@ -89,13 +89,13 @@ class GcsPolarisWriteTest :
                     firstStream,
                     """{"id": 42, "to_drop": "val1", "same": 42}""",
                     emittedAtMs = 1234L,
-                )
-            )
+                ),
+            ),
         )
         val finalStream =
             makeStream(
                 syncId = 43,
-                linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType)
+                linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType),
             )
         runSync(
             updatedConfig,
@@ -105,8 +105,8 @@ class GcsPolarisWriteTest :
                     finalStream,
                     """{"id": 42, "same": "43", "to_add": "val3"}""",
                     emittedAtMs = 1234,
-                )
-            )
+                ),
+            ),
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -122,7 +122,7 @@ class GcsPolarisWriteTest :
                     generationId = 0,
                     data = mapOf("id" to 42, "same" to 43, "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
-                )
+                ),
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),

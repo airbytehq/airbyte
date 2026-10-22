@@ -10,11 +10,19 @@ The Jira connector is optimized to handle prompts like these.
 
 - Show me all open issues in my Jira instance
 - List recent issues created in the last 7 days
-- List all projects in my Jira instance
 - Show me details for the most recently updated issue
+- List all projects in my Jira instance
+- Show me the details of the first project
 - List all users in my Jira instance
+- Show me the details of the first user
+- Search for a user by name in my Jira instance
 - Show me comments on the most recent issue
+- Show me the details of the first comment on the most recent issue
 - Show me worklogs from the last 7 days
+- Show me the details of the first worklog on the most recent issue
+- List all issue fields in my Jira instance
+- Search for issue fields related to priority
+- What transitions are available for the most recent issue?
 - Assign a recent issue to a teammate
 - Unassign a recent issue
 - Create a new task called 'Sample task' in a project
@@ -25,13 +33,11 @@ The Jira connector is optimized to handle prompts like these.
 - Update my most recent comment
 - Delete a test issue
 - Remove my most recent comment
-- Transition \{issue_key\} to In Progress
-- Move \{issue_key\} to Done
-- What transitions are available for \{issue_key\}?
-- Log 2 hours of work on \{issue_key\}
-- Log 30 minutes on \{issue_key\} with a comment about what I did
-- Link \{issue_key_1\} as blocking \{issue_key_2\}
-- Create a 'relates to' link between \{issue_key_1\} and \{issue_key_2\}
+- Transition the most recent issue to In Progress
+- Move the most recent issue to Done
+- Log 2 hours of work on the most recent issue
+- Link the most recent issue as blocking the next most recent issue
+- Create a 'relates to' link between my two most recent issues
 - What issues are assigned to \{team_member\} this week?
 - Find all high priority bugs in our current sprint
 - Show me overdue issues across all projects

@@ -44,6 +44,7 @@ def test_every_request_goes_through_the_budget(mocker):
         pytest.param({"num_workers": 7}, 7, id="configured_num_workers"),
         pytest.param({"num_workers": 50}, 10, id="clamped_to_max_concurrency"),
         pytest.param({"num_workers": None}, 3, id="null_falls_back_to_default"),
+        pytest.param({"num_workers": 1}, 2, id="raised_to_the_safe_minimum"),
     ],
 )
 def test_concurrency_level_resolves_from_config(config_override, expected_workers):
@@ -81,14 +82,29 @@ def test_requests_outside_pipedrive_are_not_throttled():
     assert _get_api_budget().get_matching_policy(requests.Request("GET", "https://example.com/x").prepare()) is None
 
 
-def test_rate_limit_response_does_not_break_the_budget():
-    api_budget = _get_api_budget()
-    request = _prepared("https://api.pipedrive.com/v1/deals")
+def _rate_limit_response(remaining):
     response = requests.Response()
     response.status_code = 429
-    response.headers["x-ratelimit-remaining"] = "0"
+    response.headers["x-ratelimit-remaining"] = remaining
+    return response
 
-    api_budget.update_from_response(request, response)
 
-    # The policy stays usable: the moving window, not the header, is what throttles.
+def test_zero_remaining_drains_the_budget_for_the_window():
+    api_budget = _get_api_budget()
+    request = _prepared("https://api.pipedrive.com/v1/deals")
+
+    api_budget.update_from_response(request, _rate_limit_response("0"))
+
+    # Pipedrive reported no calls left, so the next call waits for the 2-second window to roll.
+    with pytest.raises(CallRateLimitHit) as limit_hit:
+        api_budget.acquire_call(request, block=False)
+    assert 0 < limit_hit.value.time_to_wait.total_seconds() <= 2
+
+
+def test_remaining_calls_leave_the_budget_usable():
+    api_budget = _get_api_budget()
+    request = _prepared("https://api.pipedrive.com/v1/deals")
+
+    api_budget.update_from_response(request, _rate_limit_response("19"))
+
     api_budget.acquire_call(request, block=False)

@@ -114,7 +114,9 @@ This source is capable of syncing the following streams:
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
-The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. Profiles without Attribution access are silently skipped, and the sync continues with the remaining authorized profiles. If a sync produces no Attribution records, verify that Amazon Attribution is enabled on at least one profile in your account.
+The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. If Amazon rejects an Attribution report request for a profile, either with the message `This profileID is not authorized to use Amazon Attribution` or with an HTTP 401 Unauthorized response, the connector skips that profile, writes a message to the sync logs, and continues with the remaining profiles. The sync doesn't fail.
+
+If a sync produces no Attribution records, check the sync logs for these messages. A 401 response usually means Amazon Attribution isn't enabled for the profile, or your Amazon Ads API app doesn't have access to the Attribution API.
 :::
 
 :::note
@@ -138,8 +140,8 @@ Each report stream is available in two variants:
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::warning
-Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (for example, `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
+:::note
+Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
 :::
 
 ### Sponsored Brands report types
@@ -226,6 +228,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
+| 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
+| 9.2.8 | 2026-10-13 | [88523](https://github.com/airbytehq/airbyte/pull/88523) | Update dependencies |
+| 9.2.7 | 2026-10-06 | [87668](https://github.com/airbytehq/airbyte/pull/87668) | Skip profiles that return HTTP 401 Unauthorized on attribution report streams instead of failing the sync |
+| 9.2.6 | 2026-10-06 | [87739](https://github.com/airbytehq/airbyte/pull/87739) | Update dependencies |
+| 9.2.5 | 2026-09-29 | [87079](https://github.com/airbytehq/airbyte/pull/87079) | Update dependencies |
 | 9.2.4 | 2026-09-24 | [86938](https://github.com/airbytehq/airbyte/pull/86938) | Retry 429 (honoring Retry-After) and 5xx responses on report creation and polling endpoints |
 | 9.2.3 | 2026-09-22 | [86539](https://github.com/airbytehq/airbyte/pull/86539) | Update dependencies |
 | 9.2.2 | 2026-09-15 | [85934](https://github.com/airbytehq/airbyte/pull/85934) | Update dependencies |

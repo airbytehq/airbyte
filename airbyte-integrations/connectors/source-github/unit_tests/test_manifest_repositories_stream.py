@@ -6,8 +6,6 @@ import logging
 import time
 from unittest.mock import patch
 
-from source_github.source import SourceGithub
-
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
@@ -21,6 +19,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 def _repo(repo_id, full_name, org=None, updated_at="2026-01-01T00:00:00Z"):
@@ -70,13 +70,13 @@ def _names(records):
 
 def _read_messages(config, state=None):
     catalog = _catalog()
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     return list(source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []))
 
 
 def _read(config, state=None):
     catalog = _catalog()
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     records, statuses, error = [], [], None
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
@@ -99,7 +99,7 @@ def _error_messages(config, state=None):
     the emitted TRACE errors instead.
     """
     catalog = _catalog()
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages = []
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
@@ -404,8 +404,8 @@ def test_401_fails_fast_without_retrying(rate_limit_mock_response, requests_mock
     `GITHUB_DEFAULT_ERROR_MAPPING` retried 401 five times, but git history shows that entry
     arrived as a copy-paste artifact of the CDK v3 migration (401/403/404/409 all identical,
     all messaged "Conflict."), and its sibling 403 was later fixed as a bug in #76090. The
-    manifest declares no 401 filter, so the CDK default applies: fail once, with an actionable
-    message. This test pins that contract, since retrying a bad credential only delays a config
+    manifest's `unauthorized_fail_filter` fails it once as a config error with the GitHub-specific
+    guidance. This test pins that contract, since retrying a bad credential only delays a config
     error while burning rate-limit quota."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     listing = requests_mock.get(
@@ -420,9 +420,9 @@ def test_401_fails_fast_without_retrying(rate_limit_mock_response, requests_mock
     assert error is not None
     assert listing.call_count == 1, "401 must not be retried; the legacy Python path still retries it 5 times"
     guidance = " ".join(_error_messages(config))
-    assert "401" in guidance and "Unauthorized" in guidance, (
-        "the CDK default 401 message is the intended contract here, and it is more actionable "
-        'than the legacy mapping\'s literal "Conflict."'
+    assert "GitHub authentication failed (HTTP 401)" in guidance, (
+        "the `unauthorized_fail_filter` message is the intended contract here, and it is more "
+        'actionable than the legacy mapping\'s literal "Conflict."'
     )
 
 
