@@ -162,7 +162,9 @@ constructor(
     ): BigQuerySourceConfiguration {
         val projectId: String =
             pojo.projectIdOrNull()?.trim()?.takeIf { it.isNotEmpty() }
-                ?: throw ConfigErrorException("Missing required 'project_id' property.")
+                ?: throw ConfigErrorException(
+                    "'project_id' must be a non-empty string; got '${pojo.projectIdOrNull()?.trim() ?: "<missing>"}'.",
+                )
         val credentialsJson: String =
             pojo.credentialsJsonOrNull()?.trim()?.takeIf { it.isNotEmpty() }
                 ?: throw ConfigErrorException("Missing required 'credentials_json' property.")
