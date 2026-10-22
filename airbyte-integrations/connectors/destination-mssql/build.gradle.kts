@@ -48,7 +48,7 @@ configurations.configureEach {
 //}
 
 dependencies {
-    implementation("com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.10.2.jre11")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
     implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
