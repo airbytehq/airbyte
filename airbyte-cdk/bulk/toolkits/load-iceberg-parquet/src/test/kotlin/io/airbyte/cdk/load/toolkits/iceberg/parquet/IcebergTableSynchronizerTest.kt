@@ -121,6 +121,46 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test nested field removal is ignored under safe supertype`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "id", Types.IntegerType.get()),
+                        Types.NestedField.optional(3, "login", Types.StringType.get()),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "id", Types.IntegerType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        val result =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+            )
+
+        assertThat(result)
+            .isEqualTo(SchemaUpdateResult(existingSchema, pendingUpdates = emptyList()))
+        verify(exactly = 0) { mockUpdateSchema.deleteColumn(any()) }
+        verify(exactly = 0) { mockUpdateSchema.updateColumn(any(), any<PrimitiveType>()) }
+        verify(exactly = 0) { mockUpdateSchema.commit() }
+    }
+
+    @Test
     fun `test remove columns`() {
         val existingSchema =
             buildSchema(Types.NestedField.optional(1, "remove_me", Types.StringType.get()))
@@ -254,28 +294,192 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
-    fun `test add new columns - more than one-level nesting throws`() {
-        // e.g. "outer~inner~leaf" is two levels
-        val existingSchema = buildSchema()
-        val incomingSchema = buildSchema() // Not too relevant, since we expect an exception
+    fun `test add new columns - depth three`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "outer",
+                    Types.StructType.of(
+                        Types.NestedField.required(
+                            2,
+                            "inner",
+                            Types.StructType.of(
+                                Types.NestedField.required(3, "existing", Types.StringType.get()),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "outer",
+                    Types.StructType.of(
+                        Types.NestedField.required(
+                            2,
+                            "inner",
+                            Types.StructType.of(
+                                Types.NestedField.required(3, "existing", Types.StringType.get()),
+                                Types.NestedField.optional(4, "new_leaf", Types.IntegerType.get()),
+                            ),
+                        ),
+                    ),
+                ),
+            )
 
         every { mockTable.schema() } returns existingSchema
-        val diff = IcebergTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
-        every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
-        assertThatThrownBy {
-                synchronizer.maybeApplySchemaChanges(
-                    mockTable,
-                    incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
-                )
-            }
-            .isInstanceOf(ConfigErrorException::class.java)
-            .hasMessageContaining("Adding nested columns more than 1 level deep is not supported")
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
 
-        // No calls to commit
-        verify(exactly = 0) { mockUpdateSchema.commit() }
-        verify(exactly = 0) { mockTable.refresh() }
+        verify { mockUpdateSchema.addColumn("outer.inner", "new_leaf", Types.IntegerType.get()) }
+        verify { mockUpdateSchema.commit() }
+    }
+
+    @Test
+    fun `test add new columns - inside list element struct`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "labels",
+                    Types.ListType.ofOptional(
+                        2,
+                        Types.StructType.of(
+                            Types.NestedField.optional(3, "id", Types.IntegerType.get()),
+                        ),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "labels",
+                    Types.ListType.ofOptional(
+                        2,
+                        Types.StructType.of(
+                            Types.NestedField.optional(3, "id", Types.IntegerType.get()),
+                            Types.NestedField.optional(4, "name", Types.StringType.get()),
+                        ),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        verify { mockUpdateSchema.addColumn("labels.element", "name", Types.StringType.get()) }
+        verify { mockUpdateSchema.commit() }
+    }
+
+    @Test
+    fun `test add new columns - field named plus one`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.optional(1, "reactions", Types.StructType.of()),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "reactions",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "+1", Types.IntegerType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        verify { mockUpdateSchema.addColumn("reactions", "+1", Types.IntegerType.get()) }
+        verify { mockUpdateSchema.commit() }
+    }
+
+    @Test
+    fun `test nested field becomes optional`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.required(2, "name", Types.StringType.get()),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "name", Types.StringType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        verify { mockUpdateSchema.makeColumnOptional("user.name") }
+        verify { mockUpdateSchema.commit() }
+    }
+
+    @Test
+    fun `test nested primitive type is widened`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "age", Types.IntegerType.get()),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "age", Types.LongType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        verify { mockUpdateSchema.updateColumn("user.age", Types.LongType.get()) }
+        verify { mockUpdateSchema.commit() }
     }
 
     @Test

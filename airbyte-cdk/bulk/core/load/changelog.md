@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.10 — 2026-10-22
+
+[#89660](https://github.com/airbytehq/airbyte/pull/89660) — Feat: add opt-in typed Iceberg structs for nested objects while preserving the JSON-string default; support recursive schema evolution.
+
 ### 1.1.9 — 2026-10-17
 
 [#88973](https://github.com/airbytehq/airbyte/pull/88973) — Feat: add positional and deletion-vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression and optional whole-file supersession; add an in-place v2-to-v3 table upgrader that converts legacy delete files to deletion vectors.

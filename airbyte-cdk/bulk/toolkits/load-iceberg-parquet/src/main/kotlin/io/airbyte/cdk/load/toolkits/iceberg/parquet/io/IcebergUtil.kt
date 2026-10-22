@@ -14,14 +14,20 @@ import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
@@ -30,7 +36,10 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.LinkedHashMap
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
@@ -49,11 +58,26 @@ private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
+private val LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE)
+private val LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE)
+
 @Singleton
-class IcebergUtil(
+class IcebergUtil
+@Inject
+constructor(
     private val tableIdGenerator: TableIdGenerator,
     private val coercer: AirbyteValueCoercer,
+    private val schemaOptions: IcebergSchemaOptions,
 ) {
+    constructor(
+        tableIdGenerator: TableIdGenerator,
+        coercer: AirbyteValueCoercer,
+    ) : this(
+        tableIdGenerator,
+        coercer,
+        IcebergSchemaOptions(IcebergObjectMode.JSON_STRING),
+    )
+
     private val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
@@ -142,27 +166,136 @@ class IcebergUtil(
         }
     }
 
-    fun mungeForIceberg(value: EnrichedAirbyteValue) =
-        value.transformValueRecursingIntoArrays { element, elementType ->
-            when (elementType) {
-                // Convert complex types to string
-                // (note that schemaless arrays are stringified, but schematized arrays are not)
-                ArrayTypeWithoutSchema,
-                is ObjectType,
-                ObjectTypeWithEmptySchema,
-                ObjectTypeWithoutSchema,
-                is UnionType,
-                is UnknownType ->
-                    // serializing to string is a non-lossy operation, so don't generate a
-                    // Meta.Change object.
-                    ChangedValue(
-                        StringValue(element.serializeToString()),
-                        changeDescription = null,
-                    )
-                // otherwise, don't change anything
-                else -> null
+    fun mungeForIceberg(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        if (schemaOptions.objectMode == IcebergObjectMode.JSON_STRING) {
+            return value.transformValueRecursingIntoArrays { element, elementType ->
+                when (elementType) {
+                    // Convert complex types to string
+                    // (note that schemaless arrays are stringified, but schematized arrays are not)
+                    ArrayTypeWithoutSchema,
+                    is ObjectType,
+                    ObjectTypeWithEmptySchema,
+                    ObjectTypeWithoutSchema,
+                    is UnionType,
+                    is UnknownType ->
+                        // serializing to string is a non-lossy operation, so don't generate a
+                        // Meta.Change object.
+                        ChangedValue(
+                            StringValue(element.serializeToString()),
+                            changeDescription = null,
+                        )
+                    // otherwise, don't change anything
+                    else -> null
+                }
             }
         }
+
+        fun recurse(
+            currentValue: AirbyteValue,
+            currentType: AirbyteType,
+            path: String,
+            nested: Boolean,
+        ): AirbyteValue {
+            if (currentValue == NullValue) {
+                return NullValue
+            }
+
+            if (
+                currentType == ArrayTypeWithoutSchema ||
+                    currentType == ObjectTypeWithEmptySchema ||
+                    currentType == ObjectTypeWithoutSchema ||
+                    currentType is UnionType ||
+                    currentType is UnknownType ||
+                    (currentType is ObjectType && currentType.properties.isEmpty())
+            ) {
+                return StringValue(currentValue.serializeToString())
+            }
+
+            val coercedValue = coercer.coerce(currentValue, currentType)
+            if (coercedValue == null) {
+                value.changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
+            }
+
+            return when (currentType) {
+                is ObjectType -> {
+                    val objectValue = coercedValue as ObjectValue
+                    ObjectValue(
+                        currentType.properties.entries
+                            .mapNotNull { (name, field) ->
+                                objectValue.values[name]?.let { child ->
+                                    name to
+                                        recurse(
+                                            child,
+                                            field.type,
+                                            "$path.$name",
+                                            nested = true,
+                                        )
+                                }
+                            }
+                            .toMap(LinkedHashMap()),
+                    )
+                }
+                is ArrayType -> {
+                    val arrayValue = coercedValue as ArrayValue
+                    ArrayValue(
+                        arrayValue.values.mapIndexed { index, element ->
+                            recurse(
+                                element,
+                                currentType.items.type,
+                                "$path.$index",
+                                nested = true,
+                            )
+                        },
+                    )
+                }
+                IntegerType -> {
+                    val integerValue = coercedValue as IntegerValue
+                    if (
+                        nested && (integerValue.value < LONG_MIN || integerValue.value > LONG_MAX)
+                    ) {
+                        value.changes.add(
+                            Meta.Change(
+                                path,
+                                Change.NULLED,
+                                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                            ),
+                        )
+                        NullValue
+                    } else {
+                        integerValue
+                    }
+                }
+                NumberType -> {
+                    val numberValue = coercedValue as NumberValue
+                    val doubleValue = numberValue.value.toDouble()
+                    if (
+                        nested &&
+                            (!doubleValue.isFinite() ||
+                                (numberValue.value.compareTo(BigDecimal.ZERO) != 0 &&
+                                    doubleValue == 0.0))
+                    ) {
+                        value.changes.add(
+                            Meta.Change(
+                                path,
+                                Change.NULLED,
+                                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                            ),
+                        )
+                        NullValue
+                    } else {
+                        numberValue
+                    }
+                }
+                else -> coercedValue
+            }
+        }
+
+        value.abValue = recurse(value.abValue, value.type, value.name, nested = false)
+        return value
+    }
 
     fun toIcebergRecord(fields: Map<String, AirbyteValue>, icebergSchema: Schema): GenericRecord {
         val record = GenericRecord.create(icebergSchema)
@@ -186,7 +319,7 @@ class IcebergUtil(
                 else -> emptyList()
             }
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys, schemaOptions.objectMode)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
