@@ -66,7 +66,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.24 | 2026-10-20 | [89513](https://github.com/airbytehq/airbyte/pull/89513) | Update acceptance test configuration to the current standard tests layout (no change to sync behavior) |
 | 0.3.23 | 2025-05-24 | [60684](https://github.com/airbytehq/airbyte/pull/60684) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59777](https://github.com/airbytehq/airbyte/pull/59777) | Update dependencies |
 | 0.3.21 | 2025-05-03 | [59239](https://github.com/airbytehq/airbyte/pull/59239) | Update dependencies |
