@@ -25,12 +25,12 @@ If check fails with `400 Bad Request` from `https://api.box.com/oauth2/token`, B
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| events |  | DefaultPaginator | ✅ |  ❌  |
+| events |  | DefaultPaginator | ✅ |  ✅  |
 | sign_templates | id | DefaultPaginator | ✅ |  ❌  |
 | collections | id | DefaultPaginator | ✅ |  ❌  |
 | collection_items | id | DefaultPaginator | ✅ |  ❌  |
 | sign_request | id | DefaultPaginator | ✅ |  ❌  |
-| admin_logs | event_id | DefaultPaginator | ✅ |  ❌  |
+| admin_logs | event_id | DefaultPaginator | ✅ |  ✅  |
 | files | id | DefaultPaginator | ✅ |  ❌  |
 | file_collaborations | id | DefaultPaginator | ✅ |  ❌  |
 | file_comments | id | DefaultPaginator | ✅ |  ❌  |
@@ -52,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-22 | TBD | Add incremental sync for events and admin_logs streams using Box stream positions |
 | 0.0.22 | 2026-10-07 | [88216](https://github.com/airbytehq/airbyte/pull/88216) | Add optional `box_subject_type` (user/enterprise) so the CCG token request can authenticate as the app Service Account; document Box app setup |
 | 0.0.21 | 2026-04-21 | [76536](https://github.com/airbytehq/airbyte/pull/76536) | Update dependencies |
 | 0.0.20 | 2025-05-24 | [60665](https://github.com/airbytehq/airbyte/pull/60665) | Update dependencies |
