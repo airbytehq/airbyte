@@ -20,7 +20,8 @@ dependencies {
         ['jetty-ee10-servlet', 'jetty-ee10-servlets'].each { name ->
             api("org.eclipse.jetty.ee10:$name:12.0.40") { because 'same Jetty version as the org.eclipse.jetty artifacts above' }
         }
-        api('org.lz4:lz4-java:1.8.1') { because 'CVE-2025-12183 (8.8) for any other path that pulls org.lz4 (Kafka 4.1.2 itself moved to at.yawk.lz4:lz4-java); CVE-2025-66566 and CVE-2026-106451 have no upstream fix yet' }
+        api('org.lz4:lz4-java:1.8.1') { because 'CVE-2025-12183 (8.8) for any other path that pulls org.lz4; CVE-2025-66566 and CVE-2026-106451 have no fix on the org.lz4 line, Kafka 4.1.2 itself depends on the at.yawk.lz4 fork constrained below' }
+        api('at.yawk.lz4:lz4-java:1.12.0') { because 'CVE-2026-106451 (7.3) in the 1.10.1 that kafka-clients 4.1.2 depends on, fixed in 1.11.4; 1.12.0 is the latest release' }
         api('org.codehaus.plexus:plexus-utils:3.6.2') { because 'CVE-2025-67030; stays on the 3.x line because maven-artifact 3.9.x consumes it' }
     }
 
