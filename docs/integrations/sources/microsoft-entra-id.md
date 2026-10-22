@@ -19,8 +19,8 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Stream Name               | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
 | ------------------------- | ----------- | ---------------- | ------------------ | -------------------- |
-| users                     | id          | DefaultPaginator | ✅                 | ❌                   |
-| groups                    | id          | DefaultPaginator | ✅                 | ❌                   |
+| users                     | id          | DefaultPaginator | ✅                 | ✅                   |
+| groups                    | id          | DefaultPaginator | ✅                 | ✅                   |
 | applications              | id          | DefaultPaginator | ✅                 | ❌                   |
 | user_owned_deleted_items  | id          | DefaultPaginator | ✅                 | ❌                   |
 | directoryroles            | id          | No pagination    | ✅                 | ❌                   |
@@ -29,6 +29,12 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 | serviceprincipals         | id          | DefaultPaginator | ✅                 | ❌                   |
 | identityproviders         |             | DefaultPaginator | ✅                 | ❌                   |
 | adminconsentrequestpolicy |             | DefaultPaginator | ✅                 | ❌                   |
+
+## Incremental sync
+
+The `users` and `groups` streams use Microsoft Graph delta queries (`/users/delta` and `/groups/delta`). The connector stores the opaque `@odata.deltaLink` as state and reuses it for subsequent syncs. Change syncs return changed objects with their full properties and deleted objects as records containing `id` and `@removed`. A `reason` of `changed` indicates a soft-deleted, restorable object; `deleted` indicates a permanent deletion.
+
+Microsoft Graph directory-object delta links expire after 7 days. If syncs run less often than weekly or Graph returns `410 Gone` or `syncStateNotFound`, the connector automatically restarts with a full delta read. Group membership is not tracked.
 
 ## IP allow list
 
@@ -41,6 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 0.1.0-rc.1 | 2026-10-22 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync for users and groups using Microsoft Graph delta queries |
 | 0.0.65 | 2026-10-20 | [89315](https://github.com/airbytehq/airbyte/pull/89315) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88683](https://github.com/airbytehq/airbyte/pull/88683) | Update dependencies |
 | 0.0.63 | 2026-10-06 | [87948](https://github.com/airbytehq/airbyte/pull/87948) | Update dependencies |
