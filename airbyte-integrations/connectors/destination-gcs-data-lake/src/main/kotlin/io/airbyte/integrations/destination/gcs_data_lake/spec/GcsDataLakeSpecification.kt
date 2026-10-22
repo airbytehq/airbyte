@@ -71,14 +71,14 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Warehouse Location")
     @get:JsonSchemaDescription(
-        """The root location of the data warehouse used by the Iceberg catalog. Must include the storage protocol "gs://" for Google Cloud Storage. For example: "gs://your-bucket/path/to/warehouse/""",
+        """The root location of the data warehouse used by the Iceberg catalog. For a BigLake multi-bucket catalog, use "bl://projects/<project-id>/catalogs/<catalog-name>". For a single-bucket catalog or Polaris, use the "gs://" location, for example "gs://your-bucket/path/to/warehouse".""",
     )
     @get:JsonProperty("warehouse_location")
     @get:JsonSchemaInject(
         json =
             """
             {
-                "examples": ["gs://your-bucket/path/to/warehouse"],
+                "examples": ["gs://your-bucket/path/to/warehouse", "bl://projects/your-project/catalogs/your-catalog"],
                 "always_show": true,
                 "order": 4
             }

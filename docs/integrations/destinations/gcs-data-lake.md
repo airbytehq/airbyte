@@ -98,6 +98,8 @@ In Airbyte, configure the following fields:
 | **Default Namespace**    | No         | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined` |
 | **GCS Endpoint**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
 
+For BigLake multi-bucket catalogs, use `bl://projects/<project-id>/catalogs/<catalog-name>`; single-bucket catalogs and Polaris use a `gs://` warehouse location.
+
 ### BigLake-specific fields
 
 When **Catalog Type** is set to `BigLake`, configure these additional fields:
