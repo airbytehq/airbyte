@@ -86,7 +86,7 @@ spec:
         enum: [csv, json]
 ```
 
-```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -104,7 +104,7 @@ spec:
 max_retries: Optional[PositiveInt] = Field(...)
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
@@ -126,7 +126,7 @@ access_token: Optional[str] = Field(
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-mysql)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("database")
 @JsonSchemaTitle("Database name")
 @JsonPropertyDescription("Name of the database that contains the tables to replicate. Enter the name shown in your database management console.")
@@ -185,7 +185,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```python title="Poor (adapted from source-facebook-marketing, spec.py)"
+```python title="Poor"
 access_token: Optional[str] = Field(
     title="Access Token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
@@ -193,7 +193,7 @@ access_token: Optional[str] = Field(
 )
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
@@ -204,7 +204,7 @@ access_token: Optional[str] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-```json title="Poor (adapted from source-mysql)"
+```json title="Poor"
 {
   "required": ["ca_certificate"],
   "properties": {
@@ -218,7 +218,7 @@ access_token: Optional[str] = Field(
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-mysql)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("ca_certificate")
 @JsonSchemaTitle("CA certificate")
 @JsonPropertyDescription("Certificate used to verify the database server's TLS identity. Obtain it from your database provider's SSL/TLS settings.")
@@ -252,7 +252,7 @@ lateinit var sslCertificate: String
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
-```yaml title="Poor (adapted from source-linkedin-ads, manifest.yaml)"
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -263,7 +263,7 @@ spec:
         description: Lookback window in days.
 ```
 
-```yaml title="Good (adapted from source-bing-ads, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -284,7 +284,7 @@ lookback_window: Optional[PositiveInt] = Field(
 )
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
@@ -315,7 +315,7 @@ lateinit var projectId: String
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-bigquery)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("project_id")
 @JsonSchemaTitle("Project ID")
 @JsonPropertyDescription("Google Cloud project ID containing the BigQuery datasets to read. Find it in Google Cloud Console, then follow the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">BigQuery setup guide</a>.")
@@ -359,7 +359,7 @@ spec:
         description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
 ```
 
-```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -383,7 +383,7 @@ aws_region_name: str = Field(
 )
 ```
 
-```json title="Good (adapted from source-file, spec.json)"
+```json title="Good"
 {
   "required": ["format"],
   "properties": {
@@ -476,7 +476,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```json title="Poor (adapted from source-google-ads, spec.json)"
+```json title="Poor"
 {
   "properties": {
     "customer_id": {
@@ -489,7 +489,7 @@ spec:
 }
 ```
 
-```json title="Good (adapted from source-google-ads, spec.json)"
+```json title="Good"
 {
   "properties": {
     "customer_id": {
@@ -507,7 +507,7 @@ spec:
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-```kotlin title="Poor: Kotlin (adapted from destination-clickhouse, spec.json)"
+```kotlin title="Poor: Kotlin"
 @JsonProperty("cluster_name")
 @JsonSchemaTitle("Cluster name")
 @JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
@@ -529,7 +529,7 @@ lateinit var clusterName: String
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from destination-clickhouse, spec.json)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("cluster_name")
 @JsonSchemaTitle("Cluster name")
 @JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
@@ -564,7 +564,7 @@ lateinit var clusterName: String
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
-```yaml title="Poor (adapted from source-aws-cloudtrail, manifest.yaml)"
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -576,7 +576,7 @@ spec:
         description: Used to sign CloudTrail API requests. Create an access key for the connector's IAM user in AWS IAM.
 ```
 
-```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -592,14 +592,14 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```python title="Poor (adapted from source-facebook-marketing, spec.py)"
+```python title="Poor"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
 )
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 client_secret: str = Field(
     title="Client secret",
     description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
@@ -610,7 +610,7 @@ client_secret: str = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-```kotlin title="Poor: Kotlin (adapted from source-mysql)"
+```kotlin title="Poor: Kotlin"
 @JsonProperty("password")
 @JsonSchemaTitle("Password")
 @JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
@@ -630,7 +630,7 @@ lateinit var password: String
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-mysql)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("password")
 @JsonSchemaTitle("Password")
 @JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
@@ -668,7 +668,7 @@ Do not move existing optional fields with defaults into `required` yet. Today, r
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
-```yaml title="Poor (adapted from source-amazon-seller-partner, manifest.yaml)"
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -680,7 +680,7 @@ spec:
         default: 2
 ```
 
-```yaml title="Good (adapted from source-aws-cloudtrail, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -696,7 +696,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```python title="Poor (adapted from source-facebook-marketing, spec.py)"
+```python title="Poor"
 time_increment: Optional[PositiveInt] = Field(
     default=1,
     title="Time increment",
@@ -706,7 +706,7 @@ time_increment: Optional[PositiveInt] = Field(
 )
 ```
 
-```json title="Good (adapted from source-file, spec.json)"
+```json title="Good"
 {
   "required": ["format"],
   "properties": {
@@ -724,7 +724,7 @@ time_increment: Optional[PositiveInt] = Field(
 </TabItem>
 <TabItem value="java" label="Java/Kotlin">
 
-```kotlin title="Poor: Kotlin (adapted from source-mongodb-v2, spec.json)"
+```kotlin title="Poor: Kotlin"
 @JsonProperty("discover_timeout_seconds")
 @JsonSchemaTitle("Discovery timeout")
 @JsonPropertyDescription("Number of seconds to wait for the connector to discover available schemas.")
@@ -745,7 +745,7 @@ var discoverTimeoutSeconds: Int? = 600
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from destination-mssql)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("schema")
 @JsonSchemaTitle("Schema name")
 @JsonPropertyDescription("Name of the SQL Server schema where the destination creates tables. The public schema is a common default when no custom schema is needed.")
@@ -779,7 +779,7 @@ var schema: String = "public"
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
-```yaml title="Poor (adapted from source-linkedin-ads, manifest.yaml)"
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -790,7 +790,7 @@ spec:
         description: Number of days before the cursor to check for records.
 ```
 
-```yaml title="Good (adapted from source-bing-ads, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -811,7 +811,7 @@ lookback_window: Optional[PositiveInt] = Field(
 )
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 insights_lookback_window: Optional[PositiveInt] = Field(
     title="Insights lookback window",
     maximum=28,
@@ -845,7 +845,7 @@ var connectionTimeoutSeconds: Int? = null
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-bigquery)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Without a valid key, the connector cannot read the dataset. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -881,7 +881,7 @@ lateinit var credentialsJson: String
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
 
-```yaml title="Poor (adapted from source-gong, manifest.yaml)"
+```yaml title="Poor"
 spec:
   connection_specification:
     type: object
@@ -894,7 +894,7 @@ spec:
         airbyte_secret: true
 ```
 
-```yaml title="Good (adapted from source-amplitude, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -918,7 +918,7 @@ access_key: str = Field(
 )
 ```
 
-```python title="Good (adapted from source-facebook-marketing, spec.py)"
+```python title="Good"
 access_token: Optional[str] = Field(
     title="Access token",
     description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
@@ -943,7 +943,7 @@ access_token: Optional[str] = Field(
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-bigquery)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -990,7 +990,7 @@ spec:
         airbyte_secret: true
 ```
 
-```yaml title="Good (adapted from source-amplitude, manifest.yaml)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -1006,7 +1006,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```python title="Poor (adapted from source-facebook-marketing, spec.py)"
+```python title="Poor"
 access_token: str = Field(
     ...,
     title="Access token",
@@ -1015,7 +1015,7 @@ access_token: str = Field(
 )
 ```
 
-```json title="Good (adapted from source-google-ads, spec.json)"
+```json title="Good"
 {
   "properties": {
     "customer_id": {
@@ -1047,7 +1047,7 @@ access_token: str = Field(
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from source-bigquery)"
+```kotlin title="Good: Kotlin"
 @JsonProperty("credentials_json")
 @JsonSchemaTitle("Service account key JSON")
 @JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
@@ -1157,7 +1157,7 @@ credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Fiel
 )
 ```
 
-```python title="Good (source-facebook-marketing, spec.py)"
+```python title="Good"
 credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
     title="Authentication",
     description="Credentials for connecting to the Facebook Marketing API",
@@ -1204,7 +1204,7 @@ credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
 }
 ```
 
-```kotlin title="Good: Kotlin (adapted from the bulk CDK SSH tunnel method configuration)"
+```kotlin title="Good: Kotlin"
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = ApiKeyCredentials::class, name = "API_KEY"),
@@ -1296,7 +1296,7 @@ spec:
         pattern_descriptor: YYYY-MM-DD
 ```
 
-```yaml title="Good (adapted from source-google-ads, spec.json)"
+```yaml title="Good"
 spec:
   connection_specification:
     type: object
@@ -1313,7 +1313,7 @@ spec:
 </TabItem>
 <TabItem value="python" label="Python">
 
-```json title="Poor (adapted from source-google-ads, spec.json)"
+```json title="Poor"
 {
   "properties": {
     "start_date": {
@@ -1327,7 +1327,7 @@ spec:
 }
 ```
 
-```json title="Good (adapted from source-google-ads, spec.json)"
+```json title="Good"
 {
   "properties": {
     "start_date": {
