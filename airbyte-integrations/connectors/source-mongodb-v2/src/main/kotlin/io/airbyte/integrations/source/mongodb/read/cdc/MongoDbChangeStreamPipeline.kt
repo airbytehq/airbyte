@@ -18,19 +18,22 @@ object MongoDbChangeStreamPipeline {
         listOfNotNull(
             Aggregates.match(
                 Filters.and(
-                    Filters.or(
-                        streams.map {
-                            Filters.and(
-                                Filters.eq("ns.db", it.namespace),
-                                Filters.eq("ns.coll", it.name),
-                            )
-                        },
-                    ),
+                    namespaces(streams),
                     Filters.`in`("operationType", DATA_OPERATIONS),
                 ),
             ),
             if (preImages) KEEP_NEEDED_PRE_IMAGES else null,
         )
+
+    /** `$or` of the namespaces; with none, a filter no event matches (`$or: []` is rejected). */
+    private fun namespaces(streams: Collection<StreamIdentifier>): Bson =
+        if (streams.isEmpty()) Filters.eq("ns.coll", "")
+        else
+            Filters.or(
+                streams.map {
+                    Filters.and(Filters.eq("ns.db", it.namespace), Filters.eq("ns.coll", it.name))
+                },
+            )
 
     private val DATA_OPERATIONS: List<String> = listOf("insert", "update", "replace", "delete")
     private const val PRE_IMAGE_FIELD = "fullDocumentBeforeChange"

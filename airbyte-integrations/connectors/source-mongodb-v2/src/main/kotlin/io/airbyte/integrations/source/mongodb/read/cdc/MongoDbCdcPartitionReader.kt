@@ -10,6 +10,7 @@ import com.mongodb.client.model.changestream.FullDocument
 import com.mongodb.client.model.changestream.FullDocumentBeforeChange
 import com.mongodb.client.model.changestream.OperationType
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -88,11 +89,17 @@ class MongoDbCdcPartitionReader(
             when (configuration.invalidCdcCursorPositionBehavior) {
                 InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
                     throw ConfigErrorException(
-                        "Saved offset is not valid. Please reset the connection, and then increase " +
-                            "oplog retention and/or increase sync frequency to prevent this from " +
-                            "happening in the future. See " +
-                            "https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams " +
-                            "for more details",
+                        if (isHistoryLost(e)) {
+                            "Saved offset is not valid. Please reset the connection, and then " +
+                                "increase oplog retention and/or increase sync frequency to " +
+                                "prevent this from happening in the future. See " +
+                                "https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams " +
+                                "for more details"
+                        } else {
+                            "The saved change stream position cannot be read by the server " +
+                                "(${e.message}). The connection's state is corrupt or was taken " +
+                                "from another cluster; please reset the connection."
+                        },
                         e,
                     )
                 InvalidCdcCursorPositionBehavior.RESYNC_DATA -> {
@@ -118,18 +125,35 @@ class MongoDbCdcPartitionReader(
         if (resumeAfter == null) {
             resumeToken = currentPosition()
         } else {
-            val target: BsonTimestamp = MongoDbResumeTokens.timestamp(currentPosition())
+            val target: BsonTimestamp = clusterTimeNow()
             val changeStream: ChangeStreamIterable<RawBsonDocument> =
                 openChangeStream().resumeAfter(resumeAfter)
             changeStream.cursor().use { cursor ->
+                var emptyPolls = 0
                 while (true) {
                     currentCoroutineContext().ensureActive()
                     val event: ChangeStreamDocument<RawBsonDocument>? = cursor.tryNext()
                     if (event == null) {
-                        // Drained: the post-batch token is at or past the last event.
+                        // An empty batch is "drained" only once the post-batch token has reached
+                        // the target. Through `mongos` the token is the minimum over the shards
+                        // and an event is held back until every shard has passed it, so an empty
+                        // batch can precede events that are already committed; poll on until the
+                        // idle shard's periodic no-op moves it, within a bound.
                         resumeToken = cursor.resumeToken
-                        break
+                        val position: BsonTimestamp? =
+                            resumeToken?.let { MongoDbResumeTokens.timestamp(it) }
+                        if (position == null || position >= target) break
+                        if (++emptyPolls >= MAX_EMPTY_POLLS) {
+                            log.warn {
+                                "The change stream position ($position) did not reach the " +
+                                    "target ($target) after $emptyPolls empty polls; stopping " +
+                                    "here, the rest is read by the next sync."
+                            }
+                            break
+                        }
+                        continue
                     }
+                    emptyPolls = 0
                     if (emit(event)) numRecords++ else discarded++
                     resumeToken = event.resumeToken
                     val clusterTime: BsonTimestamp? = event.clusterTime
@@ -163,6 +187,22 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
+     * Where a warm drain stops: the cluster time the server gossips, which is at or past every
+     * write committed before the call on every shard. A fresh cursor's post-batch token would not
+     * do here: through `mongos` it is the minimum over the shards, and an idle shard's position
+     * only moves with its periodic no-op, so the drain would stop short of recent writes. (The
+     * snapshot cursor is a different matter: it comes from the checkpointed token.)
+     */
+    private fun clusterTimeNow(): BsonTimestamp =
+        sharedState.client
+            .getDatabase("admin")
+            .runCommand(BsonDocument("hello", org.bson.BsonInt32(1)), BsonDocument::class.java)
+            .getDocument("\$clusterTime")
+            .getTimestamp("clusterTime")
+            .value
+            .let { BsonTimestamp(it) }
+
+    /**
      * The stream's current position: the post-batch resume token of one poll on a fresh cursor
      * (MongoDB 4.0.7+; earlier servers return none after an empty batch).
      */
@@ -188,6 +228,11 @@ class MongoDbCdcPartitionReader(
                     (it is MongoCommandException &&
                         it.errorCode in INVALID_RESUME_TOKEN_ERROR_CODES)
             }
+
+    /** ChangeStreamHistoryLost: the position is well-formed but the oplog no longer holds it. */
+    private fun isHistoryLost(e: Throwable): Boolean =
+        generateSequence(e) { it.cause }
+            .any { it is MongoCommandException && it.errorCode == CHANGE_STREAM_HISTORY_LOST }
 
     /**
      * Emits [event] as a record; false for an unselected collection or non-data change. A delete is
@@ -229,13 +274,23 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
+     * The streams whose changes this read replays: those with a checkpoint (snapshot started or
+     * complete), as the legacy connector's Debezium include list. A stream snapshotted for the
+     * first time in this sync is not watched: its documents written after the saved token are in
+     * that snapshot, and the next sync replays what follows. Empty on a cold start, which only
+     * captures the position.
+     */
+    private fun watchedStreams(): List<StreamIdentifier> =
+        feedBootstrap.feed.streams.filter { feedBootstrap.currentState(it) != null }.map { it.id }
+
+    /**
      * A single configured database is watched by itself, which the `read` role on that database
      * allows; several need a cluster-wide stream (`readAnyDatabase`).
      */
     private fun watch(): ChangeStreamIterable<RawBsonDocument> {
         val pipeline: List<Bson> =
             MongoDbChangeStreamPipeline.build(
-                feedBootstrap.feed.streams.map { it.id },
+                watchedStreams(),
                 preImages = sharedState.supportsPreImages,
             )
         return configuration.databases.singleOrNull()?.let {
@@ -266,5 +321,11 @@ class MongoDbCdcPartitionReader(
         const val STREAM_COMMENT = "airbyte-source-mongodb"
         /** HistoryLost, FatalError, InvalidResumeToken, FailedToParse, empty, bad KeyString. */
         val INVALID_RESUME_TOKEN_ERROR_CODES: Set<Int> = setOf(286, 280, 260, 9, 40649, 50811)
+        const val CHANGE_STREAM_HISTORY_LOST = 286
+        /**
+         * Empty polls (about a second each, the server's await time) tolerated before the target is
+         * reached: well past the 10 s periodic no-op that moves an idle shard's position.
+         */
+        const val MAX_EMPTY_POLLS = 60
     }
 }

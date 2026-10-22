@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodb.discover
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.mongodb.MongoCommandException
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Aggregates
@@ -94,16 +95,35 @@ class MongoDbSourceMetadataQuerier(
     }
 
     /**
-     * Names of the collections in [databaseName] the credentials may read, views and time series
-     * collections included, as the legacy connector listed them (its `type` filter never applied).
-     * Neither has a change stream, so an incremental stream of them only ever snapshots; a time
-     * series collection has no `_id` index, so its ordered read sorts every bucket.
+     * Names of the collections in [databaseName] the credentials may read. Views are not streams,
+     * nor are time-series collections: they have no `_id` index to resume a snapshot from and no
+     * change stream.
      *
-     * `listCollections` only lets a user *without* the `listCollections` privilege list what they
-     * can read (`authorizedCollections`) when asked without a filter.
+     * Two commands, because `listCollections` only lets a user *without* the `listCollections`
+     * privilege list what they can read (`authorizedCollections`) when the filter is on `name`
+     * alone: the names come from that relaxed form, and the views and time-series collections to
+     * drop from a filtered form that needs the privilege — a user who lacks it has no views to read
+     * through this connector anyway.
      */
-    fun authorizedCollections(databaseName: String): Set<String> =
-        listCollectionNames(databaseName, filter = null).filter(::isSupportedCollection).toSet()
+    fun authorizedCollections(databaseName: String): Set<String> {
+        val names: Set<String> = listCollectionNames(databaseName, filter = null)
+        if (names.isEmpty()) return emptySet()
+        val notCollections: Set<String> =
+            try {
+                listCollectionNames(
+                    databaseName,
+                    filter = Document("type", Document("\$ne", COLLECTION_TYPE)),
+                )
+            } catch (e: MongoCommandException) {
+                if (e.errorCode != UNAUTHORIZED_ERROR_CODE) throw e
+                log.info {
+                    "No listCollections privilege on $databaseName: views cannot be told apart " +
+                        "from collections there."
+                }
+                emptySet()
+            }
+        return (names - notCollections).filter(::isSupportedCollection).toSet()
+    }
 
     private fun listCollectionNames(databaseName: String, filter: Document?): Set<String> {
         val command =
@@ -170,14 +190,6 @@ class MongoDbSourceMetadataQuerier(
         val fieldTypes: Map<String, MongoDbFieldType> =
             sampleFieldTypes(collection, idOnly = !configuration.schemaEnforced)
         if (fieldTypes.isEmpty()) {
-            return emptyList()
-        }
-        if (ID_FIELD !in fieldTypes) {
-            // A view whose pipeline drops `_id`: the snapshot orders and resumes by `_id`.
-            log.warn {
-                "${streamID.namespace}.${streamID.name} has documents without _id and is not " +
-                    "discovered; a view must keep _id to be synced."
-            }
             return emptyList()
         }
         val fields: List<EmittedField> =
@@ -311,6 +323,8 @@ class MongoDbSourceMetadataQuerier(
         private const val READ_OPERATION = "read"
 
         /** Collection name prefixes which are never exposed as streams. */
+        const val COLLECTION_TYPE = "collection"
+        private const val UNAUTHORIZED_ERROR_CODE = 13
         val IGNORED_COLLECTION_PREFIXES: Set<String> = setOf("system.", "replset.", "oplog.")
 
         fun isSupportedCollection(collectionName: String): Boolean =

@@ -95,10 +95,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   throws v2's message naming the unreadable databases from the last `streamNames()` call during
   `check`, before the CDK would fall back to its generic "Discovered zero tables.". A user with no
   privilege at all on a configured database gets the server's own `Unauthorized`, as with the
-  legacy connector. `listCollections` is asked without a filter (`authorizedCollections: true,
-  nameOnly: true`), the only form the server lets a user without the `listCollections` privilege
-  run (it then lists what they can read); views and time series collections are listed like the
-  legacy connector listed them. `MongoDbSourcePermissionsTest` runs these
+  legacy connector. **`listCollections` is two commands**: the names come from the form without a
+  filter (`authorizedCollections: true, nameOnly: true`), the only form the server lets a user
+  without the `listCollections` privilege run (it then lists what they can read), and the views and
+  time-series collections to drop from a `type`-filtered form that needs the privilege — tolerated
+  when missing, such a user has no views to read anyway. `MongoDbSourcePermissionsTest` runs these
   against a replica set with authentication (`MongoDbAuthReplicaSet`): `read` on one database,
   `readAnyDatabase`, `find` on one collection only, no privilege, a wrong password.
 - `discover` parity: `src/test/resources/expected-catalog-*.json` started as the `CATALOG` objects
@@ -112,15 +113,14 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   BSON types takes the type of whichever document shape the server returns first, in both
   connectors. Two legacy bugs are fixed rather than reproduced, so the fixtures differ from the
   legacy output there: booleans are declared as `boolean` (`$type` reports `bool`, which the legacy
-  mapping never matched, so it fell through to `string` while the records carried real booleans) and a view whose
-  pipeline drops `_id` is left out of discovery (the legacy connector listed it and crashed with a
-  `NullPointerException` at read; here the reader also rejects such a document with a config error). Views and
-  time series collections are streams with both sync modes, exactly as the legacy connector listed them (its
-  `listCollections` filter `{type: "collection"}` was appended to the command *result* instead of the command, so it
-  never reached the server): a full refresh snapshots them thanks to `allowDiskUse` (a time series collection has no
-  `_id` index, so every round sorts the whole collection) and an incremental stream never receives a change (change
-  streams cannot be opened on either) — `testViewsAndTimeSeriesCollectionsReadLikeV2`, documented as a limitation.
-  Set
+  mapping never matched, so it fell through to `string` while the records carried real booleans), and views and
+  time series collections are not streams (the legacy `listCollections` filter `{type: "collection"}` was appended
+  to the command *result* instead of the command, so it never reached the server, and the legacy connector listed
+  both: a full refresh snapshotted them thanks to `allowDiskUse`, an incremental stream never received a change
+  since change streams cannot be opened on either, and a time series collection has no `_id` index, so every
+  resumed round re-sorted the whole collection). The `type: collection` filter excludes them from discovery,
+  documented as a breaking change (`testDiscoverExcludesViewsAndTimeSeriesCollections`); a stream still in a
+  catalog fails the CDK's catalog validation until the schema is refreshed. Set
   `MONGODB_REGENERATE_FIXTURES=true` when running `MongoDbSourceDiscoverTest` to rewrite the
   fixtures from the actual output. To diff the Docker images, run `discover` for both on the parity
   replica set and compare the `CATALOG` lines with streams sorted (scripts in the skill's
@@ -261,13 +261,17 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   from the events emitted from `fullDocument`: only deletes and lookup-less updates carry one over the network
   (`MongoDbChangeStreamPipelineTest` watches a raw stream through the pipeline). The read is
   **bounded**:
-  the reader first takes the stream's current position (the post-batch resume token of one poll on a fresh cursor,
-  decoded to its oplog time by `MongoDbResumeTokens`) and stops after the first event past it, checkpointing that
+  the reader first takes the cluster time the server gossips (`hello`'s `$clusterTime`, at or past every write
+  committed on every shard — a fresh cursor's post-batch token is the minimum over the shards through `mongos`
+  and lags on an idle shard) and stops after the first event past it, or on an empty batch once the post-batch
+  token has reached it — through `mongos` an empty batch can precede committed events the router holds back until
+  every shard has passed them, so the reader polls on (bounded by `MAX_EMPTY_POLLS`) — checkpointing that
   event's own token — a resume reads strictly after a token, so nothing is lost or repeated and a busy cluster cannot
   keep the sync open
   (`testCdcStopsAtTargetUnderContinuousWrites`). The token is checkpointed once, when the read ends. A catalog without
-  incremental streams gets no CDC partition at all. A dropped collection left in the catalog fails
-  the CDK's catalog validation until the schema is refreshed. `_ab_cdc_cursor` is a
+  incremental streams gets no CDC partition at all. A view, time series collection or dropped
+  collection left in the catalog fails the CDK's catalog validation until the schema is refreshed —
+  documented in the migration guide. `_ab_cdc_cursor` is a
   MongoDB oplog time as a long (`BsonTimestamp.value`), stamped per record by the readers: the
   event's own time on a change, the time of the change-stream position this READ saved
   (`MongoDbCdcState.cdcSyncedUntil`, decoded from the captured or checkpointed token and
@@ -280,8 +284,12 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   the legacy default and now the only behaviour (`update_capture_mode` is dropped from the spec; a saved value is
   ignored):
   no post-image prerequisite on the collections, at the cost of intermediate states of a document updated several times
-  between reads. The `$match` names every configured stream's `ns.db` /
-  `ns.coll`, so events of unselected collections never leave the server; `batchSize` is maxed so batches are bounded by
+  between reads. The `$match` names the `ns.db` / `ns.coll` of every stream that has a checkpoint
+  (snapshot started or complete) — the legacy connector's Debezium include list — so events of
+  unselected collections never leave the server and a stream snapshotted for the first time in a
+  sync is not also replayed from the token (it joins the `$match` from the next sync;
+  `testStreamAddedToAWarmConnectionIsSnapshottedOnceNotReplayedToo`); with nothing to watch, on a
+  cold start, the match names no namespace; `batchSize` is maxed so batches are bounded by
   the 16MB message size only; the cursor carries the comment
   `airbyte-source-mongodb` for `currentOp`. **Legacy v2 state is read
   as-is:** `MongoDbCdcState.fromOpaqueStateValue` also understands v2's Debezium offset map
@@ -298,7 +306,9 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   afresh. Documented in the migration guide. A saved token the server rejects
   (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
   `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
-  config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
+  config error for `ChangeStreamHistoryLost` (286) and a "cannot be read by the server … reset the
+  connection" one for a token the server cannot parse (9, 260, 280, 40649, 50811), which no oplog
+  setting would fix; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
   accepts any *well-formed* token, even for a nonsensical cluster time, and resumes from the oplog
   start — only a rejected token can be detected.
 - **Consistency guards** (ported from v2, run when planning the READ): the `schema_enforced` mode must

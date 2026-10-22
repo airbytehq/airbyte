@@ -84,6 +84,40 @@ class MongoDbExceptionClassifierTest {
     fun testUnauthorizedIsAConfigError() {
         val result: ConnectorError = handler.classify(commandException(13, "Unauthorized"))
         Assertions.assertInstanceOf(ConfigError::class.java, result, result.toString())
+        val message = (result as ConfigError).displayMessage
+        Assertions.assertTrue(message.contains("not authorized to read"), message)
+    }
+
+    /** A change stream on a standalone server: the first thing such a user sees after CHECK. */
+    @Test
+    fun testChangeStreamOnAStandaloneServerIsAnActionableConfigError() {
+        val result: ConnectorError = handler.classify(commandException(40573, "Location40573"))
+        Assertions.assertInstanceOf(ConfigError::class.java, result, result.toString())
+        val message = (result as ConfigError).displayMessage
+        Assertions.assertTrue(message.contains("standalone server"), message)
+        Assertions.assertTrue(message.contains("Full Refresh"), message)
+    }
+
+    /** The server's own label wins over the code set, whatever the code. */
+    @Test
+    fun testResumableChangeStreamErrorLabelIsTransientForAnyCode() {
+        val labelled =
+            MongoCommandException(
+                BsonDocument("ok", BsonInt32(0))
+                    .append("code", BsonInt32(99999))
+                    .append("codeName", BsonString("Whatever"))
+                    .append("errmsg", BsonString("labelled"))
+                    .append(
+                        "errorLabels",
+                        org.bson.BsonArray(listOf(BsonString("ResumableChangeStreamError")))
+                    ),
+                ServerAddress("mongo", 27017),
+            )
+        Assertions.assertInstanceOf(TransientError::class.java, handler.classify(labelled))
+        Assertions.assertInstanceOf(
+            TransientError::class.java,
+            handler.classify(commandException(175, "QueryPlanKilled")),
+        )
     }
 
     @Test

@@ -15,7 +15,6 @@ import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteCatalog
-import io.airbyte.protocol.models.v0.SyncMode
 import java.io.File
 import java.math.BigDecimal
 import java.util.*
@@ -47,12 +46,12 @@ import org.testcontainers.utility.DockerImageName
 class MongoDbSourceDiscoverTest {
 
     /**
-     * Views and time series collections are streams with both sync modes, as the legacy connector
-     * listed them (its `type` filter never applied); system collections are not. A view whose
-     * pipeline drops `_id` cannot be ordered and is left out.
+     * `listCollections` is filtered to `type: collection` server-side: views and time series
+     * collections are not streams (neither has a change stream; a time series collection has no
+     * `_id` index to resume from), nor are system collections.
      */
     @Test
-    fun testDiscoverIncludesViewsAndTimeSeriesCollectionsLikeV2() {
+    fun testDiscoverExcludesViewsAndTimeSeriesCollections() {
         val catalog: AirbyteCatalog =
             CliRunner.source(
                     "discover",
@@ -61,17 +60,12 @@ class MongoDbSourceDiscoverTest {
                 .run()
                 .catalogs()
                 .first()
-        val byName = catalog.streams.associateBy { it.name }
-        for (name in listOf("people", "people_view", "readings")) {
-            val stream = checkNotNull(byName[name]) { "$name must be discovered: ${byName.keys}" }
-            Assertions.assertEquals(
-                listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-                stream.supportedSyncModes,
-                name,
-            )
+        val names: Set<String> = catalog.streams.map { it.name }.toSet()
+        Assertions.assertTrue("people" in names, names.toString())
+        for (excluded in
+            listOf("people_view", "people_view_no_id", "readings", "system.buckets.ignored")) {
+            Assertions.assertFalse(excluded in names, "$excluded must not be discovered: $names")
         }
-        Assertions.assertFalse("system.buckets.ignored" in byName, byName.keys.toString())
-        Assertions.assertFalse("people_view_no_id" in byName, byName.keys.toString())
     }
 
     @Test

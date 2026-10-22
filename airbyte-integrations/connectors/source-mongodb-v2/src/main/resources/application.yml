@@ -29,6 +29,25 @@ airbyte:
               com.mongodb.MongoCommandException: Command execution failed on MongoDB server with error 13 (Unauthorized):
               'not authorized on test_db to execute command { listCollections: 1, authorizedCollections: true, nameOnly: true }' on server mongo:27017.
             error: config
+            output: >-
+              The configured MongoDB user is not authorized to read the configured databases. Grant it
+              the 'read' role on the database (or 'readAnyDatabase' when several databases are
+              configured), or set the Database Names to the databases it may read. See
+              https://docs.airbyte.com/integrations/sources/mongodb-v2#step-1-create-a-dedicated-read-only-mongodb-user
+
+          # Server error 40573: a change stream was opened on a standalone server, which has no
+          # oplog. CHECK passes there (as the legacy connector's did), so this is the first thing
+          # an incremental sync against a standalone server reports.
+          - pattern: (?i).*(error 40573|\$changeStream stage is only supported on replica sets).*
+            input-example: >-
+              com.mongodb.MongoCommandException: Command execution failed on MongoDB server with error 40573 (Location40573):
+              'The $changeStream stage is only supported on replica sets' on server mongo:27017.
+            error: config
+            output: >-
+              Incremental (CDC) syncs need a replica set or a sharded cluster: the configured MongoDB
+              instance is a standalone server, which has no oplog and no change streams. Convert it to
+              a replica set (a single-node replica set is enough), or sync its collections in Full
+              Refresh mode. See https://docs.airbyte.com/integrations/sources/mongodb-v2#requirements
 
           # Server selection timed out: a wrong host during CHECK (reported as a config error
           # there regardless), a network blip or an election mid-READ (retry from the checkpoint).
@@ -39,6 +58,10 @@ airbyte:
               com.mongodb.MongoTimeoutException: Timed out while waiting for a server that matches
               ReadPreferenceServerSelector{readPreference=primary}. Client view of cluster state is {type=UNKNOWN, ...}
             error: transient
+            output: >-
+              No MongoDB server could be reached within the server selection timeout. Check that the
+              hosts in the connection string are correct and reachable from Airbyte (firewall, IP allow
+              list, DNS) and that the replica set has a primary; the sync is retried.
 
           # Server error 10334 (BSONObjectTooLarge): a change-stream event exceeded the 16MB BSON
           # limit. Same actionable message as the legacy (Debezium) connector.

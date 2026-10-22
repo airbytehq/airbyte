@@ -49,7 +49,7 @@ class MongoDbSourcePermissionsTest {
     fun testCheckWithoutAnyPrivilegeOnTheDatabaseIsUnauthorized() {
         SyncsTestFixture.testCheck(
             config(OTHER_DB_USER, listOf(TEST_DB)),
-            expectedFailure = "error 13 \\(Unauthorized\\)",
+            expectedFailure = "not authorized to read the configured databases",
         )
     }
 
@@ -126,7 +126,11 @@ class MongoDbSourcePermissionsTest {
         )
         val singleDb = config(SINGLE_DB_USER, listOf(TEST_DB, OTHER_DB))
         val failed: BufferingOutputConsumer = readExpectingFailure(singleDb, catalog)
-        assertFailure(failed, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR, "Unauthorized")
+        assertFailure(
+            failed,
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            "readAnyDatabase",
+        )
 
         val sync: BufferingOutputConsumer = read(anyDb, catalog)
         Assertions.assertEquals(

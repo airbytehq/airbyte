@@ -8,7 +8,7 @@
 
 We recommend adjusting the Oplog size for your MongoDB cluster to ensure it holds at least 24 hours of changes. For optimal results, we suggest expanding it to maintain a week's worth of data. To adjust your Oplog size, see the corresponding tutorials for [MongoDB Atlas](https://www.mongodb.com/docs/atlas/cluster-additional-settings/#set-oplog-size) (fully-managed) and [MongoDB shell](https://www.mongodb.com/docs/manual/tutorial/change-oplog-size/) (self-hosted).
 
-If a sync fails with "Saved offset is not valid", the change stream position saved by the previous sync is no longer in the oplog. The **Invalid CDC position behavior** setting decides what happens: with "Fail sync" (the default) you need to reset the connection, with "Re-sync data" the connector takes a new initial snapshot by itself. To prevent it from happening again:
+If a sync fails with "Saved offset is not valid", the change stream position saved by the previous sync is no longer in the oplog. (A different message, "The saved change stream position cannot be read by the server", means the saved state is corrupt or was taken from another cluster; the only remedy is to reset the connection.) The **Invalid CDC position behavior** setting decides what happens: with "Fail sync" (the default) you need to reset the connection, with "Re-sync data" the connector takes a new initial snapshot by itself. To prevent it from happening again:
 
 1. Increase the Oplog retention period.
 2. Increase the Oplog size.
@@ -55,9 +55,9 @@ that was deleted before the event could be read is emitted as a delete.
 
 ### Supported MongoDB Clusters
 
-- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: Full Refresh works, Incremental fails when the change stream is opened ("The $changeStream stage is only supported on replica sets").
+- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: Full Refresh works, Incremental fails when the change stream is opened, with a message saying that Incremental syncs need a replica set or a sharded cluster.
 - Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
-- Views and time series collections can be synced in Full Refresh mode only in practice: MongoDB has no change streams for them, so an Incremental sync never receives changes after its initial snapshot. A view must keep `_id` in its pipeline. Capped and clustered collections have not been validated with this connector.
+- Views and time series collections are not discovered and cannot be synced: MongoDB has no change streams for them, and a time series collection has no `_id` index to resume a snapshot from. Sync the underlying collection of a view instead. Capped and clustered collections have not been validated with this connector.
 - Empty collections are excluded from schema discovery.
 - All documents in a collection should use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types is read in full by an uninterrupted sync, but a sync resuming after a checkpoint on one type does not sync the documents of the other types. The connector warns with "The \_id fields in this collection are not consistently typed, which may lead to data loss" and the types it found; make the type consistent or exclude the collection.
 - Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.

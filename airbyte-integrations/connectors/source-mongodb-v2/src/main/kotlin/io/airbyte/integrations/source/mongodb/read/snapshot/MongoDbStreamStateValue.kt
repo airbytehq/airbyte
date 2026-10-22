@@ -186,7 +186,7 @@ data class MongoDbStreamStateValue(
 
         /** Inverse of [binaryIdToString]: rebuilds a [Binary] `_id` from its stored text form. */
         private fun reconstructBinary(id: String, subType: Int): Binary =
-            if (subType == UUID_SUBTYPE) {
+            if (subType == UUID_SUBTYPE && UUID_TEXT.matches(id)) {
                 BsonBinary(UUID.fromString(id)).let { Binary(it.type, it.data) }
             } else {
                 Binary(subType.toByte(), Base64.getDecoder().decode(id))
@@ -203,5 +203,8 @@ data class MongoDbStreamStateValue(
         /** `BsonBinarySubType.UUID_STANDARD`. */
         private const val UUID_SUBTYPE = 4
         private const val UUID_BYTE_LENGTH = 16
+        /** The text form [binaryIdToString] writes for a 16-byte subtype-4 value; else Base64. */
+        private val UUID_TEXT =
+            Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
     }
 }

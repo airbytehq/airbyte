@@ -125,6 +125,12 @@ class MongoDbStreamStateValueTest {
                 Arguments.of("k", MongoDbIdType.STRING, "k"),
                 Arguments.of(Binary(0, byteArrayOf(1, 2)), MongoDbIdType.BINARY, "AQI="),
                 Arguments.of(Binary(4, uuidBytes), MongoDbIdType.BINARY, uuid.toString()),
+                // Subtype 4 that is not a UUID (not 16 bytes): Base64, read back as such.
+                Arguments.of(
+                    Binary(4, byteArrayOf(0, 0, 0, 0, 0, 0, 9, 0x99.toByte())),
+                    MongoDbIdType.BINARY,
+                    "AAAAAAAACZk=",
+                ),
                 Arguments.of(1.5, MongoDbIdType.DOUBLE, "1.5"),
                 Arguments.of(1e300, MongoDbIdType.DOUBLE, "1.0E300"),
                 Arguments.of(-0.0, MongoDbIdType.DOUBLE, "-0.0"),

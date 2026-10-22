@@ -41,11 +41,13 @@ data:
           capture now reads the change stream with the native MongoDB driver instead
           of Debezium. Most connections need no action: the saved CDC position, the
           initial-snapshot state and saved configurations are read as-is, so no reset
-          is required. Act if any of these apply to you: Schema Enforced is on and
-          your collections have boolean fields (refresh the source schema to retype
-          them from string to boolean and update downstream queries that compare them
-          to 'true'/'false'), or you had set Capture mode to Post Image (the setting
-          is removed; updates always read the document's current state).
+          is required. Act if any of these apply to you: your connection syncs a view
+          or a time series collection (no longer synced; the sync fails until you
+          refresh the source schema, which removes the stream), Schema Enforced is on
+          and your collections have boolean fields (refresh the source schema to
+          retype them from string to boolean and update downstream queries that
+          compare them to 'true'/'false'), or you had set Capture mode to Post Image
+          (the setting is removed; updates always read the document's current state).
           'initial_waiting_seconds', 'queue_size' and 'update_capture_mode' are removed
           from the spec. See
           https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations#upgrading-to-300"

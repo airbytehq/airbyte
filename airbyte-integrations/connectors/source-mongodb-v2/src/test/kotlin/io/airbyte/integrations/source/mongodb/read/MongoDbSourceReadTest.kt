@@ -971,7 +971,8 @@ class MongoDbSourceReadTest {
     @Test
     fun testInvalidResumeTokenFailsSyncByDefault() {
         val state = globalState(MongoDbSnapshotStatus.COMPLETE, resumeToken = BOGUS_RESUME_TOKEN)
-        assertReadFails(incrementalCatalog(), state, "Saved offset is not valid")
+        // A token the server cannot parse is a corrupt state, not an oplog-retention problem.
+        assertReadFails(incrementalCatalog(), state, "please reset the connection")
     }
 
     @Test

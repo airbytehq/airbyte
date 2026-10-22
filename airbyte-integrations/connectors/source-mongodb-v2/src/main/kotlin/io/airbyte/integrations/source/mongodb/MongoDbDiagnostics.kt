@@ -4,7 +4,6 @@ package io.airbyte.integrations.source.mongodb
 import com.mongodb.MongoClientSettings
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Projections
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
@@ -118,12 +117,6 @@ object MongoDbDiagnostics {
      */
     fun collectionLine(client: MongoClient, streamId: StreamIdentifier): String {
         val database = client.getDatabase(streamId.namespace!!)
-        if (isView(database, streamId.name)) {
-            val idTypes: List<String> =
-                MongoDbIdTypes.present(database.getCollection(streamId.name))
-            return "Snapshot of ${streamId.namespace}.${streamId.name}: a view (no statistics)" +
-                (if (idTypes.isEmpty()) "." else "; _id types $idTypes.")
-        }
         val stats: Document = database.runCommand(Document(COLL_STATS, streamId.name))
         val count: Long = stats.long("count")
         val size: Long = stats.long("size")
@@ -135,18 +128,6 @@ object MongoDbDiagnostics {
         return "Snapshot of ${streamId.namespace}.${streamId.name}: ${count(count)} documents, " +
             "${bytes(size)}$average, ${bytes(storageSize)} on disk, $indexes indexes$types."
     }
-
-    private fun isView(database: MongoDatabase, name: String): Boolean =
-        database
-            .runCommand(
-                Document("listCollections", 1)
-                    .append("filter", Document("name", name))
-                    .append("authorizedCollections", true)
-            )
-            .toBsonDocument()
-            .getDocument("cursor")
-            .getArray("firstBatch")
-            .any { it.asDocument().getString("type", org.bson.BsonString("")).value == "view" }
 
     private fun endpointTime(oplog: MongoCollection<Document>, order: Int): BsonTimestamp =
         oplog

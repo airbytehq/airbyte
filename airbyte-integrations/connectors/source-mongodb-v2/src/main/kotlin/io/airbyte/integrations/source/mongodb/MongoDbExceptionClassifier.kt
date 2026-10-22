@@ -36,7 +36,9 @@ class MongoDbExceptionClassifier(
             is MongoTimeoutException,
             is MongoConnectionPoolClearedException,
             is MongoServerUnavailableException -> true
-            is MongoCommandException -> e.errorCode in TRANSIENT_SERVER_ERROR_CODES
+            is MongoCommandException ->
+                e.hasErrorLabel(RESUMABLE_CHANGE_STREAM_ERROR) ||
+                    e.errorCode in TRANSIENT_SERVER_ERROR_CODES
             is MongoException -> e.hasErrorLabel(RESUMABLE_CHANGE_STREAM_ERROR)
             else -> false
         }
@@ -51,7 +53,27 @@ class MongoDbExceptionClassifier(
          * CursorKilled).
          */
         val TRANSIENT_SERVER_ERROR_CODES: Set<Int> =
-            setOf(6, 7, 89, 91, 189, 262, 9001, 10107, 11600, 11602, 13435, 13436, 133, 43, 237)
+            setOf(
+                6,
+                7,
+                89,
+                91,
+                189,
+                262,
+                9001,
+                10107,
+                11600,
+                11602,
+                13435,
+                13436,
+                133,
+                43,
+                237,
+                // QueryPlanKilled: an index or collection dropped, or a replica-set state change,
+                // under a running query; the retry continues from the checkpoint or reports the
+                // dropped collection through catalog validation.
+                175,
+            )
 
         /** Label the server puts on change stream errors a resume from the last token recovers. */
         const val RESUMABLE_CHANGE_STREAM_ERROR = "ResumableChangeStreamError"
