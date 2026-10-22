@@ -174,7 +174,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.0.1 | 2026-10-22 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Use Reddit's official icon from the Reddit Brand System; document where to find the ad account ID |
+| 1.0.1 | 2026-10-22 | [89670](https://github.com/airbytehq/airbyte/pull/89670) | Use Reddit's official icon from the Reddit Brand System; document where to find the ad account ID |
 | 1.0.0 | 2026-10-20 | [89083](https://github.com/airbytehq/airbyte/pull/89083) | Type timestamp, date and integer fields to match Reddit's API and normalize report `date` to `YYYY-MM-DD` |
 | 0.4.1 | 2026-10-20 | [88784](https://github.com/airbytehq/airbyte/pull/88784) | Update dependencies |
 | 0.4.0 | 2026-10-16 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams; show Reddit's field-level reason in HTTP 400 error messages |
