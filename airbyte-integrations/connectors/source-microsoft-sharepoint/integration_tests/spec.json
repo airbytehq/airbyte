@@ -500,7 +500,7 @@
         },
         "search_scope": {
           "title": "Search Scope",
-          "description": "Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
+          "description": "Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. 'SHARED_ITEMS' and 'ALL' find shared items through Microsoft Graph's deprecated sharedWithMe API, which stops returning data after November 2026, so use 'ACCESSIBLE_DRIVES' for files shared with you.",
           "default": "ALL",
           "enum": ["ACCESSIBLE_DRIVES", "SHARED_ITEMS", "ALL"],
           "order": 3,

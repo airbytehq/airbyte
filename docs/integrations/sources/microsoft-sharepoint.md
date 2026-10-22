@@ -26,7 +26,7 @@ This page contains the setup guide and reference information for the [Microsoft 
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. Microsoft is retiring the Graph `sharedWithMe` API that 'SHARED_ITEMS' and 'ALL' use to find shared items, and it stops returning data after November 2026. To keep syncing files that are shared with you, select 'ACCESSIBLE_DRIVES' and set **Site URL** to the site that holds the files.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -90,7 +90,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. Microsoft is retiring the Graph `sharedWithMe` API that 'SHARED_ITEMS' and 'ALL' use to find shared items, and it stops returning data after November 2026. To keep syncing files that are shared with you, select 'ACCESSIBLE_DRIVES' and set **Site URL** to the site that holds the files.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
 8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
@@ -306,6 +306,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.10.5 | 2026-10-22 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Keep syncing drive files and report a clear error when the deprecated Microsoft Graph sharedWithMe API stops returning shared items |
 | 0.10.4 | 2025-08-21 | [65118](https://github.com/airbytehq/airbyte/pull/65118) | Decertify connector |
 | 0.10.3 | 2025-07-13 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
 | 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
