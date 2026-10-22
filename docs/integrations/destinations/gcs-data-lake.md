@@ -190,7 +190,7 @@ An unknown number of API sources have streams that don't meet these conditions. 
 
 Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on format v2 tables and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version.
 
-Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors — required by some readers such as Databricks foreign Iceberg reads, but not readable by Amazon Athena today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
+Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors — required by some readers such as Databricks foreign Iceberg reads, and readable by BigQuery through the BigLake catalog (in Preview), but not readable by Amazon Athena today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
 
 ## Branching and data availability
 
@@ -228,7 +228,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-10-14 | TBD | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. |
+| 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
 | 1.0.11 | 2026-09-01 | [84992](https://github.com/airbytehq/airbyte/pull/84992) | Upgrade to Bulk CDK 1.0.25. |
