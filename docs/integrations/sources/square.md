@@ -48,7 +48,7 @@ The Square source connector supports the following [sync modes](https://docs.air
 - [Team Members](https://developer.squareup.com/reference/square/team-api/search-team-members)
 - [Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
-- [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
+- [Shifts](https://developer.squareup.com/reference/square/labor-api/search-timecards)
 - [Inventory](https://developer.squareup.com/reference/square/inventory-api/batch-retrieve-inventory-counts)
 - [Bank Accounts](https://developer.squareup.com/reference/square/bank-accounts-api/list-bank-accounts)
 - [Cash Drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
@@ -77,6 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.8.0 | 2026-10-22 | [85911](https://github.com/airbytehq/airbyte/pull/85911) | Migrate the `shifts` stream to Square's Timecards API (Labor Shift endpoints retired) and paginate it with `cursor`; `employee_id` is now populated from `team_member_id` |
 | 1.7.34 | 2026-10-20 | [89448](https://github.com/airbytehq/airbyte/pull/89448) | Update dependencies |
 | 1.7.33 | 2026-10-13 | [88838](https://github.com/airbytehq/airbyte/pull/88838) | Update dependencies |
 | 1.7.32 | 2026-10-06 | [88067](https://github.com/airbytehq/airbyte/pull/88067) | Update dependencies |
