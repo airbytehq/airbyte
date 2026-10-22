@@ -49,7 +49,7 @@ class BigQueryProtobufEncodingTest {
 
     private fun payload(
         fields: List<EmittedField>,
-        values: Map<String, Any?>
+        values: Map<String, Any?>,
     ): NativeRecordPayload =
         fields
             .associate { field ->
@@ -57,14 +57,14 @@ class BigQueryProtobufEncodingTest {
                 field.id to
                     FieldValueEncoder(
                         values[field.id],
-                        field.type.jsonEncoder as JsonEncoder<in Any?>
+                        field.type.jsonEncoder as JsonEncoder<in Any?>,
                     )
             }
             .toMutableMap()
 
     private fun encode(
         fields: List<EmittedField>,
-        values: Map<String, Any?>
+        values: Map<String, Any?>,
     ): AirbyteRecordMessageProtobuf {
         val builder: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
@@ -81,8 +81,8 @@ class BigQueryProtobufEncodingTest {
                 fields =
                     listOf(
                         EmittedField("city", StringFieldType),
-                        EmittedField("zip", BigQueryLongFieldType)
-                    )
+                        EmittedField("zip", BigQueryLongFieldType),
+                    ),
             )
         val value: JsonNode = Jsons.readTree("""{"city":"Paris","zip":75001}""")
         val decoded: Any? = roundTrip(type, value)
@@ -107,8 +107,8 @@ class BigQueryProtobufEncodingTest {
                             EmittedField("sku", StringFieldType),
                             EmittedField("qty", BigQueryLongFieldType),
                             EmittedField("observed_at", BigQueryTimeFieldType),
-                        )
-                )
+                        ),
+                ),
             )
         val value: JsonNode =
             Jsons.readTree("""[{"sku":"sku-1","qty":2,"observed_at":"08:00:00.000000"}]""")
@@ -129,11 +129,11 @@ class BigQueryProtobufEncodingTest {
         // Before the Gregorian cutover: the whole point of reading DATE/DATETIME as text.
         Assertions.assertEquals(
             LocalDate.of(1, 1, 1),
-            roundTrip(BigQueryDateFieldType, LocalDate.of(1, 1, 1))
+            roundTrip(BigQueryDateFieldType, LocalDate.of(1, 1, 1)),
         )
         Assertions.assertEquals(
             LocalDate.parse("2021-10-20"),
-            roundTrip(BigQueryDateFieldType, LocalDate.parse("2021-10-20"))
+            roundTrip(BigQueryDateFieldType, LocalDate.parse("2021-10-20")),
         )
         val dateTime = LocalDateTime.parse("2021-10-20T11:22:33.123456")
         Assertions.assertEquals(dateTime, roundTrip(BigQueryDateTimeFieldType, dateTime))
@@ -149,15 +149,15 @@ class BigQueryProtobufEncodingTest {
         Assertions.assertEquals(BigInteger.valueOf(42L), roundTrip(BigQueryLongFieldType, 42L))
         Assertions.assertEquals(
             BigInteger.valueOf(Long.MIN_VALUE),
-            roundTrip(BigQueryLongFieldType, Long.MIN_VALUE)
+            roundTrip(BigQueryLongFieldType, Long.MIN_VALUE),
         )
         Assertions.assertEquals(
             0,
-            BigDecimal("0.25").compareTo(roundTrip(BigQueryDoubleFieldType, 0.25) as BigDecimal)
+            BigDecimal("0.25").compareTo(roundTrip(BigQueryDoubleFieldType, 0.25) as BigDecimal),
         )
         Assertions.assertEquals(
             BigDecimal("12345678901234567890.123456789"),
-            roundTrip(BigDecimalFieldType, BigDecimal("12345678901234567890.123456789"))
+            roundTrip(BigDecimalFieldType, BigDecimal("12345678901234567890.123456789")),
         )
         Assertions.assertEquals(true, roundTrip(BigQueryBooleanFieldType, true))
         Assertions.assertEquals("alice", roundTrip(StringFieldType, "alice"))
@@ -165,7 +165,7 @@ class BigQueryProtobufEncodingTest {
         // BYTES travel as base64 text, like on the STDIO channel.
         Assertions.assertEquals(
             "YWJj",
-            roundTrip(BytesFieldType, ByteBuffer.wrap("abc".toByteArray()))
+            roundTrip(BytesFieldType, ByteBuffer.wrap("abc".toByteArray())),
         )
         // JSON columns arrive from the driver as text and stay text on the wire.
         Assertions.assertEquals("""{"a":1}""", roundTrip(JsonStringFieldType, """{"a":1}"""))
@@ -203,7 +203,7 @@ class BigQueryProtobufEncodingTest {
                     field(
                         "geo",
                         StandardSQLTypeName.STRUCT,
-                        field("observed_at", StandardSQLTypeName.TIME)
+                        field("observed_at", StandardSQLTypeName.TIME),
                     ),
                 ),
                 repeated("tags", StandardSQLTypeName.STRING),
@@ -214,8 +214,9 @@ class BigQueryProtobufEncodingTest {
                     field("qty", StandardSQLTypeName.INT64),
                 ),
             )
-        val fields: List<EmittedField> =
-            schema.map { EmittedField(it.name, BigQueryFieldTypes.fromField(it)) }
+        val fields: List<EmittedField> = schema.map {
+            EmittedField(it.name, BigQueryFieldTypes.fromField(it))
+        }
         val values: Map<String, Any?> =
             mapOf(
                 "id" to 1L,
@@ -247,13 +248,13 @@ class BigQueryProtobufEncodingTest {
                 SpeedModeTestSupport.protobufValueToJson(
                     SpeedModeTestSupport.decode(record.getData(i)),
                     BigQueryFieldTypes.jsonSchema(field.type),
-                )
+                ),
             )
         }
         Assertions.assertEquals(
             SpeedModeTestSupport.normalize(expectedJson),
             SpeedModeTestSupport.normalize(actualJson),
-            actualJson.toString()
+            actualJson.toString(),
         )
     }
 }

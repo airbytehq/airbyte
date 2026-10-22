@@ -24,13 +24,13 @@ internal class MSSQLCheckTest :
                 ),
                 CheckTestConfig(
                     Files.readString(
-                        MSSQLTestConfigUtil.getConfigPath("check/valid-ssl-trust.json")
+                        MSSQLTestConfigUtil.getConfigPath("check/valid-ssl-trust.json"),
                     ),
                     name = "SSL Thrust should work for OSS",
                 ),
                 CheckTestConfig(
                     Files.readString(
-                        MSSQLTestConfigUtil.getConfigPath("check/valid-ssl-trust.json")
+                        MSSQLTestConfigUtil.getConfigPath("check/valid-ssl-trust.json"),
                     ),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                     name = "SSL Thrust should work for Cloud",
@@ -41,16 +41,16 @@ internal class MSSQLCheckTest :
                 CheckTestConfig(
                     Files.readString(MSSQLTestConfigUtil.getConfigPath("check/valid.json")),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                    name = "Unencrypted is not supported in Cloud"
+                    name = "Unencrypted is not supported in Cloud",
                 ) to "Airbyte Cloud requires SSL encryption".toPattern(),
                 CheckTestConfig(
                     Files.readString(
-                        MSSQLTestConfigUtil.getConfigPath("check/fail-database-invalid.json")
+                        MSSQLTestConfigUtil.getConfigPath("check/fail-database-invalid.json"),
                     ),
                     name = "Invalid database name",
                 ) to "Login failed for user 'sa'".toPattern(),
             ),
-        configUpdater = MSSQLConfigUpdater()
+        configUpdater = MSSQLConfigUpdater(),
     ) {
 
     companion object {

@@ -139,11 +139,11 @@ data class Meta(
 
         fun getEmittedAtMs(
             emittedAtMs: Long,
-            extractedAtAsTimestampWithTimezone: Boolean
+            extractedAtAsTimestampWithTimezone: Boolean,
         ): AirbyteValue {
             return if (extractedAtAsTimestampWithTimezone) {
                 TimestampWithTimezoneValue(
-                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC),
                 )
             } else {
                 IntegerValue(emittedAtMs)
@@ -171,8 +171,8 @@ fun Meta.Change.toAirbyteValue(): ObjectValue =
         linkedMapOf(
             "field" to StringValue(field),
             "change" to StringValue(change.name),
-            "reason" to StringValue(reason.name)
-        )
+            "reason" to StringValue(reason.name),
+        ),
     )
 
 fun List<Meta.Change>.toAirbyteValues(): List<ObjectValue> = map { it.toAirbyteValue() }
