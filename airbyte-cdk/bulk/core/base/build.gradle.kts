@@ -101,6 +101,8 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.0")
     implementation("org.bouncycastle:bcprov-jdk18on:1.86")
+    // BouncyCastle jars must share one version: connector drivers pull bcpkix/bcutil at older
+    // versions, and a mixed family fails at provider init (NoSuchFieldError).
     constraints {
         api("org.bouncycastle:bcpkix-jdk18on:1.86") {
             because("keep the BouncyCastle family aligned with bcprov 1.86 — mixed 1.78.x bcpkix/bcutil throw NoSuchFieldError in BouncyCastleProvider init")
