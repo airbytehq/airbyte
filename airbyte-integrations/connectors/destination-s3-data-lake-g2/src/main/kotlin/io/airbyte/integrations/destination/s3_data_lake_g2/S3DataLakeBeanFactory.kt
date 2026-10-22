@@ -25,8 +25,7 @@ import jakarta.inject.Singleton
 class S3DataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
-    @Singleton
-    fun icebergSchemaOptions() = IcebergSchemaOptions(IcebergObjectMode.STRUCT)
+    @Singleton fun icebergSchemaOptions() = IcebergSchemaOptions(IcebergObjectMode.STRUCT)
 
     @Singleton
     fun aggregatePublishingConfig(config: S3DataLakeConfiguration): AggregatePublishingConfig {

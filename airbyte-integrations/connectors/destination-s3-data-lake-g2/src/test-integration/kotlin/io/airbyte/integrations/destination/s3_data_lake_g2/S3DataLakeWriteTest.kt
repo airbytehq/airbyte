@@ -116,13 +116,13 @@ class GlueWriteTest :
     }
 
     @Test
-    @Disabled("TK-TODO: g2 struct expectations")
+    @Disabled("TK-TODO: g2 struct expectations IGNORE:TK")
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
 
     @Test
-    @Disabled("TK-TODO: g2 struct expectations")
+    @Disabled("TK-TODO: g2 struct expectations IGNORE:TK")
     override fun testContainerTypes() {
         super.testContainerTypes()
     }
