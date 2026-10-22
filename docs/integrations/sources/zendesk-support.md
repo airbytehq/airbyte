@@ -118,7 +118,7 @@ The Zendesk Support source connector supports the following [sync modes](https:/
 - Full Refresh | Overwrite
 - Full Refresh | Append
 - Incremental Sync | Append
-- Incremental Sync | Deduped History
+- Incremental Sync | Append + Deduped
 
 :::note
 There are two types of incremental sync:
@@ -224,6 +224,8 @@ The `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://d
 If your connection's schema change setting is **Propagate all field and stream changes**, the connection starts syncing `ticket_audits_per_ticket` automatically after you upgrade to version 5.7.0, with the costs above. If you don't need audits for archived tickets, deselect `ticket_audits_per_ticket` on the connection's **Schema** tab.
 :::
 
+If Zendesk returns `403` for a ticket (access to that ticket is denied) or `404` (the ticket no longer exists), the connector logs a message, skips that ticket's audits, and keeps syncing the rest of the stream. The `tickets` stream returns deleted tickets, so `404` responses are expected.
+
 `ticket_audits` is unchanged, so you can keep using it, switch to `ticket_audits_per_ticket`, or sync both. Both streams share audit `id` values, so you can combine them downstream.
 
 ## Limitations & Troubleshooting
@@ -313,7 +315,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
+| 5.7.0 | 2026-10-22 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |
