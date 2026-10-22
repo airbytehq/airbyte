@@ -1691,6 +1691,10 @@ streams:
             type:
               - "null"
               - string
+          ownership:
+            type:
+              - "null"
+              - string
   - type: DeclarativeStream
     name: interview_stages
     primary_key:

@@ -72,6 +72,7 @@ class TestInterviews(TestCase):
             "instructionsPlain": "Discuss experience.",
             "jobId": "job-1",
             "feedbackFormDefinitionId": "form-1",
+            "ownership": "local",
         }
 
         http_mocker.post(_interviews_request(), _page([record]))
