@@ -9,35 +9,13 @@ import java.security.KeyPairGenerator
 import java.util.Base64
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.parallel.Isolated
 
-/**
- * The emulator is selected through a JVM-wide system property ([BigQueryEmulator.SYSTEM_PROPERTY])
- * which the emulator-backed test classes set for their connector runs. Every test here starts
- * without it and the value found before is restored afterwards; the class is [Isolated] so that no
- * connector context started by another class meanwhile reads what a test here sets.
- */
-@Isolated
 class BigQuerySourceConfigurationFactoryTest {
 
-    private var emulatorHostBefore: String? = null
-
-    @BeforeEach
-    fun clearEmulatorProperty() {
-        emulatorHostBefore = System.getProperty(BigQueryEmulator.SYSTEM_PROPERTY)
-        System.clearProperty(BigQueryEmulator.SYSTEM_PROPERTY)
-    }
-
     @AfterEach
-    fun restoreEmulatorProperty() {
-        val before: String? = emulatorHostBefore
-        if (before == null) {
-            System.clearProperty(BigQueryEmulator.SYSTEM_PROPERTY)
-        } else {
-            System.setProperty(BigQueryEmulator.SYSTEM_PROPERTY, before)
-        }
+    fun clearEmulatorProperty() {
+        System.clearProperty(BigQueryEmulator.SYSTEM_PROPERTY)
     }
 
     private fun parse(json: String): BigQuerySourceConfigurationSpecification =
@@ -111,7 +89,7 @@ class BigQuerySourceConfigurationFactoryTest {
             BigQuerySourceConfigurationFactory(
                 featureFlags = cloud,
                 dataChannelMedium = "STDIO",
-                socketPaths = emptyList(),
+                socketPaths = emptyList()
             )
         Assertions.assertEquals(1, stdio.makeWithoutExceptionHandling(spec).maxConcurrency)
         val sockets =
@@ -126,7 +104,7 @@ class BigQuerySourceConfigurationFactoryTest {
             BigQuerySourceConfigurationFactory(
                 featureFlags = cloud,
                 dataChannelMedium = "SOCKET",
-                socketPaths = emptyList(),
+                socketPaths = emptyList()
             )
         Assertions.assertEquals(1, noSockets.makeWithoutExceptionHandling(spec).maxConcurrency)
     }
@@ -137,7 +115,7 @@ class BigQuerySourceConfigurationFactoryTest {
             BigQuerySourceConfigurationFactory(
                 featureFlags = cloud,
                 dataChannelMedium = "STDIO",
-                socketPaths = emptyList(),
+                socketPaths = emptyList()
             )
         Assertions.assertEquals(
             4,
@@ -174,7 +152,7 @@ class BigQuerySourceConfigurationFactoryTest {
                 }
             Assertions.assertEquals(
                 "'max_db_connections' must be a positive integer, got $bad.",
-                e.message,
+                e.message
             )
         }
     }
@@ -189,7 +167,7 @@ class BigQuerySourceConfigurationFactoryTest {
         val selfManaged = BigQuerySourceConfigurationFactory(featureFlags = emptySet())
         val asked: BigQuerySourceConfiguration =
             selfManaged.makeWithoutExceptionHandling(
-                parse(configJson(maxDbConnections = 4, useStorageReadApi = true)),
+                parse(configJson(maxDbConnections = 4, useStorageReadApi = true))
             )
         Assertions.assertFalse(asked.useStorageReadApi)
         Assertions.assertFalse(asked.jdbcProperties.containsKey("EnableHighThroughputAPI"))
@@ -222,7 +200,7 @@ class BigQuerySourceConfigurationFactoryTest {
             }
         Assertions.assertEquals(
             "'max_db_connections' must be a positive integer, got 0.",
-            e.message,
+            e.message
         )
     }
 
@@ -251,14 +229,14 @@ class BigQuerySourceConfigurationFactoryTest {
         val factory =
             BigQuerySourceConfigurationFactory(
                 featureFlags = cloud,
-                readApiAvailability = availability,
+                readApiAvailability = availability
             )
         val config: BigQuerySourceConfiguration =
             factory.make(
                 Jsons.readValue(
                     configJson(useStorageReadApi = true),
-                    BigQuerySourceConfigurationSpecification::class.java,
-                ),
+                    BigQuerySourceConfigurationSpecification::class.java
+                )
             )
         Assertions.assertTrue(config.useStorageReadApi)
         Assertions.assertEquals("1", config.jdbcProperties["EnableHighThroughputAPI"])
@@ -351,7 +329,7 @@ class BigQuerySourceConfigurationFactoryTest {
             }
         Assertions.assertTrue(
             e.message!!.startsWith("'credentials_json' is not valid JSON"),
-            e.message,
+            e.message
         )
     }
 
@@ -380,8 +358,8 @@ class BigQuerySourceConfigurationFactoryTest {
             Assertions.assertThrows(ConfigErrorException::class.java) {
                 make(
                     configJson(
-                        credentialsJson = """{"type":"service_account","client_email":"a@b.c"}""",
-                    ),
+                        credentialsJson = """{"type":"service_account","client_email":"a@b.c"}"""
+                    )
                 )
             }
         Assertions.assertEquals(
@@ -458,7 +436,7 @@ class BigQuerySourceConfigurationFactoryTest {
                     .put("private_key", PRIVATE_KEY_PEM)
                     .put("client_email", "airbyte@my-project.iam.gserviceaccount.com")
                     .put("client_id", "123")
-                    .put("token_uri", "https://oauth2.googleapis.com/token"),
+                    .put("token_uri", "https://oauth2.googleapis.com/token")
             )
     }
 }

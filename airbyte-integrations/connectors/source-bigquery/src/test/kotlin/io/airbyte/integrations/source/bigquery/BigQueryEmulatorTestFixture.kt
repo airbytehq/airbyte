@@ -30,12 +30,12 @@ private val log = KotlinLogging.logger {}
  * [BigQueryEmulator.SYSTEM_PROPERTY] system property, which the in-process CLI runner picks up.
  * Emulator deviations from BigQuery worth knowing when reading the fixtures:
  * - `tableConstraints` passed to `tables.insert` are echoed back by `tables.get`, but a DDL
- *   `PRIMARY KEY ... NOT ENFORCED` clause is dropped;
+ * `PRIMARY KEY ... NOT ENFORCED` clause is dropped;
  * - `NOT NULL` columns of DDL-created tables come back as `NULLABLE` (`tables.insert` keeps
- *   `REQUIRED`);
+ * `REQUIRED`);
  * - `INFORMATION_SCHEMA` only has `SCHEMATA`, `TABLES`, `TABLE_OPTIONS` and `COLUMNS`;
  * - a `FLOAT64` nested in an `ARRAY<STRUCT<...>>` cannot be inserted into (type mismatch FLOAT vs
- *   DOUBLE).
+ * DOUBLE).
  */
 object BigQueryEmulatorTestFixture {
     val IMAGE: DockerImageName =
@@ -46,12 +46,6 @@ object BigQueryEmulatorTestFixture {
     const val DATASET = "airbyte_test"
     const val OTHER_DATASET = "other_dataset"
     const val EMPTY_DATASET = "empty_dataset"
-
-    /**
-     * The datasets [seed] creates. Other test classes may add datasets of their own to the shared
-     * emulator (see `BigQueryConcurrentReadTest`); a whole-project DISCOVER is compared on these.
-     */
-    val DATASETS: Set<String> = setOf(DATASET, OTHER_DATASET, EMPTY_DATASET)
 
     /** A service account key the emulator never validates. */
     const val DUMMY_CREDENTIALS_JSON =
@@ -122,7 +116,7 @@ object BigQueryEmulatorTestFixture {
      */
     fun seed(bigquery: BigQuery) {
         log.info { "Seeding the BigQuery emulator." }
-        for (dataset in DATASETS) {
+        for (dataset in listOf(DATASET, OTHER_DATASET, EMPTY_DATASET)) {
             bigquery.create(DatasetInfo.newBuilder(DatasetId.of(PROJECT_ID, dataset)).build())
         }
         val allTypes: Schema =
@@ -149,7 +143,7 @@ object BigQueryEmulatorTestFixture {
                     nullable(
                         "geo",
                         StandardSQLTypeName.STRUCT,
-                        nullable("observed_at", StandardSQLTypeName.TIME),
+                        nullable("observed_at", StandardSQLTypeName.TIME)
                     ),
                 ),
                 repeated("tags", StandardSQLTypeName.STRING),
@@ -169,8 +163,8 @@ object BigQueryEmulatorTestFixture {
         bigquery.create(
             TableInfo.of(
                 TableId.of(PROJECT_ID, DATASET, "all_types"),
-                StandardTableDefinition.of(allTypes),
-            ),
+                StandardTableDefinition.of(allTypes)
+            )
         )
         bigquery.query(
             QueryJobConfiguration.of(
@@ -182,8 +176,8 @@ INSERT INTO `$DATASET`.`all_types` VALUES (
   STRUCT('Paris' AS city, 75001 AS zip, STRUCT(TIME '08:00:00' AS observed_at) AS geo), ['a', 'b'],
   [STRUCT('sku-1' AS sku, 2 AS qty, [STRUCT('SUMMER' AS code, 10 AS pct)] AS discounts)]
 )
-""",
-            ),
+"""
+            )
         )
         // A row with a NULL in every nullable column: the driver's primitive getters throw on
         // NULL (see BigQueryFieldTypes), so every type's NULL path is read by the tests.
@@ -193,8 +187,8 @@ INSERT INTO `$DATASET`.`all_types` VALUES (
 INSERT INTO `$DATASET`.`all_types` VALUES (
   2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 )
-""",
-            ),
+"""
+            )
         )
         // Unenforced primary key, persisted by the emulator when set through tables.insert.
         bigquery.create(
@@ -205,17 +199,17 @@ INSERT INTO `$DATASET`.`all_types` VALUES (
                             required("order_id", StandardSQLTypeName.INT64),
                             required("line", StandardSQLTypeName.INT64),
                             nullable("updated_at", StandardSQLTypeName.TIMESTAMP),
-                        ),
+                        )
                     ),
                 )
                 .setTableConstraints(
                     TableConstraints.newBuilder()
                         .setPrimaryKey(
-                            PrimaryKey.newBuilder().setColumns(listOf("order_id", "line")).build(),
+                            PrimaryKey.newBuilder().setColumns(listOf("order_id", "line")).build()
                         )
-                        .build(),
+                        .build()
                 )
-                .build(),
+                .build()
         )
         bigquery.query(
             QueryJobConfiguration.of(
@@ -224,8 +218,8 @@ INSERT INTO `$DATASET`.`with_pk` VALUES
   (1, 1, TIMESTAMP '2024-01-01 00:00:00'),
   (1, 2, TIMESTAMP '2024-01-02 00:00:00'),
   (2, 1, TIMESTAMP '2024-01-03 00:00:00')
-""",
-            ),
+"""
+            )
         )
         bigquery.create(
             TableInfo.of(
@@ -233,16 +227,16 @@ INSERT INTO `$DATASET`.`with_pk` VALUES
                 StandardTableDefinition.of(
                     Schema.of(
                         nullable("k", StandardSQLTypeName.STRING),
-                        nullable("v", StandardSQLTypeName.FLOAT64),
-                    ),
+                        nullable("v", StandardSQLTypeName.FLOAT64)
+                    )
                 ),
-            ),
+            )
         )
         bigquery.create(
             TableInfo.of(
                 TableId.of(PROJECT_ID, DATASET, "all_types_view"),
                 ViewDefinition.of("SELECT id, name, address FROM `$DATASET`.`all_types`"),
-            ),
+            )
         )
         bigquery.create(
             TableInfo.of(
@@ -252,9 +246,9 @@ INSERT INTO `$DATASET`.`with_pk` VALUES
                         nullable("event_id", StandardSQLTypeName.STRING),
                         nullable("occurred_at", StandardSQLTypeName.TIMESTAMP),
                         nullable("payload", StandardSQLTypeName.JSON),
-                    ),
+                    )
                 ),
-            ),
+            )
         )
     }
 }
