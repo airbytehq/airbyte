@@ -28,6 +28,11 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 
+enum class IcebergObjectMode {
+    JSON_STRING,
+    STRUCT,
+}
+
 class AirbyteTypeToIcebergSchema {
 
     /**
@@ -38,26 +43,37 @@ class AirbyteTypeToIcebergSchema {
         airbyteSchema: AirbyteType,
         stringifyObjects: Boolean,
         insideList: Boolean = false,
+        nestedFieldsOptional: Boolean = false,
     ): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
-                if (stringifyObjects) {
+                if (stringifyObjects || airbyteSchema.properties.isEmpty()) {
                     Types.StringType.get()
                 } else {
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
                             .map { (name, field) ->
-                                if (insideList || field.nullable) {
+                                if (nestedFieldsOptional || insideList || field.nullable) {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(
+                                            field.type,
+                                            stringifyObjects,
+                                            insideList,
+                                            nestedFieldsOptional,
+                                        ),
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(
+                                            field.type,
+                                            stringifyObjects,
+                                            insideList,
+                                            nestedFieldsOptional,
+                                        ),
                                     )
                                 }
                             }
@@ -68,7 +84,12 @@ class AirbyteTypeToIcebergSchema {
             is ArrayType -> {
                 Types.ListType.ofOptional(
                     UUID.randomUUID().hashCode(),
-                    convert(airbyteSchema.items.type, stringifyObjects, insideList = true),
+                    convert(
+                        airbyteSchema.items.type,
+                        stringifyObjects,
+                        insideList = true,
+                        nestedFieldsOptional = nestedFieldsOptional,
+                    ),
                 )
             }
             is BooleanType -> Types.BooleanType.get()
@@ -91,7 +112,12 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true),
+                        convert(
+                            airbyteSchema.options.first(),
+                            stringifyObjects,
+                            insideList = true,
+                            nestedFieldsOptional = nestedFieldsOptional,
+                        ),
                     )
                 }
                 // We stringify nontrivial unions
@@ -102,7 +128,10 @@ class AirbyteTypeToIcebergSchema {
     }
 }
 
-fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
+fun ObjectType.toIcebergSchema(
+    primaryKeys: List<List<String>>,
+    objectMode: IcebergObjectMode = IcebergObjectMode.JSON_STRING,
+): Schema {
     val fields = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
@@ -120,7 +149,12 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 // Iceberg identifier fields (float/double are disallowed as identifiers).
                 Types.StringType.get()
             } else {
-                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+                icebergTypeConverter.convert(
+                    field.type,
+                    stringifyObjects = stringifyObjects && objectMode == IcebergObjectMode.JSON_STRING,
+                    nestedFieldsOptional =
+                        name != Meta.COLUMN_NAME_AB_META && objectMode == IcebergObjectMode.STRUCT,
+                )
             }
         fields.add(
             NestedField.builder()

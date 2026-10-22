@@ -123,11 +123,10 @@ class IcebergTableSynchronizer(
 
         diff.updatedDataTypes.forEach { columnName ->
             val existingField =
-                existingSchema.findField(columnName)
-                    ?: error("Field \"$columnName\" not found in the existing schema!")
+                findField(existingSchema, columnName)
             val incomingField =
-                incomingSchema.findField(columnName)
-                    ?: error("Field \"$columnName\" not found in the incoming schema!")
+                findField(incomingSchema, columnName)
+            val icebergPath = icebergColumnName(existingSchema, columnName)
 
             when (columnTypeChangeBehavior) {
                 ColumnTypeChangeBehavior.SAFE_SUPERTYPE -> {
@@ -142,7 +141,7 @@ class IcebergTableSynchronizer(
                             "Currently only primitive type updates are supported. Attempted type: $superType",
                         )
                     }
-                    update.updateColumn(columnName, superType)
+                    update.updateColumn(icebergPath, superType)
                 }
                 ColumnTypeChangeBehavior.OVERWRITE -> {
                     // Even when allowIncompatibleChanges is enabled, Iceberg still doesn't allow
@@ -152,13 +151,22 @@ class IcebergTableSynchronizer(
                     if (requireSeparateCommitsForColumnReplace) {
                         // For catalogs like BigLake that don't support delete+add in single commit,
                         // we only delete here and will add in a separate update later.
-                        update.deleteColumn(columnName)
+                        update.deleteColumn(icebergPath)
                         // Store the field to add back later
                         columnsToReplaceInSecondCommit[columnName] = incomingField
                     } else {
                         // Standard Iceberg behavior: delete+add in single commit
-                        update.deleteColumn(columnName)
-                        update.addColumn(columnName, incomingField.type())
+                        update.deleteColumn(icebergPath)
+                        val (parentPath, leafName) = splitIntoParentAndLeaf(columnName)
+                        val icebergParentName =
+                            parentPath.takeIf { it.isNotEmpty() }?.let {
+                                icebergColumnName(existingSchema, it)
+                            }
+                        if (icebergParentName == null) {
+                            update.addColumn(leafName, incomingField.type())
+                        } else {
+                            update.addColumn(icebergParentName, leafName, incomingField.type())
+                        }
                     }
                     replacedColumns.add(columnName)
                 }
@@ -166,7 +174,9 @@ class IcebergTableSynchronizer(
         }
 
         // 3) Mark columns newly optional
-        diff.newlyOptionalColumns.forEach { columnName -> update.makeColumnOptional(columnName) }
+        diff.newlyOptionalColumns.forEach { columnName ->
+            update.makeColumnOptional(icebergColumnName(existingSchema, columnName))
+        }
 
         // 4) Add new columns, sorted by nesting depth (so that parents are created before children)
         val sortedNewColumns =
@@ -174,44 +184,14 @@ class IcebergTableSynchronizer(
 
         for (newColumnFqn in sortedNewColumns) {
             val (parentPath, leafName) = splitIntoParentAndLeaf(newColumnFqn)
-
-            // Only 1-level nesting is supported
-            if (parentPath.count { it == PARENT_CHILD_SEPARATOR } > 0) {
-                throw ConfigErrorException(
-                    "Adding nested columns more than 1 level deep is not supported: $newColumnFqn",
-                )
-            }
-
-            // Locate the appropriate incoming field
-            val incomingField =
-                if (parentPath.isEmpty()) {
-                    // Top-level column
-                    incomingSchema.findField(leafName)
-                        ?: error("Field \"$leafName\" not found in the incoming schema.")
-                } else {
-                    // 1-level nested column: "structFieldName~childField"
-                    val parentField =
-                        incomingSchema.findField(parentPath)
-                            ?: error(
-                                "Parent field \"$parentPath\" not found in the incoming schema.",
-                            )
-
-                    require(parentField.type().isStructType) {
-                        "Attempting to add a sub-field to a non-struct parent field: $parentPath"
-                    }
-
-                    parentField.type().asStructType().asSchema().findField(leafName)
-                        ?: error(
-                            "Sub-field \"$leafName\" not found in the schema under \"$parentPath\".",
-                        )
+            val incomingField = findField(incomingSchema, newColumnFqn)
+            val icebergParentName =
+                parentPath.takeIf { it.isNotEmpty() }?.let {
+                    icebergColumnName(existingSchema, it)
                 }
 
             // Add the column via the Iceberg API
-            if (parentPath.isEmpty()) {
-                update.addColumn(null, leafName, incomingField.type())
-            } else {
-                update.addColumn(parentPath, leafName, incomingField.type())
-            }
+            update.addColumn(icebergParentName, leafName, incomingField.type())
         }
 
         // 5) Update identifier fields
@@ -245,7 +225,13 @@ class IcebergTableSynchronizer(
 
             // Add back the replaced columns with their new types
             columnsToReplaceInSecondCommit.forEach { (columnName, field) ->
-                addUpdate.addColumn(null, columnName, field.type())
+                val (parentPath, leafName) = splitIntoParentAndLeaf(columnName)
+                val refreshedSchema = table.schema()
+                val icebergParentName =
+                    parentPath.takeIf { it.isNotEmpty() }?.let {
+                        icebergColumnName(refreshedSchema, it)
+                    }
+                addUpdate.addColumn(icebergParentName, leafName, field.type())
             }
 
             // If identifier fields were deferred, handle them now (columns have been re-added)
@@ -292,6 +278,44 @@ class IcebergTableSynchronizer(
         } else {
             return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
+    }
+
+    private fun findField(schema: Schema, internalPath: String): org.apache.iceberg.types.Types.NestedField {
+        val resolvedFieldId = fieldId(schema, internalPath)
+        return schema.findField(resolvedFieldId)
+            ?: error("Field \"$internalPath\" not found in the schema.")
+    }
+
+    private fun icebergColumnName(schema: Schema, internalPath: String): String {
+        val resolvedFieldId = fieldId(schema, internalPath)
+        // Iceberg's schema update APIs use dotted paths, so literal dots in field names are ambiguous.
+        return schema.findColumnName(resolvedFieldId)
+            ?: error("Field \"$internalPath\" not found in the schema.")
+    }
+
+    private fun fieldId(schema: Schema, internalPath: String): Int {
+        var currentType: Type = schema.asStruct()
+        var currentFieldId: Int? = null
+
+        for (pathSegment in internalPath.split(PARENT_CHILD_SEPARATOR)) {
+            when {
+                currentType.isStructType -> {
+                    val field =
+                        currentType.asStructType().fields().firstOrNull { it.name() == pathSegment }
+                            ?: error("Field \"$pathSegment\" not found in \"$internalPath\".")
+                    currentFieldId = field.fieldId()
+                    currentType = field.type()
+                }
+                currentType.isListType && pathSegment == "element" -> {
+                    val listType = currentType.asListType()
+                    currentFieldId = listType.elementId()
+                    currentType = listType.elementType()
+                }
+                else -> error("Cannot resolve \"$pathSegment\" in \"$internalPath\".")
+            }
+        }
+
+        return currentFieldId ?: error("Field path \"$internalPath\" is empty.")
     }
 
     /**

@@ -62,7 +62,7 @@ class IcebergTypesComparator {
      * @property removedColumns list of fully-qualified column names that are no longer in the
      *   incoming schema.
      * @property newlyOptionalColumns list of column names that changed from required -> optional.
-     *   Nested fields use Iceberg's dotted names (e.g. `_airbyte_meta.changes.element`).
+     *   Nested fields use [PARENT_CHILD_SEPARATOR], including list element segments.
      */
     data class ColumnDiff(
         val newColumns: MutableList<String> = mutableListOf(),
@@ -101,31 +101,50 @@ class IcebergTypesComparator {
         return diff
     }
 
-    /**
-     * Records nested fields under [path] that changed from required to optional, using Iceberg's
-     * dotted names so they can be passed to `makeColumnOptional` directly. [Type.NestedType.fields]
-     * exposes struct fields and list elements alike, so one recursion covers both.
-     */
-    private fun collectNestedNullabilityRelaxations(
+    private fun compareNestedTypes(
         path: String,
         incomingType: Type,
         existingType: Type,
         diff: ColumnDiff,
     ) {
-        if (!incomingType.isNestedType || !existingType.isNestedType) return
-        val incomingFieldsByName = incomingType.asNestedType().fields().associateBy { it.name() }
-        for (existingField in existingType.asNestedType().fields()) {
-            val incomingField = incomingFieldsByName[existingField.name()] ?: continue
-            val fieldPath = "$path.${existingField.name()}"
-            if (existingField.isRequired && incomingField.isOptional) {
-                diff.newlyOptionalColumns.add(fieldPath)
+        if (incomingType.isStructType && existingType.isStructType) {
+            val incomingFieldNames =
+                incomingType.asStructType().fields().map { it.name() }.toSet()
+            if (existingType.asStructType().fields().any { it.name() !in incomingFieldNames }) {
+                diff.updatedDataTypes.add(path)
             }
-            collectNestedNullabilityRelaxations(
-                path = fieldPath,
-                incomingType = incomingField.type(),
-                existingType = existingField.type(),
+            compareStructFields(
+                parentPath = path,
+                incomingType = incomingType.asStructType(),
+                existingType = existingType.asStructType(),
                 diff = diff,
             )
+            return
+        }
+
+        if (incomingType.isListType && existingType.isListType) {
+            val incomingList = incomingType.asListType()
+            val existingList = existingType.asListType()
+            val elementPath = fullyQualifiedName(path, "element")
+            if (existingList.isElementRequired && incomingList.isElementOptional) {
+                diff.newlyOptionalColumns.add(elementPath)
+            }
+
+            val incomingElement = incomingList.elementType()
+            val existingElement = existingList.elementType()
+            if (
+                (incomingElement.isStructType && existingElement.isStructType) ||
+                    (incomingElement.isListType && existingElement.isListType)
+            ) {
+                compareNestedTypes(elementPath, incomingElement, existingElement, diff)
+            } else if (!typesAreEqual(incomingType, existingType)) {
+                diff.updatedDataTypes.add(path)
+            }
+            return
+        }
+
+        if (!typesAreEqual(incomingType, existingType)) {
+            diff.updatedDataTypes.add(path)
         }
     }
 
@@ -156,36 +175,13 @@ class IcebergTypesComparator {
                 // This column does not exist in the existing schema => new column
                 diff.newColumns.add(fqName)
             } else {
-                // The column exists in both => check for type differences at top-level
-                if (parentPath.isNullOrBlank()) {
-                    if (typesAreEqual(incomingField.type(), existingField.type())) {
-                        collectNestedNullabilityRelaxations(
-                            path = fqName,
-                            incomingType = incomingField.type(),
-                            existingType = existingField.type(),
-                            diff = diff,
-                        )
-                    } else {
-                        diff.updatedDataTypes.add(fqName)
-                    }
-                }
-
-                // Check if it changed from required to optional at top-level
                 val wasRequired = !existingField.isOptional
                 val isNowOptional = incomingField.isOptional
-                if (parentPath.isNullOrBlank() && wasRequired && isNowOptional) {
+                if (wasRequired && isNowOptional) {
                     diff.newlyOptionalColumns.add(fqName)
                 }
 
-                // If both are struct types, recursively compare subfields
-                if (incomingField.type().isStructType && existingField.type().isStructType) {
-                    compareStructFields(
-                        parentPath = fqName,
-                        incomingType = incomingField.type().asStructType(),
-                        existingType = existingField.type().asStructType(),
-                        diff = diff,
-                    )
-                }
+                compareNestedTypes(fqName, incomingField.type(), existingField.type(), diff)
             }
         }
 

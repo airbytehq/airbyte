@@ -228,7 +228,7 @@ class IcebergTypesComparatorTest {
         assertThat(diff.updatedDataTypes).isEmpty()
         assertThat(diff.newColumns).isEmpty()
         assertThat(diff.removedColumns).isEmpty()
-        assertThat(diff.newlyOptionalColumns).containsExactly("values.element")
+        assertThat(diff.newlyOptionalColumns).containsExactly("values~element")
     }
 
     @Test
@@ -257,7 +257,7 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
-    fun testMetaListRelaxationsAreReportedUsingCanonicalNestedNames() {
+    fun testMetaListRelaxationsUseInternalNestedPaths() {
         val existingSchema = metaSchema(elementOptional = false, fieldsOptional = false)
         val incomingSchema = metaSchema(elementOptional = true, fieldsOptional = true)
 
@@ -266,10 +266,10 @@ class IcebergTypesComparatorTest {
         assertThat(diff.updatedDataTypes).isEmpty()
         assertThat(diff.newlyOptionalColumns)
             .containsExactlyInAnyOrder(
-                "_airbyte_meta.changes.element",
-                "_airbyte_meta.changes.element.field",
-                "_airbyte_meta.changes.element.change",
-                "_airbyte_meta.changes.element.reason",
+                "_airbyte_meta~changes~element",
+                "_airbyte_meta~changes~element~field",
+                "_airbyte_meta~changes~element~change",
+                "_airbyte_meta~changes~element~reason",
             )
     }
 
@@ -330,7 +330,7 @@ class IcebergTypesComparatorTest {
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
-        assertThat(diff.updatedDataTypes).containsExactly("user_info")
+        assertThat(diff.updatedDataTypes).containsExactly("user_info~nested_id")
         assertThat(diff.newColumns).isEmpty()
         assertThat(diff.removedColumns).isEmpty()
         assertThat(diff.newlyOptionalColumns).isEmpty()
@@ -413,6 +413,40 @@ class IcebergTypesComparatorTest {
             )
         assertThat(diff.removedColumns).isEmpty()
         assertThat(diff.newlyOptionalColumns).isEmpty()
+    }
+
+    @Test
+    fun testFieldAddedInsideListElementStruct() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "labels",
+                    Types.ListType.ofOptional(
+                        2,
+                        Types.StructType.of(field("id", Types.IntegerType.get(), true)),
+                    ),
+                    true,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "labels",
+                    Types.ListType.ofOptional(
+                        2,
+                        Types.StructType.of(
+                            field("id", Types.IntegerType.get(), true),
+                            field("name", Types.StringType.get(), true),
+                        ),
+                    ),
+                    true,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.newColumns).containsExactly("labels~element~name")
+        assertThat(diff.updatedDataTypes).isEmpty()
     }
 
     @Test

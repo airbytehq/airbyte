@@ -9,7 +9,9 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergSchemaOptions
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +30,13 @@ class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationClean
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
         val tableCleaner =
-            IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer()))
+            IcebergTableCleaner(
+                IcebergUtil(
+                    SimpleTableIdGenerator(),
+                    AirbyteValueCoercer(),
+                    IcebergSchemaOptions(IcebergObjectMode.JSON_STRING),
+                ),
+            )
 
         runBlocking(Dispatchers.IO) {
             namespaces.forEach { namespace ->
