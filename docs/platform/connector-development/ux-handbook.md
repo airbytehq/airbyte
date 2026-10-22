@@ -1414,15 +1414,13 @@ Fail fast and provide an actionable error. Use `pattern` to reject malformed val
 
 ### Strongly favor ELT over ETL
 
-Extract-load-transform (ELT) means extracting and loading the data into a destination while leaving its format and schema as unchanged as possible, and making transformation the responsibility of the consumer. By contrast, ETL means transforming data before it is sent to the destination, for example changing its schema to make it easier to consume in the destination.
+Extract-load-transform (ELT) means a connector loads data into the destination in the shape the source provides it, and users transform it afterward. Extract-transform-load (ETL) means the connector reshapes data before loading it.
 
-When extracting data, strongly prefer ELT to ETL for the following reasons:
+A connector's features shouldn't stand between users and their goals. When a connector honors the most literal representation of the source API and leaves transformation to the user's warehouse, every user gets a faithful copy of their data and full control over its final shape. ELT is the most democratic model Airbyte can offer, for the following reasons.
 
-#### Removes Airbyte as a development bottleneck
+#### Removes Airbyte as a bottleneck
 
-If we get into the habit of structuring the output of each source according to how some users want to use it, then we will invite more feature requests from users asking us to transform data in a particular way. This introduces Airbyte’s development team as an unnecessary bottleneck for these users.
-
-Instead, we should set the standard that a user should be responsible for transformations once they’ve loaded data in a destination.
+If a connector shapes its output for one way of using the data, users who need a different shape must ask for connector changes and wait for them. When the connector loads data the way the source provides it, each user can transform it in their destination, on their own schedule and with their own tools.
 
 #### Will always be backwards compatible
 
