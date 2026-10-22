@@ -11,9 +11,9 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.message.Meta
+import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.apache.iceberg.types.Types
 
 class AirbyteTypeToIcebergSchemaTest {
     private val converter = AirbyteTypeToIcebergSchema()
@@ -189,8 +189,7 @@ class AirbyteTypeToIcebergSchemaTest {
                 .toIcebergSchema(emptyList(), IcebergObjectMode.STRUCT)
 
         val user = schema.findField("user")!!.type().asStructType()
-        val labels =
-            schema.findField("labels")!!.type().asListType().elementType().asStructType()
+        val labels = schema.findField("labels")!!.type().asListType().elementType().asStructType()
         val head = schema.findField("head")!!.type().asStructType()
         val repo = head.field("repo")!!.type().asStructType()
         val owner = repo.field("owner")!!.type().asStructType()
