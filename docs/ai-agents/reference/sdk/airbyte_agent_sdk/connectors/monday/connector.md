@@ -260,7 +260,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)
     Examples:
         # Local mode (direct API calls)
-        connector = MondayConnector(auth_config=MondayAuthConfig(access_token="...", client_id="...", client_secret="..."))
+        connector = MondayConnector(auth_config=MondayAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = MondayConnector(
             auth_config=AirbyteAuthConfig(

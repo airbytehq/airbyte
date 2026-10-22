@@ -170,14 +170,461 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      uuid:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      additional_info:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      location_settings:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      conferencing:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          join_url:
+            type:
+              - string
+              - "null"
+          meeting_id:
+            type:
+              - string
+              - "null"
+          instructions:
+            type:
+              - string
+              - "null"
+      description_settings:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          include_attendees:
+            type:
+              - boolean
+              - "null"
+          include_fields:
+            type:
+              - boolean
+              - "null"
+          include_link_name:
+            type:
+              - boolean
+              - "null"
+      start_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      end_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      duration:
+        type:
+          - integer
+          - "null"
+      buffer_before:
+        type:
+          - integer
+          - "null"
+      buffer_after:
+        type:
+          - integer
+          - "null"
+      is_group_session:
+        type:
+          - boolean
+          - "null"
+      maximum_group_size:
+        type:
+          - integer
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      canceled_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      cancel_reason:
+        type:
+          - string
+          - "null"
+      rescheduled_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      reschedule_reason:
+        type:
+          - string
+          - "null"
+      original_start_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      original_end_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      attendees:
+        type:
+          - array
+          - "null"
+        items:
+          $ref: "#/schemas/events/definitions/attendee"
+      organizer:
+        $ref: "#/schemas/events/definitions/attendee"
+      scheduler:
+        $ref: "#/schemas/events/definitions/attendee"
+      scheduler_name:
+        type:
+          - string
+          - "null"
+      scheduler_email:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      scope:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      poll:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      payment:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount_total:
+            type:
+              - integer
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+    definitions:
+      attendee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          is_organizer:
+            type:
+              - boolean
+              - "null"
+          marketing_opt_in:
+            type:
+              - boolean
+              - "null"
+          response_status:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
   scheduling_links:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      private_name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      default_duration:
+        type:
+          - integer
+          - "null"
+      durations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - integer
+            - "null"
+      increment:
+        type:
+          - integer
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            type:
+              type:
+                - string
+                - "null"
+            is_required:
+              type:
+                - boolean
+                - "null"
+      scope:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
   timezones:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      abbreviation:
+        type:
+          - string
+          - "null"
+      aliases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      canonical:
+        type:
+          - boolean
+          - "null"
+      dst:
+        type:
+          - boolean
+          - "null"
+      formatted_offset:
+        type:
+          - string
+          - "null"
+      generic_long_name:
+        type:
+          - string
+          - "null"
+      golden:
+        type:
+          - boolean
+          - "null"
+      legacy:
+        type:
+          - boolean
+          - "null"
+      long_name:
+        type:
+          - string
+          - "null"
+      metazone:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      offset:
+        type:
+          - integer
+          - "null"
+      offset_std:
+        type:
+          - integer
+          - "null"
+      offset_utc:
+        type:
+          - integer
+          - "null"
+      period:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          from:
+            type:
+              - string
+              - "null"
+            format: date-time
+          until:
+            type:
+              - string
+              - "null"
+            format: date-time
+      windows_zone:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - string
+              - "null"

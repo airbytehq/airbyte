@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
     JsonSubTypes.Type(value = TimestampTypeWithTimezone::class, name = "timestamp_with_timezone"),
     JsonSubTypes.Type(
         value = TimestampTypeWithoutTimezone::class,
-        name = "timestamp_without_timezone"
+        name = "timestamp_without_timezone",
     ),
     JsonSubTypes.Type(value = TimeTypeWithTimezone::class, name = "time_with_timezone"),
     JsonSubTypes.Type(value = TimeTypeWithoutTimezone::class, name = "time_without_timezone"),
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode
     JsonSubTypes.Type(value = ObjectTypeWithEmptySchema::class, name = "object_with_empty_schema"),
     JsonSubTypes.Type(value = ObjectTypeWithoutSchema::class, name = "object_without_schema"),
     JsonSubTypes.Type(value = UnionType::class, name = "union_type"),
-    JsonSubTypes.Type(value = UnknownType::class, name = "unknown_type")
+    JsonSubTypes.Type(value = UnknownType::class, name = "unknown_type"),
 )
 sealed interface AirbyteType
 
@@ -75,5 +75,5 @@ data class UnknownType(@JsonProperty("schema") val schema: JsonNode) : AirbyteTy
 
 data class FieldType(
     @JsonProperty("type") val type: AirbyteType,
-    @JsonProperty("nullable") val nullable: Boolean
+    @JsonProperty("nullable") val nullable: Boolean,
 )
