@@ -37,7 +37,12 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: "This upgrade migrates the SFTP Bulk source to the Airbyte file-based CDK. This is the first necessary step of transitioning a file connector from community to Airbyte maintained."
