@@ -168,7 +168,10 @@ This connector outputs the following incremental streams:
    GitHub has no endpoint that lists attempts, so each attempt of a re-run workflow costs one request. A run that was
    never re-run costs nothing beyond the run listing: its only attempt is emitted from the listing record, with
    `logs_url` and `jobs_url` scoped to the attempt. Its `created_at` and `updated_at` then match `workflow_runs`, and can
-   be one second earlier than GitHub's attempt endpoint reports for the same attempt. Which runs fall in
+   be one second earlier than GitHub's attempt endpoint reports for the same attempt, and its `pull_requests` and, for a
+   run still in progress, its `status` are as of the listing read, like in `workflow_runs`. A run can be emitted twice
+   when new runs are created while the listing is read, as in `workflow_runs`; destinations that deduplicate on the
+   primary key are unaffected. Which runs fall in
    the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
    run's attempts are then emitted, including ones last updated before the cursor.
 
