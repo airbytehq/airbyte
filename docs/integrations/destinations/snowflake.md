@@ -367,6 +367,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.2           | 2026-10-22 | [89645](https://github.com/airbytehq/airbyte/pull/89645) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; pin jsoup 1.23.2. |
 | 5.2.0           | 2026-10-09 | [88417](https://github.com/airbytehq/airbyte/pull/88417) | Add Programmatic Access Token as an authorization method. The token is passed to Snowflake in place of a password. |
 | 5.1.2           | 2026-10-05 | [87720](https://github.com/airbytehq/airbyte/pull/87720) | Allow custom domains in destination connections, consistent with Snowflake sources. |
 | 5.1.1           | 2026-10-06 | [88143](https://github.com/airbytehq/airbyte/pull/88143)   | Fix `HikariPool` "Connection is not available" failures during the final flush by restoring bounded concurrency for Snowflake PUT/COPY operations.                                     |
