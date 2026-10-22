@@ -523,9 +523,21 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.DATE,
                 ),
                 MsSqlServerDatatypeTestCase(
+                    "dbo.FechaD",
+                    dateValues,
+                    LeafAirbyteSchemaType.DATE,
+                    setupDdl = listOf(aliasType("FechaD", "date")),
+                ),
+                MsSqlServerDatatypeTestCase(
                     "SMALLDATETIME",
                     smalldatetimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "dbo.FechaSmall",
+                    smalldatetimeValues,
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    setupDdl = listOf(aliasType("FechaSmall", "smalldatetime")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIME",
@@ -533,14 +545,32 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
+                    "dbo.Fecha",
+                    datetimeValues,
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    setupDdl = listOf(aliasType("Fecha", "datetime")),
+                ),
+                MsSqlServerDatatypeTestCase(
                     "DATETIME2",
                     datetime2Values,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
+                    "dbo.FechaDt2",
+                    datetime2Values,
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    setupDdl = listOf(aliasType("FechaDt2", "datetime2")),
+                ),
+                MsSqlServerDatatypeTestCase(
                     "TIME",
                     timeValues,
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "dbo.Hora",
+                    timeValues,
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+                    setupDdl = listOf(aliasType("Hora", "time(7)")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIMEOFFSET",
@@ -620,6 +650,11 @@ object MsSqlServerDatatypeTestOperations :
                 ),
             )
             .associateBy { it.id }
+
+    private fun aliasType(name: String, baseType: String): String {
+        val statement = "CREATE TYPE dbo.$name FROM $baseType NULL"
+        return "IF TYPE_ID(N'dbo.$name') IS NULL EXEC(N'$statement')"
+    }
 }
 
 data class MsSqlServerDatatypeTestCase(
@@ -627,6 +662,7 @@ data class MsSqlServerDatatypeTestCase(
     val sqlToAirbyte: Map<String, String>,
     override val expectedAirbyteSchemaType: AirbyteSchemaType,
     override val isGlobal: Boolean = true,
+    val setupDdl: List<String> = emptyList(),
 ) : DatatypeTestCase {
 
     override val isStream: Boolean
@@ -651,10 +687,11 @@ data class MsSqlServerDatatypeTestCase(
 
     val ddl: List<String>
         get() =
-            listOf(
-                "DROP TABLE IF EXISTS $id",
-                "CREATE TABLE $id " + "(pk INT IDENTITY(1,1) PRIMARY KEY, $fieldName $sqlType)",
-            )
+            setupDdl +
+                listOf(
+                    "DROP TABLE IF EXISTS $id",
+                    "CREATE TABLE $id " + "(pk INT IDENTITY(1,1) PRIMARY KEY, $fieldName $sqlType)",
+                )
 
     val dml: List<String>
         get() =

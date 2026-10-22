@@ -1,6 +1,6 @@
 ---
 name: source-mssql-e2e-cdc-tests
-description: Reproduce CDC bugs against source-mssql by enabling CDC on the local SQL Server backend, applying per-bug SQL fixtures, and running the connector via airbyte-ops. Composes on top of source-mssql-e2e-tests. Worked examples for airbytehq/oncall#11451, #12094, and #12162 ship with the skill.
+description: Reproduce CDC bugs against source-mssql by enabling CDC on the local SQL Server backend, applying per-bug SQL fixtures, and running the connector via airbyte-ops. Composes on top of source-mssql-e2e-tests. Worked examples for airbytehq/oncall#11451, #12094, #12162, and #13714 ship with the skill.
 ---
 
 # source-mssql-e2e-cdc-tests
@@ -46,6 +46,7 @@ source-mssql-e2e-cdc-tests/
 ├── SKILL.md
 ├── cases/
 │   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase; invalid-state case)
+│   ├── 13714.sh                      # airbytehq/oncall#13714 — temporal alias types in CDC
 │   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
 │   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
@@ -53,10 +54,13 @@ source-mssql-e2e-cdc-tests/
     │   └── cdc.template.json
     ├── catalogs/
     │   ├── users-cdc.json
+    │   ├── ausencia-alias-cdc.json
     │   └── order-items-cdc.json
     └── sql/
         ├── 00-init-cdc.sql
         ├── repro-11451-lsn-cleanup.sql
+        ├── repro-13714-alias-datetime.sql
+        ├── repro-13714-alias-datetime-changes.sql
         ├── repro-12094-schema-history.sql
         └── repro-12162-spaces-in-name.sql
 ```
@@ -81,7 +85,8 @@ CDC-specific.
   `sync_id`, `destination_object_name`, `include_files`) so the same
   fixtures drive repros across `source-mssql:4.3.x` and `4.4.x`.
 - Cases default `VERSION=4.4.2` (except `11451.sh` which splits into
-  `BASELINE_VERSION`/`TARGET_VERSION`). Override with
+  `BASELINE_VERSION`/`TARGET_VERSION`). `13714.sh` defaults to
+  `VERSION=5.1.1` to reproduce the published issue. Override with
   `VERSION=4.3.4 ./cases/12162.sh` to test against an earlier version,
   or `VERSION=dev` after a local
   `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx`
@@ -121,6 +126,7 @@ export REPRO_OUT=/tmp/source-mssql-repro
 "$SKILL/cases/12162.sh"
 "$SKILL/cases/12094.sh"
 "$SKILL/cases/11451.sh"
+"$SKILL/cases/13714.sh"
 
 # 3. (After fix) verify by retargeting `dev` or a fixed version.
 VERSION=dev "$SKILL/cases/12162.sh"
@@ -206,6 +212,20 @@ past a saved offset on geo-replicas with aggressive cleanup. The
 saved-offset-rejection guard then fires even though the data is
 still present. Investigation lives at
 [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451).
+
+### airbytehq/oncall#13714 — temporal alias types fail in CDC
+
+`cases/13714.sh` creates aliases over `datetime`, `date`, `time(7)`, and
+`datetime2`, then performs a baseline read, mutates the rows, and replays
+with the saved state so the second phase exercises CDC events. By default
+it targets `5.1.1` and expects the CDC read to fail with
+`invalid textual value`; `EXPECT=pass VERSION=dev` checks the converted
+temporal values after a fix.
+
+Root cause: the Debezium custom converter recognizes system SQL type names
+but not user-defined aliases. Falling back to the column's JDBC type for
+temporal aliases registers the same string converter used for the base
+date/time types.
 
 #### Invalid-state case for LSN-availability fixes
 
