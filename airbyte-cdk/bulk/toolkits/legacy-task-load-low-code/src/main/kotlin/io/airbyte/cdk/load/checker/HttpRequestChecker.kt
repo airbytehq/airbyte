@@ -14,7 +14,7 @@ class HttpRequestChecker(private val requester: HttpRequester) : DestinationChec
         response.use {
             if (it.statusCode != 200) {
                 throw IllegalStateException(
-                    "Expected status code to be 200 but was ${it.statusCode} with response body ${it.consumeBodyToString()}"
+                    "Expected status code to be 200 but was ${it.statusCode} with response body ${it.consumeBodyToString()}",
                 )
             }
         }

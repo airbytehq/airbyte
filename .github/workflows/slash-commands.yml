@@ -57,6 +57,8 @@ jobs:
           issue-type: both
 
           commands: |
+            ai-breaking-change-review
+            ai-breaking-change-ready
             ai-canary-prerelease
             ai-create-docs-pr
             ai-dev

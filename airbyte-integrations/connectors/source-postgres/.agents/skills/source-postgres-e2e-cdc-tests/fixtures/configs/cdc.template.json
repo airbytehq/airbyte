@@ -1,0 +1,20 @@
+{
+  "host": "source-postgres-db-backend",
+  "port": 5432,
+  "database": "test_db",
+  "schemas": ["public"],
+  "username": "postgres",
+  "password": "test_password",
+  "ssl_mode": {
+    "mode": "prefer"
+  },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "replication_slot": "airbyte_slot",
+    "publication": "airbyte_publication",
+    "initial_waiting_seconds": 120
+  }
+}

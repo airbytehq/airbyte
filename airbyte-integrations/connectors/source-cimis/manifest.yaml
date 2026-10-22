@@ -36,7 +36,9 @@ definitions:
               ['decimal-degree coordinates', 'street addresses'] else
               ','.join(config['targets']) }}
             unitOfMeasure: "{{ config['unit_of_measure'] }}"
-            dataItems: "{{ config['daily_data_items'] + config['hourly_data_items'] }}"
+            dataItems: >-
+              {{ ','.join((config.get('daily_data_items') or []) +
+              (config.get('hourly_data_items') or [])) }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -184,56 +186,63 @@ spec:
       targets:
         type: array
         title: Targets
+        items:
+          type: string
         order: 2
       daily_data_items:
         type: array
         title: Daily Data Items
-        enum:
-          - day-air-tmp-avg
-          - day-air-tmp-min
-          - day-dew-pnt
-          - day-eto
-          - day-asce-eto
-          - day-asce-etr
-          - day-precip
-          - day-rel-hum-avg
-          - day-rel-hum-max
-          - day-rel-hum-min
-          - day-soil-tmp-avg
-          - day-soil-tmp-max
-          - day-soil-tmp-min
-          - day-sol-rad-avg
-          - day-sol-rad-net
-          - day-vap-pres-max
-          - day-vap-pres-avg
-          - day-wind-ene
-          - day-wind-ese
-          - day-wind-nne
-          - day-wind-nnw
-          - day-wind-run
-          - day-wind-spd-avg
-          - day-wind-ssw
-          - day-wind-wnw
-          - day-wind-wsw
+        items:
+          type: string
+          enum:
+            - day-air-tmp-avg
+            - day-air-tmp-max
+            - day-air-tmp-min
+            - day-dew-pnt
+            - day-eto
+            - day-asce-eto
+            - day-asce-etr
+            - day-precip
+            - day-rel-hum-avg
+            - day-rel-hum-max
+            - day-rel-hum-min
+            - day-soil-tmp-avg
+            - day-soil-tmp-max
+            - day-soil-tmp-min
+            - day-sol-rad-avg
+            - day-sol-rad-net
+            - day-vap-pres-max
+            - day-vap-pres-avg
+            - day-wind-ene
+            - day-wind-ese
+            - day-wind-nne
+            - day-wind-nnw
+            - day-wind-run
+            - day-wind-spd-avg
+            - day-wind-ssw
+            - day-wind-wnw
+            - day-wind-wsw
         order: 3
       hourly_data_items:
         type: array
         title: Hourly Data Items
-        enum:
-          - hly-air-tmp
-          - hly-dew-pnt
-          - hly-eto
-          - hly-net-rad
-          - hly-asce-eto
-          - hly-asce-etr
-          - hly-precip
-          - hly-rel-hum
-          - hly-res-wind
-          - hly-soil-tmp
-          - hly-sol-rad
-          - hly-vap-pres
-          - hly-wind-dir
-          - hly-wind-spd
+        items:
+          type: string
+          enum:
+            - hly-air-tmp
+            - hly-dew-pnt
+            - hly-eto
+            - hly-net-rad
+            - hly-asce-eto
+            - hly-asce-etr
+            - hly-precip
+            - hly-rel-hum
+            - hly-res-wind
+            - hly-soil-tmp
+            - hly-sol-rad
+            - hly-vap-pres
+            - hly-wind-dir
+            - hly-wind-spd
         order: 4
       start_date:
         type: string

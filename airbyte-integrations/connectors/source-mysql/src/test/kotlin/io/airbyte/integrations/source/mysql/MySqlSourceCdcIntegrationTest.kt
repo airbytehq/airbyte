@@ -15,8 +15,10 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.integrations.source.mysql.MySqlContainerFactory.execAsRoot
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.testcontainers.containers.MySQLContainer
 
 class MySqlSourceCdcIntegrationTest {
@@ -40,7 +43,7 @@ class MySqlSourceCdcIntegrationTest {
         assertEquals(1, run1.messages().size)
         assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,
-            run1.messages().first().connectionStatus.status
+            run1.messages().first().connectionStatus.status,
         )
 
         MySqlContainerFactory.exclusive(
@@ -70,7 +73,7 @@ class MySqlSourceCdcIntegrationTest {
 
                     assertEquals(
                         AirbyteConnectionStatus.Status.FAILED,
-                        messageInRun2.connectionStatus.status
+                        messageInRun2.connectionStatus.status,
                     )
                 }
             }
@@ -91,10 +94,43 @@ class MySqlSourceCdcIntegrationTest {
         CliRunner.source("read", config(), configuredCatalog, run2InputState).run().records()
     }
 
+    /**
+     * Regression test for https://github.com/airbytehq/airbyte/issues/75558: a transaction
+     * committed under a server UUID that the saved offset has never seen (what a failover, an
+     * upgrade or a restore of a managed MySQL instance produces) made MySqlGtidSet.subtract() throw
+     * a NullPointerException in Debezium before 3.4.3 (DBZ-9682), which the connector reported as
+     * "Incumbent CDC state is invalid" on every subsequent sync.
+     */
+    @Test
+    fun testResumesAfterGtidFromUnknownServerUuid() {
+        val state1: AirbyteStateMessage =
+            CliRunner.source("read", config(), configuredCatalog).run().states().last()
+
+        // execAsRoot runs `mysql -e`, so the three statements share one session.
+        dbContainer.execAsRoot(
+            "SET @@SESSION.GTID_NEXT = '$FOREIGN_SERVER_UUID:1';" +
+                "INSERT INTO test.tbl (k, v) VALUES (5, 'qux');" +
+                "SET @@SESSION.GTID_NEXT = 'AUTOMATIC';",
+        )
+
+        // A failed read emits an ERROR trace and then run() throws ConnectorUncleanExitException.
+        val run2: BufferingOutputConsumer = assertDoesNotThrow {
+            CliRunner.source("read", config(), configuredCatalog, listOf(state1)).run()
+        }
+        val errorTraces: List<AirbyteTraceMessage> =
+            run2.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
+        assertEquals(emptyList<AirbyteTraceMessage>(), errorTraces)
+        val insertedRecords: List<AirbyteRecordMessage> =
+            run2.records().filter { it.data["k"]?.asInt() == 5 }
+        assertEquals(1, insertedRecords.size, "records: ${run2.records()}")
+        assertEquals("qux", insertedRecords.first().data["v"].asText())
+    }
+
     @Test
     fun testFullRefresh() {
-        val fullRefreshCatalog =
-            configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
+        val fullRefreshCatalog = configuredCatalog.apply {
+            streams.forEach { it.syncMode = SyncMode.FULL_REFRESH }
+        }
         CliRunner.source("read", config(), fullRefreshCatalog).run()
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -107,6 +143,9 @@ class MySqlSourceCdcIntegrationTest {
     companion object {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>
+
+        /** A server UUID which no saved offset from [dbContainer] can have seen. */
+        const val FOREIGN_SERVER_UUID = "11111111-2222-3333-4444-555555555555"
 
         fun config(): MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer).apply { setIncrementalValue(Cdc()) }
@@ -152,7 +191,7 @@ class MySqlSourceCdcIntegrationTest {
 
         fun provisionTestContainer(
             targetContainer: MySQLContainer<*>,
-            targetConnectionFactory: JdbcConnectionFactory
+            targetConnectionFactory: JdbcConnectionFactory,
         ) {
             val gtidOn =
                 "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
