@@ -6,7 +6,7 @@ dependencies {
     api platform('io.netty:netty-bom:4.1.139.Final')
     api("com.azure:azure-storage-blob:12.31.1")
     api("com.azure:azure-storage-blob-batch:12.27.1")
-    api("com.azure:azure-identity:1.13.2")
+    api("com.azure:azure-identity:1.18.7")
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
 
