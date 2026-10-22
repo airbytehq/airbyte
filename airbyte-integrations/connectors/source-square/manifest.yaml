@@ -197,6 +197,14 @@ definitions:
             page_size: 200
             cursor_value: "{{ response.cursor }}"
             stop_condition: "{{ 'cursor' not in response }}"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('team_member_id') is not none }}"
+          fields:
+            - path:
+                - employee_id
+              value: "{{ record.get('team_member_id') }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1776,6 +1784,14 @@ schemas:
             type:
               - "null"
               - string
+      employee_id:
+        description: >-
+          Deprecated by Square in favor of `team_member_id`. Square's Timecards
+          API no longer returns it, so the connector populates it from
+          `team_member_id`.
+        type:
+          - "null"
+          - string
       end_at:
         type:
           - "null"

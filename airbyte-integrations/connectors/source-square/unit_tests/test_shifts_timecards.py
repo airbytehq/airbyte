@@ -61,7 +61,7 @@ def test_shifts_stream_reads_from_timecards_endpoint():
     assert [record["id"] for record in records] == ["timecard-1", "timecard-2"]
     assert timecards_matcher.call_count == 1
     assert mocker.request_history[-1].headers["Square-Version"] == "2025-05-21"
-    assert all("employee_id" not in record for record in records)
+    assert all(record["employee_id"] == record["team_member_id"] for record in records)
 
 
 def test_shifts_stream_does_not_call_retired_shifts_endpoint():
@@ -102,3 +102,20 @@ def test_shifts_stream_follows_cursor_across_pages():
     assert timecards_matcher.call_count == 3
     assert [body.get("cursor") for body in request_bodies] == [None, "cursor-page-2", "cursor-page-3"]
     assert all(body["limit"] == 200 for body in request_bodies)
+
+
+def test_shifts_stream_copies_team_member_id_into_employee_id_as_string():
+    timecard_without_team_member = _timecard("timecard-2")
+    timecard_without_team_member["team_member_id"] = None
+    numeric_looking = _timecard("timecard-3")
+    numeric_looking["team_member_id"] = "12345"
+    timecards = {"timecards": [_timecard("timecard-1"), timecard_without_team_member, numeric_looking]}
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post(_TIMECARDS_SEARCH_URL, json=timecards)
+        output = _sync()
+
+    records = {record.record.data["id"]: record.record.data for record in output.records}
+    assert records["timecard-1"]["employee_id"] == "TEAM_MEMBER_1"
+    assert "employee_id" not in records["timecard-2"]
+    assert records["timecard-3"]["employee_id"] == "12345"
