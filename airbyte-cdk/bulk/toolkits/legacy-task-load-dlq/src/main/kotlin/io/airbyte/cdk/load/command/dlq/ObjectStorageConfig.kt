@@ -64,7 +64,7 @@ fun ObjectStorageSpec?.toObjectStorageConfig(): ObjectStorageConfig =
                         prefix = bucketPath,
                         pathPattern = normalizePathFormat(pathFormat),
                         fileNamePattern = fileNameFormat,
-                    )
+                    ),
             )
     }
 
@@ -73,11 +73,10 @@ fun ObjectStorageSpec?.toObjectStorageConfig(): ObjectStorageConfig =
  *
  * - pathPattern requires variables to be `${VAR}` (both $ and Uppercase)
  * - pathPattern doesn't guarantee it is only a path, to avoid path leaking into the filename, we
- * add a trailing '/'.
+ *   add a trailing '/'.
  */
-internal fun normalizePathFormat(format: String?): String? =
-    format?.let {
-        val pathWithCorrectVars =
-            it.replace("""\{\w+}""".toRegex()) { match -> "${'$'}${match.value.uppercase()}" }
-        if (pathWithCorrectVars.endsWith('/')) pathWithCorrectVars else "$pathWithCorrectVars/"
-    }
+internal fun normalizePathFormat(format: String?): String? = format?.let {
+    val pathWithCorrectVars =
+        it.replace("""\{\w+}""".toRegex()) { match -> "${'$'}${match.value.uppercase()}" }
+    if (pathWithCorrectVars.endsWith('/')) pathWithCorrectVars else "$pathWithCorrectVars/"
+}

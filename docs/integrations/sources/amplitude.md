@@ -67,6 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.7.40 | 2026-10-06 | [85384](https://github.com/airbytehq/airbyte/pull/85384) | Update dependencies |
 | 0.7.39 | 2026-10-05 | [87560](https://github.com/airbytehq/airbyte/pull/87560) | Automatically split Events export windows that exceed Amplitude's 4 GB or timeout limits instead of failing the sync; parse zero-microsecond `server_upload_time` cursor values; show Amplitude's error for Dashboard API 400s and retry their 504s; upgrade to CDK 7.32.0 |
 | 0.7.38 | 2026-08-18 | [84470](https://github.com/airbytehq/airbyte/pull/84470) | Update dependencies |
 | 0.7.37 | 2026-08-11 | [83823](https://github.com/airbytehq/airbyte/pull/83823) | Update dependencies |

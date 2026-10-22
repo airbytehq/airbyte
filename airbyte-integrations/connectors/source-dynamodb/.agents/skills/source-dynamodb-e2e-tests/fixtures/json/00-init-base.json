@@ -1,0 +1,19 @@
+{
+  "tables": [
+    {
+      "create": {
+        "TableName": "sample",
+        "KeySchema": [{ "AttributeName": "id", "KeyType": "HASH" }],
+        "AttributeDefinitions": [
+          { "AttributeName": "id", "AttributeType": "S" }
+        ],
+        "BillingMode": "PAY_PER_REQUEST"
+      },
+      "items": [
+        { "id": { "S": "e1" }, "seq": { "N": "1" }, "label": { "S": "first" } },
+        { "id": { "S": "e2" }, "seq": { "N": "2" } },
+        { "id": { "S": "e3" }, "seq": { "N": "3" }, "label": { "S": "third" } }
+      ]
+    }
+  ]
+}

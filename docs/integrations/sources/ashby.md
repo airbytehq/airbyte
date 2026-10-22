@@ -151,7 +151,9 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 2.0.0 | 2026-10-05 | [87726](https://github.com/airbytehq/airbyte/pull/87726) | Breaking: type `applications.archiveReason` as an object and `job_postings.publishedDate` as a date, add a primary key to `application_criteria_evaluations`, and remove fields Ashby never returns from `interviews` and `application_criteria_evaluations`. See the [migration guide](/integrations/sources/ashby-migrations). |
+| 2.0.0 | 2026-10-22 | [87726](https://github.com/airbytehq/airbyte/pull/87726) | Breaking: type `applications.archiveReason` as an object and `job_postings.publishedDate` as a date, add a primary key to `application_criteria_evaluations`, and remove fields Ashby never returns from `interviews` and `application_criteria_evaluations`. See the [migration guide](/integrations/sources/ashby-migrations). |
+| 1.7.3 | 2026-10-20 | [89142](https://github.com/airbytehq/airbyte/pull/89142) | Update dependencies |
+| 1.7.2 | 2026-10-13 | [88502](https://github.com/airbytehq/airbyte/pull/88502) | Update dependencies |
 | 1.7.1 | 2026-10-06 | [87745](https://github.com/airbytehq/airbyte/pull/87745) | Update dependencies |
 | 1.7.0 | 2026-10-05 | [87590](https://github.com/airbytehq/airbyte/pull/87590) | Add openings, job templates, job boards, approvals, and projects streams |
 | 1.6.0 | 2026-10-05 | [87587](https://github.com/airbytehq/airbyte/pull/87587) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |

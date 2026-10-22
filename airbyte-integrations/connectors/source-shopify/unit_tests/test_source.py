@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import copy
 import json
 import logging
 import math
@@ -607,6 +608,23 @@ def test_countries_parse_response(config, countries_response_data, countries_exp
     assert list(records) == expected_records
 
 
+def test_countries_dedup_is_per_instance(config, countries_response_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    def read(stream):
+        response = MagicMock(status_code=requests.codes.OK)
+        response.json.return_value = copy.deepcopy(countries_response_data)
+        return list(stream.parse_response(response))
+
+    first = Countries(config=config, parent=None)
+    assert read(first) == [countries_expected_record_data]
+    # the same country on a later page is still deduplicated within one instance
+    assert read(first) == []
+    # a second instance (e.g. another config read in the same process) starts with no synced ids
+    assert read(Countries(config=config, parent=None)) == [countries_expected_record_data]
+
+
 def test_market_countries_request_body_json(config):
     config["shop"] = "test-store"
     stream = MarketCountries(config)
@@ -786,6 +804,11 @@ def test_market_countries_market_without_regions_condition_is_skipped(config):
             [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}], FailureType.transient_error, id="throttled_is_transient"
         ),
         pytest.param(
+            [{"message": "Internal error", "extensions": {"code": "INTERNAL_SERVER_ERROR"}}],
+            FailureType.transient_error,
+            id="internal_server_error_is_transient",
+        ),
+        pytest.param(
             [{"message": "Access denied for markets field.", "extensions": {"code": "ACCESS_DENIED"}}],
             FailureType.system_error,
             id="access_denied_is_a_system_error",
@@ -831,12 +854,17 @@ def _graphql_response(body: dict) -> requests.Response:
         pytest.param(MarketCountries, id="market_countries"),
     ],
 )
-def test_graphql_full_refresh_error_handler_retries_throttled_pages_only(config, make_stream):
-    """Only a throttled 200 is retried by the HTTP client; other GraphQL errors reach `parse_response`, which fails the stream."""
+def test_graphql_full_refresh_error_handler_retries_transient_pages_only(config, make_stream):
+    """Only a throttled or INTERNAL_SERVER_ERROR 200 is retried; other GraphQL errors reach `parse_response`, which fails the stream."""
     handler = make_stream(config).get_error_handler()
 
     throttled = handler.interpret_response(_graphql_response({"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]}))
     assert (throttled.response_action, throttled.failure_type) == (ResponseAction.RETRY, FailureType.transient_error)
+
+    internal = handler.interpret_response(
+        _graphql_response({"errors": [{"message": "Internal error", "extensions": {"code": "INTERNAL_SERVER_ERROR"}}]})
+    )
+    assert (internal.response_action, internal.failure_type) == (ResponseAction.RETRY, FailureType.transient_error)
 
     denied = handler.interpret_response(
         _graphql_response({"data": None, "errors": [{"message": "Access denied", "extensions": {"code": "ACCESS_DENIED"}}]})
@@ -892,7 +920,7 @@ def test_market_countries_read_retries_a_throttled_page(requests_mock, config):
         seen_cursors.append(_query_cursors(query))
         return page_responses.pop(0)
 
-    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=graphql_callback)
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-10/graphql.json", json=graphql_callback)
 
     stream = MarketCountries(config)
     records = [message for message in _read_full_refresh(stream) if isinstance(message, dict)]
@@ -912,7 +940,7 @@ def test_market_countries_read_fails_on_errored_page_and_keeps_the_last_checkpoi
         ("m1", "r2"): {"data": None, "errors": [{"message": "Access denied for markets field.", "extensions": {"code": "ACCESS_DENIED"}}]},
     }
     requests_mock.post(
-        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        "https://test-shop.myshopify.com/admin/api/2026-10/graphql.json",
         json=_market_driven_shop_callback(responses_by_cursors, []),
     )
 
@@ -937,7 +965,7 @@ def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, confi
     }
     seen_cursors = []
     requests_mock.post(
-        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        "https://test-shop.myshopify.com/admin/api/2026-10/graphql.json",
         json=_market_driven_shop_callback(responses_by_cursors, seen_cursors),
     )
 

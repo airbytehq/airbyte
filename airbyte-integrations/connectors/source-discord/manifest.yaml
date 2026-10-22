@@ -68,31 +68,6 @@ definitions:
             Requested resource no longer exists.
             The record is skipped. Remaining resources continue syncing.
 
-  private_archived_threads_requester:
-    type: HttpRequester
-    url_base: "https://discord.com/api/v10"
-    http_method: GET
-    authenticator:
-      $ref: "#/definitions/authenticator"
-    error_handler:
-      type: DefaultErrorHandler
-      backoff_strategies:
-        - type: WaitTimeFromHeader
-          header: Retry-After
-      response_filters:
-        - http_codes: [429]
-          action: RETRY
-          error_message: Rate limited by Discord API.
-        - http_codes: [500, 502, 503]
-          action: RETRY
-          error_message: Discord API server error.
-        - http_codes: [403]
-          action: FAIL
-          error_message: >-
-            Bot lacks MANAGE_THREADS permission required to read private archived
-            threads. Grant the bot Manage Threads and Read Message History, or
-            disable private-archived-thread coverage.
-
   base_record_selector:
     type: RecordSelector
     extractor:
@@ -389,7 +364,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/private_archived_threads_requester"
+          $ref: "#/definitions/permissive_requester"
           path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/private"
         record_selector:
           type: RecordSelector
@@ -599,8 +574,9 @@ spec:
           Discord Bot Token used for authentication. Create a bot at
           https://discord.com/developers/applications, then copy the token from
           the Bot section. The bot must be invited to target guilds with
-          VIEW_CHANNEL, READ_MESSAGE_HISTORY, and MANAGE_THREADS permissions.
-          MANAGE_THREADS is required to read private archived threads. Enable the
+          VIEW_CHANNEL and READ_MESSAGE_HISTORY permissions. Optionally grant
+          MANAGE_THREADS to also read private archived threads; channels where
+          the bot lacks this permission are skipped. Enable the
           MESSAGE_CONTENT and GUILD_MEMBERS privileged intents in the Developer
           Portal if you want full message content and member data.
         airbyte_secret: true
