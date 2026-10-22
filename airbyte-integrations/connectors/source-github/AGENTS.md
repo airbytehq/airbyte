@@ -210,6 +210,12 @@ specifically so every stream shares one set of counters. The cache key is value-
 the **transformed** config — a different `api_url`, token list or `max_waiting_time` produces a
 different instance. Do not add a second authenticator.
 
+`requester_base.authenticator` is a `SelectiveAuthenticator` on `credentials.auth_mode`, which
+`components.ConfigNormalization` sets to `github_apps` (`components.GithubAppMultiPemAuthenticator`)
+or `token` (the `RateLimitedMultipleTokenAuthenticator` above, which `get_authenticator` builds
+directly). The CDK constructs both branches eagerly, so neither may fail on the other mode's
+config: the token branch gets a placeholder token, and the GitHub App one parses lazily.
+
 Reactive token rotation is the CDK's job, not the connector's. Each `TokenQuota` pool in the
 manifest declares `remaining_header`/`reset_header`/`limit_header`, so `HttpClient` feeds
 every response back into the authenticator (`update_from_response`): a primary rate limit
