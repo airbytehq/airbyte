@@ -205,6 +205,16 @@ The former Export Search Results behavior is preserved as the **`tickets_search`
 
 `tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
+### Ticket events and ticket metric events: older records are skipped
+
+The `ticket_events` and `ticket_metric_events` streams read Zendesk's incremental export endpoints, which select rows by the ticket's internal `generated_timestamp`, not by the event's own time. When Zendesk archives a ticket, or deletes an archived ticket, it moves the ticket's whole event history to the new `generated_timestamp`. After a bulk update of archived tickets, the next sync can therefore receive years of old events for each of those tickets, even though they were already synced. See [Understanding older ticket events in responses](https://developer.zendesk.com/documentation/ticketing/managing-tickets/using-the-incremental-export-api/).
+
+Starting with version 5.6.4, these two streams skip any record whose cursor value (`timestamp` for `ticket_events`, `time` for `ticket_metric_events`) is older than the saved cursor, or older than the start date on a first or full-refresh sync. Records whose cursor value is later than the time of the sync, for example SLA breach events, which Zendesk can record ahead of the breach, are also skipped. Records with a cursor value equal to the saved cursor are still synced, because the export overlaps at that boundary. Records with a missing or unreadable cursor value are synced too.
+
+This only reduces how many records reach your destination. The connector still requests and reads the same pages from Zendesk, so the number of API requests and the sync duration don't change.
+
+The `ticket_comments` stream reads the same ticket events endpoint but doesn't skip older records.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -284,6 +294,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.4 | 2026-10-20 | [89586](https://github.com/airbytehq/airbyte/pull/89586) | Skip `ticket_events` and `ticket_metric_events` records older than the saved cursor or start date. Zendesk moves an archived ticket's whole event history to its new export timestamp, so these old events were synced again |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |

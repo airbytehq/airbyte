@@ -51,6 +51,14 @@ With a single worker thread the concurrent framework runs one stream at a time, 
 
 **Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
 
+## 7. `ticket_events` and `ticket_metric_events` Skip Records Older Than the Cursor
+
+Zendesk's incremental exports select rows by the ticket's hidden `generated_timestamp`. Archiving a ticket, or deleting an archived one, moves its whole event history to the new `generated_timestamp`, so after a bulk update of archived tickets the export returns years of already-synced events. These two streams set `is_client_side_incremental: true` on their own `incremental_sync` override, so the CDK drops records older than the saved cursor (or the start date on a first sync). Records equal to the cursor, and records without a readable cursor value, are kept. Requests are unchanged; only destination volume goes down.
+
+`ticket_comments` reads the same export but is deliberately not filtered: a redacted or edited comment keeps its original `created_at`, so a cursor filter could drop real changes.
+
+**Why this matters:** keep `is_client_side_incremental` on these two streams, and do not add it to the shared `cursor_incremental_sync` definition, which other streams use.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
