@@ -621,7 +621,6 @@ streams:
             type:
               - string
               - "null"
-            format: uri
           technician_note:
             type:
               - string
