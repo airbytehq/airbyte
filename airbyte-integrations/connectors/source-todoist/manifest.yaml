@@ -13,20 +13,30 @@ definitions:
     tasks:
       type: DeclarativeStream
       name: tasks
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - sync_token
+        cursor_field: updated_at
+        token_option:
+          type: RequestOption
+          inject_into: body_data
+          field_name: sync_token
+        initial_token: "*"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /tasks
-          http_method: GET
+          path: /sync
+          http_method: POST
+          request_body_data:
+            resource_types: '{{ "[\"items\"]" | tojson }}'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - results
-        paginator:
-          $ref: "#/definitions/base_paginator"
+              - items
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -34,20 +44,30 @@ definitions:
     projects:
       type: DeclarativeStream
       name: projects
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - sync_token
+        cursor_field: updated_at
+        token_option:
+          type: RequestOption
+          inject_into: body_data
+          field_name: sync_token
+        initial_token: "*"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /projects
-          http_method: GET
+          path: /sync
+          http_method: POST
+          request_body_data:
+            resource_types: '{{ "[\"projects\"]" | tojson }}'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - results
-        paginator:
-          $ref: "#/definitions/base_paginator"
+              - projects
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -58,21 +78,8 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["token"] }}'
-  base_paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: cursor
-    page_size_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: limit
-    pagination_strategy:
-      type: CursorPagination
-      page_size: 200
-      cursor_value: "{{ response.get('next_cursor') }}"
-      stop_condition: "{{ response.get('next_cursor') is none }}"
+    request_headers:
+      Content-Type: application/x-www-form-urlencoded
 
 streams:
   - $ref: "#/definitions/streams/tasks"
