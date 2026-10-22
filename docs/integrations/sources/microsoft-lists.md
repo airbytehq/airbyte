@@ -51,8 +51,12 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 | lists | id | DefaultPaginator | ✅ |  ❌  |
 | listcontenttypes | id | DefaultPaginator | ✅ |  ❌  |
 | listitems |  | DefaultPaginator | ✅ |  ❌  |
-| items |  | DefaultPaginator | ✅ |  ❌  |
+| items |  | DefaultPaginator | ✅ |  ✅  |
 | columnvalues | id | DefaultPaginator | ✅ |  ❌  |
+
+## Items sync behavior
+
+The `items` stream uses a Microsoft Graph delta link per list. Deleted items arrive as records with `deleted.state`; expired links trigger a full re-read of that list. `listitems` and `columnvalues` remain full refresh.
 
 ## IP allow list
 
@@ -65,6 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-22 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add incremental sync for the `items` stream using Microsoft Graph list item delta queries (preview CDK) |
 | 0.0.72 | 2026-10-13 | [88711](https://github.com/airbytehq/airbyte/pull/88711) | Update dependencies |
 | 0.0.71 | 2026-10-06 | [87929](https://github.com/airbytehq/airbyte/pull/87929) | Update dependencies |
 | 0.0.70 | 2026-09-29 | [87260](https://github.com/airbytehq/airbyte/pull/87260) | Update dependencies |
