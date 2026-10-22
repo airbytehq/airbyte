@@ -122,10 +122,8 @@ class IcebergTableSynchronizer(
         val replacedColumns = mutableSetOf<String>()
 
         diff.updatedDataTypes.forEach { columnName ->
-            val existingField =
-                findField(existingSchema, columnName)
-            val incomingField =
-                findField(incomingSchema, columnName)
+            val existingField = findField(existingSchema, columnName)
+            val incomingField = findField(incomingSchema, columnName)
             val icebergPath = icebergColumnName(existingSchema, columnName)
 
             when (columnTypeChangeBehavior) {
@@ -159,9 +157,11 @@ class IcebergTableSynchronizer(
                         update.deleteColumn(icebergPath)
                         val (parentPath, leafName) = splitIntoParentAndLeaf(columnName)
                         val icebergParentName =
-                            parentPath.takeIf { it.isNotEmpty() }?.let {
-                                icebergColumnName(existingSchema, it)
-                            }
+                            parentPath
+                                .takeIf { it.isNotEmpty() }
+                                ?.let {
+                                    icebergColumnName(existingSchema, it)
+                                }
                         if (icebergParentName == null) {
                             update.addColumn(leafName, incomingField.type())
                         } else {
@@ -186,9 +186,11 @@ class IcebergTableSynchronizer(
             val (parentPath, leafName) = splitIntoParentAndLeaf(newColumnFqn)
             val incomingField = findField(incomingSchema, newColumnFqn)
             val icebergParentName =
-                parentPath.takeIf { it.isNotEmpty() }?.let {
-                    icebergColumnName(existingSchema, it)
-                }
+                parentPath
+                    .takeIf { it.isNotEmpty() }
+                    ?.let {
+                        icebergColumnName(existingSchema, it)
+                    }
 
             // Add the column via the Iceberg API
             update.addColumn(icebergParentName, leafName, incomingField.type())
@@ -228,9 +230,11 @@ class IcebergTableSynchronizer(
                 val (parentPath, leafName) = splitIntoParentAndLeaf(columnName)
                 val refreshedSchema = table.schema()
                 val icebergParentName =
-                    parentPath.takeIf { it.isNotEmpty() }?.let {
-                        icebergColumnName(refreshedSchema, it)
-                    }
+                    parentPath
+                        .takeIf { it.isNotEmpty() }
+                        ?.let {
+                            icebergColumnName(refreshedSchema, it)
+                        }
                 addUpdate.addColumn(icebergParentName, leafName, field.type())
             }
 
@@ -280,7 +284,10 @@ class IcebergTableSynchronizer(
         }
     }
 
-    private fun findField(schema: Schema, internalPath: String): org.apache.iceberg.types.Types.NestedField {
+    private fun findField(
+        schema: Schema,
+        internalPath: String,
+    ): org.apache.iceberg.types.Types.NestedField {
         val resolvedFieldId = fieldId(schema, internalPath)
         return schema.findField(resolvedFieldId)
             ?: error("Field \"$internalPath\" not found in the schema.")
@@ -288,7 +295,8 @@ class IcebergTableSynchronizer(
 
     private fun icebergColumnName(schema: Schema, internalPath: String): String {
         val resolvedFieldId = fieldId(schema, internalPath)
-        // Iceberg's schema update APIs use dotted paths, so literal dots in field names are ambiguous.
+        // Iceberg's schema update APIs use dotted paths, so literal dots in field names are
+        // ambiguous.
         return schema.findColumnName(resolvedFieldId)
             ?: error("Field \"$internalPath\" not found in the schema.")
     }
