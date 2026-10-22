@@ -14,6 +14,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
 private val log = KotlinLogging.logger {}
+
 /** Functions and logic common to all flushing strategies. */
 object GeneralStagingFunctions {
     // using a random string here as a placeholder for the moment.
@@ -32,7 +33,7 @@ object GeneralStagingFunctions {
         database: JdbcDatabase,
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
-        typerDeduper: TyperDeduper
+        typerDeduper: TyperDeduper,
     ): OnStartFunction {
         return OnStartFunction {
             log.info {
@@ -53,7 +54,7 @@ object GeneralStagingFunctions {
                         schema,
                         stream,
                         writeConfig.rawTableName,
-                        writeConfig.writeDatetime
+                        writeConfig.writeDatetime,
                     )
 
                 log.info {
@@ -71,12 +72,12 @@ object GeneralStagingFunctions {
                                 database,
                                 schema,
                                 dstTableName,
-                            )
+                            ),
                         )
                     0L -> {}
                     else ->
                         throw IllegalStateException(
-                            "Invalid minGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. GenerationId=${writeConfig.generationId}"
+                            "Invalid minGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. GenerationId=${writeConfig.generationId}",
                         )
                 }
                 log.info {
@@ -112,7 +113,7 @@ object GeneralStagingFunctions {
                 stagingPath,
                 stagedFiles,
                 tableName,
-                schemaName
+                schemaName,
             )
         } catch (e: Exception) {
             throw RuntimeException("Failed to upload data from stage $stagingPath", e)
@@ -124,7 +125,7 @@ object GeneralStagingFunctions {
      *
      * @param database database used for syncing
      * @param stagingOperations collection of SQL queries necessary for writing data into a staging
-     * area
+     *   area
      * @param writeConfigs configuration settings for all destination connectors needed to write
      * @param purgeStagingData drop staging area if true, keep otherwise
      * @return
@@ -134,7 +135,7 @@ object GeneralStagingFunctions {
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
         purgeStagingData: Boolean,
-        typerDeduper: TyperDeduper
+        typerDeduper: TyperDeduper,
     ): OnCloseFunction {
         return OnCloseFunction {
             _: Boolean,
@@ -155,7 +156,7 @@ object GeneralStagingFunctions {
                             schemaName,
                             writeConfig.streamName,
                             writeConfig.rawTableName,
-                            writeConfig.writeDatetime
+                            writeConfig.writeDatetime,
                         )
                     log.info {
                         "Cleaning stage in destination started for stream ${writeConfig.streamName}. schema $schemaName, stage: $stagePath"

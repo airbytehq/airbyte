@@ -97,7 +97,7 @@ internal class SnowflakeRawRecordFormatterTest {
                 record[COLUMN_NAME_AB_META]!!.toCsvValue(),
                 record[COLUMN_NAME_AB_GENERATION_ID]!!.toCsvValue(),
                 record[COLUMN_NAME_AB_LOADED_AT]!!.toCsvValue(),
-                "{\"$columnName\":\"$columnValue\"}"
+                "{\"$columnName\":\"$columnValue\"}",
             )
         assertEquals(expectedValue, formattedValue)
     }

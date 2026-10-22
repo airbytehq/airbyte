@@ -10761,8 +10761,8 @@ airbyte-agent connectors execute --json '{
   "entity": "metafield_product_images",
   "action": "list",
   "params": {
-    "product_id": 0,
-    "image_id": 0
+    "metafield[owner_id]": 0,
+    "metafield[owner_resource]": "<str>"
   }
 }'
 ```
@@ -10771,8 +10771,8 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await shopify.metafield_product_images.list(
-    product_id=0,
-    image_id=0
+    metafield_owner_id=0,
+    metafield_owner_resource="<str>"
 )
 ```
 
@@ -10786,8 +10786,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "metafield_product_images",
     "action": "list",
     "params": {
-        "product_id": 0,
-        "image_id": 0
+        "metafield[owner_id]": 0,
+        "metafield[owner_resource]": "<str>"
     }
 }'
 ```
@@ -10797,8 +10797,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `product_id` | `integer` | Yes | The product ID |
-| `image_id` | `integer` | Yes | The image ID |
+| `metafield[owner_id]` | `integer` | Yes | The product image ID whose metafields to list |
+| `metafield[owner_resource]` | `"product_image"` | Yes | Owner resource type; always product_image |
 | `limit` | `integer` | No | Maximum number of results to return (max 250) |
 | `since_id` | `integer` | No | Restrict results to after the specified ID |
 | `namespace` | `string` | No | Filter by namespace |
@@ -14462,7 +14462,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "quantities": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14475,7 +14476,8 @@ await shopify.inventory_set.create(
         "name": "<str>",
         "reason": "<str>",
         "quantities": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14493,7 +14495,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "quantities": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14511,6 +14514,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.quantities.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.quantities.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.quantities.quantity` | `integer` | Yes | Absolute quantity to set |
+| `input.quantities.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>
@@ -14552,7 +14557,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "changes": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14565,7 +14571,8 @@ await shopify.inventory_adjust.create(
         "name": "<str>",
         "reason": "<str>",
         "changes": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14583,7 +14590,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "changes": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14601,6 +14609,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.changes.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.changes.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.changes.delta` | `integer` | Yes | Amount to adjust (positive to add, negative to subtract) |
+| `input.changes.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>
