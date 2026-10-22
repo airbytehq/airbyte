@@ -203,7 +203,7 @@ public class MongoDbSource extends BaseConnector implements Source {
    * @return A wrapped iterator that catches known MongoDB read errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithKnownErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+                                                                                   final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
