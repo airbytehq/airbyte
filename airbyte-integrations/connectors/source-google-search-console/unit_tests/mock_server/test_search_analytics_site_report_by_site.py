@@ -7,7 +7,7 @@ The search_analytics_site_report_by_site stream is an incremental stream that:
 - Uses POST requests to /webmasters/v3/sites/{site_url}/searchAnalytics/query
 - Partitions by site_urls from config AND search_types (web, news, image, video, googleNews)
 - Uses dimensions: ["date", "country", "device"]
-- Uses aggregationType: byProperty
+- Uses aggregationType: byProperty, except auto for googleNews
 - Uses DatetimeBasedCursor with P3D step for incremental sync
 - Has pagination via startRow/rowLimit in request body
 """
@@ -72,7 +72,7 @@ class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
 
     This stream partitions by site_urls AND search_types (5 types).
     Uses dimensions: ["date", "country", "device"] for the API request.
-    Uses aggregationType: byProperty.
+    Uses aggregationType: byProperty, except auto for googleNews.
     """
 
     def _read_stream(self, config: dict, state: list = None, sync_mode: SyncMode = SyncMode.full_refresh) -> list:
@@ -127,9 +127,12 @@ class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
                 "device",
             ], f"Expected dimensions ['date', 'country', 'device'], got {body.get('dimensions')}"
 
-        # Verify aggregationType is byProperty
+        # Google does not support byProperty for Google News partitions.
         for body in captured_bodies:
-            assert body.get("aggregationType") == "byProperty", f"Expected aggregationType 'byProperty', got {body.get('aggregationType')}"
+            expected_aggregation_type = "auto" if body.get("type") == "googleNews" else "byProperty"
+            assert (
+                body.get("aggregationType") == expected_aggregation_type
+            ), f"Expected aggregationType {expected_aggregation_type!r} for {body.get('type')}, got {body.get('aggregationType')!r}"
 
         # Should have 2 records (from web search type)
         assert len(records) == 2
@@ -141,6 +144,94 @@ class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
             assert "date" in record.record.data
             assert "country" in record.record.data
             assert "device" in record.record.data
+
+    @HttpMocker()
+    def test_google_news_partition_uses_auto_aggregation_type(self, http_mocker: HttpMocker) -> None:
+        """Use the Google-supported aggregation type for Google News partitions."""
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        captured_bodies: List[Dict[str, Any]] = []
+        google_error = {
+            "error": {
+                "code": 400,
+                "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+                "errors": [
+                    {
+                        "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+                        "domain": "global",
+                        "reason": "invalidParameter",
+                        "location": "aggregation_type",
+                        "locationType": "parameter",
+                    }
+                ],
+                "status": "INVALID_ARGUMENT",
+            }
+        }
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+            captured_bodies.append(body)
+
+            if body.get("type") in ("googleNews", "discover") and body.get("aggregationType") == "byProperty":
+                context.status_code = 400
+                return json.dumps(google_error)
+            if body.get("type") in ("googleNews", "web"):
+                return json.dumps(_build_search_analytics_response([_build_search_analytics_row("2024-01-01", "usa", "DESKTOP")]))
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        google_news_bodies = [body for body in captured_bodies if body.get("type") == "googleNews"]
+        assert google_news_bodies
+        assert all(body.get("aggregationType") == "auto" for body in google_news_bodies)
+
+        for search_type in ("web", "news", "image", "video"):
+            bodies = [body for body in captured_bodies if body.get("type") == search_type]
+            assert bodies
+            assert all(body.get("aggregationType") == "byProperty" for body in bodies)
+
+        record_search_types = {record.record.data["search_type"] for record in records}
+        assert {"googleNews", "web"} <= record_search_types
+        trace_errors = [message for message in output.trace_messages if hasattr(message, "error")]
+        assert not trace_errors, f"Expected no trace error messages, got: {trace_errors}"
+
+    @HttpMocker()
+    def test_always_use_aggregation_type_auto_overrides_all_search_types(self, http_mocker: HttpMocker) -> None:
+        """The compatibility config continues to override every search type."""
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = (
+            ConfigBuilder()
+            .with_site_urls(["https://example.com/"])
+            .with_start_date("2024-01-01")
+            .with_end_date("2024-01-03")
+            .with_always_use_aggregation_type_auto(True)
+            .build()
+        )
+        captured_bodies: List[Dict[str, Any]] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+            captured_bodies.append(body)
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        self._read_stream(config)
+
+        assert {body.get("type") for body in captured_bodies} == set(_SEARCH_TYPES)
+        assert all(body.get("aggregationType") == "auto" for body in captured_bodies)
 
     @HttpMocker()
     def test_error_handler_fail_on_400(self, http_mocker: HttpMocker) -> None:
