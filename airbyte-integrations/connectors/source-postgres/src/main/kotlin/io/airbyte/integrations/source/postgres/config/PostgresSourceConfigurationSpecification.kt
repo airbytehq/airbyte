@@ -37,9 +37,24 @@ import jakarta.inject.Singleton
  * `MicronautPropertiesFriendly.*`.
  */
 @JsonSchemaTitle("Postgres Source Spec")
+// Setup-form layout: each step is one wizard step, each group one card inside it.
+// Properties opt into a group with `"group":"<id>"` in their own @JsonSchemaInject.
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"security","title":"Security"},{"id":"advanced","title":"Advanced"},{"id":"performance","title":"Performance"}]}""",
+        """{"steps":[
+  {"id":"connection","title":"Connection",
+   "description":"Where your Postgres database lives.",
+   "groups":[{"id":"db"},{"id":"security","title":"Network & security"}]},
+  {"id":"credentials","title":"Credentials",
+   "description":"The Postgres user Airbyte will read your data with.",
+   "groups":[{"id":"auth"}]},
+  {"id":"sync_method","title":"Sync method",
+   "description":"How Airbyte reads changes from your database.",
+   "groups":[{"id":"sync"}]},
+  {"id":"review","title":"Review & set up",
+   "description":"Name your source and check the optional settings.",
+   "groups":[{"id":"advanced","title":"Advanced"}]}
+]}""",
 )
 @JsonPropertyOrder(
     value =
@@ -201,20 +216,20 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":12,"display_type":"radio","group":"advanced"}""")
+    @JsonSchemaInject(json = """{"order":12,"display_type":"radio","group":"sync"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replication_method.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"advanced"}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
@@ -222,7 +237,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
@@ -379,11 +394,11 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = XminReplicationMethodConfigurationSpecification::class,
         name = "Xmin",
     ),
+    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = StandardReplicationMethodConfigurationSpecification::class,
         name = "Standard",
