@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.micronaut.context.ApplicationContext
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.assertj.core.api.Assertions.assertThat
@@ -164,5 +165,28 @@ class IcebergUtilTest {
 
         assertThat(value.abValue).isEqualTo(StringValue("""{"id":42}"""))
         assertThat(value.changes).isEmpty()
+    }
+
+    @Test
+    fun `Micronaut injects configured schema options into the utility`() {
+        val context =
+            ApplicationContext.builder()
+                .singletons(
+                    SimpleTableIdGenerator(),
+                    AirbyteValueCoercer(),
+                    IcebergSchemaOptions(IcebergObjectMode.STRUCT),
+                )
+                .start()
+        val value =
+            enriched(
+                ObjectValue(linkedMapOf("id" to IntegerValue(42L))),
+                ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+            )
+
+        context.use {
+            it.getBean(IcebergUtil::class.java).mungeForIceberg(value)
+        }
+
+        assertThat(value.abValue).isInstanceOf(ObjectValue::class.java)
     }
 }

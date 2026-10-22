@@ -359,9 +359,8 @@ class IcebergTypesComparatorTest {
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
-        // Because the struct's fields differ by name, the entire struct is considered different
-        assertThat(diff.updatedDataTypes).containsExactly("user_info")
-        // The renamed field is effectively a new column in nested context
+        // The existing field is retained; the renamed field is added as a new nested column.
+        assertThat(diff.updatedDataTypes).isEmpty()
         assertThat(diff.newColumns).containsExactly("user_info~nested_identifier")
         assertThat(diff.removedColumns).isEmpty()
         assertThat(diff.newlyOptionalColumns).isEmpty()
@@ -447,6 +446,36 @@ class IcebergTypesComparatorTest {
 
         assertThat(diff.newColumns).containsExactly("labels~element~name")
         assertThat(diff.updatedDataTypes).isEmpty()
+    }
+
+    @Test
+    fun testRemovedNestedStructFieldIsIgnored() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "user",
+                    Types.StructType.of(
+                        field("id", Types.IntegerType.get(), true),
+                        field("login", Types.StringType.get(), true),
+                    ),
+                    true,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "user",
+                    Types.StructType.of(field("id", Types.IntegerType.get(), true)),
+                    true,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.newColumns).isEmpty()
+        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.removedColumns).isEmpty()
+        assertThat(diff.newlyOptionalColumns).isEmpty()
     }
 
     @Test

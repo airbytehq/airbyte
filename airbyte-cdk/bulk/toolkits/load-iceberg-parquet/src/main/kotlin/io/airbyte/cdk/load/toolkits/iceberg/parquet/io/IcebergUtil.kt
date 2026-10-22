@@ -26,8 +26,8 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
@@ -36,6 +36,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -61,11 +62,22 @@ private val LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE)
 private val LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE)
 
 @Singleton
-class IcebergUtil(
+class IcebergUtil
+@Inject
+constructor(
     private val tableIdGenerator: TableIdGenerator,
     private val coercer: AirbyteValueCoercer,
     private val schemaOptions: IcebergSchemaOptions,
 ) {
+    constructor(
+        tableIdGenerator: TableIdGenerator,
+        coercer: AirbyteValueCoercer,
+    ) : this(
+        tableIdGenerator,
+        coercer,
+        IcebergSchemaOptions(IcebergObjectMode.JSON_STRING),
+    )
+
     private val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
@@ -241,7 +253,9 @@ class IcebergUtil(
                 }
                 IntegerType -> {
                     val integerValue = coercedValue as IntegerValue
-                    if (nested && (integerValue.value < LONG_MIN || integerValue.value > LONG_MAX)) {
+                    if (
+                        nested && (integerValue.value < LONG_MIN || integerValue.value > LONG_MAX)
+                    ) {
                         value.changes.add(
                             Meta.Change(
                                 path,

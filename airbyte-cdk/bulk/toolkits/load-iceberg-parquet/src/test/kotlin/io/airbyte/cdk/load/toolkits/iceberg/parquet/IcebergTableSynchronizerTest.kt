@@ -121,6 +121,46 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test nested field removal is ignored under safe supertype`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "id", Types.IntegerType.get()),
+                        Types.NestedField.optional(3, "login", Types.StringType.get()),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.optional(
+                    1,
+                    "user",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "id", Types.IntegerType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        val result =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+            )
+
+        assertThat(result)
+            .isEqualTo(SchemaUpdateResult(existingSchema, pendingUpdates = emptyList()))
+        verify(exactly = 0) { mockUpdateSchema.deleteColumn(any()) }
+        verify(exactly = 0) { mockUpdateSchema.updateColumn(any(), any<PrimitiveType>()) }
+        verify(exactly = 0) { mockUpdateSchema.commit() }
+    }
+
+    @Test
     fun `test remove columns`() {
         val existingSchema =
             buildSchema(Types.NestedField.optional(1, "remove_me", Types.StringType.get()))

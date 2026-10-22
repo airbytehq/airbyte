@@ -108,11 +108,6 @@ class IcebergTypesComparator {
         diff: ColumnDiff,
     ) {
         if (incomingType.isStructType && existingType.isStructType) {
-            val incomingFieldNames =
-                incomingType.asStructType().fields().map { it.name() }.toSet()
-            if (existingType.asStructType().fields().any { it.name() !in incomingFieldNames }) {
-                diff.updatedDataTypes.add(path)
-            }
             compareStructFields(
                 parentPath = path,
                 incomingType = incomingType.asStructType(),
