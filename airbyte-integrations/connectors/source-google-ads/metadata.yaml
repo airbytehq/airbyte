@@ -27,6 +27,9 @@ data:
     - title: OAuth2 authentication overview
       url: https://developers.google.com/google-ads/api/docs/oauth/overview
       type: authentication_guide
+    - title: OAuth security requirements
+      url: https://developers.google.com/google-ads/api/docs/oauth/security-requirements
+      type: authentication_guide
     - title: Developer token sunset and API access management guide
       url: https://developers.google.com/google-ads/api/docs/api-policy/developer-token
       type: authentication_guide
