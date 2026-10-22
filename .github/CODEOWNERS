@@ -57,6 +57,7 @@
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3-data-lake-g2/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 
 # Destination documentation

@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.s3_data_lake_g2.write
+
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
+import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
+
+class S3DataLakeStreamState(
+    val table: Table,
+    val schema: Schema,
+    val stagingBranchName: String,
+    val positionalDeleteState: PositionalDeleteResolutionState? = null,
+    val optimizePriorIcebergDeleteFiles: Boolean = true,
+    val deleteMode: IcebergDeleteMode = IcebergDeleteMode.EQUALITY,
+)
