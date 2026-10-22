@@ -43,10 +43,13 @@ _HANDLER_PATHS_WITH_STREAM_FILTERS = {
     "/zoom_events/events",
 }
 _CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": _TOKEN_URL,
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": _TOKEN_URL,
+    }
 }
 
 

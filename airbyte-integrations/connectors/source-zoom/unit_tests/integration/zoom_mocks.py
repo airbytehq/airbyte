@@ -32,10 +32,13 @@ PAGE_SIZE = "30"
 USER_ID = "u1"
 
 CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": "https://zoom.us/oauth/token",
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": "https://zoom.us/oauth/token",
+    }
 }
 
 WEBINAR_1 = {"id": 81111111111, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "Webinar one"}
