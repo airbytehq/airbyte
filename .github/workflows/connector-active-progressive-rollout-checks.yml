@@ -173,17 +173,42 @@ jobs:
             echo "version=" | tee -a "${GITHUB_OUTPUT}"
           fi
 
+      - name: Get merge-base connector version
+        if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
+        id: base-version
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HEAD_SHA="$(git rev-parse HEAD)"
+          MERGE_BASE="$(gh api "repos/${GITHUB_REPOSITORY}/compare/master...${HEAD_SHA}" --jq '.merge_base_commit.sha' 2>/dev/null || true)"
+          echo "merge-base=${MERGE_BASE}" | tee -a "${GITHUB_OUTPUT}"
+          if [[ -n "${MERGE_BASE}" ]]; then
+            if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref "${MERGE_BASE}" 2>/dev/null); then
+              echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+            else
+              echo "version=" | tee -a "${GITHUB_OUTPUT}"
+            fi
+          else
+            echo "version=" | tee -a "${GITHUB_OUTPUT}"
+          fi
+
       - name: Detect connector version change
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
         id: version-change
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
           MASTER_VERSION: ${{ steps.master-version.outputs.version }}
+          BASE_VERSION: ${{ steps.base-version.outputs.version }}
+          BASE_MERGE_BASE: ${{ steps.base-version.outputs.merge-base }}
         run: |
           PR_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${GITHUB_WORKSPACE}" 2>/dev/null || true)"
           echo "pr-version=${PR_VERSION}" | tee -a "${GITHUB_OUTPUT}"
           if [[ -n "${PR_VERSION}" && -n "${MASTER_VERSION}" && "${PR_VERSION}" == "${MASTER_VERSION}" ]]; then
-            echo "::notice::${CONNECTOR_NAME} version is unchanged (${PR_VERSION}); merging publishes no new version, so the progressive rollout gate is skipped."
+            echo "::notice::${CONNECTOR_NAME} version is unchanged from master (${PR_VERSION}); merging publishes no new version, so the progressive rollout gate is skipped."
+            echo "changed=false" | tee -a "${GITHUB_OUTPUT}"
+          elif [[ -n "${PR_VERSION}" && -n "${BASE_VERSION}" && "${PR_VERSION}" == "${BASE_VERSION}" ]]; then
+            echo "::notice::${CONNECTOR_NAME} version ${PR_VERSION} was not changed by this PR (matches merge-base ${BASE_MERGE_BASE}) while master is at ${MASTER_VERSION:-unknown}; merging publishes no new version, so the progressive rollout gate is skipped."
             echo "changed=false" | tee -a "${GITHUB_OUTPUT}"
           else
             echo "changed=true" | tee -a "${GITHUB_OUTPUT}"
@@ -216,7 +241,7 @@ jobs:
             <!-- progressive-rollout-gate:${{ matrix.connector }} -->
             > **Progressive rollout gate for `${{ matrix.connector }}`: skipped**
             >
-            > The `${{ matrix.connector }}` version is unchanged from master (`${{ steps.version-change.outputs.pr-version }}`), so merging publishes no new version. No rollout acknowledgement is needed.
+            > This PR doesn't change the `${{ matrix.connector }}` version (`${{ steps.version-change.outputs.pr-version }}` on this branch), so merging publishes no new version. No rollout acknowledgement is needed.
             >
             > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
