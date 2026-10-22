@@ -39,8 +39,8 @@ import io.mockk.runs
 import io.mockk.slot
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertNotSame
+import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.PartitionSpec
@@ -210,7 +210,8 @@ internal class GcsDataLakeStreamLoaderTest {
         val table = createTable(makeTableSchema())
         val importType = Dedupe(listOf(listOf("id")), listOf("id"))
         val firstState = startAndCaptureState(makeLoader(makeStream(importType), table))
-        val secondState = startAndCaptureState(makeLoader(makeStream(importType, syncId = 2), table))
+        val secondState =
+            startAndCaptureState(makeLoader(makeStream(importType, syncId = 2), table))
 
         assertNotSame(firstState.positionalDeleteState, secondState.positionalDeleteState)
     }

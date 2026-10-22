@@ -21,9 +21,9 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.tableFormatVersion

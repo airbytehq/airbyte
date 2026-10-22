@@ -61,7 +61,7 @@ data class GcsDataLakeConfiguration(
         ) {
             throw ConfigErrorException(
                 "POSITIONAL delete files cannot be written to Iceberg format v3 tables. " +
-                "Use DELETION_VECTOR or AUTOMATIC with table_format_version v3.",
+                    "Use DELETION_VECTOR or AUTOMATIC with table_format_version v3.",
             )
         }
         if (

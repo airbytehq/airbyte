@@ -165,5 +165,4 @@ class GcsDataLakeAggregate(
         logger.info { "Flushed records to staging branch $stagingBranchName" }
         withContext(Dispatchers.IO) { writer.close() }
     }
-
 }

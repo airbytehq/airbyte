@@ -143,7 +143,10 @@ class GcsDataLakeStreamLoader(
             // For existing tables with PK changes, let the IcebergTableSynchronizer handle it
             // (it will set identifier fields after schema evolution in
             // computeOrExecuteSchemaUpdate)
-            if (createdTable.history().isEmpty() || createdTable.schema().identifierFieldIds().isEmpty()) {
+            if (
+                createdTable.history().isEmpty() ||
+                    createdTable.schema().identifierFieldIds().isEmpty()
+            ) {
                 table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
                 // Refresh to get the updated schema with identifier fields
                 table.refresh()
@@ -212,7 +215,8 @@ class GcsDataLakeStreamLoader(
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
                 positionalDeleteState = positionalDeleteState,
-                optimizePriorIcebergDeleteFiles = icebergConfiguration.optimizePriorIcebergDeleteFiles,
+                optimizePriorIcebergDeleteFiles =
+                    icebergConfiguration.optimizePriorIcebergDeleteFiles,
                 deleteMode = deleteMode,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
