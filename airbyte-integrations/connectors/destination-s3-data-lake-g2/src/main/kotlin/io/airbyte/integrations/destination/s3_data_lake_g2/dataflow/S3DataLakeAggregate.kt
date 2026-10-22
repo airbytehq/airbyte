@@ -1,0 +1,113 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.s3_data_lake_g2.dataflow
+
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BasePositionDeltaTaskWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCommitter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.SupersededDataFileProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
+import org.apache.iceberg.data.Record
+import org.apache.iceberg.io.BaseTaskWriter
+
+private val logger = KotlinLogging.logger {}
+
+/**
+ * Aggregate implementation for S3 Data Lake destination.
+ *
+ * Receives pre-coerced RecordDTO from the dataflow pipeline and converts to Iceberg records for
+ * writing.
+ */
+class S3DataLakeAggregate(
+    private val stream: DestinationStream,
+    private val table: Table,
+    private val schema: Schema,
+    private val stagingBranchName: String,
+    private val writer: BaseTaskWriter<Record>,
+    private val icebergUtil: IcebergUtil,
+    private val resolvedDeletesEnabled: Boolean,
+) : Aggregate {
+    override fun accept(record: RecordDTO) {
+        val wrappedRecord =
+            RecordWrapper(
+                delegate = icebergUtil.toIcebergRecord(record.fields, schema),
+                operation = icebergUtil.getOperation(record.fields, stream.tableSchema.importType),
+            )
+
+        writer.write(wrappedRecord)
+    }
+
+    override suspend fun flush() {
+        logger.info {
+            "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
+        }
+
+        fun completeAndCommit() {
+            table.refresh()
+            val plannedSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
+            val writeResult = writer.complete()
+            if (plannedSnapshotId != null) {
+                IcebergTableCommitter.commit(
+                    table,
+                    stagingBranchName,
+                    writeResult,
+                    plannedSnapshotId,
+                    (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
+                    (writer as? BasePositionDeltaTaskWriter)
+                        ?.rewrittenDeleteFiles()
+                        ?.toSet()
+                        .orEmpty(),
+                    resolvesDeletes = resolvedDeletesEnabled,
+                )
+            } else if (writeResult.deleteFiles().isNotEmpty()) {
+                val delta = table.newRowDelta().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { delta.addRows(it) }
+                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
+            } else {
+                val append = table.newAppend().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
+            }
+        }
+        if (resolvedDeletesEnabled) {
+            withContext(Dispatchers.IO) { synchronized(commitLock) { completeAndCommit() } }
+        } else {
+            val writeResult = writer.complete()
+            synchronized(commitLock) {
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
+            }
+        }
+
+        logger.info { "Flushed records to staging branch $stagingBranchName" }
+
+        // not sure if this wrapping is necessary
+        withContext(Dispatchers.IO) {
+            logger.info { "Closing writer for $stagingBranchName" }
+            writer.close()
+        }
+    }
+
+    companion object {
+        val commitLock: Any = Any()
+    }
+}
