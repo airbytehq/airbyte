@@ -283,7 +283,8 @@ def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
     assert "password" not in token_bodies[0]
     # Exactly one CONTROL: the refresh_token_updater writing back rotated credentials.
     assert len(control_messages) == 1
-    credentials = control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]
+    persisted_config = control_messages[0]["control"]["connectorConfig"]["config"]
+    credentials = persisted_config["credentials"]
     assert credentials["access_token"] == "tok"
     assert credentials["refresh_token"] == "rotated-refresh-token"
 
@@ -311,6 +312,7 @@ def test_oauth_trailing_slash_base_url_uses_normalized_host(tmp_path) -> None:
     assert statuses[0].connectionStatus.status == Status.SUCCEEDED
     token_bodies = _token_bodies(http_mocker)
     assert len(token_bodies) == 1
+    assert [request.url for request in http_mocker._mocker.request_history if request.url.endswith("/api/oauth2/token/")] == [_TOKEN_URL]
     assert token_bodies[0]["grant_type"] == ["refresh_token"]
     http_mocker.assert_number_of_calls(check_request, 1)
 
@@ -351,10 +353,8 @@ _OAUTH_TOKEN_SHAPES = pytest.mark.parametrize(
 
 @_OAUTH_TOKEN_SHAPES
 def test_oauth_non_onuptick_base_url_fails_check_without_requests(stored_token, tmp_path, monkeypatch) -> None:
-    # A post-creation edit of base_url to another host must not redirect the OAuth
-    # client_secret + refresh_token there, nor send a still-valid stored access token as Bearer:
-    # oauth_token_url is only derived when the base_url host matches *.onuptick.com, and the
-    # stored expiry is cleared on mismatch, so the authenticator fails before any request.
+    # A post-creation edit of base_url to another host is rejected before the authenticator
+    # can send credentials or a still-valid stored access token.
     config = ConfigBuilder().with_base_url("https://evil.example.com").with_oauth_credentials(**stored_token).build()
     source, _ = _source_with_migration_controls(config)
 
@@ -363,10 +363,8 @@ def test_oauth_non_onuptick_base_url_fails_check_without_requests(stored_token, 
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    # Prod path: requests raises InvalidSchema at adapter resolution ("No connection
-    # adapters"), a RequestException that propagates unwrapped, so the sentinel's hint
-    # reaches the check message.
-    assert "base_url-must-be-https-workspace.onuptick.com" in statuses[0].connectionStatus.message
+    assert "does not match" in statuses[0].connectionStatus.message
+    assert "onuptick" in statuses[0].connectionStatus.message
     assert socket_calls == []
 
 
@@ -385,29 +383,64 @@ def test_oauth_uppercase_host_base_url_fails_check_without_requests(stored_token
     assert socket_calls == []
 
 
-def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:
-    # The *.onuptick.com pin only guards the OAuth token endpoint; the password path
-    # intentionally keeps using the free-form base_url (e.g. self-hosted instances).
-    config = ConfigBuilder().with_base_url("http://localhost:8000").with_password_credentials().build()
-    # base_url normalization rewrites the scheme to https.
-    token_url = "https://localhost:8000/api/oauth2/token/"
-    model, fields = UptickRequestBuilder.FIELDS[_CHECK_STREAM]
-    check_request = HttpRequest(
-        url="https://localhost:8000/api/v2.16/tasks/",
-        query_params={
-            "ordering": "-updated",
-            "page[size]": "1000",
-            "show_deleted": "true",
-            f"fields[{model}]": fields,
-            "updatedsince": UptickRequestBuilder.START_DATE,
-        },
-    )
+@pytest.mark.parametrize(
+    "base_url, expect_pattern_message",
+    [
+        pytest.param("https://www.uptickhq.com", True, id="uptick-homepage"),
+        pytest.param("https://example.com", True, id="example-domain"),
+        pytest.param("http://localhost:8000", True, id="self-hosted"),
+        pytest.param("", False, id="empty"),
+    ],
+)
+def test_password_non_uptick_base_url_fails_check_without_token_request(base_url: str, expect_pattern_message: bool, tmp_path) -> None:
+    config = ConfigBuilder().with_base_url(base_url).with_password_credentials().build()
     source, _ = _source_with_migration_controls(config)
+
+    with HttpMocker() as http_mocker:
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.FAILED
+    if expect_pattern_message:
+        assert "does not match" in statuses[0].connectionStatus.message
+        assert "onuptick" in statuses[0].connectionStatus.message
+    assert http_mocker._mocker.request_history == []
+
+
+@pytest.mark.parametrize(
+    "base_url, expected_base_url, expected_request_base_url",
+    [
+        pytest.param(
+            "https://test-tenant.onuptick.com",
+            "https://test-tenant.onuptick.com",
+            "https://test-tenant.onuptick.com",
+            id="normal",
+        ),
+        pytest.param("HTTPS://Tenant.ONUPTICK.com", "https://Tenant.ONUPTICK.com", "https://tenant.onuptick.com", id="uppercase"),
+        pytest.param(
+            "https://test-tenant.onuptick.com/app/",
+            "https://test-tenant.onuptick.com",
+            "https://test-tenant.onuptick.com",
+            id="path-suffix",
+        ),
+    ],
+)
+def test_password_valid_base_urls_reach_normalized_token_host(
+    base_url: str, expected_base_url: str, expected_request_base_url: str, tmp_path
+) -> None:
+    config = ConfigBuilder().with_base_url(base_url).with_password_credentials().build()
+    source, _ = _source_with_migration_controls(config)
+    assert source._config["base_url"] == expected_base_url
+    token_url = UptickRequestBuilder.token_endpoint(base_url=expected_request_base_url)
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM, base_url=expected_request_base_url)
 
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(token_url, json={"access_token": "tok", "expires_in": 3600})
         http_mocker.get(check_request, _tasks_page())
-
         output = _run_command(
             source,
             ["check", "--config", make_file(tmp_path / "config.json", config)],
@@ -416,8 +449,29 @@ def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.SUCCEEDED
-    token_urls = [request.url for request in http_mocker._mocker.request_history if "/oauth2/token" in request.url]
-    assert token_urls == [token_url]
+    token_requests = [request for request in http_mocker._mocker.request_history if request.url.endswith("/api/oauth2/token/")]
+    assert [request.url for request in token_requests] == [token_url]
+    http_mocker.assert_number_of_calls(check_request, 1)
+
+
+def test_stale_base_url_json_is_overwritten_before_check(tmp_path) -> None:
+    config = ConfigBuilder().with_base_url("https://test-tenant.onuptick.com").with_password_credentials().build()
+    config["base_url_json"] = '"https://evil.example.com"'
+    config_path = make_file(tmp_path / "config.json", config)
+    source, _ = _source_with_migration_controls(config)
+    assert source._config["base_url_json"] == '"https://test-tenant.onuptick.com"'
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(_TOKEN_URL, json={"access_token": "tok", "expires_in": 3600})
+        http_mocker.get(check_request, _tasks_page())
+        output = _run_command(source, ["check", "--config", config_path])
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    token_requests = [request for request in http_mocker._mocker.request_history if request.url.endswith("/api/oauth2/token/")]
+    assert [request.url for request in token_requests] == [_TOKEN_URL]
     http_mocker.assert_number_of_calls(check_request, 1)
 
 

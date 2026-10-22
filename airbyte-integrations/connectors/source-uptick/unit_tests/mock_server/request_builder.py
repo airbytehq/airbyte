@@ -71,8 +71,8 @@ class UptickRequestBuilder:
     }
 
     @classmethod
-    def token_endpoint(cls) -> str:
-        return f"{cls.BASE_URL}/api/oauth2/token/"
+    def token_endpoint(cls, base_url: str = BASE_URL) -> str:
+        return f"{base_url}/api/oauth2/token/"
 
     @classmethod
     def collection(
@@ -81,6 +81,7 @@ class UptickRequestBuilder:
         page: int = 1,
         updatedsince: str = START_DATE,
         token: str = ACCESS_TOKEN,
+        base_url: str = BASE_URL,
     ) -> HttpRequest:
         model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
@@ -96,7 +97,7 @@ class UptickRequestBuilder:
         if page > 1:
             query_params["page[cursor]"] = cls.NEXT_PAGE_CURSOR
         query = urlencode(query_params)
-        url = f"{cls.BASE_URL}/api/v2.16/{stream}/?"
+        url = f"{base_url}/api/v2.16/{stream}/?"
         if page == 1:
             url += "page[cursor]&"
         url += query

@@ -371,6 +371,14 @@ spec:
             path_in_connector_config: ["credentials", "client_secret"]
   config_normalization_rules:
     type: ConfigNormalizationRules
+    validations:
+      - type: DpathValidator
+        field_path: ["base_url_json"]
+        validation_strategy:
+          type: ValidateAdheresToSchema
+          base_schema:
+            type: string
+            pattern: "^https://[a-z0-9-]+\\.onuptick\\.com/?$"
     transformations:
       - type: ConfigAddFields
         condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
@@ -408,6 +416,15 @@ spec:
           - type: AddedFieldDefinition
             path: ["credentials", "token_expiry_date"]
             value: ""
+            value_type: string
+      # Validation copy of the normalized base_url. It is JSON-encoded twice because
+      # ValidateAdheresToSchema runs json.loads on string values, and interpolation
+      # strips one level of quoting.
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url_json"]
+            value: "{{ config.get('base_url') | default('') | string | lower | tojson | tojson }}"
             value_type: string
     config_migrations:
       - type: ConfigMigration
