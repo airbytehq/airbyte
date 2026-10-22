@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.38.0@sha256:36a3f1e2519a13f216331303c14dbe94ba325a9fa6489c5fa6f3c9eb51680246
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
@@ -33,7 +33,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 2.1.1
+  dockerImageTag: 2.1.2
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
@@ -88,6 +88,15 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Uptick API documentation
-      url: https://developer.uptick.com/
+    - title: Uptick API overview and patch notes
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
       type: api_reference
+    - title: Uptick API patch notes
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
+      type: api_release_history
+    - title: Uptick API getting started
+      url: https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started
+      type: authentication_guide
+    - title: Uptick API sample Postman collection
+      url: https://support.uptickhq.com/en/articles/6728183-uptick-api-sample-postman-collection
+      type: other

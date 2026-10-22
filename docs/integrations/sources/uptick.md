@@ -4,12 +4,14 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
-- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- Your Uptick workspace URL, in the form `https://<workspace>.onuptick.com`. The connector only connects to `onuptick.com` workspace hosts. A Base URL on any other host fails the connection check for both authentication methods.
 - Credentials for one of the two authentication methods below. OAuth 2.0 is recommended; the username and password method remains available for existing connections.
 
 ### OAuth 2.0 (recommended)
 
-On Airbyte Cloud, the **Authenticate with Uptick** button uses Airbyte's Uptick app, so the Airbyte app must be enabled in your Uptick account before you authenticate. If it is not enabled, ask your Uptick administrator to enable it. Then enter your **Base URL** (your Uptick instance URL in the form `https://<name>.onuptick.com`), choose **Authenticate with Uptick** under Authentication, click **Authenticate**, and approve the consent page that Uptick shows. For OAuth, the Base URL must be `https://<workspace>.onuptick.com`. The connector stores the resulting tokens in your connection's `credentials` block. The connector requests only Uptick's read-only `read` scope.
+This method uses the OAuth 2.0 authorization-code flow with PKCE, and the connector requests only Uptick's read-only `read` scope. Enter the **Base URL** exactly as `https://<workspace>.onuptick.com`, in lowercase and without a path.
+
+On Airbyte Cloud, the **Authenticate with Uptick** button uses Airbyte's Uptick app, so the Airbyte app must be enabled in your Uptick account before you authenticate. If it isn't enabled, ask your Uptick administrator to enable it. Then enter your **Base URL**, choose **Authenticate with Uptick** under **Authentication**, click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
 
 On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then enter your Base URL, choose **Authenticate with Uptick**, and complete the flow.
 
@@ -35,7 +37,7 @@ The Uptick user account needs read access to each module you want to sync; in pr
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for both authentication methods. Syncs normalize the value automatically. | |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. Required for both authentication methods. The connector strips any scheme, path, or trailing slash and always connects over HTTPS. The host must be `<workspace>.onuptick.com`, or the connection check fails. For **Authenticate with Uptick**, enter the host in lowercase. | |
 | `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
 | `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
 | `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
@@ -202,7 +204,7 @@ Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so 
 
 ### Attribute values
 
-Uptick returns each record as a JSON:API object with an `attributes` block. The connector copies every attribute to the top level of the record without changing its value, and also keeps the original `attributes` object. Monetary and other decimal fields arrive as strings with the precision Uptick sends, such as `"10.00"`. The exception is `servicequotes.product_subtotal`, which Uptick returns as a JSON number and the connector declares as a number from version 2.0.0. Attributes that Uptick returns as `null` land as `null` in your destination.
+Uptick returns each record as a JSON:API object with an `attributes` block. The connector copies every attribute to the top level of the record without changing its value, and also keeps the original `attributes` object, the `relationships` object, and the resource `type`. From version 2.1.2, every JSON:API stream declares `attributes` and `relationships` as nullable objects in its schema, and every one of those streams except `accreditationtypes`, `billingcontracts`, `billingcontractlineitems`, `products`, and `promptquestions` also declares `type`, so destinations that create typed columns add these columns. Monetary and other decimal fields arrive as strings with the precision Uptick sends, such as `"10.00"`. The exception is `servicequotes.product_subtotal`, which Uptick returns as a JSON number and the connector declares as a number from version 2.0.0. Attributes that Uptick returns as `null` land as `null` in your destination. Uptick returns an empty string (`""`) instead of `null` for unset email fields, such as `users.email` and `clients.contact_email`, and for `tasks.workorder_url`, so filter on both values when you look for missing emails or URLs.
 
 Before version 1.2.0, the connector re-rendered each attribute through a template, which reformatted decimal strings (`"10.00"` became `"10.0"`) and turned `null` into the string `"None"`. If you filter or join on those fields downstream, check for both representations in data synced before you upgraded.
 
@@ -254,7 +256,13 @@ Uptick rejects a wrong username or password with `invalid_grant`, and a wrong cl
 
 Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with the configuration error `Refreshed OAuth access token is rejected by the API.` Update the credentials and run the sync again.
 
-For **Authenticate with Uptick**, the Base URL must be `https://<workspace>.onuptick.com`. If it points anywhere else, the connection check fails with a hint to correct the Base URL and the connector sends no request to that host.
+### Base URL errors
+
+From version 2.1.2, the connection check rejects a Base URL whose host isn't `<workspace>.onuptick.com` before it sends any request, for both authentication methods. The check fails with a `JSON schema validation error` that says the URL `does not match` the `onuptick.com` pattern. Earlier versions didn't restrict the host for **Username & password**, so connections that use that method with another host, such as a tunnel or `localhost`, now fail. Set the Base URL to your `https://<workspace>.onuptick.com` address.
+
+For **Authenticate with Uptick**, the host is also case-sensitive. A Base URL with uppercase letters, such as `https://MyCompany.onuptick.com`, fails the check with a message that contains `base_url-must-be-https-workspace.onuptick.com`, and the connector doesn't send your OAuth credentials to that host. Enter the host in lowercase.
+
+A misspelled workspace name, such as `https://typo.onuptick.com`, passes this check but fails with a DNS or connection error.
 
 ### Deleted records
 
@@ -263,6 +271,8 @@ Streams marked ❌ under **Reports deletions** in the table above don't report d
 ### Rate limits
 
 Uptick enforces rate limits and reasonable-use guidelines on its API but doesn't publish a numeric limit. Uptick states that it can revoke API access without notice for applications that violate these limits, so raise the connector's request rate cautiously.
+
+Every stream except `task_profitability` uses Uptick's cursor pagination and requests 1,000 records per page, so the number of requests a stream needs is roughly its record count divided by 1,000. At the default budget of 60 requests per minute, a sync reads up to about 60,000 records per minute across all streams.
 
 Two settings control how fast the connector reads from Uptick:
 
@@ -284,6 +294,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 2.1.2 | 2026-10-22 | [89616](https://github.com/airbytehq/airbyte/pull/89616) | Request 1,000 records per page; declare `attributes`, `relationships`, `type`, `invoicelineitems.subtotal`, and `properties.address.place_id` in stream schemas; accept date-only cursor state; reject a Base URL outside `onuptick.com` on check; stop validating email fields and `tasks.workorder_url` as `email` and `uri` formats because Uptick returns `""` when they're unset; update the base image and vendor docs links |
 | 2.1.1 | 2026-10-21 | [89505](https://github.com/airbytehq/airbyte/pull/89505) | Reject an empty or whitespace-only `base_url` and remove unused legacy config fields |
 | 2.1.0 | 2026-10-20 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication with the read-only scope |
 | 2.0.1 | 2026-10-20 | [89415](https://github.com/airbytehq/airbyte/pull/89415) | Update dependencies |
