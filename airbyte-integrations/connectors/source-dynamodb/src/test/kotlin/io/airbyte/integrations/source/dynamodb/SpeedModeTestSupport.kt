@@ -85,7 +85,7 @@ object SpeedModeTestSupport {
             node.isObject -> {
                 val result: ObjectNode = Jsons.objectNode()
                 node
-                    .properties()
+                    .fields()
                     .asSequence()
                     .sortedBy { it.key }
                     .forEach { (k, v) -> result.set<JsonNode>(k, normalize(v)) }

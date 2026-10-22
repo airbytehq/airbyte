@@ -34,19 +34,20 @@ constructor(
      * of one 1 MB page. Smaller pages bound the memory used per page and make the checkpoints
      * finer, at the cost of more requests.
      */
-    @Value("\${$SCAN_PAGE_LIMIT_PROPERTY:0}") val scanPageLimit: Int,
+    @Value("\${$SCAN_PAGE_LIMIT_PROPERTY:0}") val scanPageLimit: Int = 0,
     /**
      * Table bytes per parallel-scan segment: a table is split into `ceil(size / this)` segments
      * (see [DynamoDbTableScan.segmentCount]). Tables smaller than this are scanned as one segment.
      */
     @Value("\${$SEGMENT_TARGET_BYTES_PROPERTY:$DEFAULT_SEGMENT_TARGET_BYTES}")
-    val segmentTargetBytes: Long,
+    val segmentTargetBytes: Long = DEFAULT_SEGMENT_TARGET_BYTES,
     /** Upper bound on the segments of one table; every segment adds a key to the stream state. */
-    @Value("\${$MAX_SEGMENTS_PROPERTY:$DEFAULT_MAX_SEGMENTS}") val maxSegments: Int,
+    @Value("\${$MAX_SEGMENTS_PROPERTY:$DEFAULT_MAX_SEGMENTS}")
+    val maxSegments: Int = DEFAULT_MAX_SEGMENTS,
     /**
      * The active CDK feature flags; Airbyte Cloud runs the connector with `AIRBYTE_EDITION=CLOUD`.
      */
-    val featureFlags: Set<FeatureFlag>,
+    val featureFlags: Set<FeatureFlag> = emptySet(),
 ) {
     val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
 
