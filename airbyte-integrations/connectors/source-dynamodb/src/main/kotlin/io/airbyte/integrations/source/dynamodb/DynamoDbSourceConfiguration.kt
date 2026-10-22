@@ -209,7 +209,8 @@ constructor(
         val maxDbConnections: Int? = pojo.maxDbConnections
         if (maxDbConnections != null && maxDbConnections <= 0) {
             throw ConfigErrorException(
-                "'max_db_connections' must be positive, got $maxDbConnections.",
+                "'max_db_connections' must be positive, got $maxDbConnections. " +
+                    "Set it to 1 or more, or remove it to use the default concurrency.",
             )
         }
         val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
