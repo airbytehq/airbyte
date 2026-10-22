@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.gcs_data_lake_g2
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergObjectMode
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergSchemaOptions
@@ -24,8 +24,7 @@ import jakarta.inject.Singleton
 class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
-    @Singleton
-    fun icebergSchemaOptions() = IcebergSchemaOptions(IcebergObjectMode.STRUCT)
+    @Singleton fun icebergSchemaOptions() = IcebergSchemaOptions(IcebergObjectMode.STRUCT)
 
     @Singleton
     fun aggregatePublishingConfig(config: GcsDataLakeConfiguration): AggregatePublishingConfig {
