@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-10-22 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add incremental sync for the `items` stream using Microsoft Graph list item delta queries (preview CDK) |
+| 0.1.0 | 2026-10-22 | [89678](https://github.com/airbytehq/airbyte/pull/89678) | Add incremental sync for the `items` stream using Microsoft Graph list item delta queries (preview CDK) |
 | 0.0.72 | 2026-10-13 | [88711](https://github.com/airbytehq/airbyte/pull/88711) | Update dependencies |
 | 0.0.71 | 2026-10-06 | [87929](https://github.com/airbytehq/airbyte/pull/87929) | Update dependencies |
 | 0.0.70 | 2026-09-29 | [87260](https://github.com/airbytehq/airbyte/pull/87260) | Update dependencies |
