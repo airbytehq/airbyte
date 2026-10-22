@@ -11,11 +11,14 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -45,7 +48,36 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinar_participants.py"
           - name: "zoom_events"
             bypass_reason: "Needs a Zoom Webinars Plus or Zoom Events licence to populate data; covered by mock-server tests in unit_tests/integration/test_zoom_events.py"
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "webinars"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinars.py"
+          - name: "webinar_panelists"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_panelists.py"
+          - name: "webinar_registrants"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_registrants.py"
+          - name: "webinar_absentees"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_absentees.py"
+          - name: "webinar_polls"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_polls.py"
+          - name: "webinar_poll_results"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_poll_results.py"
+          - name: "webinar_registration_questions"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_registration_questions.py"
+          - name: "webinar_tracking_sources"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_tracking_sources.py"
+          - name: "webinar_qna_results"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinar_qna_results.py"
+          - name: "report_webinars"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinars.py"
+          - name: "report_webinar_participants"
+            bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinar_participants.py"
+          - name: "zoom_events"
+            bypass_reason: "Needs a Zoom Webinars Plus or Zoom Events licence to populate data; covered by mock-server tests in unit_tests/integration/test_zoom_events.py"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
