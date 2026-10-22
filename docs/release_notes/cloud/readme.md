@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 21, 2026
+
+Platform
+
+- If your organization is on the Standard or Plus plan and you can manage billing, the **Set up billing alerts** link on the Usage and Notifications pages now takes you to the billing alerts section of your organization's Billing page, where you can manage your alerts. Previously, the link opened a separate external form.
+- Setting up single sign-on (SSO) for your organization for the first time works again. Previously, setup could fail with an error.
+
 ## October 19, 2026
 
 Platform

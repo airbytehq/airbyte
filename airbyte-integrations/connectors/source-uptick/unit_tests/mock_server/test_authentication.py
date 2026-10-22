@@ -34,6 +34,9 @@ from mock_server.request_builder import UptickRequestBuilder
 
 _CHECK_STREAM = "tasks"
 _TOKEN_URL = UptickRequestBuilder.token_endpoint()
+_LEGACY_DATE_FIELDS = ("end_date", "start_date")
+_LEGACY_OAUTH_TOKEN_FIELDS = ("oauth_access_token", "oauth_token_expiry_date", "client_refresh_token")
+_LEGACY_CONFIG_FIELDS = _LEGACY_DATE_FIELDS + _LEGACY_OAUTH_TOKEN_FIELDS
 
 
 def _tasks_page(record_id: int = 1) -> HttpResponse:
@@ -65,6 +68,55 @@ def _source_with_migration_controls(config: dict):
         source = get_source(config=config)
     controls = [json.loads(line) for line in stdout.getvalue().splitlines() if '"CONTROL"' in line]
     return source, controls
+
+
+def test_legacy_fields_are_removed_after_password_credentials_migrate() -> None:
+    config = ConfigBuilder().build()
+    config.update({field: "legacy-value" for field in _LEGACY_CONFIG_FIELDS})
+    _, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls
+    migrated = migration_controls[-1]["control"]["connectorConfig"]["config"]
+
+    assert migrated["base_url"] == config["base_url"]
+    assert migrated["credentials"]["auth_type"] == "password"
+    assert all(field not in migrated for field in _LEGACY_CONFIG_FIELDS)
+
+
+def test_legacy_oauth_tokens_are_removed_with_oauth_credentials() -> None:
+    config = ConfigBuilder().with_oauth_credentials(access_token="migrated-access-token", token_expiry_date="migrated-expiry-date").build()
+    config.update({field: "legacy-value" for field in _LEGACY_CONFIG_FIELDS})
+    _, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls
+    migrated = migration_controls[-1]["control"]["connectorConfig"]["config"]
+
+    assert migrated["credentials"]["auth_type"] == "oauth2.0"
+    assert all(field not in migrated for field in _LEGACY_CONFIG_FIELDS)
+    assert migrated["credentials"]["access_token"] == "migrated-access-token"
+    assert migrated["credentials"]["token_expiry_date"] == "migrated-expiry-date"
+
+
+def test_legacy_oauth_tokens_are_kept_without_credentials() -> None:
+    config = {
+        "base_url": "https://test-tenant.onuptick.com",
+        **{field: "legacy-value" for field in _LEGACY_CONFIG_FIELDS},
+    }
+    _, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls
+    migrated = migration_controls[-1]["control"]["connectorConfig"]["config"]
+
+    assert "credentials" not in migrated
+    assert all(field not in migrated for field in _LEGACY_DATE_FIELDS)
+    assert all(migrated[field] == "legacy-value" for field in _LEGACY_OAUTH_TOKEN_FIELDS)
+
+
+def test_config_without_legacy_fields_emits_no_migration_control() -> None:
+    config = ConfigBuilder().with_password_credentials().build()
+    _, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls == []
 
 
 @pytest.mark.parametrize(
