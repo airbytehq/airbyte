@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -22,12 +23,12 @@ class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    fun aggregatePublishingConfig(): AggregatePublishingConfig {
-        log.info { "NOOP code change for CI to pick up" }
-
+    fun aggregatePublishingConfig(config: GcsDataLakeConfiguration): AggregatePublishingConfig {
+        val maxRecords = config.resolvedMaxRecordsPerFlush
+        log.info { "Configured max records per flush: $maxRecords" }
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = 150_000_000L,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,

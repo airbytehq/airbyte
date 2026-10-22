@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.generateStagingBranchName
 import jakarta.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
@@ -67,8 +68,8 @@ class GcsDataLakeWriter(
             icebergTableSynchronizer,
             gcsDataLakeCatalogUtil,
             icebergUtil,
-            stagingBranchName =
-                io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
+            tableIdGenerator,
+            stagingBranchName = generateStagingBranchName(stream),
             mainBranchName = icebergConfiguration.gcsCatalogConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )
