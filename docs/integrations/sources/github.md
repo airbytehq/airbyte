@@ -258,7 +258,7 @@ For example, a connection syncing `docker/*` since 2026-01-01 that you widen to 
 
 To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
 
-This currently affects the `repositories` and `workflow_run_attempts` streams. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+As of version 2.7.0 this applies to every incremental stream. In versions 2.2.0 through 2.6.x it applied only to the streams that had already moved to the connector's declarative implementation; the others still fell back to the **Start date** for a repository they had not seen before.
 
 #### GitHub Enterprise Server with rate limiting disabled
 
