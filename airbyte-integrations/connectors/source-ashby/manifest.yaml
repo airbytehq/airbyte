@@ -39,16 +39,24 @@ definitions:
         Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
         lack access; generate a new key in Ashby under Admin > API Keys.
     sync_token_rejected:
+      # Ashby rejects an expired or undecodable syncToken, or an incremental pass over more than
+      # 100 pages, with success: false. The codes arrive as errors: ["<code>"], errors: [{code}]
+      # or errorInfo.code. RESET_SYNC_TOKEN drops the token and re-reads the stream in full.
       type: HttpResponseFilter
       action: RESET_SYNC_TOKEN
       predicate: >-
-        {{ response.get('success', true) == false and
-        ((response.get('errorInfo') or {}).get('code') in ['sync_token_expired', 'sync_token_invalid']
-        or 'sync_token_expired' in (response.get('errors') or [])
-        or 'sync_token_invalid' in (response.get('errors') or [])) }}
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set errors = response.get('errors') or [] -%}
+        {%- set codes = [info.get('code')] + (errors | select('string') | list)
+        + (errors | select('mapping') | map(attribute='code') | list) -%}
+        {{ response.get('success', true) == false and (codes | select('in', [
+        'sync_token_expired', 'sync_token_invalid', 'incremental_sync_too_large'
+        ]) | list | length > 0) }}
       error_message: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set first = (response.get('errors') or [{}])[0] -%}
         Ashby rejected the stored sync token
-        ({{ (response.get('errorInfo') or {}).get('code') or (response.get('errors') or ['sync_token_expired'])[0] }})
+        ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }})
     success_false:
       type: HttpResponseFilter
       action: FAIL
@@ -78,6 +86,17 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     lookback_window: P1D
+  sync_token_cursor:
+    # Ashby returns a new syncToken only on the page with moreDataAvailable: false and echoes
+    # the request's token on earlier pages, so the token is sent on every page alongside
+    # cursor and committed only when the pass completes.
+    type: SyncTokenCursor
+    token_path: ["syncToken"]
+    token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: syncToken
+    completion_condition: "{{ response.get('success', true) and not response.get('moreDataAvailable', true) }}"
   error_handler:
     type: DefaultErrorHandler
     max_retries: 6
@@ -89,25 +108,10 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/rate_limited"
       - $ref: "#/definitions/response_filters/server_error"
-      - $ref: "#/definitions/response_filters/unauthorized"
-      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
-      - $ref: "#/definitions/response_filters/forbidden"
-      - $ref: "#/definitions/response_filters/success_false"
-  candidates_error_handler:
-    type: DefaultErrorHandler
-    max_retries: 6
-    backoff_strategies:
-      - type: WaitTimeFromHeader
-        header: Retry-After
-      - type: ExponentialBackoffStrategy
-        factor: 5
-    response_filters:
-      - $ref: "#/definitions/response_filters/rate_limited"
-      - $ref: "#/definitions/response_filters/server_error"
-      - $ref: "#/definitions/response_filters/unauthorized"
-      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
-      - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/sync_token_rejected"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+      - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/success_false"
   streams:
     interview_plans:
@@ -151,6 +155,9 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.nextCursor }}"
             stop_condition: "{{ not response.moreDataAvailable }}"
+      incremental_sync:
+        $ref: "#/definitions/sync_token_cursor"
+        cursor_field: updatedAt
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -485,6 +492,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -766,6 +776,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -789,15 +802,6 @@ streams:
     name: candidates
     primary_key:
       - id
-    incremental_sync:
-      type: SyncTokenCursor
-      token_path: ["syncToken"]
-      cursor_field: updatedAt
-      token_option:
-        type: RequestOption
-        inject_into: body_json
-        field_name: syncToken
-      completion_condition: "{{ response.moreDataAvailable == false }}"
     retriever:
       type: SimpleRetriever
       requester:
@@ -810,7 +814,7 @@ streams:
         path: /candidate.list
         http_method: POST
         error_handler:
-          $ref: "#/definitions/candidates_error_handler"
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -831,6 +835,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1143,6 +1151,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1243,6 +1254,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1323,6 +1338,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1404,6 +1422,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1619,6 +1641,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1985,6 +2010,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2162,6 +2191,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2251,6 +2283,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2450,6 +2485,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2998,6 +3037,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3174,6 +3215,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3339,6 +3382,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3404,6 +3449,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3604,6 +3651,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3735,6 +3784,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3866,6 +3917,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
