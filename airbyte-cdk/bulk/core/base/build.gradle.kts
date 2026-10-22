@@ -101,6 +101,17 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.0")
     implementation("org.bouncycastle:bcprov-jdk18on:1.86")
+    constraints {
+        api("org.bouncycastle:bcpkix-jdk18on:1.86") {
+            because("keep the BouncyCastle family aligned with bcprov 1.86 — mixed 1.78.x bcpkix/bcutil throw NoSuchFieldError in BouncyCastleProvider init")
+        }
+        api("org.bouncycastle:bcutil-jdk18on:1.86") {
+            because("same")
+        }
+        api("org.bouncycastle:bctls-jdk18on:1.86.2") {
+            because("same; 1.86.2 is the bctls release built against bcprov 1.86")
+        }
+    }
     implementation("net.i2p.crypto:eddsa:0.3.0")
     implementation("org.openapi4j:openapi-schema-validator:1.0.7")
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")

@@ -1,6 +1,7 @@
 ## Version 1.0.8
 
 [#89632](https://github.com/airbytehq/airbyte/pull/89632) — Bump `sshd-mina` 2.13.2 → 2.20.0 (CVE-2026-77185 and twelve further Apache MINA SSHD advisories), `mina-core` 2.0.27 → 2.0.31 (CVE-2026-41409, CVE-2026-41635, CVE-2026-47065) and `bcprov-jdk18on` 1.78.1 → 1.86 (CVE-2026-8763, CVE-2025-14813, CVE-2026-13506), removing the critical findings Docker Scout reports on every Bulk CDK connector image; no behaviour change expected.
+`api` constraints pin `bcpkix-jdk18on` and `bcutil-jdk18on` to 1.86 and `bctls-jdk18on` to 1.86.2 so consumers whose drivers pull the 1.78.x family (snowflake-jdbc) do not end up with bcprov 1.86 next to bcutil 1.78.1, which fails `BouncyCastleProvider` initialisation with `NoSuchFieldError` on `IANAObjectIdentifiers.id_MLDSA44_RSA2048_PSS_SHA256`.
 
 ## Version 1.0.7
 
