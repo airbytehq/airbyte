@@ -13,6 +13,7 @@ Version 2.0.0 corrects four stream schemas. These type and field changes affect 
 - `application_criteria_evaluations` gains a primary key of `application_id` and `id`. Connections that use a deduplicated sync mode can now key this stream on those fields; earlier versions had no primary key.
 - `application_criteria_evaluations` removes the never-populated `assessmentType`, `criterionName`, and `jobId` columns.
 - `interviews` removes the never-populated `applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `feedbackLink`, `interviewerUserIds`, and `meetingLink` columns.
+- `interviews` adds a nullable `ownership` string column, which Ashby returns on interview definitions.
 
 The removed interview scheduling fields that are available elsewhere are on `interview_schedules`: `applicationId`, `interviewStageId`, `status`, `createdAt`, and `updatedAt` are top-level fields. `startTime`, `endTime`, `feedbackLink`, `interviewerUserIds`, `meetingLink`, and `interviewScheduleId` are fields on objects in its `interviewEvents` array. `cancelledAt` has no direct replacement; cancellation is reflected in the schedule's `status`.
 
