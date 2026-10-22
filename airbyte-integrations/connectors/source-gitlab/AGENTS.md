@@ -10,14 +10,16 @@ GitLab's OAuth implementation issues single-use refresh tokens. Every time an ac
 
 ## Incremental Stream Considerations
 
-The GitLab API supports `updated_after` filtering on many endpoints. The connector uses Python custom components (`GroupStreamsPartitionRouter`, `ProjectStreamsPartitionRouter`) referenced from the manifest. Streams are defined in Python code and partitioned by group/project.
+The GitLab API supports `updated_after` filtering on many endpoints. The connector uses Python custom components (`GroupStreamsPartitionRouter`, `ProjectStreamsPartitionRouter`) referenced from the manifest to partition its declarative streams by group/project.
 
 `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` are incremental via `incremental_dependency: true` on the `pipelines` parent with `global_substream_cursor: true`. Their shared cursor, `pipeline_updated_at` (the parent pipeline's `updated_at` taken from `extra_fields`), only holds state: it is never sent to GitLab, and its far-future `end_datetime` stops it from skipping a pipeline the parent returned when the stored value is later than the worker clock. Keep the cursor key different from the parent's `updated_at`: when the child state has no `parent_state`, the CDK applies the child's global `state` to the parent. Job-level changes that don't bump the parent pipeline's `updated_at` (erased jobs, expired artifacts, `downstream_pipeline` status in `pipeline_trigger_jobs`) are not re-read in incremental mode. The `jobs` stream sends `include_retried=true` so GitLab also returns earlier attempts of retried jobs; `pipeline_trigger_jobs` (`/bridges`) has no such parameter. These streams also honor incoming state in Full Refresh mode (the platform clears it at the start of each Full Refresh sync), so callers outside the platform must not pass a previous sync's state for them.
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Connector type:** Manifest-only connector with Python custom partition routers.
 
-**Analysis status:** Streams are Python-defined via custom components with custom partition routers. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Streams are defined in the manifest and use Python custom partition routers. Full stream-by-stream analysis requires reviewing the manifest and custom router behavior.
+
+`deployments`, `project_milestones`, and `group_milestones` use a one-window `updated_at` cursor starting at 1970-01-01, not `start_date`, so Full Refresh and the first Incremental sync retain their full-history scope. `merge_request_commits` uses an incremental dependency on `merge_requests` and stores the parent `updated_at` as `merge_request_updated_at`; this cursor differs from the parent's `updated_at` and is never sent to GitLab. Consequently, only commits for merge requests returned by the incremental parent query are read, and commit changes that do not update the parent merge request's `updated_at` are not picked up.
 
 ### Future incremental stream candidates
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+- Further stream-by-stream incremental analysis should review the declarative manifest, custom partition routers, cursor fields, and API endpoints.
