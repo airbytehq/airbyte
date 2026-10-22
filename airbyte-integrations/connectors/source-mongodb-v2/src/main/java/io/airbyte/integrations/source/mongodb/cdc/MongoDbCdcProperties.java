@@ -20,8 +20,10 @@ public class MongoDbCdcProperties {
   static final String HEARTBEAT_INTERVAL_KEY = "heartbeat.interval.ms";
   static final String SNAPSHOT_MODE_KEY = "snapshot.mode";
   static final String SNAPSHOT_MODE_VALUE = "no_data";
-  // Debezium's AsyncEmbeddedEngine (starting with v3.2.0.Alpha1) includes a new engine start timeout of 40 s. This
-  // can be too low for a busy oplog, so we override it with 3 min, which was Debezium's previous default.
+  // Debezium's AsyncEmbeddedEngine (starting with v3.2.0.Alpha1) includes a new engine start timeout
+  // of 40 s. This
+  // can be too low for a busy oplog, so we override it with 3 min, which was Debezium's previous
+  // default.
   static final String TASK_MANAGEMENT_TIMEOUT_KEY = "internal.task.management.timeout.ms";
   static final String TASK_MANAGEMENT_TIMEOUT_MS = Long.toString(Duration.ofMinutes(3).toMillis());
   static final String TOMBSTONE_ON_DELETE_KEY = "tombstones.on.delete";
