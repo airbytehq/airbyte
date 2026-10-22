@@ -147,7 +147,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 1.8.0 | 2026-10-22 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Added incremental sync using Ashby sync tokens for the 20 streams whose endpoints support them. |
+| 1.8.0 | 2026-10-22 | [89675](https://github.com/airbytehq/airbyte/pull/89675) | Added incremental sync using Ashby sync tokens for the 20 streams whose endpoints support them. |
 | 1.7.3 | 2026-10-20 | [89142](https://github.com/airbytehq/airbyte/pull/89142) | Update dependencies |
 | 1.7.2 | 2026-10-13 | [88502](https://github.com/airbytehq/airbyte/pull/88502) | Update dependencies |
 | 1.7.1 | 2026-10-06 | [87745](https://github.com/airbytehq/airbyte/pull/87745) | Update dependencies |
