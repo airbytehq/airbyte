@@ -69,15 +69,15 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         val recordDates = extractDates(recordsWithExclude, "order_date")
         Assertions.assertFalse(
             recordDates.contains(today.toString()),
-            "Today's records should be excluded when exclude_todays_data is true"
+            "Today's records should be excluded when exclude_todays_data is true",
         )
         Assertions.assertTrue(
             recordDates.contains(yesterday.toString()),
-            "Yesterday's records should be included"
+            "Yesterday's records should be included",
         )
         Assertions.assertTrue(
             recordDates.contains(twoDaysAgo.toString()),
-            "Records from two days ago should be included"
+            "Records from two days ago should be included",
         )
 
         // Test with exclude_todays_data = false
@@ -88,7 +88,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         val allRecordDates = extractDates(recordsWithoutExclude, "order_date")
         Assertions.assertTrue(
             allRecordDates.contains(today.toString()),
-            "Today's records should be included when exclude_todays_data is false"
+            "Today's records should be included when exclude_todays_data is false",
         )
     }
 
@@ -117,21 +117,21 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
             timestamps.any {
                 it.contains(todayMorning.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             },
-            "Today morning's records should be excluded"
+            "Today morning's records should be excluded",
         )
         Assertions.assertFalse(
             timestamps.any {
                 it.contains(todayEvening.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             },
-            "Today evening's records should be excluded"
+            "Today evening's records should be excluded",
         )
         Assertions.assertTrue(
             timestamps.any { ts -> ts.startsWith(yesterdayNoon.toLocalDate().toString()) },
-            "Yesterday's records should be included"
+            "Yesterday's records should be included",
         )
         Assertions.assertTrue(
             timestamps.any { ts -> ts.startsWith(beforeMidnight.toLocalDate().toString()) },
-            "Records from just before midnight should be included"
+            "Records from just before midnight should be included",
         )
     }
 
@@ -159,7 +159,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                     amount DECIMAL(10,2),
                     status VARCHAR(50)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(createTable) }
 
@@ -169,7 +170,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 INSERT INTO $tableName (order_date, amount, status) VALUES
                 ('$threeDaysAgo', 100.00, 'initial'),
                 ('$twoDaysAgo', 200.00, 'initial');
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertInitialData) }
 
@@ -186,11 +188,11 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(2, initialRecords.size, "Initial sync should have 2 records")
         Assertions.assertTrue(
             initialDates.contains(threeDaysAgo.toString()),
-            "Initial sync should include records from 3 days ago"
+            "Initial sync should include records from 3 days ago",
         )
         Assertions.assertTrue(
             initialDates.contains(twoDaysAgo.toString()),
-            "Initial sync should include records from 2 days ago"
+            "Initial sync should include records from 2 days ago",
         )
 
         // Add new records including yesterday and today
@@ -204,7 +206,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 ('$yesterday', 350.00, 'incremental'),
                 ('$today', 400.00, 'incremental_today'),
                 ('$today', 450.00, 'incremental_today');
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertNewData) }
             log.info { "Added new records including yesterday and today" }
@@ -224,13 +227,13 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             0,
             todayCount,
-            "Today's records should be excluded during incremental sync when exclude_todays_data is true"
+            "Today's records should be excluded during incremental sync when exclude_todays_data is true",
         )
 
         // Verify: Yesterday's records should be included
         Assertions.assertTrue(
             yesterdayCount >= 2,
-            "Yesterday's records should be included in incremental sync"
+            "Yesterday's records should be included in incremental sync",
         )
 
         // Test without exclude_todays_data to confirm today's records exist
@@ -243,7 +246,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             2,
             todayCountWithoutExclude,
-            "Today's records should be included when exclude_todays_data is false"
+            "Today's records should be included when exclude_todays_data is false",
         )
 
         log.info { "Incremental sync test completed successfully" }
@@ -270,7 +273,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                     status VARCHAR(50),
                     amount DECIMAL(10,2)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(createTable) }
 
@@ -284,7 +288,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 ('$today', 'new', 200.00),
                 ('$today', 'new', 250.00),
                 ('$today', 'new', 300.00);
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertData) }
 
@@ -301,7 +306,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             5,
             recordsWithIntCursor.size,
-            "All 5 records should be included when cursor is INTEGER, even with exclude_todays_data = true"
+            "All 5 records should be included when cursor is INTEGER, even with exclude_todays_data = true",
         )
 
         // Verify today's records are included
@@ -310,7 +315,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             3,
             todayCount,
-            "Today's 3 records should be included when cursor is INTEGER type"
+            "Today's 3 records should be included when cursor is INTEGER type",
         )
 
         // Test 2: Using VARCHAR cursor field with exclude_todays_data = true
@@ -320,7 +325,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             5,
             recordsWithStringCursor.size,
-            "All 5 records should be included when cursor is VARCHAR, even with exclude_todays_data = true"
+            "All 5 records should be included when cursor is VARCHAR, even with exclude_todays_data = true",
         )
 
         // Test 3: Incremental sync with non-temporal cursor should also include all new records
@@ -333,7 +338,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 INSERT INTO $tableName (order_date, status, amount) VALUES
                 ('$today', 'newer', 350.00),
                 ('$today', 'newer', 400.00);
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertNewData) }
             log.info { "Added new records with today's date" }
@@ -346,7 +352,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             7,
             incrementalRecords.size,
-            "All records including new today's records should be included in incremental sync with non-temporal cursor"
+            "All records including new today's records should be included in incremental sync with non-temporal cursor",
         )
 
         // Verify new today's records are included
@@ -355,7 +361,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(
             5,
             finalTodayCount,
-            "All 5 of today's records should be included after incremental sync with non-temporal cursor"
+            "All 5 of today's records should be included after incremental sync with non-temporal cursor",
         )
 
         log.info {
@@ -384,7 +390,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         Assertions.assertEquals(1, timestamps.size, "Only yesterday's record should be included")
         Assertions.assertTrue(
             timestamps.any { ts -> ts.startsWith(yesterdayWithMicros.toLocalDate().toString()) },
-            "Yesterday's high-precision record should be included"
+            "Yesterday's high-precision record should be included",
         )
     }
 
@@ -392,7 +398,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         tableName: String,
         today: LocalDate,
         yesterday: LocalDate,
-        twoDaysAgo: LocalDate
+        twoDaysAgo: LocalDate,
     ) {
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -406,7 +412,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                     order_date DATE,
                     amount DECIMAL(10,2)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(createTable) }
 
@@ -419,7 +426,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 ('$yesterday', 200.00),
                 ('$yesterday', 250.00),
                 ('$twoDaysAgo', 300.00);
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertData) }
 
@@ -433,7 +441,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         todayMorning: LocalDateTime,
         todayEvening: LocalDateTime,
         yesterdayNoon: LocalDateTime,
-        beforeMidnight: LocalDateTime
+        beforeMidnight: LocalDateTime,
     ) {
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -447,7 +455,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                     created_at DATETIME,
                     description VARCHAR(100)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(createTable) }
 
@@ -460,7 +469,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 ('${todayEvening.format(formatter)}', 'Today evening'),
                 ('${yesterdayNoon.format(formatter)}', 'Yesterday noon'),
                 ('${beforeMidnight.format(formatter)}', 'Just before midnight');
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertData) }
 
@@ -472,7 +482,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
     private fun setupDateTime2Table(
         tableName: String,
         todayWithMicros: LocalDateTime,
-        yesterdayWithMicros: LocalDateTime
+        yesterdayWithMicros: LocalDateTime,
     ) {
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -486,7 +496,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                     updated_at DATETIME2(6),
                     status VARCHAR(50)
                 )
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(createTable) }
 
@@ -502,7 +513,8 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 INSERT INTO $tableName (updated_at, status) VALUES
                 ('$todayFormatted', 'Today with microseconds'),
                 ('$yesterdayFormatted', 'Yesterday with microseconds');
-            """.trimIndent()
+            """
+                    .trimIndent()
 
             connection.createStatement().use { stmt -> stmt.execute(insertData) }
 
@@ -512,11 +524,11 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
     }
 
     private fun createConfig(
-        excludeTodaysData: Boolean
+        excludeTodaysData: Boolean,
     ): MsSqlServerSourceConfigurationSpecification {
         val config = MsSqlServerContainerFactory.config(dbContainer)
         config.setIncrementalValue(
-            UserDefinedCursor().apply { this.excludeTodaysData = excludeTodaysData }
+            UserDefinedCursor().apply { this.excludeTodaysData = excludeTodaysData },
         )
         return config
     }
@@ -524,7 +536,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
     private fun performSync(
         config: MsSqlServerSourceConfigurationSpecification,
         tableName: String,
-        cursorField: String
+        cursorField: String,
     ): List<JsonNode> {
         // Discover catalog
         val discoverOutput = CliRunner.source("discover", config).run()
@@ -567,7 +579,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(
                 MsSqlServerSourceConfigurationFactory()
-                    .make(MsSqlServerContainerFactory.config(dbContainer))
+                    .make(MsSqlServerContainerFactory.config(dbContainer)),
             )
         }
 
@@ -579,7 +591,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 MsSqlServerContainerFactory.exclusive(
                     "mcr.microsoft.com/mssql/server:2022-latest",
                     MsSqlServerContainerFactory.WithNetwork,
-                    MsSqlServerContainerFactory.WithTestDatabase
+                    MsSqlServerContainerFactory.WithTestDatabase,
                 )
 
             // Ensure test schema exists
@@ -587,7 +599,7 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt ->
                     stmt.execute(
-                        "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'dbo') BEGIN EXEC('CREATE SCHEMA dbo') END"
+                        "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'dbo') BEGIN EXEC('CREATE SCHEMA dbo') END",
                     )
                 }
             }

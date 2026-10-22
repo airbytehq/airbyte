@@ -80,11 +80,13 @@ spec:
       secret_key:
         title: "Secret Key"
         type: "string"
+        airbyte_secret: true
         description: "The secret key for HMAC authentication."
         order: 7
       api_key:
         title: "API Key"
         type: string
+        airbyte_secret: true
         description: "The Infor Data API Key."
         order: 8
       dataset_name:

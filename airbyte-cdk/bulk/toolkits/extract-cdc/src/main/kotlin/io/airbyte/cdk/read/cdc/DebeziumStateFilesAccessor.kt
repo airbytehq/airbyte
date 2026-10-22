@@ -125,7 +125,7 @@ class DebeziumStateFilesAccessor : AutoCloseable {
 
         private fun doWithFileSchemaHistory(
             schemaFilePath: Path,
-            block: (FileSchemaHistory) -> Unit
+            block: (FileSchemaHistory) -> Unit,
         ) {
             val fileSchemaHistory = FileSchemaHistory()
             fileSchemaHistory.configure(
@@ -134,7 +134,7 @@ class DebeziumStateFilesAccessor : AutoCloseable {
                     .build(),
                 HistoryRecordComparator.INSTANCE,
                 SchemaHistoryListener.NOOP,
-                false
+                false,
             )
             fileSchemaHistory.start()
             block(fileSchemaHistory)

@@ -32,10 +32,11 @@ class AesCbcEnvelopeEncryptionBlobDecoratorTest {
         // A small CSV file, which looks similar to what destination-s3 might upload
         val PLAINTEXT: String =
             """
-                                             adc66b6e-6051-42db-b683-d978a51c3c02,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.046
-                                             0e253b28-bec6-4a90-8622-629d3e542982,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.047
-                                             
-                                             """.trimIndent()
+            adc66b6e-6051-42db-b683-d978a51c3c02,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.046
+            0e253b28-bec6-4a90-8622-629d3e542982,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.047
+
+            """
+                .trimIndent()
 
         // The encryption of the plaintext, using the CEK and IV defined above (base64-encoded).
         // Equivalent
