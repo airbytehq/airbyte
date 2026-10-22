@@ -47,7 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 0.1.0-rc.1 | 2026-10-22 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync for users and groups using Microsoft Graph delta queries |
+| 0.1.0-rc.1 | 2026-10-22 | [89677](https://github.com/airbytehq/airbyte/pull/89677) | Add incremental sync for users and groups using Microsoft Graph delta queries |
 | 0.0.65 | 2026-10-20 | [89315](https://github.com/airbytehq/airbyte/pull/89315) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88683](https://github.com/airbytehq/airbyte/pull/88683) | Update dependencies |
 | 0.0.63 | 2026-10-06 | [87948](https://github.com/airbytehq/airbyte/pull/87948) | Update dependencies |
