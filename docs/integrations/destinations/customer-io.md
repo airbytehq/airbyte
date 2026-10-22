@@ -91,7 +91,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.0.12 | 2026-10-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1 |
+| 0.0.12 | 2026-10-22 | [89652](https://github.com/airbytehq/airbyte/pull/89652) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1 |
 | 0.0.11 | 2026-06-18 | [80254](https://github.com/airbytehq/airbyte/pull/80254) | Move to community support level |
 | 0.0.10 | 2026-02-09 | [72973](https://github.com/airbytehq/airbyte/pull/72973) | Upgrade CDK to 1.0.1 |
 | 0.0.9 | 2026-01-26 | [72303](https://github.com/airbytehq/airbyte/pull/72303) | Upgrade CDK to 0.2.0 |
