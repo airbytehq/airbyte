@@ -2,29 +2,21 @@
 
 import json
 from datetime import timedelta
+from typing import Any, Dict, Optional
 from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-import pytest
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import FieldPath
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
-from .helpers import given_tickets_with_state
-from .request_builder import ApiTokenAuthenticator, OAuthBearerAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import (
-    ErrorResponseBuilder,
-    TicketMetricsRecordBuilder,
-    TicketMetricsResponseBuilder,
-    TicketsRecordBuilder,
-    TicketsResponseBuilder,
-)
+from .request_builder import ApiTokenAuthenticator, Authenticator, OAuthBearerAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import ErrorResponseBuilder, TicketMetricSetsResponseBuilder
 from .test_oauth_refresh_flow import (
     _INITIAL_ACCESS_TOKEN,
     _INITIAL_REFRESH_TOKEN,
@@ -39,6 +31,12 @@ from .utils import get_log_messages_by_log_level, read_stream
 
 _NOW = ab_datetime_now()
 _TWO_YEARS_AGO_DATETIME = _NOW.subtract(timedelta(weeks=104))
+_EXPORT_URL = "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json"
+_A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+# Start Date does not apply to `ticket_metrics`: without state the export is read from epoch 0.
+_EPOCH = 0
+# 2026-03-01T00:00:00Z, `TicketsStateMigration.BACKFILL_FLOOR`
+_TICKETS_BACKFILL_FLOOR = 1772323200
 
 _INVALID_TOKEN_RESPONSE_BODY = {
     "error": "invalid_token",
@@ -46,250 +44,329 @@ _INVALID_TOKEN_RESPONSE_BODY = {
 }
 
 
+def _config() -> Dict[str, Any]:
+    return (
+        ConfigBuilder()
+        .with_basic_auth_credentials("user@example.com", "password")
+        .with_subdomain("d3v-airbyte")
+        .with_start_date(_TWO_YEARS_AGO_DATETIME)
+        .build()
+    )
+
+
+def _api_token_authenticator() -> ApiTokenAuthenticator:
+    return ApiTokenAuthenticator(email="user@example.com", password="password")
+
+
+def _export_request(authenticator: Authenticator, start_time: Any) -> HttpRequest:
+    return ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).with_start_time(start_time).with_include("metric_sets").build()
+
+
+def _next_page_request(authenticator: Authenticator, cursor: str = _A_CURSOR) -> HttpRequest:
+    return ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).with_cursor(cursor).with_include("metric_sets").build()
+
+
+def _days_ago(days: int) -> int:
+    return int(_NOW.subtract(timedelta(days=days)).timestamp())
+
+
+def _assert_no_per_ticket_requests(http_mocker: HttpMocker) -> None:
+    """The stream must only read the export: no `tickets/{id}/metrics` and no `GET /ticket_metrics`."""
+    paths = [request.path for request in http_mocker._mocker.request_history]
+    assert paths, "Expected at least one request"
+    assert all(path == "/api/v2/incremental/tickets/cursor.json" for path in paths), paths
+
+
+def _state_dict(output) -> Optional[Dict[str, Any]]:
+    return output.most_recent_state.stream_state.__dict__ if output.most_recent_state else None
+
+
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsFullRefresh(TestCase):
-    """Test full refresh sync behavior for ticket_metrics stream.
-
-    Per playbook requirement: All streams should test full refresh sync behavior at minimum.
-    """
-
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_TWO_YEARS_AGO_DATETIME)
-            .build()
+    @HttpMocker()
+    def test_given_one_page_when_read_then_emit_side_loaded_metric_sets_with_ticket_generated_timestamp(self, http_mocker):
+        config = _config()
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(3), metric_set_id=361110475196)
+            .with_ticket(2, _days_ago(2), metric_set_id=361593978316)
+            .build(),
         )
 
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config)
+
+        assert [(r.record.data["id"], r.record.data["ticket_id"], r.record.data["_ab_updated_at"]) for r in output.records] == [
+            (361110475196, 1, _days_ago(3)),
+            (361593978316, 2, _days_ago(2)),
+        ]
+        _assert_no_per_ticket_requests(http_mocker)
 
     @HttpMocker()
-    def test_given_one_page_when_read_ticket_metrics_then_return_records(self, http_mocker):
-        """Test basic full refresh sync returns records."""
-        record_updated_at: str = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        api_token_authenticator = self._get_authenticator(self._config)
-        ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
-
+    def test_given_archived_and_deleted_tickets_when_read_then_emit_their_metric_sets(self, http_mocker):
+        """`GET /ticket_metrics` leaves archived tickets out; the export side-load returns them."""
+        config = _config()
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
-            TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
+            _export_request(_api_token_authenticator(), _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(5), status="closed")
+            .with_ticket(191, _days_ago(4), status="deleted")
+            .with_ticket(192, _days_ago(3), status="open")
+            .build(),
         )
 
-        output = read_stream("ticket_metrics", SyncMode.full_refresh, self._config)
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config)
 
-        assert len(output.records) == 1
+        assert sorted(r.record.data["ticket_id"] for r in output.records) == [1, 191, 192]
+
+    @HttpMocker()
+    def test_given_ticket_without_metric_set_when_read_then_skip_it(self, http_mocker):
+        config = _config()
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(5))
+            .with_ticket(2, _days_ago(4), with_metric_set=False)
+            .build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config)
+
+        assert [r.record.data["ticket_id"] for r in output.records] == [1]
+
+    @HttpMocker()
+    def test_given_two_pages_when_read_then_follow_after_url_and_emit_all_metric_sets(self, http_mocker):
+        config = _config()
+        authenticator = _api_token_authenticator()
+        # Zendesk's after_url carries the `include` parameter, as the live API does.
+        http_mocker.get(
+            _export_request(authenticator, _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(5))
+            .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}&include=metric_sets")
+            .build(),
+        )
+        http_mocker.get(
+            _next_page_request(authenticator),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(2, _days_ago(4)).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config)
+
+        assert [r.record.data["ticket_id"] for r in output.records] == [1, 2]
+        _assert_no_per_ticket_requests(http_mocker)
+
+    @HttpMocker()
+    def test_given_after_url_without_include_when_read_next_page_then_still_request_metric_sets(self, http_mocker):
+        """The `include` request parameter is sent on paginated requests too, so the side-load never drops."""
+        config = _config()
+        authenticator = _api_token_authenticator()
+        http_mocker.get(
+            _export_request(authenticator, _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(5))
+            .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}")
+            .build(),
+        )
+        http_mocker.get(
+            _next_page_request(authenticator),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(2, _days_ago(4)).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config)
+
+        assert [r.record.data["ticket_id"] for r in output.records] == [1, 2]
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsIncremental(TestCase):
-    @property
-    def _config(self):
-        return (
+    @HttpMocker()
+    def test_given_no_state_when_read_then_start_from_epoch_and_emit_plain_cursor_state(self, http_mocker):
+        config = _config()
+        authenticator = _api_token_authenticator()
+        http_mocker.get(
+            _export_request(authenticator, _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(5))
+            .with_next_page(f"{_EXPORT_URL}?cursor={_A_CURSOR}&include=metric_sets")
+            .build(),
+        )
+        http_mocker.get(
+            _next_page_request(authenticator),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(2, _days_ago(2)).with_ticket(3, _days_ago(3)).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config)
+
+        assert len(output.records) == 3
+        assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(2))}
+        _assert_no_per_ticket_requests(http_mocker)
+
+    @HttpMocker()
+    def test_given_recent_start_date_and_no_state_when_read_then_still_start_from_epoch(self, http_mocker):
+        """5.6.x never applied Start Date to `ticket_metrics`, so a recent Start Date must not drop older tickets' metric sets."""
+        config = (
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(_TWO_YEARS_AGO_DATETIME)
+            .with_start_date(_NOW.subtract(timedelta(days=7)))
             .build()
         )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
-
-    @HttpMocker()
-    def test_given_no_state_and_successful_sync_when_read_then_set_state_to_most_recently_read_record_cursor(self, http_mocker):
-        record_updated_at: str = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        api_token_authenticator = self._get_authenticator(self._config)
-        ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
-
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
-            TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
+            _export_request(_api_token_authenticator(), _EPOCH),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response()
+            .with_ticket(1, _days_ago(400))
+            .with_ticket(2, _days_ago(1))
+            .build(),
         )
 
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config)
+        output = read_stream("ticket_metrics", SyncMode.incremental, config)
+
+        assert [record.record.data["ticket_id"] for record in output.records] == [1, 2]
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+        _assert_no_per_ticket_requests(http_mocker)
+
+    @HttpMocker()
+    def test_given_new_shape_state_when_read_then_resume_from_state_cursor(self, http_mocker):
+        config = _config()
+        state_cursor = _days_ago(3)
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), state_cursor),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
+        )
+        state = StateBuilder().with_stream_state("ticket_metrics", {"_ab_updated_at": str(state_cursor)}).build()
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
 
         assert len(output.records) == 1
-        assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        assert output.most_recent_state.stream_state.__dict__ == {
-            "_ab_updated_at": str(int(ab_datetime_parse(record_updated_at).timestamp()))
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+
+    @HttpMocker()
+    def test_given_integer_state_from_former_full_refresh_path_when_read_then_resume_from_it(self, http_mocker):
+        """5.6.x's `GET /ticket_metrics` path wrote `{"_ab_updated_at": <int>}`; it is already a valid cursor."""
+        config = _config()
+        state_cursor = _days_ago(3)
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), state_cursor),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
+        )
+        state = StateBuilder().with_stream_state("ticket_metrics", {"_ab_updated_at": state_cursor}).build()
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
+
+        assert len(output.records) == 1
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+
+    @HttpMocker()
+    def test_given_per_partition_state_when_read_then_migrate_and_resume_from_parent_tickets_cursor(self, http_mocker):
+        config = _config()
+        parent_cursor = _days_ago(2)
+        old_state = {
+            "use_global_cursor": False,
+            "lookback_window": 0,
+            # Deliberately older than the parent cursor, as in an intermediate checkpoint.
+            "state": {"_ab_updated_at": str(_days_ago(10))},
+            "states": [
+                {"partition": {"ticket_id": 35436, "parent_slice": {}}, "cursor": {"_ab_updated_at": str(_days_ago(10))}},
+            ],
+            "parent_state": {"tickets": {"generated_timestamp": str(parent_cursor)}},
         }
-
-    @HttpMocker()
-    def test_given_state_when_read_then_migrate_state_to_per_partition(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-
-        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=3)).timestamp())
-        state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
-        # Deliberately newer than the seeded state so the resulting parent_state can only come from the
-        # parent record's `generated_timestamp`, not from the incoming state value.
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(
-            http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
-        )
-        ticket = tickets_records_builder.build()
-
-        child_cursor_value = ab_datetime_now().subtract(timedelta(days=1))
-        child_cursor_str = child_cursor_value.strftime("%Y-%m-%dT%H:%M:%SZ")
-        ticket_metrics_first_record_builder = (
-            TicketMetricsRecordBuilder.stateful_ticket_metrics_record()
-            .with_field(FieldPath("ticket_id"), ticket["id"])
-            .with_cursor(child_cursor_str)
-        )
-
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
-            TicketMetricsResponseBuilder.stateful_ticket_metrics_response().with_record(ticket_metrics_first_record_builder).build(),
+            _export_request(_api_token_authenticator(), parent_cursor),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
         )
+        state = StateBuilder().with_stream_state("ticket_metrics", old_state).build()
 
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
 
         assert len(output.records) == 1
-        assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        # The stateful ticket_metrics stream derives its `_ab_updated_at` cursor from the parent's
-        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent cursor
-        # serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
-        state_dict = output.most_recent_state.stream_state.__dict__
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+        _assert_no_per_ticket_requests(http_mocker)
 
-        assert state_dict["lookback_window"] == 0
-        assert state_dict["use_global_cursor"] == False
-        assert "_ab_updated_at" in state_dict["state"]
-        assert len(state_dict["states"]) == 1
+    @HttpMocker()
+    def test_given_global_cursor_state_when_read_then_migrate_and_resume_from_parent_tickets_cursor(self, http_mocker):
+        config = _config()
+        parent_cursor = _days_ago(2)
+        old_state = {
+            "use_global_cursor": True,
+            "lookback_window": 3600,
+            "state": {"_ab_updated_at": str(_days_ago(2))},
+            "parent_state": {"tickets": {"generated_timestamp": str(parent_cursor)}},
+        }
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), parent_cursor),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
+        )
+        state = StateBuilder().with_stream_state("ticket_metrics", old_state).build()
 
-        assert state_dict["parent_state"]["tickets"] == {"generated_timestamp": str(int(parent_cursor_value.timestamp()))}
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
+
+        assert len(output.records) == 1
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+
+    @HttpMocker()
+    def test_given_per_partition_state_with_legacy_parent_cursor_when_read_then_resume_from_tickets_backfill_floor(self, http_mocker):
+        config = _config()
+        old_state = {
+            "use_global_cursor": False,
+            "state": {"_ab_updated_at": str(_days_ago(2))},
+            "states": [],
+            "parent_state": {"tickets": {"updated_at": str(_days_ago(2))}},
+        }
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), _TICKETS_BACKFILL_FLOOR),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
+        )
+        state = StateBuilder().with_stream_state("ticket_metrics", old_state).build()
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
+
+        assert len(output.records) == 1
+        assert _state_dict(output) == {"_ab_updated_at": str(_days_ago(1))}
+
+    @HttpMocker()
+    def test_given_state_and_no_new_tickets_when_read_then_keep_state_cursor(self, http_mocker):
+        config = _config()
+        state_cursor = _days_ago(3)
+        http_mocker.get(
+            _export_request(_api_token_authenticator(), state_cursor),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().build(),
+        )
+        state = StateBuilder().with_stream_state("ticket_metrics", {"_ab_updated_at": str(state_cursor)}).build()
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, config, state)
+
+        assert len(output.records) == 0
+        assert _state_dict(output) == {"_ab_updated_at": str(state_cursor)}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsErrorHandling(TestCase):
-    """Test error handling for ticket_metrics stream.
-
-    The stateful ticket_metrics stream has IGNORE error handlers for 403 and 404 responses.
-    Per the playbook, we must verify:
-    1. The error is gracefully ignored (no records returned for that partition)
-    2. No ERROR logs are produced
-    """
-
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_TWO_YEARS_AGO_DATETIME)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+    """The export uses the shared error handler, the same as the `tickets` stream."""
 
     @HttpMocker()
-    def test_given_403_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
-        """Test that 403 errors are gracefully ignored in stateful mode with no ERROR logs."""
-        api_token_authenticator = self._get_authenticator(self._config)
-
-        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
-        state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(
-            http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
-        )
-        ticket = tickets_records_builder.build()
-
-        # Mock 403 error response for the ticket metrics endpoint
+    def test_given_403_when_read_then_fail_with_config_error(self, http_mocker):
+        config = _config()
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
-            ErrorResponseBuilder.response_with_status(403).build(),
+            _export_request(_api_token_authenticator(), _EPOCH),
+            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
         )
 
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, config, expecting_exception=True)
 
-        # Verify no records returned for this partition (error was ignored)
         assert len(output.records) == 0
-        # Verify no ERROR logs were produced (per playbook requirement for IGNORE handlers)
-        assert not any(log.log.level == "ERROR" for log in output.logs)
-
-    @HttpMocker()
-    def test_given_404_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
-        """Test that 404 errors are gracefully ignored in stateful mode with no ERROR logs."""
-        api_token_authenticator = self._get_authenticator(self._config)
-
-        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
-        state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(
-            http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
-        )
-        ticket = tickets_records_builder.build()
-
-        # Mock 404 error response for the ticket metrics endpoint (ticket was deleted)
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
-            ErrorResponseBuilder.response_with_status(404).build(),
-        )
-
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
-
-        # Verify no records returned for this partition (error was ignored)
-        assert len(output.records) == 0
-        # Verify no ERROR logs were produced (per playbook requirement for IGNORE handlers)
-        assert not any(log.log.level == "ERROR" for log in output.logs)
-
-
-@freezegun.freeze_time(_NOW.isoformat())
-class TestTicketMetricsTransformations(TestCase):
-    """Test transformations for ticket_metrics stream.
-
-    The ticket_metrics stream adds _ab_updated_at transformation:
-    - Stateless mode: _ab_updated_at = format_datetime(record['updated_at'], '%s')
-    - Stateful mode: _ab_updated_at = record['generated_timestamp'] or stream_slice.extra_fields['generated_timestamp']
-    """
-
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_TWO_YEARS_AGO_DATETIME)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
-
-    @HttpMocker()
-    def test_stateless_mode_transformation_adds_ab_updated_at_from_updated_at(self, http_mocker):
-        """Test that stateless mode adds _ab_updated_at derived from updated_at field."""
-        record_updated_at: str = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        api_token_authenticator = self._get_authenticator(self._config)
-        ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
-            TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
-        )
-
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config)
-
-        assert len(output.records) == 1
-        # Verify _ab_updated_at transformation is applied and equals the expected timestamp
-        record = output.records[0].record.data
-        assert "_ab_updated_at" in record
-        expected_timestamp = int(ab_datetime_parse(record_updated_at).timestamp())
-        # The transformation returns an integer (value_type: "integer" in manifest)
-        assert record["_ab_updated_at"] == expected_timestamp
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type.value == "config_error"
+        assert "Unable to read data for stream 'ticket_metrics'" in output.errors[0].trace.error.message
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsOAuthTokenRefresh(TestCase):
-    """Tests for REFRESH_TOKEN_THEN_RETRY handling of 401 invalid_token on the stateful ticket_metrics path.
+    """REFRESH_TOKEN_THEN_RETRY on a 401 `invalid_token` from the export request.
 
-    Zendesk rotates single-use refresh tokens, and access tokens can be rejected mid-sync with a
-    401 `invalid_token` body (oncall #13609). The OAuth config uses a `token_expiry_date` far in
-    the future so that no proactive refresh happens: the refresh must be triggered only by the
-    rejected request.
+    The OAuth config uses a `token_expiry_date` far in the future so that no proactive refresh
+    happens: the refresh must be triggered only by the rejected request.
     """
 
     @property
@@ -300,42 +377,26 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
             token_expiry_date=(_NOW + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
         )
 
+    @staticmethod
+    def _state_cursor() -> int:
+        return _days_ago(2)
+
     def _state(self):
-        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
-        return StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build(), ab_datetime_parse(
-            state_cursor_value
-        )
+        return StateBuilder().with_stream_state("ticket_metrics", {"_ab_updated_at": str(self._state_cursor())}).build()
 
     @staticmethod
     def _invalid_token_response() -> HttpResponse:
         return HttpResponse(json.dumps(_INVALID_TOKEN_RESPONSE_BODY), 401)
 
     @HttpMocker()
-    def test_given_401_invalid_token_when_read_stateful_then_refresh_token_and_retry(self, http_mocker):
-        state, state_cursor = self._state()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(
-            http_mocker, state_cursor, parent_cursor_value, OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN)
-        )
-        ticket = tickets_records_builder.build()
-
-        ticket_metrics_record_builder = (
-            TicketMetricsRecordBuilder.stateful_ticket_metrics_record()
-            .with_field(FieldPath("ticket_id"), ticket["id"])
-            .with_cursor(ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"))
-        )
-
+    def test_given_401_invalid_token_when_read_then_refresh_token_and_retry(self, http_mocker):
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(
-                OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN), ticket["id"]
-            ).build(),
+            _export_request(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN), self._state_cursor()),
             self._invalid_token_response(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(
-                OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN), ticket["id"]
-            ).build(),
-            TicketMetricsResponseBuilder.stateful_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
+            _export_request(OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN), self._state_cursor()),
+            TicketMetricSetsResponseBuilder.ticket_metric_sets_response().with_ticket(1, _days_ago(1)).build(),
         )
         token_refresh_matcher = http_mocker._mocker.post(
             _OAUTH_TOKEN_URL,
@@ -344,7 +405,7 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
         )
 
         with patch("time.sleep", return_value=None):
-            output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+            output = read_stream("ticket_metrics", SyncMode.incremental, self._config, self._state())
 
         assert len(output.records) == 1
         assert token_refresh_matcher.call_count == 1
@@ -352,80 +413,14 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
-    def test_given_concurrent_401s_when_read_then_refresh_token_only_once(self, http_mocker):
-        """Zendesk's refresh token is single-use: concurrent 401s must trigger exactly one refresh."""
-        state, state_cursor = self._state()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-
-        ticket_builders = [
-            TicketsRecordBuilder.tickets_record().with_id(ticket_id).with_cursor(int(parent_cursor_value.timestamp()))
-            for ticket_id in (1001, 1002, 1003)
-        ]
-        tickets_response_builder = TicketsResponseBuilder.tickets_response()
-        for ticket_builder in ticket_builders:
-            tickets_response_builder = tickets_response_builder.with_record(ticket_builder)
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN))
-            .with_start_time(int(state_cursor.timestamp()))
-            .build(),
-            tickets_response_builder.build(),
-        )
-
-        for ticket_builder in ticket_builders:
-            ticket = ticket_builder.build()
-            ticket_metrics_record_builder = (
-                TicketMetricsRecordBuilder.stateful_ticket_metrics_record()
-                .with_field(FieldPath("ticket_id"), ticket["id"])
-                .with_cursor(ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"))
-            )
-            # Registered on the raw requests_mock so it is allowed to match zero times: depending on
-            # worker scheduling, any subset of the partitions may race the stale token before the
-            # first refresh lands; requests after it already carry the new token.
-            http_mocker._mocker.get(
-                f"https://d3v-airbyte.zendesk.com/api/v2/tickets/{ticket['id']}/metrics",
-                request_headers={"Authorization": f"Bearer {_INITIAL_ACCESS_TOKEN}"},
-                status_code=401,
-                text=json.dumps(_INVALID_TOKEN_RESPONSE_BODY),
-            )
-            http_mocker.get(
-                ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(
-                    OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN), ticket["id"]
-                ).build(),
-                TicketMetricsResponseBuilder.stateful_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
-            )
-        token_refresh_matcher = http_mocker._mocker.post(
-            _OAUTH_TOKEN_URL,
-            text=_build_token_refresh_response_json(_NEW_ACCESS_TOKEN, _ROTATED_REFRESH_TOKEN),
-            status_code=200,
-        )
-
-        with patch("time.sleep", return_value=None):
-            output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 3
-        assert token_refresh_matcher.call_count == 1
-        assert len(output.errors) == 0
-
-    @HttpMocker()
     def test_given_401_after_refresh_when_read_then_fail_without_looping(self, http_mocker):
         """A second 401 after the refresh must fail fast — at most one refresh per request."""
-        state, state_cursor = self._state()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(
-            http_mocker, state_cursor, parent_cursor_value, OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN)
-        )
-        ticket = tickets_records_builder.build()
-
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(
-                OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN), ticket["id"]
-            ).build(),
+            _export_request(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN), self._state_cursor()),
             self._invalid_token_response(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(
-                OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN), ticket["id"]
-            ).build(),
+            _export_request(OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN), self._state_cursor()),
             self._invalid_token_response(),
         )
         token_refresh_matcher = http_mocker._mocker.post(
@@ -435,7 +430,7 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
         )
 
         with patch("time.sleep", return_value=None):
-            output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state, expecting_exception=True)
+            output = read_stream("ticket_metrics", SyncMode.incremental, self._config, self._state(), expecting_exception=True)
 
         assert len(output.records) == 0
         assert token_refresh_matcher.call_count == 1
@@ -445,26 +440,12 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
     @HttpMocker()
     def test_given_api_token_401_when_read_then_no_refresh(self, http_mocker):
         """api_token (basic auth) has no refresh token: a 401 must still fail, unchanged."""
-        config = (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_TWO_YEARS_AGO_DATETIME)
-            .build()
-        )
-        api_token_authenticator = ApiTokenAuthenticator(email="user@example.com", password="password")
-
-        state, state_cursor = self._state()
-        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
-        tickets_records_builder = given_tickets_with_state(http_mocker, state_cursor, parent_cursor_value, api_token_authenticator)
-        ticket = tickets_records_builder.build()
-
         http_mocker.get(
-            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
+            _export_request(_api_token_authenticator(), self._state_cursor()),
             ErrorResponseBuilder.response_with_status(401).with_error_message("Couldn't authenticate you").build(),
         )
 
-        output = read_stream("ticket_metrics", SyncMode.incremental, config, state, expecting_exception=True)
+        output = read_stream("ticket_metrics", SyncMode.incremental, _config(), self._state(), expecting_exception=True)
 
         assert len(output.records) == 0
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))

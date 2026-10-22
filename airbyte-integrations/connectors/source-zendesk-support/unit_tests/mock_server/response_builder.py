@@ -14,6 +14,7 @@ Example usage:
     )
 """
 
+import copy
 import json
 from typing import Any, Dict, Optional
 
@@ -212,28 +213,6 @@ class UsersRecordBuilder(ZendeskSupportRecordBuilder):
         return cls.users_record()
 
     def with_id(self, id: int) -> "UsersRecordBuilder":
-        self._record["id"] = id
-        return self
-
-
-class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        record_template = cls.extract_record("ticket_metrics", __file__, NestedPath(["ticket_metrics", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    @classmethod
-    def stateless_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        """Alias for ticket_metrics_record() for backward compatibility."""
-        return cls.ticket_metrics_record()
-
-    @classmethod
-    def stateful_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        """Record builder for stateful ticket metrics (single ticket metric)."""
-        record_template = cls.extract_record("stateful_ticket_metrics", __file__, FieldPath("ticket_metric"))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    def with_id(self, id: int) -> "TicketMetricsRecordBuilder":
         self._record["id"] = id
         return self
 
@@ -555,32 +534,57 @@ class UsersResponseBuilder(HttpResponseBuilder):
         )
 
 
-class TicketMetricsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def ticket_metrics_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricsResponseBuilder":
-        return cls(
-            find_template("ticket_metrics", __file__),
-            FieldPath("ticket_metrics"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+class TicketMetricSetsResponseBuilder:
+    """A page of the Incremental Ticket Export requested with `include=metric_sets`.
+
+    The page carries two arrays: `tickets` and the side-loaded `metric_sets`, one metric set per
+    ticket. `HttpResponseBuilder` only fills one records path, so this builder keeps both arrays in
+    step itself.
+    """
+
+    def __init__(self) -> None:
+        self._body = find_template("tickets_with_metric_sets", __file__)
+        self._ticket_template = self._body["tickets"][0]
+        self._metric_set_template = self._body["metric_sets"][0]
+        self._body["tickets"] = []
+        self._body["metric_sets"] = []
 
     @classmethod
-    def stateless_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
-        """Response builder for stateless ticket metrics (list of metrics)."""
-        return cls(
-            find_template("stateless_ticket_metrics", __file__),
-            FieldPath("ticket_metrics"),
-            CursorBasedPaginationStrategy(),
-        )
+    def ticket_metric_sets_response(cls) -> "TicketMetricSetsResponseBuilder":
+        return cls()
 
-    @classmethod
-    def stateful_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
-        """Response builder for stateful ticket metrics (single ticket metric)."""
-        return cls(
-            find_template("stateful_ticket_metrics", __file__),
-            FieldPath("ticket_metric"),
-            CursorBasedPaginationStrategy(),
-        )
+    def with_ticket(
+        self,
+        ticket_id: int,
+        generated_timestamp: int,
+        status: str = "open",
+        metric_set_id: Optional[int] = None,
+        with_metric_set: bool = True,
+    ) -> "TicketMetricSetsResponseBuilder":
+        ticket = copy.deepcopy(self._ticket_template)
+        ticket.update({"id": ticket_id, "generated_timestamp": generated_timestamp, "status": status})
+        self._body["tickets"].append(ticket)
+        if with_metric_set:
+            metric_set = copy.deepcopy(self._metric_set_template)
+            metric_set.update({"id": metric_set_id if metric_set_id is not None else ticket_id * 1000, "ticket_id": ticket_id})
+            self._body["metric_sets"].append(metric_set)
+        return self
+
+    def with_metric_set(self, metric_set: Dict[str, Any]) -> "TicketMetricSetsResponseBuilder":
+        """Adds a metric set as-is, without a matching ticket."""
+        self._body["metric_sets"].append(metric_set)
+        return self
+
+    def metric_set_template(self) -> Dict[str, Any]:
+        return copy.deepcopy(self._metric_set_template)
+
+    def with_next_page(self, after_url: str) -> "TicketMetricSetsResponseBuilder":
+        self._body["after_url"] = after_url
+        self._body["end_of_stream"] = False
+        return self
+
+    def build(self) -> HttpResponse:
+        return HttpResponse(json.dumps(self._body), 200)
 
 
 class TicketsResponseBuilder(HttpResponseBuilder):
