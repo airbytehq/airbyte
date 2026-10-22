@@ -1,0 +1,186 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/gcs-data-lake-g2",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "GCS Data Lake Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "description" : "Configuration for GCS Data Lake destination using Apache Iceberg format",
+    "properties" : {
+      "gcs_bucket_name" : {
+        "type" : "string",
+        "description" : "The name of the GCS bucket that will host the Iceberg data.",
+        "title" : "GCS Bucket Name",
+        "always_show" : true,
+        "order" : 0
+      },
+      "service_account_json" : {
+        "type" : "string",
+        "description" : "The contents of the JSON service account key file. See the <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">Google Cloud documentation</a> for more information on how to obtain this.",
+        "title" : "Service Account JSON",
+        "airbyte_secret" : true,
+        "always_show" : true,
+        "multiline" : true,
+        "order" : 1
+      },
+      "gcp_project_id" : {
+        "type" : "string",
+        "description" : "The GCP project ID where resources are located. If not specified, it will be extracted from the service account credentials.",
+        "title" : "GCP Project ID",
+        "order" : 2
+      },
+      "gcp_location" : {
+        "type" : "string",
+        "description" : "The GCP location (region) for BigLake metastore resources. For example: \"us-central1\" or \"us\". See <a href=\"https://cloud.google.com/biglake/docs/locations\">BigLake locations</a> for available regions.",
+        "title" : "GCP Location",
+        "examples" : [ "us", "us-central1", "eu" ],
+        "always_show" : true,
+        "order" : 3
+      },
+      "warehouse_location" : {
+        "type" : "string",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Must include the storage protocol \"gs://\" for Google Cloud Storage. For example: \"gs://your-bucket/path/to/warehouse/",
+        "title" : "Warehouse Location",
+        "examples" : [ "gs://your-bucket/path/to/warehouse" ],
+        "always_show" : true,
+        "order" : 4
+      },
+      "main_branch_name" : {
+        "type" : "string",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
+        "title" : "Main Branch Name",
+        "order" : 5
+      },
+      "namespace" : {
+        "type" : "string",
+        "description" : "The default namespace to use for tables. This will ONLY be used if the `Destination Namespace` setting is set to `Destination-defined` or `Source-defined`",
+        "title" : "Default Namespace",
+        "examples" : [ "default", "airbyte_data" ],
+        "order" : 6
+      },
+      "catalog_type" : {
+        "oneOf" : [ {
+          "title" : "BigLake Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration for Google Cloud BigLake Iceberg catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "BIGLAKE" ],
+              "default" : "BIGLAKE"
+            },
+            "catalog_name" : {
+              "type" : "string",
+              "description" : "The name of the BigLake catalog. This should match the catalog you created in BigLake metastore.",
+              "title" : "Catalog Name",
+              "examples" : [ "integration-test-biglake", "default" ],
+              "order" : 1
+            }
+          },
+          "required" : [ "catalog_type", "catalog_name" ]
+        }, {
+          "title" : "Polaris Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration for Apache Polaris Iceberg catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "POLARIS" ],
+              "default" : "POLARIS"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Polaris server. For example: http://localhost:8181/api/catalog",
+              "title" : "Polaris Server URI",
+              "order" : 1
+            },
+            "catalog_name" : {
+              "type" : "string",
+              "description" : "The name of the catalog in Polaris. This corresponds to the catalog name created via the Polaris Management API.",
+              "title" : "Polaris Catalog Name",
+              "order" : 2
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "The OAuth Client ID for authenticating with the Polaris server.",
+              "title" : "Client ID",
+              "examples" : [ "abc123clientid" ],
+              "airbyte_secret" : true,
+              "order" : 3
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "The OAuth Client Secret for authenticating with the Polaris server.",
+              "title" : "Client Secret",
+              "examples" : [ "secretkey123" ],
+              "airbyte_secret" : true,
+              "order" : 4
+            }
+          },
+          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret" ]
+        } ],
+        "description" : "Specifies the type of Iceberg catalog (BigLake or Polaris).",
+        "title" : "Catalog Type",
+        "always_show" : true,
+        "order" : 7,
+        "type" : "object"
+      },
+      "gcs_endpoint" : {
+        "type" : "string",
+        "description" : "Optional custom GCS endpoint URL. Use this for testing with local GCS emulators.",
+        "title" : "GCS Endpoint (Optional)",
+        "order" : 8
+      },
+      "table_format_version" : {
+        "type" : "string",
+        "enum" : [ "v2", "v3" ],
+        "description" : "The Iceberg table format version to create tables at. Version 2 is readable by every engine that supports Iceberg. Version 3 adds deletion vectors, which some readers (such as Databricks foreign Iceberg reads) require, but is not readable by Amazon Athena today. Upgrading an existing table's format version is one-way; see allow_non_reversible_upgrades.",
+        "title" : "Iceberg Table Format Version",
+        "default" : "v2",
+        "examples" : [ "v2", "v3" ],
+        "order" : 9
+      },
+      "iceberg_delete_file_type" : {
+        "type" : "string",
+        "enum" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL", "DELETION_VECTOR" ],
+        "description" : "The delete-file encoding used by Dedupe streams. AUTOMATIC uses equality deletes on format v2 tables and deletion vectors on format v3 tables, and may change in a future version. Choose EQUALITY to always use equality deletes, POSITIONAL for v2 readers that do not support equality-delete files, or DELETION_VECTOR for v3 deletion vectors.",
+        "title" : "Iceberg Delete File Type",
+        "default" : "AUTOMATIC",
+        "examples" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL", "DELETION_VECTOR" ],
+        "order" : 10
+      },
+      "allow_non_reversible_upgrades" : {
+        "type" : "string",
+        "enum" : [ "NO", "YES", "WITH_TABLE_BACKUP" ],
+        "description" : "Controls whether an existing v2 table may be upgraded in place to format v3 when table_format_version is v3. The upgrade is one-way and converts existing delete files to deletion vectors. NO never upgrades; the table stays v2. YES upgrades in place. WITH_TABLE_BACKUP registers a copy of the current table metadata as a sibling v2 table before upgrading.",
+        "title" : "Allow Non-Reversible Upgrades",
+        "default" : "NO",
+        "examples" : [ "NO", "YES", "WITH_TABLE_BACKUP" ],
+        "order" : 11
+      },
+      "optimize_prior_iceberg_delete_files" : {
+        "type" : "boolean",
+        "description" : "Experimental. Only applies when positional deletes are in use. When enabled, prior positional delete files are consulted so that a position is deleted at most once. Disabling it writes a delete for every physical copy of a row, which avoids reading prior delete files at the cost of a larger delete-file population.",
+        "title" : "Optimize Prior Iceberg Delete Files",
+        "default" : true,
+        "order" : 12,
+        "airbyte_hidden" : true
+      },
+      "max_records_per_flush" : {
+        "type" : "integer",
+        "description" : "Experimental. The maximum number of records accumulated before a batch is written to Iceberg. Flushes also trigger on the batch size in megabytes and on a staleness deadline, so the first limit reached wins. Larger values write fewer, larger files and reduce repeated work for Dedupe streams using positional deletes, at the cost of holding more records in memory. Dedupe streams that use positional deletes reject flushes containing more than 1,000,000 distinct primary keys.",
+        "title" : "Max Records Per Flush",
+        "default" : 10000000000,
+        "order" : 13,
+        "airbyte_hidden" : true
+      }
+    },
+    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
