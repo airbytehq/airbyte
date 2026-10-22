@@ -37,12 +37,23 @@ definitions:
       name: settings
       primary_key:
         - id
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - nextSyncToken
+        token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: syncToken
+        completion_condition: "{{ response.get('nextPageToken') is not defined or response.get('nextPageToken') is none }}"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: users/me/settings
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/sync_token_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,12 +79,23 @@ definitions:
       name: calendarlist
       primary_key:
         - id
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - nextSyncToken
+        token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: syncToken
+        completion_condition: "{{ response.get('nextPageToken') is not defined or response.get('nextPageToken') is none }}"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: users/me/calendarList
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/sync_token_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -99,12 +121,23 @@ definitions:
       name: calendars
       primary_key:
         - id
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - nextSyncToken
+        token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: syncToken
+        completion_condition: "{{ response.get('nextPageToken') is not defined or response.get('nextPageToken') is none }}"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: users/me/calendarList
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/sync_token_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -142,12 +175,16 @@ definitions:
         completion_condition: "{{ response.get('nextPageToken') is not defined or response.get('nextPageToken') is none }}"
       retriever:
         type: SimpleRetriever
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ [config['calendarid']] }}"
+          cursor_field: calendar_id
         requester:
           $ref: "#/definitions/base_requester"
-          path: calendars/{{ config['calendarid'] }}/events
+          path: calendars/{{ stream_partition.calendar_id }}/events
           http_method: GET
           error_handler:
-            $ref: "#/definitions/events_error_handler"
+            $ref: "#/definitions/sync_token_error_handler"
           request_parameters:
             showDeleted: "true"
             maxResults: "2500"
@@ -183,7 +220,7 @@ definitions:
           fields:
             - path:
                 - calendar_id
-              value: "{{ config['calendarid'] }}"
+              value: "{{ stream_partition.calendar_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -238,8 +275,8 @@ definitions:
               failure_type: config_error
               error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
             - type: HttpResponseFilter
-              # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
-              # syncToken, which this connector does not send): the user must act, not wait.
+              # 410 with reason `deleted` or `fullSyncRequired` is a permanent error for colors, the only
+              # stream using this requester; sync-token streams handle fullSyncRequired in their own handler.
               # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
               predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
               action: FAIL
@@ -266,7 +303,7 @@ definitions:
                 - 504
               action: RETRY
 
-  events_error_handler:
+  sync_token_error_handler:
     type: CompositeErrorHandler
     error_handlers:
       - type: DefaultErrorHandler
@@ -308,7 +345,12 @@ definitions:
             # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
             predicate: "{{ response.get('error', {}).get('code') in (410, '410') and 'fullSyncRequired' in response.get('error', {}) | string }}"
             action: RESET_SYNC_TOKEN
-            error_message: "Google Calendar rejected the saved events sync token and requires a full re-read."
+            error_message: "Google Calendar rejected the saved sync token and requires a full re-read."
+          - type: HttpResponseFilter
+            # Malformed/foreign sync token (e.g. state copied from another calendar). CDK raises a system error if this fires on a read without a token, so it cannot loop.
+            predicate: "{{ response.get('error', {}).get('code') in (400, '400') and 'sync token' in (response.get('error', {}).get('message', '') | string | lower) }}"
+            action: RESET_SYNC_TOKEN
+            error_message: "Google Calendar rejected the saved sync token as invalid and requires a full re-read."
           - type: HttpResponseFilter
             predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string }}"
             action: FAIL
@@ -948,6 +990,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      deleted:
+        type:
+          - boolean
+          - "null"
       description:
         type:
           - string
@@ -1004,6 +1050,10 @@ schemas:
           - "null"
       id:
         type: string
+      hidden:
+        type:
+          - boolean
+          - "null"
       kind:
         type:
           - string
@@ -1053,6 +1103,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      deleted:
+        type:
+          - boolean
+          - "null"
       description:
         type:
           - string
@@ -1109,6 +1163,10 @@ schemas:
           - "null"
       id:
         type: string
+      hidden:
+        type:
+          - boolean
+          - "null"
       kind:
         type:
           - string

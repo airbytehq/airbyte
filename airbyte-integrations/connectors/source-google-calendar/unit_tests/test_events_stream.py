@@ -101,7 +101,15 @@ def _sync_token_state(token: str):
         StateBuilder()
         .with_stream_state(
             "events",
-            {"state_type": "sync_token", "token": token, "committed_at": _COMMITTED_AT},
+            {
+                "state_type": "sync_token",
+                "states": [
+                    {
+                        "partition": {"calendar_id": "primary"},
+                        "cursor": {"token": token, "committed_at": _COMMITTED_AT},
+                    }
+                ],
+            },
         )
         .build()
     )
@@ -128,6 +136,10 @@ def _emitted_stream_states(output) -> list:
     return [_stream_state(message) for message in output.state_messages if message.state and message.state.stream]
 
 
+def _state_token(state) -> str:
+    return state["states"][0]["cursor"]["token"]
+
+
 def _record_ids(output) -> list:
     return [message.record.data["id"] for message in output.records]
 
@@ -152,9 +164,9 @@ def test_cold_read_commits_next_sync_token_only_after_the_last_page():
         assert {message.record.data["calendar_id"] for message in output.records} == {"primary"}
         states = _emitted_stream_states(output)
         assert states[-1]["state_type"] == "sync_token"
-        assert states[-1]["token"] == "tok1"
-        assert "committed_at" in states[-1]
-        assert all(state.get("token") != "tok1" for state in states[:-1])
+        assert _state_token(states[-1]) == "tok1"
+        assert "committed_at" in states[-1]["states"][0]["cursor"]
+        assert all(state == states[-1] for state in states[:-1])
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
 
@@ -172,7 +184,7 @@ def test_warm_read_replays_sync_token_on_every_page_without_updated_min():
 
         assert output.errors == []
         assert _record_ids(output) == ["a", "b"]
-        assert _emitted_stream_states(output)[-1]["token"] == "tok2"
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok2"
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
 
@@ -187,7 +199,69 @@ def test_legacy_datetime_state_restarts_without_a_sync_token():
 
         assert output.errors == []
         assert _record_ids(output) == ["e1"]
-        assert _emitted_stream_states(output)[-1]["token"] == "tok1"
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok1"
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_state_is_scoped_to_the_configured_calendar():
+    request = _events_request()
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "events",
+            {
+                "state_type": "sync_token",
+                "states": [
+                    {
+                        "partition": {"calendar_id": "other@example.com"},
+                        "cursor": {"token": "other-token", "committed_at": _COMMITTED_AT},
+                    }
+                ],
+            },
+        )
+        .build()
+    )
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _items_response(_RECORD, next_sync_token="primary-token"))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert _record_ids(output) == ["e1"]
+        final_state = _emitted_stream_states(output)[-1]
+        assert len(final_state["states"]) == 1
+        assert _state_token(final_state) == "primary-token"
+        assert final_state["states"][0]["partition"] == {"calendar_id": "primary"}
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_invalid_sync_token_400_resets_token():
+    rejected_request = _events_request(sync_token="tok0")
+    restarted_request = _events_request()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(rejected_request, _error_response(400, message="Invalid sync token value.", body_code=400))
+        http_mocker.get(restarted_request, _items_response(_RECORD, next_sync_token="tok1"))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=_sync_token_state("tok0"))
+
+        assert output.errors == []
+        assert _record_ids(output) == ["e1"]
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok1"
+        http_mocker.assert_number_of_calls(rejected_request, 1)
+        http_mocker.assert_number_of_calls(restarted_request, 1)
+
+
+def test_empty_terminal_page_commits_token():
+    request = _events_request(sync_token="tok0")
+    state = _sync_token_state("tok0")
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _items_response(next_sync_token="tok2"))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert output.records == []
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok2"
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -222,7 +296,7 @@ def test_cancelled_stub_is_stamped_with_frozen_current_time(monkeypatch):
 
         assert output.errors == []
         assert output.records[0].record.data["updated"] == frozen_now.strftime(_DATETIME_FORMAT)
-        assert _emitted_stream_states(output)[-1]["token"] == "tok1"
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok1"
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -365,7 +439,7 @@ def test_410_full_sync_required_resets_token_and_commits_the_new_token():
 
         assert output.errors == []
         assert _record_ids(output) == ["e1"]
-        assert _emitted_stream_states(output)[-1]["token"] == "tok1"
+        assert _state_token(_emitted_stream_states(output)[-1]) == "tok1"
         http_mocker.assert_number_of_calls(rejected_request, 1)
         http_mocker.assert_number_of_calls(restarted_request, 1)
 

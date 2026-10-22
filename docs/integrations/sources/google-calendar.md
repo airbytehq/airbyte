@@ -18,10 +18,18 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | Stream Name  | Primary Key    | Pagination       | Supports Full Sync | Supports Incremental |
 | ------------ | -------------- | ---------------- | ------------------ | -------------------- |
 | colors       | calendar.event | No pagination    | ✅                 | ❌                   |
-| settings     | id             | DefaultPaginator | ✅                 | ❌                   |
-| calendarlist | id             | DefaultPaginator | ✅                 | ❌                   |
-| calendars    | id             | DefaultPaginator | ✅                 | ❌                   |
-| events       | id             | DefaultPaginator | ✅                 | ✅                   |
+| settings     | id             | DefaultPaginator | ✅                 | ✅ (sync token)      |
+| calendarlist | id             | DefaultPaginator | ✅                 | ✅ (sync token)      |
+| calendars    | id             | DefaultPaginator | ✅                 | ✅ (sync token)      |
+| events       | id             | DefaultPaginator | ✅                 | ✅ (sync token)      |
+
+## Incremental sync
+
+The `settings`, `calendarlist`, `calendars`, and `events` streams use Google Calendar sync tokens. The first sync, and any sync after Google invalidates a token (`410 fullSyncRequired` or an invalid-token response), re-reads the stream in full. The `events` state is scoped to the configured Calendar Id, so changing Calendar Id triggers a full read of the new calendar.
+
+Incremental sync emits deleted or cancelled entries: events have `status: cancelled`, and calendar-list entries can have `deleted: true` or `hidden: true`. Google's [calendarList sync behavior](https://developers.google.com/workspace/calendar/api/v3/reference/calendarList/list) does not return entries whose only change is to read-only properties (calendar properties or ACLs).
+
+The first sync after upgrading re-reads all four streams. With Append mode, this can create duplicates; use a destination mode with deduplication if duplicate rows are not desired.
 
 ## Events sync behavior
 
@@ -45,7 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.2.0 | 2026-10-19 | [89078](https://github.com/airbytehq/airbyte/pull/89078) | Switch `events` to sync-token incremental sync |
+| 0.2.0 | 2026-10-19 | [89078](https://github.com/airbytehq/airbyte/pull/89078) | Use Google Calendar sync tokens for incremental syncs of events, settings, calendarlist and calendars. |
 | 0.1.2 | 2026-10-20 | [89285](https://github.com/airbytehq/airbyte/pull/89285) | Update dependencies |
 | 0.1.1 | 2026-10-13 | [88641](https://github.com/airbytehq/airbyte/pull/88641) | Update dependencies |
 | 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
