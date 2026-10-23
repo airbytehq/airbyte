@@ -1146,6 +1146,14 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Version '{{ config['version'] }}' of project '{{ config['project_name'] }}' was not found on PyPI. Check the Version setting."
       record_selector:
         type: RecordSelector
         extractor:
