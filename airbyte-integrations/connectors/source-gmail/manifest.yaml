@@ -14,23 +14,25 @@ api_budget:
   # Gmail's binding limit for one mailbox is the per-user quota
   # (https://developers.google.com/workspace/gmail/api/reference/quota); the per-project ceiling is shared
   # with every other user of the OAuth client, so it can't be enforced from one sync. Quotas and unit costs
-  # depend on the project: projects that used the API before May 2026 keep 15,000 units per user per minute
-  # with the old unit costs; newer projects get 6,000 units, and `get` without `format` (i.e. `full`) costs
-  # 60 for a message and 120 for a thread.
+  # depend on the Google Cloud project behind the credentials. OAuth uses Airbyte's app, whose project kept
+  # the pre-May-2026 quota: 15,000 units per user per minute, `messages.get` 5, `threads.get` 10. A service
+  # account belongs to the customer's own project, which may be on the new quota: 6,000 units, and `get`
+  # without `format` (i.e. `full`) costs 60 for a message and 120 for a thread. The lower quota is assumed
+  # there, since overestimating it only trades pacing for Gmail's rate-limit backoff.
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 6000 if config.get('gmail_api_quota') == 'May 2026 or later' else 15000 }}"
+        - limit: "{{ 6000 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 15000 }}"
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/threads/[^/]+$
-          weight: "{{ 120 if config.get('gmail_api_quota') == 'May 2026 or later' else 10 }}"
+          weight: "{{ 120 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 10 }}"
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/messages/[^/]+$
-          weight: "{{ 60 if config.get('gmail_api_quota') == 'May 2026 or later' else 5 }}"
+          weight: "{{ 60 if (config.get('credentials') or {}).get('auth_type') == 'Service' else 5 }}"
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
           url_path_pattern: /users/me/threads$
@@ -548,20 +550,6 @@ spec:
         examples:
           - "2020-01-01T00:00:00Z"
         order: 3
-      gmail_api_quota:
-        type: string
-        title: Gmail API quota
-        description: >-
-          When the Google Cloud project that owns the OAuth client started using
-          the Gmail API. Projects that used it before May 2026 keep the older,
-          higher per-user quota; newer projects get a lower quota, and each
-          message and thread read costs more of it. The connector paces its
-          requests to stay under the selected quota.
-        enum:
-          - Before May 2026
-          - May 2026 or later
-        default: Before May 2026
-        order: 4
     additionalProperties: true
   config_normalization_rules:
     type: ConfigNormalizationRules
