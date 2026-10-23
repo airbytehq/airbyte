@@ -25,6 +25,8 @@ The schemas now match the fields and types returned by Ashby's API. The criteria
 
 Anyone syncing `applications`, `job_postings`, `application_criteria_evaluations`, or `interviews` is affected. The type changes and removed columns apply to all destination types, not only data lakes. Connections that don't sync these four streams are unaffected.
 
+How the new schema reaches your connection depends on its **Detect and propagate schema changes** setting. With **Propagate field changes only** or **Propagate all field and stream changes**, the new types and removed columns apply on the first sync after the upgrade, including the automatic upgrade at the deadline. If you use Snowflake, S3 Data Lake, or Iceberg, plan the backup, drop, and refresh in step 3 before then. With **Approve all changes myself**, syncs keep running with your current schema until you approve the change in step 1. With **Stop future syncs**, Airbyte pauses the connection when it detects the change.
+
 ### Required actions
 
 1. Refresh the source schema for all four affected streams.
