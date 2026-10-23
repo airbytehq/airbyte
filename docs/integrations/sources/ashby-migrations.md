@@ -4,6 +4,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 2.0.0
 
+:::danger Risk of permanent data loss
+Follow the steps below to preserve historical data. If you don't, you risk permanent and irreversible loss of data in your destination.
+:::
+
 Version 2.0.0 corrects four stream schemas. These type and field changes affect every destination; they are not limited to data-lake destinations.
 
 ### What changed
