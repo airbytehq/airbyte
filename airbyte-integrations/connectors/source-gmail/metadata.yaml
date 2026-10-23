@@ -83,7 +83,7 @@ data:
           schema after upgrading. Most destinations convert the columns automatically; a data
           refresh is needed only if a sync then fails with a schema-evolution error. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/gmail-migrations#upgrading-to-100).
-        upgradeDeadline: "2026-11-04"
+        upgradeDeadline: "2026-11-09"
         deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
