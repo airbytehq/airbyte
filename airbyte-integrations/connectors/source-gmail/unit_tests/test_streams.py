@@ -70,24 +70,41 @@ def _schema_at(schema, *path):
     return node
 
 
-def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(manifest, base_config):
-    # https://developers.google.com/workspace/gmail/api/reference/quota
-    # Pre-May-2026 projects keep higher per-user quotas, so the limit is the per-project ceiling.
-    assert manifest["api_budget"]["policies"][0]["rates"] == [{"limit": 1200000, "interval": "PT1M"}]
-    budget = ModelToComponentFactory().create_component(HTTPAPIBudgetModel, manifest["api_budget"], base_config)
-    expected = {
-        "threads/t1": 40,
-        "messages/m1": 20,
-        "threads": 10,
-        "messages": 5,
-        "drafts": 5,
-        "labels": 1,
-        "labels/l1": 1,
-        "profile": 1,
-    }
-    for path, weight in expected.items():
+_QUOTA_PATHS = ["threads/t1", "messages/m1", "threads", "messages", "drafts", "labels", "labels/l1", "profile"]
+
+
+@pytest.mark.parametrize(
+    ("quota", "limit", "weights"),
+    [
+        # https://developers.google.com/workspace/gmail/api/reference/quota; `get` without `format` is `full`.
+        ("May 2026 or later", 6000, [120, 60, 10, 5, 5, 1, 1, 1]),
+        # Projects that used the API before May 2026 keep their previous quota and unit costs.
+        ("Before May 2026", 15000, [10, 5, 10, 5, 5, 1, 1, 1]),
+        (None, 15000, [10, 5, 10, 5, 5, 1, 1, 1]),
+    ],
+)
+def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(quota, limit, weights, manifest, base_config):
+    config = {**base_config, "gmail_api_quota": quota} if quota else base_config
+    budget = ModelToComponentFactory().create_component(HTTPAPIBudgetModel, manifest["api_budget"], config)
+    for path, weight in zip(_QUOTA_PATHS, weights):
         request = requests.Request("GET", f"https://gmail.googleapis.com/gmail/v1/users/me/{path}?maxResults=100").prepare()
-        assert budget.get_matching_policy(request).get_weight(request) == weight, path
+        policy = budget.get_matching_policy(request)
+        assert [rate.limit for rate in policy._bucket.rates] == [limit], path
+        assert policy.get_weight(request) == weight, path
+
+
+def test_api_budget_waits_once_the_per_user_quota_is_spent(manifest, base_config, mocker):
+    sleep_mock = mocker.patch("time.sleep", side_effect=RuntimeError("budget blocked"))
+    config = {**base_config, "gmail_api_quota": "May 2026 or later"}
+    budget = ModelToComponentFactory().create_component(HTTPAPIBudgetModel, manifest["api_budget"], config)
+    request = requests.Request("GET", "https://gmail.googleapis.com/gmail/v1/users/me/messages/m1").prepare()
+
+    for _ in range(100):
+        budget.acquire_call(request)
+    sleep_mock.assert_not_called()
+
+    with pytest.raises(RuntimeError, match="budget blocked"):
+        budget.acquire_call(request)
 
 
 _RATE_LIMITED = {"status_code": 429, "headers": {"Retry-After": "1"}, "json": {"error": {"code": 429}}}

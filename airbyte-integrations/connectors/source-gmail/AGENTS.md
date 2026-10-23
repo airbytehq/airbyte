@@ -27,3 +27,7 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 ## Rate-limit backoff
 
 Gmail quota responses sometimes include the required wait only in the body as a `Retry after` timestamp, without a `Retry-After` header. The connector honors the header first, then the body timestamp, read by the CDK's `WaitTimeFromResponse` strategy, and falls back to exponential backoff when neither is present. Body waits are capped at 1,800 seconds, below `maxSecondsBetweenMessages: 3600`, leaving headroom under the connector's maximum inter-message interval.
+
+## API budget
+
+The `api_budget` paces requests to Gmail's per-user quota, not the per-project one, because the project quota is shared with every other user of the OAuth client. Both the limit and the `get` weights depend on the `gmail_api_quota` config: projects that used the API before May 2026 keep 15,000 units per user per minute with `messages.get` at 5 and `threads.get` at 10; newer projects get 6,000 units, and because the connector sends no `format` param (Gmail defaults to `full`), `messages.get` costs 60 and `threads.get` 120. Adding a `format` param changes these costs.

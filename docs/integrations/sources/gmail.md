@@ -68,7 +68,8 @@ Service Account Key authentication can't currently read a mailbox. To read a use
 4. (Optional) Set **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. Only messages, drafts, and threads received on or after this date are replicated. If you leave it blank, the connector replicates the full mailbox history.
 5. (Optional) Toggle **Include Spam & Trash** to include drafts and messages from the Spam and Trash folders. Defaults to off.
 6. (Optional) Adjust **Number of concurrent workers** (between `2` and `10`, default `5`) to control how many requests the connector issues in parallel. Lower this value if you see frequent rate-limit errors.
-7. Click **Set up source** to test the connection and save the configuration. The connection test reads the authenticated user's Gmail profile.
+7. (Optional) Set **Gmail API quota** to `May 2026 or later` if the Google Cloud project that owns your OAuth client was created on or after May 1, 2026 and didn't use the Gmail API before then. See [Performance considerations](#performance-considerations).
+8. Click **Set up source** to test the connection and save the configuration. The connection test reads the authenticated user's Gmail profile.
 
 ## Supported sync modes
 
@@ -111,9 +112,11 @@ The Gmail API enforces two simultaneous quota limits, measured in [quota units](
 | Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
 | Per user rate limit     | 6,000 quota units per minute per user  | `userRateLimitExceeded` |
 
-Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+Each `threads.get` call costs 120 units, `messages.get` 60 (the connector reads full messages and threads), `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
 
-These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10. Because the limit depends on the project, the connector doesn't throttle its calls up front and relies on Gmail's rate-limit responses instead.
+These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10.
+
+The connector paces its requests to stay under the per-user quota. Set **Gmail API quota** to match the Google Cloud project that owns your OAuth client: `Before May 2026` (the default) or `May 2026 or later`. The per-project limit is shared with every other user of that project, so the connector can't track it and relies on Gmail's rate-limit responses for it.
 
 The connector retries `429 Too Many Requests` and `403` quota-saturation errors. It decides how long to wait before each retry as follows:
 
@@ -144,6 +147,7 @@ A request is retried up to 10 times, and the connector stops retrying after abou
 | `credentials.service_account_info` | `string` | Service Account Information. The JSON key of the service account to use for authorization. |  |
 | `include_spam_and_trash` | `boolean` | Include Spam &amp; Trash. Include drafts/messages from SPAM and TRASH in the results. Defaults to false. | false |
 | `num_workers` | `integer` | Number of concurrent workers. Higher values result in faster syncs but may trigger rate limiting on lower-tier Gmail API quotas. Reduce this value if you see frequent rate-limit errors in sync logs. | 5 |
+| `gmail_api_quota` | `string` | Gmail API quota. When the Google Cloud project that owns the OAuth client started using the Gmail API: `Before May 2026` or `May 2026 or later`. The connector paces its requests to stay under that project's per-user quota. | Before May 2026 |
 | `start_date` | `string` | UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only messages, threads, and drafts received on or after this date will be replicated. If unset, the full history is replicated. |  |
 
 ## IP allow list
@@ -157,6 +161,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Pace requests to the Gmail per-user quota; add Gmail API quota option; weigh full-format message and thread reads at their current unit cost |
 | 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
 | 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
