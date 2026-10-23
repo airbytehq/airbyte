@@ -8930,7 +8930,6 @@ streams:
                 type:
                 - 'null'
                 - string
-                format: date-time
               polling_id:
                 type:
                 - 'null'
@@ -11533,19 +11532,6 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
-          incremental_sync:
-            type: DatetimeBasedCursor
-            cursor_field: created_at
-            cursor_datetime_formats:
-            - '%Y-%m-%dT%H:%M:%SZ'
-            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
-              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-            is_client_side_incremental: true
-            lookback_window: P30D
-            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
@@ -11603,7 +11589,6 @@ streams:
                 type:
                 - 'null'
                 - string
-                format: date-time
               polling_id:
                 type:
                 - 'null'
@@ -12429,19 +12414,6 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
-          incremental_sync:
-            type: DatetimeBasedCursor
-            cursor_field: created_at
-            cursor_datetime_formats:
-            - '%Y-%m-%dT%H:%M:%SZ'
-            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
-              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-            is_client_side_incremental: true
-            lookback_window: P30D
-            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
