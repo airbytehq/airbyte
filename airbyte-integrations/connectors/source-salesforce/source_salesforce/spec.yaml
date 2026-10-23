@@ -6,41 +6,63 @@ connectionSpecification:
   required:
     - client_id
     - client_secret
-    - refresh_token
   additionalProperties: true
   properties:
     is_sandbox:
       title: Sandbox
       description: >-
         Toggle if you're using a <a
-        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
+        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>.
+        Used by Client. With ClientCredentials, the My Domain URL selects the org.
       type: boolean
       default: false
-      order: 1
-    auth_type:
-      type: string
-      const: Client
-    client_id:
-      title: Client ID
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
-      type: string
       order: 2
+    auth_type:
+      title: Authentication Method
+      description: >-
+        How Airbyte authenticates with Salesforce. <b>Client</b>: sign in with Salesforce (on Airbyte Cloud,
+        through Airbyte's app). <b>ClientCredentials</b>: your own External Client App with the OAuth 2.0
+        client credentials flow. It needs your My Domain URL.
+      type: string
+      enum:
+        - Client
+        - ClientCredentials
+      default: Client
+      order: 0
+      always_show: true
+    domain_url:
+      title: My Domain URL
+      description: >-
+        Required for ClientCredentials. Your org's My Domain URL from Salesforce Setup > My Domain.
+        Not used by Client.
+      type: string
+      pattern: ^$|^https://[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.my\.salesforce\.com/?$
+      pattern_descriptor: https://<your-domain>.my.salesforce.com
+      examples:
+        - https://acme.my.salesforce.com
+        - https://acme--uat.sandbox.my.salesforce.com
+      order: 1
+      always_show: true
+    client_id:
+      title: Client ID (Consumer Key)
+      description: Enter the consumer key of your Salesforce External Client App or Connected App.
+      type: string
+      order: 3
     client_secret:
-      title: Client Secret
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+      title: Client Secret (Consumer Secret)
+      description: Enter the consumer secret of your Salesforce External Client App or Connected App.
       type: string
       airbyte_secret: true
-      order: 3
+      order: 4
     refresh_token:
       title: Refresh Token
       description: >-
         Enter your application's <a
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+        Used by Client. Not used by ClientCredentials.
       type: string
       airbyte_secret: true
-      order: 4
+      order: 5
     start_date:
       title: Start Date
       description: >-
@@ -53,7 +75,7 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 6
     end_date:
       title: End Date
       description: >-
@@ -66,19 +88,19 @@ connectionSpecification:
         - "2021-07-26"
         - "2021-07-26T00:00:00Z"
       format: date-time
-      order: 6
+      order: 7
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 7
+      order: 8
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 8
+      order: 9
       examples:
         - PT12H
         - P7D
@@ -96,7 +118,7 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 9
+      order: 10
       examples:
         - PT10M
         - PT30M
@@ -110,10 +132,10 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 11
+      order: 12
     streams_criteria:
       type: array
-      order: 10
+      order: 11
       items:
         type: object
         required:

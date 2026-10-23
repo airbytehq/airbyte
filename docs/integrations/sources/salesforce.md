@@ -13,6 +13,7 @@ This page contains the setup guide and reference information for the [Salesforce
 You may also need the following. This article explains how to get them.
 
 - Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
+- For ClientCredentials, a local External Client App configured for the client credentials flow and a My Domain URL
 <!-- env:oss -->
 - For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
@@ -83,13 +84,31 @@ If you are using Airbyte Open Source, obtain the following OAuth credentials to 
 - Client Secret
 - Refresh Token
 
-To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
-
-1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
-2. When running a curl command, run it with the `-L` option to follow any redirects.
-3. If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
+Use credentials from an existing OAuth app for the Client method. Salesforce no longer allows creating Connected Apps as of Spring '26. For a new app, follow [Use your own External Client App (client credentials)](#use-your-own-external-client-app-client-credentials) below and select **ClientCredentials** instead; this method does not require a refresh token.
 
 <!-- /env:oss -->
+
+### Use your own External Client App (client credentials) {#use-your-own-external-client-app-client-credentials}
+
+Create a local External Client App (ECA) in your Salesforce org to connect without an Airbyte-managed OAuth app or refresh token:
+
+1. Create an integration user:
+   - Set its profile to **Minimum Access – API Only Integrations**.
+   - Assign the **API Only User** permission.
+   - Add a permission set with read access to the objects you want to sync.
+2. In Salesforce Setup, open **External Client App Manager** and create a new External Client App:
+   - Set **Distribution State** to **Local**.
+   - Enable OAuth with the `api` scope.
+   - Enter a callback URL if the form requires one; this flow does not use it.
+3. In **Settings**, enable **Client Credentials Flow**.
+4. In **Policies**, enable **Client Credentials Flow** and set **Run As** to the integration user.
+5. Copy the consumer key and consumer secret. Salesforce first sends an email verification code.
+6. In Setup, open **My Domain** and copy your org's URL, such as `https://acme.my.salesforce.com`.
+7. In Airbyte, choose **ClientCredentials** and enter the My Domain URL, consumer key (Client ID), and consumer secret (Client Secret).
+
+Salesforce classifies this flow as high-risk because the key and secret alone grant access. Use a least-privilege integration user. Stream discovery reflects only the objects and fields the Run As user can read. `is_sandbox` does not select the org for ClientCredentials; the My Domain URL does. A sandbox refresh does not copy locally created External Client Apps, so recreate the app in the refreshed sandbox.
+
+This method does not use a refresh token, so Salesforce's 30-day idle refresh-token expiry does not apply.
 
 ### Set up the Salesforce connector in Airbyte
 
@@ -101,8 +120,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Salesforce from the Source type dropdown.
 4. Enter a name for the Salesforce connector.
-5. To authenticate:
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
+5. Choose an authentication method:
+   - **Client**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to; make sure it is the right account.
+   - **ClientCredentials**: Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
@@ -121,8 +141,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. To authenticate:
-   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
+5. Choose an authentication method:
+   - **Client**: Enter your Client ID, Client Secret, and Refresh Token.
+   - **ClientCredentials**: Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
@@ -267,6 +288,8 @@ Starting in version 2.10.3, REST streams read the access token that is current a
 
 Salesforce's [Refresh Token Rotation](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_enable_refresh_token_rotation.htm&language=en_US&type=5) makes refresh tokens **single-use**: each `refresh_token` exchange returns a new refresh token and **immediately invalidates the previous one** — there is no grace period or overlap window. Starting in version 2.8.0, the connector captures the rotated token on every token exchange (initial login and the mid-sync refreshes described above) and persists it back to the connection configuration, so syncs continue to work with RTR enabled.
 
+Starting November 4, 2026, Salesforce expires refresh tokens after 30 days of inactivity. This affects the Client method, not ClientCredentials, which does not use refresh tokens. For External Client Apps created since July 2026, Salesforce locks refresh token rotation on.
+
 **Enable the connector support before enabling RTR on the app.** Because invalidation is immediate, turning on **Enable Refresh Token Rotation** on a connected app whose connection is still running a pre-2.8.0 connector will break that connection on its next token exchange (it will authenticate with an already-invalidated token) and require re-authentication. The safe order is:
 
 1. Upgrade the Salesforce source to 2.8.0 or later (and, on Airbyte Cloud, wait for the rollout to reach your workspace).
@@ -281,6 +304,19 @@ Responsibility for the connected-app setting depends on how you authenticate:
 
 - The pre-save **Test connection** button rotates the token but cannot persist the new one (the connection does not exist yet), so the just-entered token is invalidated. Complete the connection setup promptly after testing, and re-authenticate if a subsequent sync reports an authentication error.
 - Running a manual **check** concurrently with a sync on the same source can race two rotations and invalidate one. Avoid triggering a connection test while a sync is in progress.
+
+### ClientCredentials authentication errors
+
+| Error message | Resolution |
+|:--------------|:-----------|
+| Salesforce accepts client credentials only at your org's My Domain URL. Enter the URL shown in Salesforce Setup under My Domain. | Use the My Domain URL from Salesforce Setup, not `login.salesforce.com` or `test.salesforce.com`. |
+| Salesforce doesn't recognize the Client ID. Enter the consumer key of your External Client App. | Check the External Client App's consumer key. |
+| Salesforce rejected the Client Secret. Enter the consumer secret of your External Client App. | Check the External Client App's consumer secret. |
+| The External Client App has no Run As user for the client credentials flow. Set Run As to your integration user in the app's policies. | Set **Run As** in the app's Policies. |
+| My Domain URL is required for the ClientCredentials method. Enter the URL shown in Salesforce Setup under My Domain. | Enter your Salesforce My Domain URL. |
+| Client ID and Client Secret are not set for the ClientCredentials method. Enter the consumer key and consumer secret of your External Client App. | Enter both External Client App credentials. |
+| Refresh Token is missing for the Client method. Authenticate your Salesforce account, or select ClientCredentials. | Re-authenticate Client or select ClientCredentials. |
+| Salesforce rejected the client credentials. Check Client ID, Client Secret and My Domain URL against your External Client App. | Verify the app credentials and My Domain URL. |
 
 ### OAuth authorization when PKCE is required
 
@@ -328,6 +364,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the ClientCredentials authentication method, so you can connect with your own Salesforce External Client App instead of signing in |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
 | 2.10.1 | 2026-10-20 | [89399](https://github.com/airbytehq/airbyte/pull/89399) | Update dependencies |

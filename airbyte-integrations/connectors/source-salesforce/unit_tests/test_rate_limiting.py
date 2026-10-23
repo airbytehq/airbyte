@@ -349,6 +349,20 @@ class SalesforceErrorHandlerTest(TestCase):
         assert resolution.response_action == ResponseAction.FAIL
         assert resolution.failure_type == FailureType.config_error
 
+    def test_invalid_session_fails_with_client_credentials_message_when_credentials_permanently_failed(self) -> None:
+        sf = Salesforce(auth_type="ClientCredentials", domain_url="https://acme.my.salesforce.com")
+        sf._login_failure_message = "Salesforce rejected the Client Secret."
+        sf._login_permanently_failed = True
+        handler = SalesforceErrorHandler(token_provider=SalesforceTokenProvider(sf))
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert resolution.error_message == "Salesforce rejected the Client Secret."
+        assert "Re-authenticate" not in resolution.error_message
+
     def test_first_401_with_dead_grant_fails_as_config_error_with_real_wiring(self) -> None:
         """End-to-end over the real objects (no mocked flags): the first INVALID_SESSION_ID redeems
         the grant once, the rejection latches, and the handler fails the sync without redeeming again."""
@@ -551,6 +565,38 @@ class SalesforceErrorHandlerTest(TestCase):
 
         assert error_resolution.response_action == ResponseAction.RETRY
         assert error_resolution.failure_type == FailureType.transient_error
+
+    def test_my_domain_token_url_is_a_login_request(self) -> None:
+        response = self._create_response(
+            "POST",
+            "https://acme.my.salesforce.com/services/oauth2/token",
+            400,
+            {"error": "invalid_client", "error_description": "invalid client credentials"},
+        )
+
+        assert SalesforceErrorHandler()._is_login_request(response)
+
+    def test_client_credentials_proactive_refresh_requests_new_token(self) -> None:
+        sf = Salesforce(
+            auth_type="ClientCredentials",
+            domain_url="https://acme.my.salesforce.com",
+            client_id="a_client_id",
+            client_secret="a_client_secret",
+        )
+        sf._last_login_time = 0.0
+        endpoint = "https://acme.my.salesforce.com/services/oauth2/token"
+        with requests_mock.Mocker() as mocker:
+            mocker.register_uri(
+                "POST",
+                endpoint,
+                json={"access_token": "refreshed_token", "instance_url": "https://instance.salesforce.com"},
+            )
+            with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+                sf.refresh_access_token_if_stale()
+
+        assert mocker.last_request.url == endpoint
+        assert mocker.last_request.text == "grant_type=client_credentials&client_id=a_client_id&client_secret=a_client_secret"
+        assert sf.access_token == "refreshed_token"
 
     def test_given_401_with_different_error_code_when_interpret_response_then_fall_through(self) -> None:
         response = self._create_response(

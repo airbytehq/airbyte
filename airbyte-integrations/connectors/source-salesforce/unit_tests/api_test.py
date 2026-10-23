@@ -18,6 +18,13 @@ from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
 from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
+from source_salesforce.exceptions import (
+    CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING,
+    CLIENT_CREDENTIALS_REJECTED_MESSAGE,
+    MISSING_CLIENT_CREDENTIALS_MESSAGE,
+    MISSING_DOMAIN_URL_MESSAGE,
+    MISSING_REFRESH_TOKEN_MESSAGE,
+)
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -134,6 +141,190 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+@pytest.mark.parametrize("domain_url", ["https://acme.my.salesforce.com/", " https://acme.my.salesforce.com/ "])
+@pytest.mark.parametrize("is_sandbox", [False, True])
+def test_client_credentials_login_posts_exact_body_and_uses_instance_url(requests_mock, domain_url, is_sandbox):
+    config = {**ConfigBuilder().auth_type("ClientCredentials").domain_url(domain_url).build(), "is_sandbox": is_sandbox}
+    endpoint = "https://acme.my.salesforce.com/services/oauth2/token"
+    requests_mock.register_uri(
+        "POST",
+        endpoint,
+        json={"access_token": "client_credentials_token", "instance_url": "https://instance.salesforce.com"},
+    )
+
+    sf = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert requests_mock.last_request.url == endpoint
+    assert requests_mock.last_request.text == "grant_type=client_credentials&client_id=fake_client_id&client_secret=fake_client_secret"
+    assert sf.instance_url == "https://instance.salesforce.com"
+
+
+def test_client_credentials_does_not_register_refresh_token_observer_or_emit_connector_config(requests_mock, capsys, mocker):
+    config = ConfigBuilder().auth_type("ClientCredentials").domain_url("https://acme.my.salesforce.com").build()
+    requests_mock.register_uri(
+        "POST",
+        "https://acme.my.salesforce.com/services/oauth2/token",
+        json={"access_token": "any_access_token", "instance_url": "https://instance.salesforce.com"},
+    )
+    observer = mocker.patch.object(Salesforce, "set_refresh_token_observer")
+
+    sf = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert sf.uses_client_credentials
+    observer.assert_not_called()
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_client_without_auth_type_posts_exact_refresh_token_body(requests_mock):
+    config = ConfigBuilder().build()
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "any_access_token", "instance_url": "https://instance.salesforce.com"},
+    )
+
+    sf = Salesforce(**config)
+    sf.login()
+
+    assert requests_mock.last_request.url == "https://login.salesforce.com/services/oauth2/token"
+    assert requests_mock.last_request.text == (
+        "grant_type=refresh_token&client_id=fake_client_id&client_secret=fake_client_secret&refresh_token=fake_refresh_token"
+    )
+    assert not sf.uses_client_credentials
+
+
+def test_client_auth_uses_test_login_host_for_sandbox(requests_mock):
+    config = ConfigBuilder().build()
+    config["is_sandbox"] = True
+    requests_mock.register_uri(
+        "POST",
+        "https://test.salesforce.com/services/oauth2/token",
+        json={"access_token": "any_access_token", "instance_url": "https://instance.salesforce.com"},
+    )
+
+    Salesforce(**config).login()
+
+    assert requests_mock.last_request.url == "https://test.salesforce.com/services/oauth2/token"
+    assert requests_mock.last_request.text == (
+        "grant_type=refresh_token&client_id=fake_client_id&client_secret=fake_client_secret&refresh_token=fake_refresh_token"
+    )
+
+
+@pytest.mark.parametrize(
+    "auth_type, domain_url, client_id, client_secret, refresh_token, expected_message",
+    [
+        ("ClientCredentials", "", "a_client_id", "a_client_secret", "unused", MISSING_DOMAIN_URL_MESSAGE),
+        ("ClientCredentials", "  ", "a_client_id", "a_client_secret", "unused", MISSING_DOMAIN_URL_MESSAGE),
+        ("ClientCredentials", "https://acme.my.salesforce.com", "", "a_client_secret", "unused", MISSING_CLIENT_CREDENTIALS_MESSAGE),
+        ("ClientCredentials", "https://acme.my.salesforce.com", "******", "a_client_secret", "unused", MISSING_CLIENT_CREDENTIALS_MESSAGE),
+        ("ClientCredentials", "https://acme.my.salesforce.com", "a_client_id", "", "unused", MISSING_CLIENT_CREDENTIALS_MESSAGE),
+        ("ClientCredentials", "https://acme.my.salesforce.com", "a_client_id", "******", "unused", MISSING_CLIENT_CREDENTIALS_MESSAGE),
+        ("Client", "", "a_client_id", "a_client_secret", "", MISSING_REFRESH_TOKEN_MESSAGE),
+        (None, "", "a_client_id", "a_client_secret", "", MISSING_REFRESH_TOKEN_MESSAGE),
+    ],
+)
+def test_auth_config_validation_fails_before_http_request(
+    requests_mock, auth_type, domain_url, client_id, client_secret, refresh_token, expected_message
+):
+    config = {
+        "domain_url": domain_url,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "refresh_token": refresh_token,
+    }
+    if auth_type is not None:
+        config["auth_type"] = auth_type
+
+    with pytest.raises(AirbyteTracedException) as error:
+        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert error.value.failure_type == FailureType.config_error
+    assert error.value.message == expected_message
+    assert not requests_mock.called
+
+
+@pytest.mark.parametrize(
+    "error_body, expected_message",
+    [
+        (
+            {"error": "invalid_grant", "error_description": "request not supported on this domain"},
+            CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING["request not supported on this domain"],
+        ),
+        (
+            {"error": "invalid_client_id", "error_description": "client identifier invalid"},
+            CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING["client identifier invalid"],
+        ),
+        (
+            {"error": "invalid_client", "error_description": "invalid client credentials"},
+            CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING["invalid client credentials"],
+        ),
+        (
+            {"error": "invalid_grant", "error_description": "no client credentials user enabled"},
+            CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING["no client credentials user enabled"],
+        ),
+    ],
+)
+def test_client_credentials_login_errors_have_actionable_messages(requests_mock, error_body, expected_message):
+    endpoint = "https://acme.my.salesforce.com/services/oauth2/token"
+    requests_mock.register_uri("POST", endpoint, json=error_body, status_code=400)
+    config = ConfigBuilder().auth_type("ClientCredentials").domain_url("https://acme.my.salesforce.com").build()
+
+    with pytest.raises(AirbyteTracedException) as error:
+        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert error.value.failure_type == FailureType.config_error
+    assert error.value.message == expected_message
+
+
+def test_unmapped_client_credentials_error_keeps_raw_body(requests_mock):
+    error_body = {"error": "invalid_grant", "error_description": "flow is disabled"}
+    requests_mock.register_uri("POST", "https://acme.my.salesforce.com/services/oauth2/token", json=error_body, status_code=400)
+    config = ConfigBuilder().auth_type("ClientCredentials").domain_url("https://acme.my.salesforce.com").build()
+
+    with pytest.raises(AirbyteTracedException) as error:
+        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert error.value.message == f"An error occurred: {json.dumps(error_body)}"
+
+
+def test_client_credentials_error_mapping_does_not_change_client_mode(requests_mock):
+    error_body = {"error": "invalid_client", "error_description": "invalid client credentials"}
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=error_body, status_code=400)
+    config = ConfigBuilder().build()
+
+    with pytest.raises(AirbyteTracedException) as error:
+        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)._get_sf_object(config)
+
+    assert error.value.message == f"An error occurred: {json.dumps(error_body)}"
+
+
+def test_second_client_credentials_login_error_uses_first_recorded_message(requests_mock):
+    error_body = {"error": "invalid_client", "error_description": "invalid client credentials"}
+    requests_mock.register_uri("POST", "https://acme.my.salesforce.com/services/oauth2/token", json=error_body, status_code=400)
+    sf = Salesforce(
+        auth_type="ClientCredentials",
+        domain_url="https://acme.my.salesforce.com",
+        client_id="a_client_id",
+        client_secret="a_client_secret",
+    )
+
+    with pytest.raises(AirbyteTracedException) as first_error:
+        sf.login()
+    with pytest.raises(AirbyteTracedException) as second_error:
+        sf.login()
+
+    assert first_error.value.message == CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING["invalid client credentials"]
+    assert second_error.value.message == first_error.value.message
+    assert "Re-authenticate" not in second_error.value.message
+    assert requests_mock.call_count == 1
+
+
+def test_client_credentials_default_authentication_error_message():
+    sf = Salesforce(auth_type="ClientCredentials")
+
+    assert sf.authentication_error_message == CLIENT_CREDENTIALS_REJECTED_MESSAGE
 
 
 def _register_login(requests_mock, **extra):

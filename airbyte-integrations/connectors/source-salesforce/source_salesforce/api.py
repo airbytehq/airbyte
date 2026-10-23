@@ -17,7 +17,12 @@ from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .exceptions import (
+    AUTHENTICATION_ERROR_MESSAGE_MAPPING,
+    CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING,
+    CLIENT_CREDENTIALS_REJECTED_MESSAGE,
+    TypeSalesforceException,
+)
 from .rate_limiting import SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
@@ -237,6 +242,8 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 #          Asset: {'data.attributes.url': '/services/data/v62.0/sobjects/Asset/02i4W00000EkJsrQAF'}
 #                                                        ^^^^^
 API_VERSION = "v62.0"
+AUTH_TYPE_CLIENT = "Client"
+AUTH_TYPE_CLIENT_CREDENTIALS = "ClientCredentials"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
 # (connect, read) timeout for requests made through the shared Salesforce client (OAuth token, describe).
@@ -293,6 +300,10 @@ class SalesforceTokenProvider(TokenProvider):
     def credentials_permanently_failed(self) -> bool:
         return self._sf_api.login_permanently_failed
 
+    @property
+    def authentication_error_message(self) -> str:
+        return self._sf_api.authentication_error_message
+
     def force_refresh(self) -> bool:
         """Force an immediate token refresh, returning True if a token was obtained.
 
@@ -327,19 +338,33 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
+        auth_type: str = None,
+        domain_url: str = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
+        self.auth_type = auth_type or AUTH_TYPE_CLIENT
+        self.domain_url = domain_url.strip().rstrip("/") if domain_url else None
+        self._login_failure_message: Optional[str] = None
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()
         # Change the connection pool size. Default value is not enough for parallel tasks
         adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
         self.session.mount("https://", adapter)
-        self._http_client = HttpClient("sf_api", self.logger, session=self.session, error_handler=SalesforceErrorHandler())
+        self._http_client = HttpClient(
+            "sf_api",
+            self.logger,
+            session=self.session,
+            error_handler=SalesforceErrorHandler(
+                login_error_messages=(
+                    CLIENT_CREDENTIALS_ERROR_MESSAGE_MAPPING if self.uses_client_credentials else AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                )
+            ),
+        )
 
         self.is_sandbox = is_sandbox in [True, "true"]
         if self.is_sandbox:
@@ -360,6 +385,18 @@ class Salesforce:
     def login_permanently_failed(self) -> bool:
         """True once login has failed with a credential error; it cannot recover within this process."""
         return self._login_permanently_failed
+
+    @property
+    def uses_client_credentials(self) -> bool:
+        return self.auth_type == AUTH_TYPE_CLIENT_CREDENTIALS
+
+    @property
+    def authentication_error_message(self) -> str:
+        if self._login_failure_message:
+            return self._login_failure_message
+        if self.uses_client_credentials:
+            return CLIENT_CREDENTIALS_REJECTED_MESSAGE
+        return AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
 
     def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
         """Register a callback invoked with the new refresh token whenever login() rotates it."""
@@ -425,7 +462,7 @@ class Salesforce:
                 # not redeem a grant another thread just saw rejected (under Refresh Token Rotation,
                 # reusing a rotated-out token revokes the whole grant).
                 raise AirbyteTracedException(
-                    message=AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                    message=self.authentication_error_message,
                     internal_message="Skipping Salesforce login: credentials already failed permanently in this process.",
                     failure_type=FailureType.config_error,
                 )
@@ -437,6 +474,8 @@ class Salesforce:
                 if e.failure_type == FailureType.config_error:
                     # A rejected grant cannot recover within this process; stop redeeming.
                     self._login_permanently_failed = True
+                    if not self._login_failure_message:
+                        self._login_failure_message = e.message
                 raise
 
     def refresh_access_token_if_stale(self) -> None:
@@ -461,6 +500,8 @@ class Salesforce:
             except AirbyteTracedException as e:
                 if e.failure_type == FailureType.config_error:
                     self._login_permanently_failed = True
+                    if not self._login_failure_message:
+                        self._login_failure_message = e.message
                     logger.warning(
                         "Proactive token refresh failed with a credential error; disabling further refresh attempts",
                         exc_info=True,
@@ -485,15 +526,23 @@ class Salesforce:
                     exc_info=True,
                 )
 
-    def _perform_login(self) -> None:
-        """Perform the refresh_token grant. Must be called while holding ``self._login_lock``."""
-        login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
-        login_body = {
+    def _token_request(self) -> Tuple[str, Mapping[str, str]]:
+        if self.uses_client_credentials:
+            return f"{self.domain_url}/services/oauth2/token", {
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            }
+        return f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token", {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
         }
+
+    def _perform_login(self) -> None:
+        """Request an access token for the configured method. Must be called while holding ``self._login_lock``."""
+        login_url, login_body = self._token_request()
         resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         auth = resp.json()
         self.access_token = auth["access_token"]
