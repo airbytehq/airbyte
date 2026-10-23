@@ -4,12 +4,12 @@ from datetime import date, datetime, time, timedelta, timezone
 from urllib.parse import parse_qs, urlsplit
 
 import requests_mock
+from conftest import get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
-from conftest import get_source
 
 
 _CONFIG = {
