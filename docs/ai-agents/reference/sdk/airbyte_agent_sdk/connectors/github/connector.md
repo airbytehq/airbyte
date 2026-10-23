@@ -1877,18 +1877,27 @@ Classes
             NotImplementedError: If called in local execution mode.
 
     `list(self, owner: str, repo: str, per_page: int | None = None, after: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], StargazersListResultMeta]`
-    :   Returns a list of users who have starred the repository using GraphQL
+    :   Lists users who have starred the repository using GraphQL. Since July 2026,
+        GitHub restricts stargazer and watcher listings to repository administrators
+        and collaborators. A token without that access gets one of two shapes:
+        stargazer_count greater than zero with empty results, or stargazer_count
+        null with empty results and a FORBIDDEN entry in the errors metadata. Either
+        way the aggregate count is authoritative (fall back to stargazers_count from
+        repositories.get when it is null): report it and explain that individual
+        stargazers are unavailable; in this restricted case, never report zero
+        stargazers.
         
-        Args:
-            owner: The account owner of the repository
-            repo: The name of the repository
-            per_page: The number of results per page
-            after: Cursor for pagination
-            fields: Optional array of field names to select
-            **kwargs: Additional parameters
         
-        Returns:
-            StargazersListResult
+                Args:
+                    owner: The account owner of the repository
+                    repo: The name of the repository
+                    per_page: The number of results per page
+                    after: Cursor for pagination
+                    fields: Optional array of field names to select
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    StargazersListResult
 
 <a id="TagsQuery"></a>
 

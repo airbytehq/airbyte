@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import io
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,6 +8,7 @@ import requests
 import requests_mock as rm
 
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION
 
 
 @pytest.mark.parametrize(
@@ -1321,7 +1323,7 @@ def test_download_raises_transient_error_when_sas_url_keeps_expiring(config, req
         download_requester.send_request(stream_slice=_make_bulk_stream_slice())
 
     assert exc_info.value.failure_type == FailureType.transient_error
-    assert exc_info.value.message == "Bing Ads download URL is expired or rejected by Azure Blob Storage."
+    assert exc_info.value.message == "Bing Ads file download URL is expired."
     assert "Signature not valid in the specified time frame" in exc_info.value.internal_message
     downloads = [r for r in requests_mock.request_history if r.method == "GET"]
     assert len(downloads) == download_requester.max_download_attempts
@@ -1343,3 +1345,13 @@ def test_bulk_get_fresh_download_url(components_module):
     assert result == BULK_FRESH_SAS_URL
     assert m.last_request.json() == {"RequestId": "BULK-REQ-1"}
     assert m.last_request.headers["Authorization"] == "Bearer fake_access_token"
+
+
+def test_download_error_handler_does_not_consume_success_response_body(components_module):
+    response = requests.Response()
+    response.status_code = 200
+    response.raw = io.BytesIO(b"data")
+    error_handler = components_module.BingAdsDownloadErrorHandler(config={}, parameters={})
+
+    assert error_handler.interpret_response(response) == SUCCESS_RESOLUTION
+    assert response.raw.read() == b"data"
