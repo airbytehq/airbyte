@@ -122,7 +122,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.2.0 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add posts, post_comments, post_reactions, page_statistics and page_statistics_time_bound streams |
+| 1.2.0 | 2026-10-23 | [89713](https://github.com/airbytehq/airbyte/pull/89713) | Add posts, post_comments, post_reactions, page_statistics and page_statistics_time_bound streams |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
 | 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
