@@ -103,7 +103,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.22 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Classify Apple Ads 400/401/403/404 errors as configuration errors with Apple's message, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired` fields, make Time Zone and Token Refresh Endpoint optional, and update the base image |
+| 1.1.22 | 2026-10-23 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Classify Apple Ads 400/401/403/404 errors as configuration errors with Apple's message, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired` fields, make Time Zone and Token Refresh Endpoint optional, and update the base image |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |
