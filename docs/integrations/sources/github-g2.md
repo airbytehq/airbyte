@@ -1,4 +1,4 @@
-# GitHub (Gen 2)
+# GitHub (Experimental, Gen 2)
 
 :::warning Experimental connector
 This connector is experimental and intended for internal Airbyte use only. It is not publicly listed and may be removed or folded into the main GitHub source in the future.
@@ -6,7 +6,7 @@ This connector is experimental and intended for internal Airbyte use only. It is
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [GitHub (Gen 2)](https://www.github.com) source connector.
+This page contains the setup guide and reference information for the [GitHub (Experimental, Gen 2)](https://www.github.com) source connector.
 
 </HideInUI>
 
@@ -306,6 +306,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |
 | 0.1.0 | 2026-10-20 | - | Initial release, forked from source-github 2.7.9 |
 
 </details>

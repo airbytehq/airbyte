@@ -71,3 +71,4 @@ During the beta, the context layer is free to use. Each organization can make up
 - The context layer is only available for Airbyte Cloud.
 - Direct reads are read-only. Agents can't write to sources or destinations through the context layer.
 - Direct reads are only available for [supported connectors](#supported-connectors).
+- Direct reads don't work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).
