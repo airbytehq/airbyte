@@ -161,7 +161,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.2.0 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Pace requests to the Gmail per-user quota; add Gmail API quota option; weigh full-format message and thread reads at their current unit cost |
+| 0.2.0 | 2026-10-23 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota; add Gmail API quota option; weigh full-format message and thread reads at their current unit cost |
 | 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
 | 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
