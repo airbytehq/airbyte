@@ -146,8 +146,18 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
                 }
                 supportedSyncModes = syncModes
                 sourceDefinedPrimaryKey = primaryKey
-                sourceDefinedCursor = (isCdc || isXmin) && hasPK
-                isResumable = hasPK
+                // Xmin is the cursor of every incremental-capable stream whether or not the
+                // table has a primary key: the initial load walks ctid and the increments
+                // filter on xmin. Gating it on the key, as CDC does, left PK-less tables
+                // advertising INCREMENTAL without a cursor ("Missing cursor" in the UI).
+                sourceDefinedCursor =
+                    when {
+                        isXmin -> supportsIncremental
+                        else -> isCdc && hasPK
+                    }
+                // Every table is resumable: the initial load checkpoints on ctid, with or
+                // without a primary key. Views have no ctid.
+                isResumable = !isView
             }
         return stream
     }
