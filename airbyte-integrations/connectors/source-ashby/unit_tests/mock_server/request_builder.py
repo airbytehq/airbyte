@@ -31,6 +31,11 @@ class AshbyRequestBuilder:
         self._body: Dict[str, Any] = {}
 
     @classmethod
+    def endpoint(cls, path: str) -> "AshbyRequestBuilder":
+        """Build a request for any Ashby API path, e.g. `endpoint("/offer.list")`."""
+        return cls(path)
+
+    @classmethod
     def offers_endpoint(cls) -> "AshbyRequestBuilder":
         return cls("/offer.list")
 
@@ -52,5 +57,14 @@ class AshbyRequestBuilder:
         self._body["cursor"] = cursor
         return self
 
+    def with_body_field(self, key: str, value: Any) -> "AshbyRequestBuilder":
+        """Set an arbitrary JSON body field (e.g. `includeArchived`, `interviewPlanId`)."""
+        self._body[key] = value
+        return self
+
     def build(self) -> HttpRequest:
         return HttpRequest(url=f"{self.BASE_URL}{self._path}", headers=self._headers, body=dict(self._body))
+
+    def build_json_request_without_body(self) -> HttpRequest:
+        headers = {**self._headers, "Content-Type": "application/json"}
+        return HttpRequest(url=f"{self.BASE_URL}{self._path}", headers=headers, body=None)

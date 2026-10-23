@@ -12,14 +12,14 @@ class MSSQLStreamLoader(
     dataSource: DataSource,
     override val stream: DestinationStream,
     sqlBuilder: MSSQLQueryBuilder,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     override suspend fun start() {
         super.start()
         streamStateStore.put(
             stream.mappedDescriptor,
-            MSSQLDirectLoaderStreamState(dataSource, sqlBuilder)
+            MSSQLDirectLoaderStreamState(dataSource, sqlBuilder),
         )
     }
 }

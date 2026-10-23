@@ -7,6 +7,86 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.2 — 2026-10-21
+
+[#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.
+
+### 1.2.1 — 2026-10-20
+
+[#89583](https://github.com/airbytehq/airbyte/pull/89583) — Declare the Debezium `3.4.3.Final` artifacts in `extract-cdc` with explicit versions instead of importing the Debezium BOM, whose Testcontainers 2.0.2 constraint made the test fixtures unpublishable (extract 1.2.0 was only partially published). The CDK no longer sets versions for connectors' Debezium artifacts, and the BOM's JUnit 6 and Jackson 2.19 constraints no longer reach connector classpaths.
+
+#### Follow-up for connectors
+
+##### Debezium connector artifact: explicit version
+
+Declare the connector's Debezium artifact with the version the CDK's `extract-cdc` toolkit uses, for example `implementation 'io.debezium:debezium-connector-mysql:3.4.3.Final'`, and change it whenever that toolkit's Debezium version changes.
+
+### 1.2.0 — 2026-10-20
+
+**Do not use: only `bulk-cdk-core-extract` was published, without its toolkits. Use 1.2.1.**
+
+[#89012](https://github.com/airbytehq/airbyte/pull/89012) — Upgrade Debezium to `3.4.3.Final` in `extract-cdc`. Fixes source-mysql CDC syncs failing with `Incumbent CDC state is invalid ... "other" is null` once a failover, upgrade or restore adds a server UUID that the saved offset does not have (DBZ-9682, [#75558](https://github.com/airbytehq/airbyte/issues/75558)). The Debezium engine now gets 5 minutes to shut down and to start its task (`record.processing.shutdown.timeout.ms`, `internal.task.management.timeout.ms`), replacing `debezium.embedded.shutdown.pause.before.interrupt.ms`, which Debezium no longer reads.
+
+#### Follow-up for connectors
+
+##### Snapshot modes: `schema_only`, `schema_only_recovery` removed
+
+Use `no_data` and `recovery` instead.
+
+##### source-postgres: `flush.lsn.source` → `lsn.flush.mode`
+
+Replace `flush.lsn.source=true` with `lsn.flush.mode=connector` and `flush.lsn.source=false` with `lsn.flush.mode=manual`; the deprecated property is still mapped the same way. The JDBC driver's keep-alive no longer advances the replication slot, so while the captured tables are idle only `heartbeat.action.query` moves it.
+
+##### source-postgres: PostgreSQL 13
+
+Debezium no longer supports PostgreSQL 13 (DBZ-9376); document PostgreSQL 14 as the minimum version for CDC.
+
+##### source-mssql: Debezium version pins
+
+Drop the `3.4.3.Final` version on `debezium-embedded` in `build.gradle`, which the CDK provides; keep it on `debezium-connector-sqlserver`.
+
+### 1.1.22 — 2026-10-16
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
+### 1.1.21 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
+### 1.1.20 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and load 1.1.6; no runtime behaviour change in extract.
+
+### 1.1.19 — 2026-10-16
+
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. Released alongside base 1.0.5 and load 1.1.5; no extract behaviour change.
+
+### 1.1.18 — 2026-10-16
+
+[#88151](https://github.com/airbytehq/airbyte/pull/88151) — CDC: record writes that happen while the Debezium engine is shutting down are queued and performed by `CdcPartitionReader.run()` once the engine thread has ended, so the record count in the final checkpoint includes them. Previously, with Debezium's `AsyncEmbeddedEngine` (source-mssql), a shutdown-path write could still be in flight when the state message was emitted, so the source reported fewer records than it had sent and the platform waited for the checkpoints to flush. A shutdown-path write that fails now fails the read with its cause instead of being lost.
+
+### 1.1.17 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), `junit-platform-launcher` is on every test runtime classpath, and K2-lint cleanups that also compile on Kotlin 1.9 (`JdbcAccessor` array getter, redundant casts/safe calls). No behaviour change.
+
+### 1.1.16 — 2026-10-12
+
+[#88497](https://github.com/airbytehq/airbyte/pull/88497) — `SourceConfigurationFactory.make()` rethrows a `ConnectorErrorException` (for example the `ConfigErrorException` a connector throws to reject its configuration, such as `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.`) unchanged instead of wrapping it in the generic `Failed to build ConnectorConfiguration.` error, so the connector's message reaches the user in CHECK. Every other exception is still wrapped. This matches the existing behaviour of `DestinationConfigurationFactory`.
+
+[#88497](https://github.com/airbytehq/airbyte/pull/88497) — New `CloudHostCheck` object in the extract-jdbc toolkit (`io.airbyte.cdk.check`). On Airbyte Cloud (`FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT`) it throws a `ConfigErrorException` for a loopback or unspecified host (`localhost`, `127.x.x.x`, `::1`, `0.0.0.0`) configured without an SSH tunnel (`Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`) and for a host that carries a scheme, a path, credentials or a port (`Enter only the hostname in Host; put the port in the Port field.`). Outside Airbyte Cloud it is a no-op. Connectors call it from `MetadataQuerier.Factory.session()` before the JDBC connection opens, so the message is not hidden behind the network error. `CloudHostCheck.validateHostSyntax()` runs the second half alone with a caller-supplied message, for a connector without an SSH tunnel option or a `Port` field (source-snowflake, whose Host is the account domain).
+
+### 1.1.15 — 2026-10-08
+
+[#88175](https://github.com/airbytehq/airbyte/pull/88175) — Restore null-safe JDBC `DateAccessor`/`TimestampAccessor` getters and revert `OffsetDateTimeFieldType` to `ObjectGetter`, removing the Postgres-specific `infinity`/`-infinity` checks from the shared accessors (source-postgres handles them in its own field types). MySQL zero dates read with `zeroDateTimeBehavior=convertToNull` now become null without a WARN stack trace or a `RETRIEVAL_FAILURE_TOTAL` change.
+
+### 1.1.14 — 2026-10-07
+
+[#88342](https://github.com/airbytehq/airbyte/pull/88342) — Accept `{"type": "array"}` fields without `items` in READ-time catalog validation (mapped to an array of JSONB) instead of failing with a NullPointerException.
+
+### 1.1.13 — 2026-10-05
+
+[#86976](https://github.com/airbytehq/airbyte/pull/86976) — Protobuf record consumer: set the stream namespace only when present instead of failing with a NullPointerException, restore the default data slots before every record so sparse payloads do not inherit the previous record's values, and clear the record meta before every record so field changes do not leak into the following records.
+
 ### 1.1.12 — 2026-09-17
 
 [#86412](https://github.com/airbytehq/airbyte/pull/86412) — Return null instead of NPE when JDBC getTimestamp/getDate return null for a non-null string value (MySQL zero dates with zeroDateTimeBehavior=convertToNull).

@@ -25,10 +25,12 @@ import org.junit.jupiter.api.Test
  * - WriteInitializationTest: Integration test, validates catalog loading
  *
  * Usage: class MyWriteInitTest : WriteInitializationTest<MySpecification>(
+ *
  * ```
  *       configContents = File("secrets/config.json").readText(),
  *       configSpecClass = MySpecification::class.java,
  * ```
+ *
  * )
  *
  * Troubleshooting:
@@ -89,19 +91,19 @@ abstract class WriteInitializationTest<T : ConfigurationSpecification>(
                                                             .JsonNodeFactory
                                                             .instance
                                                             .objectNode()
-                                                            .put("type", "integer")
-                                                    )
-                                            )
-                                    )
+                                                            .put("type", "integer"),
+                                                    ),
+                                            ),
+                                    ),
                             )
                             .withSyncMode(io.airbyte.protocol.models.v0.SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(
-                                io.airbyte.protocol.models.v0.DestinationSyncMode.APPEND
+                                io.airbyte.protocol.models.v0.DestinationSyncMode.APPEND,
                             )
                             .withGenerationId(0L)
                             .withMinimumGenerationId(0L)
-                            .withSyncId(42L)
-                    )
+                            .withSyncId(42L),
+                    ),
                 )
 
         // Just CREATE the process - DI will fail if beans are missing
@@ -119,7 +121,7 @@ abstract class WriteInitializationTest<T : ConfigurationSpecification>(
             assertNotNull(
                 process,
                 "Write process should be created successfully. " +
-                    "DI initialization passed - all required beans exist."
+                    "DI initialization passed - all required beans exist.",
             )
         } catch (e: Exception) {
             // Check if it's a DI error (blocker) vs other error
@@ -141,7 +143,7 @@ abstract class WriteInitializationTest<T : ConfigurationSpecification>(
                         "ColumnNameGenerator, ColumnNameMapper, Writer, " +
                         "AggregatePublishingConfig. " +
                         "Original error: $message",
-                    e
+                    e,
                 )
             }
             // Re-throw other unexpected errors

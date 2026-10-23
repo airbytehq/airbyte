@@ -20,10 +20,10 @@ import jakarta.inject.Singleton
  * Handles validation results by appropriately performing actions such as truncating, nullifying, or
  * leaving values unchanged. Updates internal state statistics based on the applied actions.
  *
- * @constructor Creates an instance of `ValidationResultHandler` with the provided state statistics
- * store.
  * @param stateAdditionalStatsStore Store for tracking additional statistics related to state
- * changes.
+ *   changes.
+ * @constructor Creates an instance of `ValidationResultHandler` with the provided state statistics
+ *   store.
  */
 @Singleton
 class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditionalStatsStore) {
@@ -43,7 +43,7 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
         partitionKey: PartitionKey,
         stream: DestinationStream.Descriptor,
         result: ValidationResult,
-        value: EnrichedAirbyteValue
+        value: EnrichedAirbyteValue,
     ) =
         when (result) {
             is ValidationResult.ShouldTruncate ->
@@ -52,14 +52,14 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
                     stream = stream,
                     value = value,
                     truncatedValue = result.truncatedValue,
-                    reason = result.reason
+                    reason = result.reason,
                 )
             is ValidationResult.ShouldNullify ->
                 nullify(
                     partitionKey = partitionKey,
                     stream = stream,
                     value = value,
-                    reason = result.reason
+                    reason = result.reason,
                 )
             is ValidationResult.Valid -> value
         }
@@ -72,14 +72,14 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
      * @param stream The descriptor of the destination stream that the value belongs to.
      * @param value The enriched Airbyte value to be nullified.
      * @param reason The reason for nullifying the value, defaulting to
-     * DESTINATION_SERIALIZATION_ERROR.
+     *   DESTINATION_SERIALIZATION_ERROR.
      * @return The updated enriched Airbyte value with a nullified state and recorded change.
      */
     fun nullify(
         partitionKey: PartitionKey,
         stream: DestinationStream.Descriptor,
         value: EnrichedAirbyteValue,
-        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
+        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR,
     ): EnrichedAirbyteValue {
         val nullChange = Meta.Change(field = value.name, change = Change.NULLED, reason = reason)
         value.abValue = NullValue
@@ -88,7 +88,7 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
             partitionKey = partitionKey,
             streamDescriptor = stream,
             metric = StateAdditionalStatsStore.ObservabilityMetrics.NULLED_VALUE_COUNT,
-            value = 1.0
+            value = 1.0,
         )
         return value
     }
@@ -102,7 +102,7 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
      * @param value The enriched Airbyte value that needs to be truncated.
      * @param truncatedValue The truncated version of the Airbyte value.
      * @param reason The reason for truncating the value, defaulting to
-     * DESTINATION_RECORD_SIZE_LIMITATION.
+     *   DESTINATION_RECORD_SIZE_LIMITATION.
      * @return The updated enriched Airbyte value with the truncation applied and recorded.
      */
     fun truncate(
@@ -110,7 +110,7 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
         stream: DestinationStream.Descriptor,
         value: EnrichedAirbyteValue,
         truncatedValue: AirbyteValue,
-        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
     ): EnrichedAirbyteValue {
         val truncateChange =
             Meta.Change(field = value.name, change = Change.TRUNCATED, reason = reason)
@@ -120,7 +120,7 @@ class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditi
             partitionKey = partitionKey,
             streamDescriptor = stream,
             metric = StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT,
-            value = 1.0
+            value = 1.0,
         )
         return value
     }

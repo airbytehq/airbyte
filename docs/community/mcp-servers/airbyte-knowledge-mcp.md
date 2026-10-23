@@ -4,9 +4,13 @@ sidebar_label: Knowledge MCP server
 
 # Airbyte knowledge MCP server
 
+:::tip Airbyte Cloud users
+If you use Airbyte Cloud, use the [Airbyte MCP](/platform/airbyte-mcp) instead. It includes Airbyte knowledge search, plus tools to build, monitor, and troubleshoot your data pipelines. You only need the knowledge MCP server if you use Airbyte Core.
+:::
+
 The Airbyte knowledge MCP server connects AI agents to comprehensive sources of information about Airbyte. It provides semantic search over Airbyte's documentation, website, OpenAPI specs, YouTube content, and GitHub issues, discussions, and pull requests.
 
-Use it to provide Airbyte knowledge to agents. It is not the primary interface agents should use to work with data. The [Agent MCP](/ai-agents/interfaces/mcp/) is the primary way agents use Airbyte to work with data.
+Use it to provide Airbyte knowledge to agents. It doesn't let agents work with your data. To build and manage data pipelines, use the [Airbyte MCP](/platform/airbyte-mcp). To work with data through Airbyte Agents, use the [Agent MCP](/ai-agents/interfaces/mcp/).
 
 ## When to use it
 
