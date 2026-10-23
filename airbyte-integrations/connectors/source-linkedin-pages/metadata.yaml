@@ -58,8 +58,9 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "All streams now declare primary keys and epoch-millisecond timestamp fields (`timeRangeStart`, `timeRangeEnd`, `created.time`, `lastModified.time`) and `organization_lookup.id` are typed as integers. The `total_follower_count` stream gains an `organizationalEntity` field used as its key. Existing connections must refresh the affected streams (Refresh → Clear data) so destinations re-create the tables with the new keys and types."
+        message: "Version 2.0.0 declares primary keys on all six streams (`organization_lookup`, `follower_statistics`, `share_statistics`, `total_follower_count`, `follower_statistics_time_bound`, `share_statistics_time_bound`) and changes the declared type of `timeRangeStart`, `timeRangeEnd`, `created.time`, `lastModified.time` and `organization_lookup.id` from number to integer, so destinations store timestamps as epoch-millisecond integers instead of floats. `total_follower_count` gains an `organizationalEntity` field used as its key. Values, cursors and state are unchanged. After upgrading, refresh the source schema and refresh the affected streams so the destination re-creates their tables with the new keys and types. Clearing the time-bound streams is destructive: LinkedIn only returns the last 12 months of time-bound statistics, so older history cannot be re-synced. See the migration guide: https://docs.airbyte.com/integrations/sources/linkedin-pages-migrations#upgrading-to-200"
         upgradeDeadline: "2026-12-22"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
