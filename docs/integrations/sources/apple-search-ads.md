@@ -62,8 +62,21 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`keywords_report_daily`](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports) — keyword-level daily metrics.
 - [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
 
+### Primary keys and cursors
+
+| Stream | Primary key | Cursor field | Supported sync modes |
+| :----- | :---------- | :----------- | :------------------- |
+| `campaigns` | `id` | None | Full Refresh |
+| `adgroups` | `id` | None | Full Refresh |
+| `keywords` | `id` | None | Full Refresh |
+| `ads` | `id` | None | Full Refresh |
+| `campaigns_report_daily` | None | `date` | Full Refresh, Incremental - Append |
+| `adgroups_report_daily` | None | `date` | Full Refresh, Incremental - Append |
+| `keywords_report_daily` | None | `date` | Full Refresh, Incremental - Append |
+| `ads_report_daily` | None | `date` | Full Refresh, Incremental - Append |
+
 :::note
-Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
+Report streams don't declare a primary key. Each row is one day of metrics for one entity in one country or region, so a row is identified by `date`, the entity ID field in the record (for example, `campaignId` or `adGroupId`), and `countryorregion`. To use Incremental - Append + Deduped on a report stream, set a primary key made of those fields in the connection's stream settings. Each incremental sync re-reads the last **Lookback Window** days, so without a primary key, Incremental - Append writes those days again.
 :::
 
 ## Performance considerations
@@ -72,6 +85,7 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 - Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
+- The connector calls the Apple Ads Campaign Management API v5. Apple has [announced](https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5) that the Campaign Management API will be sunset on January 26, 2027, and is superseded by the Apple Ads Platform API.
 
 ## IP allow list
 
