@@ -44,6 +44,27 @@ def _error_trace(output):
     return output.errors[0].trace.error
 
 
+def test_manifest_has_no_composite_error_handler() -> None:
+    from conftest import _YAML_FILE_PATH
+
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
+    composite_handlers = []
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "CompositeErrorHandler":
+                composite_handlers.append(node)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(manifest)
+
+    assert not composite_handlers
+
+
 def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
@@ -376,11 +397,12 @@ def test_every_error_message_template_survives_unexpected_bodies(body) -> None:
     filters = _templated_response_filters()
     assert len(filters) >= 15
     for spec in filters:
+        codes = spec["http_codes"] or [403]
         response = requests.Response()
-        response.status_code = spec["http_codes"][0]
+        response.status_code = codes[0]
         response._content = body.encode()
         response_filter = HttpResponseFilter(
-            action=spec["action"], http_codes=set(spec["http_codes"]), error_message=spec["error_message"], config={}, parameters={}
+            action=spec["action"], http_codes=set(codes), error_message=spec["error_message"], config={}, parameters={}
         )
 
         message = response_filter.matches(response).error_message
@@ -440,6 +462,121 @@ def _mock_gated_stream(http_mocker, stream, response):
     return targets
 
 
+_OWN = [
+    "deal_flow",
+    "product_variations",
+    "deal_products",
+    "legacy_teams",
+    "projects",
+    "tasks",
+    "deal_installments",
+    "permission_set_assignments",
+]
+
+
+@pytest.mark.parametrize("stream", _OWN)
+@pytest.mark.parametrize("status_code", [408, 500, 502, 503, 504])
+def test_html_server_errors_are_retried(stream, status_code) -> None:
+    html = HttpResponse(body="<html><body>Maintenance</body></html>", status_code=status_code, headers={"Content-Type": "text/html"})
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, stream, [html, collection([])])
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        for target in targets:
+            http_mocker.assert_number_of_calls(target, 2)
+
+
+@pytest.mark.parametrize("stream", _OWN)
+def test_html_429_is_rate_limited_and_retried(stream) -> None:
+    html = HttpResponse(
+        body="<html><body>Rate limited</body></html>",
+        status_code=429,
+        headers={"Content-Type": "text/html", "x-ratelimit-reset": "2", "x-ratelimit-remaining": "19"},
+    )
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, stream, [html, collection([])])
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        for target in targets:
+            http_mocker.assert_number_of_calls(target, 2)
+
+
+@pytest.mark.parametrize("stream", _OWN)
+def test_401_on_owned_streams_fails_with_the_shared_configuration_message(stream) -> None:
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, stream, pipedrive_error(401, "unauthorized access"))
+
+        error = _error_trace(read_stream(stream, expecting_exception=True))
+
+        assert error.failure_type == FailureType.config_error
+        assert "401: unauthorized access" in error.message
+        assert "Personal preferences > API" in error.message
+        http_mocker.assert_number_of_calls(targets[0], 1)
+
+
+@pytest.mark.parametrize("stream", _OWN)
+def test_429_exhaustion_uses_the_pipedrive_rate_limit_message(stream) -> None:
+    response = pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2", "x-ratelimit-remaining": "19"})
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, stream, response)
+
+        output = read_stream(stream, expecting_exception=True)
+
+        assert output.errors
+        http_mocker.assert_number_of_calls(targets[0], 11)
+        assert output.is_in_logs("daily API token budget")
+
+
+@pytest.mark.parametrize(
+    "stream, status_code, error",
+    [
+        ("tasks", 402, "Company account is not open"),
+        ("projects", 403, "Projects access denied"),
+        ("tasks", 403, "Tasks access denied"),
+        ("deal_installments", 403, "Installments access denied"),
+        ("permission_set_assignments", 403, "Assignments access denied"),
+        ("product_variations", 403, "Variations access denied"),
+        ("product_variations", 404, "Product not found"),
+    ],
+)
+def test_stream_specific_ignores_log_the_response_text(stream, status_code, error) -> None:
+    with HttpMocker() as http_mocker:
+        _mock_gated_stream(http_mocker, stream, pipedrive_error(status_code, error))
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        assert output.records == []
+        assert output.is_in_logs(error)
+
+
+def test_deal_products_410_uses_the_shared_gone_message() -> None:
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, "deal_products", pipedrive_error(410, "Gone"))
+
+        error = _error_trace(read_stream("deal_products", expecting_exception=True))
+
+        assert error.failure_type == FailureType.system_error
+        assert "permanently removed (410: Gone)" in error.message
+        http_mocker.assert_number_of_calls(targets[0], 1)
+
+
+@pytest.mark.parametrize("stream", ["deal_flow", "legacy_teams"])
+def test_html_200_fails_with_the_cloudflare_message(stream) -> None:
+    html = HttpResponse(body="<html><body>Unexpected response</body></html>", status_code=200, headers={"Content-Type": "text/html"})
+    with HttpMocker() as http_mocker:
+        _mock_gated_stream(http_mocker, stream, html)
+
+        error = _error_trace(read_stream(stream, expecting_exception=True))
+
+        assert error.failure_type == FailureType.config_error
+        assert "Cloudflare" in error.message
+
+
 _GATED = ["legacy_teams", "projects", "tasks", "deal_installments", "permission_set_assignments"]
 
 
@@ -485,6 +622,12 @@ def test_plan_responses_with_an_html_body_are_still_skipped(stream, status_code)
         ("deal_products", 402, "Company account is not open", FailureType.config_error),
         ("deal_products", 415, "Feature is not enabled", FailureType.config_error),
         ("deal_products", 501, "Not implemented", FailureType.system_error),
+        ("projects", 501, "Not implemented", FailureType.system_error),
+        ("tasks", 501, "Not implemented", FailureType.system_error),
+        ("deal_installments", 501, "Not implemented", FailureType.system_error),
+        ("permission_set_assignments", 410, "Gone", FailureType.system_error),
+        ("permission_set_assignments", 501, "Not implemented", FailureType.system_error),
+        ("product_variations", 402, "Company account is not open", FailureType.config_error),
     ],
 )
 def test_statuses_missing_from_the_cdk_mapping_reach_the_shared_handler(stream, status_code, error, failure_type) -> None:
