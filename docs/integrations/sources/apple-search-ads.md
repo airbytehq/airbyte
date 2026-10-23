@@ -111,7 +111,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 2.0.0 | 2026-10-23 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Type date and timestamp fields and declare primary keys on the daily report streams |
+| 2.0.0 | 2026-10-23 | [89709](https://github.com/airbytehq/airbyte/pull/89709) | Type date and timestamp fields and declare primary keys on the daily report streams |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |
