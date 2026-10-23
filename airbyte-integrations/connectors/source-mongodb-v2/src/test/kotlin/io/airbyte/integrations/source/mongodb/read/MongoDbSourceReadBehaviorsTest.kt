@@ -20,6 +20,8 @@ import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.records
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.statuses
 import io.airbyte.integrations.source.mongodb.MongoDbReadTestSupport.withFailPoint
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -445,6 +447,61 @@ class MongoDbSourceReadBehaviorsTest {
             records(sync3, ADDED_LATER).map { it["_id"].asInt() },
             "watched from the sync after its snapshot",
         )
+    }
+
+    /**
+     * The CDK writes `{}` as the state of an incremental stream that has not checkpointed yet. A
+     * sync that added a stream, drained the change stream and died before that stream's snapshot
+     * leaves exactly that behind: on the retry the `{}` is not a checkpoint, so the stream is still
+     * not watched and its documents come from the snapshot only. An `IN_PROGRESS` checkpoint (a
+     * snapshot cut mid-way) is one, and the stream is watched.
+     */
+    @Test
+    fun testEmptyPlaceholderStreamStateIsNotACheckpointForTheChangeStream() {
+        seed(FIRST, *(1..3).map { Document("_id", it).append("v", it) }.toTypedArray())
+        val sync1: BufferingOutputConsumer =
+            read(config(), configuredCatalog(config(), SyncMode.INCREMENTAL, setOf(FIRST)))
+        seed(ADDED_LATER, *(1..500).map { Document("_id", it).append("v", it) }.toTypedArray())
+        val both: ConfiguredAirbyteCatalog =
+            configuredCatalog(config(), SyncMode.INCREMENTAL, setOf(FIRST, ADDED_LATER))
+
+        val withPlaceholder: List<AirbyteStateMessage> =
+            withStreamState(sync1.states(), ADDED_LATER, Jsons.objectNode())
+        val retry: BufferingOutputConsumer = read(config(), both, withPlaceholder)
+        Assertions.assertEquals(500, records(retry, ADDED_LATER).size, "snapshot rows only")
+
+        val cutMidWay: List<AirbyteStateMessage> =
+            withStreamState(
+                sync1.states(),
+                ADDED_LATER,
+                MongoDbStreamStateValue.fromLastId(250, MongoDbSnapshotStatus.IN_PROGRESS)
+                    .toOpaqueStateValue(),
+            )
+        val resumed: BufferingOutputConsumer = read(config(), both, cutMidWay)
+        // Watched: the 500 inserts after the token are replayed, then the snapshot resumes after
+        // _id 250 — 750 rows, the legacy overlap of a started stream.
+        Assertions.assertEquals(750, records(resumed, ADDED_LATER).size, "replayed + resumed")
+    }
+
+    /** [states] with [stream]'s stream state set to [value] inside the last global state. */
+    private fun withStreamState(
+        states: List<AirbyteStateMessage>,
+        stream: String,
+        value: JsonNode,
+    ): List<AirbyteStateMessage> {
+        val last: AirbyteStateMessage =
+            Jsons.readValue(
+                Jsons.writeValueAsString(states.last()),
+                AirbyteStateMessage::class.java
+            )
+        last.global.streamStates =
+            last.global.streamStates.filterNot { it.streamDescriptor.name == stream } +
+                AirbyteStreamState()
+                    .withStreamDescriptor(
+                        StreamDescriptor().withName(stream).withNamespace(TEST_DB)
+                    )
+                    .withStreamState(value)
+        return listOf(last)
     }
 
     private fun seed(collection: String, vararg documents: Document) {

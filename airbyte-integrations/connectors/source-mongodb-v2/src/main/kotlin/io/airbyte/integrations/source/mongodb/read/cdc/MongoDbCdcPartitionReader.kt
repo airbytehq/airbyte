@@ -26,6 +26,7 @@ import io.airbyte.integrations.source.mongodb.read.record.MongoDbRecordConverter
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbValue
 import io.airbyte.integrations.source.mongodb.read.record.MongoStringValueCodec
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
@@ -72,6 +73,7 @@ class MongoDbCdcPartitionReader(
     private var updates = 0L
     private var deletes = 0L
     private var discarded = 0L
+    private val changesByNamespace = LinkedHashMap<MongoNamespace, Long>()
     @Volatile private var resumeToken: BsonDocument? = null
     /** Oplog time (seconds) of [resumeToken]; see [MongoDbCdcState.cdcSyncedUntil]. */
     @Volatile private var cdcSyncedUntil: Instant? = null
@@ -122,6 +124,7 @@ class MongoDbCdcPartitionReader(
      * rows' cursor.
      */
     private suspend fun drain(resumeAfter: BsonDocument?) {
+        logWatchedStreams(coldStart = resumeAfter == null)
         if (resumeAfter == null) {
             resumeToken = currentPosition()
         } else {
@@ -154,7 +157,10 @@ class MongoDbCdcPartitionReader(
                         continue
                     }
                     emptyPolls = 0
-                    if (emit(event)) numRecords++ else discarded++
+                    if (emit(event)) {
+                        numRecords++
+                        event.namespace?.let { changesByNamespace.merge(it, 1L, Long::plus) }
+                    } else discarded++
                     resumeToken = event.resumeToken
                     val clusterTime: BsonTimestamp? = event.clusterTime
                     if (clusterTime != null && clusterTime > target) break
@@ -169,7 +175,14 @@ class MongoDbCdcPartitionReader(
             if (resumeAfter == null) "CDC cold start; captured resume token."
             else
                 "CDC read drained $numRecords change(s) up to the target: $inserts insert(s), " +
-                    "$updates update(s), $deletes delete(s); $discarded event(s) discarded."
+                    "$updates update(s), $deletes delete(s); $discarded event(s) discarded" +
+                    (if (changesByNamespace.isEmpty()) "."
+                    else
+                        "; per stream: " +
+                            changesByNamespace.entries.joinToString(", ") { (ns, n) ->
+                                "${ns.fullName} $n"
+                            } +
+                            ".")
         }
     }
 
@@ -281,7 +294,36 @@ class MongoDbCdcPartitionReader(
      * captures the position.
      */
     private fun watchedStreams(): List<StreamIdentifier> =
-        feedBootstrap.feed.streams.filter { feedBootstrap.currentState(it) != null }.map { it.id }
+        feedBootstrap.feed.streams
+            .filter {
+                // The CDK writes `{}` for a stream that has not checkpointed yet: not a checkpoint.
+                MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState(it)) != null
+            }
+            .map { it.id }
+
+    /** Which streams this read replays changes for, and which wait for their first checkpoint. */
+    private fun logWatchedStreams(coldStart: Boolean) {
+        val watched: List<StreamIdentifier> = watchedStreams()
+        val deferred: List<StreamIdentifier> =
+            feedBootstrap.feed.streams.map { it.id }.filterNot { it in watched }
+        log.info {
+            (if (coldStart) "CDC cold start: " else "CDC read: ") +
+                "${watched.size} stream(s) watched" +
+                (if (watched.isEmpty()) "" else " (${namespaces(watched)})") +
+                (if (deferred.isEmpty()) "."
+                else
+                    "; ${deferred.size} snapshotting this sync, watched from the next " +
+                        "(${namespaces(deferred)}).")
+        }
+    }
+
+    /** `db.coll, db.other` — the first [NAMESPACES_LOGGED], then "and N more". */
+    private fun namespaces(streams: Collection<StreamIdentifier>): String {
+        val names: List<String> = streams.map { "${it.namespace}.${it.name}" }
+        val shown: String = names.take(NAMESPACES_LOGGED).joinToString(", ")
+        val more: Int = names.size - NAMESPACES_LOGGED
+        return if (more > 0) "$shown and $more more" else shown
+    }
 
     /**
      * A single configured database is watched by itself, which the `read` role on that database
@@ -327,5 +369,7 @@ class MongoDbCdcPartitionReader(
          * reached: well past the 10 s periodic no-op that moves an idle shard's position.
          */
         const val MAX_EMPTY_POLLS = 60
+        /** Namespaces listed by name in the start-of-read line before "and N more". */
+        const val NAMESPACES_LOGGED = 20
     }
 }

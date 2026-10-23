@@ -285,7 +285,9 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   ignored):
   no post-image prerequisite on the collections, at the cost of intermediate states of a document updated several times
   between reads. The `$match` names the `ns.db` / `ns.coll` of every stream that has a checkpoint
-  (snapshot started or complete) — the legacy connector's Debezium include list — so events of
+  (snapshot started or complete; the `{}` the CDK writes for a stream that has not checkpointed yet is not one,
+  `testEmptyPlaceholderStreamStateIsNotACheckpointForTheChangeStream`) — the legacy connector's Debezium include
+  list, logged at the start of every read with the deferred streams — so events of
   unselected collections never leave the server and a stream snapshotted for the first time in a
   sync is not also replayed from the token (it joins the `$match` from the next sync;
   `testStreamAddedToAWarmConnectionIsSnapshottedOnceNotReplayedToo`); with nothing to watch, on a
