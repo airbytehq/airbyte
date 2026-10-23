@@ -13805,7 +13805,7 @@ streams:
     - "%Y-%m-%d"
     start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
     end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-    step: P30D
+    step: P28D
     cursor_granularity: P1D
     lookback_window: P1D
     start_time_option:
@@ -14523,7 +14523,7 @@ spec:
               client_secret:
                 type: string
                 title: Client Secret
-                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes (or their granular equivalents).
+                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes, plus chat_channel:read:admin for chat_channels and zoom_events_basic:read:admin for zoom_events (or their granular equivalents).
                 airbyte_secret: true
                 order: 3
               authorization_endpoint:
@@ -14542,7 +14542,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
         - "2026-01-01T00:00:00Z"
-        description: "UTC date-time from which to replicate the report_user_meetings and report_daily streams (report_daily starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are moved up to that window. Leave empty to sync everything Zoom still serves."
+        description: "UTC date-time from which to replicate the report_user_meetings and report_daily streams (report_daily starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves."
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

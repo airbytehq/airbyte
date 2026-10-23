@@ -38,7 +38,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Required scopes and plans
 
-`report_user_meetings` and `report_daily` require the `report:read:admin` scope and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires `chat_channel:read:admin`. `zoom_events` requires `zoom_events_basic:read:admin` and a Webinars Plus or Zoom Events license.
+`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
 
 ### Features
 
@@ -79,11 +79,19 @@ Read [How to generate your Server-to-Server OAuth app](https://developers.zoom.u
 
 Existing Server-to-Server OAuth configurations are migrated automatically. If you manage the source through the Airbyte API or Terraform, send these settings inside the `credentials` object with `auth_type` set to `server_to_server`. A configuration with only the old top-level `account_id`, `client_id`, `client_secret`, and `authorization_endpoint` fields is rejected, and the connector removes those fields once `credentials.auth_type` is set.
 
+#### Start Date
+
+**Start Date** (optional, `start_date`): UTC date-time from which to replicate the `report_user_meetings` and `report_daily` streams (`report_daily` starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves.
+
 #### Scopes
 
 `user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
 
-Apps that use Zoom's classic scopes need `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, and `report:read:admin` instead.
+`report:read:user:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
+
+Zoom lists only the classic `report:read:admin` scope for `GET /report/daily`, so the `report_daily` stream may need an app that uses classic scopes.
+
+Apps that use Zoom's classic scopes need `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
 
 ## IP allow list
 
