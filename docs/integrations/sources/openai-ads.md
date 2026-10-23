@@ -32,7 +32,7 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 5. Enter the **API Key**.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
 7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
-8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. Conversions are requested with a 30-day click window and OpenAI needs at least one day to process conversions, so keep the default of 32 or more when you sync conversions streams. See [Lookback window](#lookback-window).
+8. (Optional) Enter the **Lookback Window** in days, from 1 to 90. Conversions are requested with a 30-day click window and OpenAI needs at least one day to process conversions, so keep the default of 32 or more when you sync conversions streams. See [Lookback window](#lookback-window).
 9. (Optional) Enter the **Number of concurrent workers**, from 2 to 20. The default is 3.
 10. Click **Set up source**.
 
