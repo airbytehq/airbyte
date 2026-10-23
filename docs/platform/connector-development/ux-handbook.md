@@ -35,11 +35,11 @@ The hierarchy of user needs is security, data integrity, reliability, speed, eas
 
 ## How the connector form renders your spec
 
-- **`required`**: Required fields appear in the main form. Root-level optional fields without `order` collapse into **Optional fields** at the end of the form. Optional fields with `order`, and nested optional fields, collapse in place.
+- **`required`**: Required fields appear in the main form unless they have a default. Required fields with a default collapse like optional fields. A default of `false`, `""`, `null`, or an empty array doesn't count, and neither does a default on an `airbyte_secret` field. Root-level collapsed fields without `order` go into **Optional fields** at the end of the form. Collapsed fields with `order`, and nested collapsed fields, collapse in place.
 - **`default`**: When the web app creates a new configuration, it fills initial form values from schema defaults. API, Terraform, and PyAirbyte callers do not receive defaults from the web app.
 - **`order`**: Orders fields within their required or optional sections; required fields still precede optional fields.
 - **`group`**: Places root-level fields in a named group. Group titles come from the form's group metadata.
-- **`always_show`**: Keeps an optional field expanded with the main form fields.
+- **`always_show`**: Keeps a field expanded with the main form fields, including a required field with a default.
 - **`airbyte_hidden`**: Hides a field from the form.
 - **`oneOf`**: Renders a selector for the alternatives. Each option's `title` is its selector label. `oneOf` blocks and groups other than resource allocation are always expanded.
 - **`enum`**: Renders a dropdown for a scalar field.
@@ -342,7 +342,7 @@ lateinit var projectId: String
 
 **Rule:** Give required fields a default when a safe value exists. A common region or `is_sandbox: false` can be a safe default; never default credentials or IDs.
 
-**Why:** A safe default pre-fills the form and saves users from choosing a value that works for most configurations.
+**Why:** A safe default pre-fills the form and saves users from choosing a value that works for most configurations. The field also collapses out of the main form, unless it sets `always_show: true`.
 
 <Tabs groupId="cdk">
 <TabItem value="yaml" label="YAML">
@@ -659,10 +659,10 @@ lateinit var password: String
 
 **Rule:** If a field has a default, add it to the parent's list of required properties. This ensures every saved configuration contains the value that determines the connector's behavior.
 
-**Why:** The web app fills defaults only when someone creates a configuration in the UI. API, Terraform, and PyAirbyte callers do not get those defaults, so an optional field with a default may be missing from saved configurations.
+**Why:** The web app fills defaults only when someone creates a configuration in the UI. API, Terraform, and PyAirbyte callers do not get those defaults, so an optional field with a default may be missing from saved configurations. Required fields with a default collapse out of the main form, so this rule doesn't add clutter. Set `always_show: true` when users should see the field right away.
 
-:::note Coming soon
-Do not move existing optional fields with defaults into `required` yet. Today, required fields always show in the main form. Making an existing field required is a breaking change because API and Terraform updates of saved configurations that lack the field fail validation.
+:::warning
+Making an existing optional field required is a breaking change, because API and Terraform updates of saved configurations that lack the field fail validation. Apply this rule to new fields, and handle changes to existing fields as breaking changes.
 :::
 
 <Tabs groupId="cdk">
@@ -1406,7 +1406,7 @@ lateinit var createdAt: String
 
 Configuration adds work and creates opportunities for confusion. Avoid asking users to configure a behavior when the connector can choose a safe value or handle it automatically. Avoid exposing implementation details such as retry counts unless users need them to reach a goal.
 
-Use `order` and `group` to arrange related fields. Keep technical or niche options out of the main flow with collapsed groups, and use `always_show` only when users need to see an optional field immediately. Give every `oneOf` option a `title`, add useful `examples`, and use `enum` instead of free text when the accepted values are fixed.
+Use `order` and `group` to arrange related fields. Keep technical or niche options out of the main flow with collapsed groups, and use `always_show` only when users need to see a field that would otherwise collapse. Give every `oneOf` option a `title`, add useful `examples`, and use `enum` instead of free text when the accepted values are fixed.
 
 Fail fast and provide an actionable error. Use `pattern` to reject malformed values and `pattern_descriptor` to explain the expected format. See [UX-05](#ux-05) and [UX-12](#ux-12).
 
