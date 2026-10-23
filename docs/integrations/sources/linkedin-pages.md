@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
+The LinkedIn Pages source supports incremental sync for Posts and the time-bound follower, share, and page statistics streams. All other streams support Full Refresh.
 
 Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
 
@@ -16,6 +16,11 @@ This Source is capable of syncing the following data as streams:
 * [Total Follower Count](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organization-follower-count)
 * [Follower Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-follower-statistics)
 * [Share Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-share-statistics)
+* Posts — organization posts, incrementally synced by last modification time; requires the `r_organization_social` scope.
+* Post Comments — comments on organization posts; requires the `r_organization_social` scope.
+* Post Reactions — reactions to organization posts; requires the `r_organization_social` scope.
+* Page Statistics — aggregate page statistics; requires the `rw_organization_admin` scope.
+* Page Statistics Time Bound (Incremental) — page statistics by time period; requires the `rw_organization_admin` scope.
 
 ### Data type mapping
 
@@ -117,6 +122,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.0 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add posts, post_comments, post_reactions, page_statistics and page_statistics_time_bound streams |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
 | 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |

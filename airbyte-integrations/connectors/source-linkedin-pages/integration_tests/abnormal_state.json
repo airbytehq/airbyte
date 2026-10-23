@@ -16,5 +16,11 @@
   },
   "share_statistics_time_bound": {
     "timeRangeEnd": 9999999999999
+  },
+  "posts": {
+    "lastModifiedAt": 9999999999999
+  },
+  "page_statistics_time_bound": {
+    "timeRangeEnd": 9999999999999
   }
 }
