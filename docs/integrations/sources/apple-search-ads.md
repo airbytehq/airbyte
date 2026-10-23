@@ -109,7 +109,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.2.0 | 2026-10-23 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
+| 1.2.0 | 2026-10-23 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |
