@@ -140,8 +140,8 @@ The connector reads account users, then each user's meetings and webinars, and t
 | `webinar_qna_results` | [GET /past_webinars/&#123;webinarId&#125;/qa](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/qa) | — |
 | `report_meetings` | [GET /report/meetings/&#123;meetingId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}) | `id` |
 | `report_meeting_participants` | [GET /report/meetings/&#123;meetingId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}/participants) | `id` |
-| `report_webinars` | [GET /report/webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/report/webinars/{webinarId}) | — |
-| `report_webinar_participants` | [GET /report/webinars/&#123;webinarId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/report/webinars/{webinarId}/participants) | — |
+| `report_webinars` | [GET /report/webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}) | — |
+| `report_webinar_participants` | [GET /report/webinars/&#123;webinarId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}/participants) | — |
 
 ## Limitations and troubleshooting
 
