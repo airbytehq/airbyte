@@ -211,10 +211,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime:
-            "{{ (max(day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
-            if 'start_date' in config else day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ')
-            }}"
+          datetime: "{{ config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -234,7 +231,7 @@ definitions:
           additionalProperties: true
           properties:
             id:
-              type: ["null", integer]
+              type: ["null", string]
             commentUrn:
               type: ["null", string]
             "$URN":
