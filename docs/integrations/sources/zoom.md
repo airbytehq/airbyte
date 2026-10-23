@@ -117,8 +117,6 @@ A configuration with only the old top-level `account_id`, `client_id`, `client_s
 | Incremental | No |
 | Namespaces | No |
 
-Incremental sync is not supported by the current connector; it is tracked in a follow-up issue.
-
 ## Supported streams
 
 The connector reads account users, then each user's meetings and webinars, and then details for those meetings and webinars.
