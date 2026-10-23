@@ -6,7 +6,7 @@ data:
     hosts:
       - api.ashbyhq.com
   maxSecondsBetweenMessages: 3600
-  dockerImageTag: 1.7.3
+  dockerImageTag: 1.8.0
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -48,7 +48,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post9.dev39463931382@sha256:4204e6b3366da96ed894a88db0cacc8e6c0c1c554bc4a71b2d7b146b0e194cf5
   externalDocumentationUrls:
     - title: API documentation
       url: https://developers.ashbyhq.com/

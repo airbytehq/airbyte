@@ -99,14 +99,14 @@ class TestInterviewPlans(TestCase):
         assert any(message in error.trace.error.message for error in output.errors)
 
     def test_discover_declares_stream(self):
-        """Discovery declares the stream with `id` primary key and full_refresh only."""
+        """Discovery declares the stream with `id` primary key and supports incremental sync."""
         config = ConfigBuilder().build()
         catalog = get_source(config=config).discover(logging.getLogger("airbyte"), config)
         streams_by_name = {stream.name: stream for stream in catalog.streams}
         stream = streams_by_name[_STREAM_NAME]
 
         assert stream.source_defined_primary_key == [["id"]]
-        assert stream.supported_sync_modes == [SyncMode.full_refresh]
+        assert stream.supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
 
     @HttpMocker()
     def test_interview_stages_reuses_interview_plans_as_parent(self, http_mocker: HttpMocker):
