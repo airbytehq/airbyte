@@ -90,10 +90,10 @@ For programmatic configuration, use these parameter names:
 | `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
-| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`; defaults to `UTC`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
 | `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
-| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `token_refresh_endpoint` | No | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
@@ -103,6 +103,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.22 | 2026-10-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Classify Apple Ads 400/401/403/404 errors as configuration errors with Apple's message, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired` fields, make Time Zone and Token Refresh Endpoint optional, and update the base image |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |
