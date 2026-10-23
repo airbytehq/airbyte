@@ -30,6 +30,7 @@ data:
       1.0.0:
         message: "The `start_date` and `end_date` fields of the `spend_limit_windows` stream are now typed as dates instead of strings. Users syncing `spend_limit_windows` must refresh the source schema and reset the stream after upgrading. Saved conversions state and configurations are migrated automatically. For more information, see the [OpenAI Ads migration guide](https://docs.airbyte.com/integrations/sources/openai-ads-migrations)."
         upgradeDeadline: "2026-11-04"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
