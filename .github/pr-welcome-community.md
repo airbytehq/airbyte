@@ -21,12 +21,13 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
 - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
 - `/ai-create-docs-pr` - Creates a documentation PR for connector changes.
+- `/breaking-change-ready` - For breaking changes: checks that every breaking-change review conversation has a reply and is resolved, then pings the breaking-change reviewers in Slack for human review.
 - `/force-merge reason="<A_GOOD_REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
 
 ### Tips for Working with CI
 
-1. **Pre-Release Checks.** Please pay attention to these, as they contain standard checks on the metadata.yaml file, docs requirements, etc. If you need help resolving a pre-release check, please ask a maintainer.
-   - Note: If you are creating a new connector, please be sure to replace the default `logo.svg` file with a suitable icon.
+1. **QA Checks** (`<connector> QA Checks`). Please pay attention to these, as they contain standard checks on the metadata.yaml file, docs requirements, etc. A failing QA check blocks the merge. If you need help resolving a QA check, please ask a maintainer.
+   - Note: If you are creating a new connector, please be sure to replace the default `icon.svg` file with a suitable icon.
 2. **Connector CI Tests.** Some failures here may be expected if your tests require credentials. Please review these results to ensure (1) unit tests are passing, if applicable, and (2) integration tests pass to the degree possible and expected.
 3. **(Optional.) [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) for tests in your fork.** You can _optionally_ set up your fork with BYO credentials for your connector. This can significantly speed up your review, ensuring your changes are fully tested before the maintainers begin their review.
 

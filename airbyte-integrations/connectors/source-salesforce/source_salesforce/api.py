@@ -239,6 +239,9 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 API_VERSION = "v62.0"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
+# (connect, read) timeout for requests made through the shared Salesforce client (OAuth token, describe).
+# Without it, a stalled response blocks forever while _login_lock is held, freezing every stream thread.
+_REQUEST_TIMEOUT_SECONDS = (30, 120)
 # After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
 # request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
 # would leave the staleness check permanently satisfied and turn every subsequent request into a full
@@ -404,7 +407,9 @@ class Salesforce:
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
     def _make_request(self, http_method: str, url: str, headers: dict = None, body: dict = None) -> requests.models.Response:
-        _, resp = self._http_client.send_request(http_method, url, headers=headers, data=body, request_kwargs={})
+        _, resp = self._http_client.send_request(
+            http_method, url, headers=headers, data=body, request_kwargs={"timeout": _REQUEST_TIMEOUT_SECONDS}
+        )
         return resp
 
     def login(self):
