@@ -70,8 +70,7 @@ class PostgresInsertBuffer(
                 csvFilePath = null
                 recordCount = 0
             }
-        }
-            ?: logger.warn { "CSV file path is not set: nothing to upload." }
+        } ?: logger.warn { "CSV file path is not set: nothing to upload." }
     }
 
     private fun createCsvFile(): File {

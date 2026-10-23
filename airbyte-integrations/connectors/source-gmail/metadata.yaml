@@ -3,6 +3,12 @@ data:
   allowedHosts:
     hosts:
       - "gmail.googleapis.com"
+  suggestedStreams:
+    streams:
+      - messages_details
+      - labels_details
+      - drafts
+      - profile
   registryOverrides:
     oss:
       enabled: true
@@ -13,11 +19,12 @@ data:
       enabled: false
       packageName: airbyte-source-gmail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.38.0@sha256:36a3f1e2519a13f216331303c14dbe94ba325a9fa6489c5fa6f3c9eb51680246
   connectorSubtype: api
+  maxSecondsBetweenMessages: 3600
   connectorType: source
   definitionId: f7833dac-fc18-4feb-a2a9-94b22001edc6
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.23
   dockerRepository: airbyte/source-gmail
   githubIssueLabel: source-gmail
   icon: icon.svg
@@ -30,6 +37,14 @@ data:
   tags:
     - language:manifest-only
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GMAIL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   ab_internal:
     ql: 100
     sl: 100
@@ -46,3 +61,11 @@ data:
     - title: Google Workspace Status
       url: https://www.google.com/appsstatus/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

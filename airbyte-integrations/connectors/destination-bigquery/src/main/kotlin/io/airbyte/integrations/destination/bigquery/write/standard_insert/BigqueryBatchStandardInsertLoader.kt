@@ -15,7 +15,6 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -74,10 +73,8 @@ class BigqueryBatchStandardInsertsLoader(
     // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
     private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
     private lateinit var writer: TableDataWriteChannel
-    private var writerClosed = false
     private var closed = false
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         check(!closed) { "BigQuery standard insert loader is closed" }
         try {
@@ -119,21 +116,22 @@ class BigqueryBatchStandardInsertsLoader(
                 switchToWriteChannel()
             }
             writer.close()
-            writerClosed = true
             val loadJob = checkNotNull(writer.job) { "BigQuery load job is missing" }
             BigQueryUtils.waitForJobFinish(loadJob)
             val completedJob = checkNotNull(loadJob.reload()) { "BigQuery load job disappeared" }
             check(
                 completedJob.status.state == JobStatus.State.DONE &&
-                    completedJob.status.error == null
-            ) { "BigQuery load job did not complete successfully: ${completedJob.status}" }
+                    completedJob.status.error == null,
+            ) {
+                "BigQuery load job did not complete successfully: ${completedJob.status}"
+            }
             val stats = completedJob.getStatistics<JobStatistics.LoadStatistics>()
             if (stats.badRecords > 0) {
                 // This should be impossible: the load job uses the default setting of
                 // maxBadRecords=0,
                 // so the job is supposed to fail if there were any bad records.
                 throw RuntimeException(
-                    "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
+                    "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}",
                 )
             }
             currentCoroutineContext().ensureActive()
@@ -149,13 +147,19 @@ class BigqueryBatchStandardInsertsLoader(
         }
     }
 
-    override fun close() = closeResources()
+    // The CDK only reaches close() without a successful finish() when it is abandoning this batch
+    // (e.g. another task failed or the sync was cancelled), and it rethrows anything close() throws
+    // in place of the original failure. So log cleanup failures here instead of throwing.
+    override fun close() {
+        try {
+            closeResources()
+        } catch (t: Throwable) {
+            logger.warn(t) {
+                "Failed to clean up abandoned batch for table ${writeChannelConfiguration.destinationTable.toPrettyString()}"
+            }
+        }
+    }
 
-    @SuppressFBWarnings(
-        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
-        justification =
-            "The lateinit channel is intentionally absent for buffered or failed batches",
-    )
     private fun closeResources(primary: Throwable? = null) {
         if (closed) return
         closed = true
@@ -166,16 +170,9 @@ class BigqueryBatchStandardInsertsLoader(
         } catch (t: Throwable) {
             if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
         }
-        try {
-            // Closing an active channel may load partial data. This loader is abandoned and must
-            // never complete its archive or report success to the CDK in that case.
-            if (this::writer.isInitialized && !writerClosed) {
-                writer.close()
-                writerClosed = true
-            }
-        } catch (t: Throwable) {
-            if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
-        }
+        // Never close an unfinished BigQuery write channel here: TableDataWriteChannel.close()
+        // commits the resumable upload, which starts a load job for the partial batch. Dropping
+        // the channel instead leaves the upload session unfinalized, so no load job is created.
         if (primary == null) failure?.let { throw it }
     }
 
@@ -197,7 +194,6 @@ class BigqueryBatchStandardInsertsLoader(
 
     // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
     // check...
-    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     private fun switchToWriteChannel() {
         writer =
             try {
@@ -315,7 +311,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
 
     private fun <S> waitForStateStore(
         stateStore: StreamStateStore<S>,
-        streamDescriptor: DestinationStream.Descriptor
+        streamDescriptor: DestinationStream.Descriptor,
     ): S {
         // Poll the state store until it's populated by the coordinating StreamLoader thread
         var attempts = 0
@@ -347,6 +343,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             |   2. Make sure that the actual destination schema's location corresponds to the location provided in the connector's config.
             |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) to the "Destination Default" option.
             |More details:
-            |""".trimMargin()
+            |"""
+                .trimMargin()
     }
 }

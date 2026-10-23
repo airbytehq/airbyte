@@ -365,7 +365,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Portfolios Get
 
-Retrieves a single portfolio by its ID using the v2 API.
+Fetches a single portfolio by ID through the v3 list endpoint using an ID filter.
 
 
 #### CLI
@@ -377,7 +377,9 @@ airbyte-agent connectors execute --json '{
   "entity": "portfolios",
   "action": "get",
   "params": {
-    "portfolioId": 0
+    "portfolioIdFilter": {
+      "include": []
+    }
   }
 }'
 ```
@@ -386,7 +388,9 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await amazon_ads.portfolios.get(
-    portfolio_id=0
+    portfolio_id_filter={
+        "include": []
+    }
 )
 ```
 
@@ -400,7 +404,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "portfolios",
     "action": "get",
     "params": {
-        "portfolioId": 0
+        "portfolioIdFilter": {
+            "include": []
+        }
     }
 }'
 ```
@@ -410,27 +416,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `portfolioId` | `integer` | Yes | The unique identifier of the portfolio |
+| `portfolioIdFilter` | `object` | Yes | Pass \{"include": ["\<portfolioId\>"]\} to fetch the portfolio with this ID. |
+| `portfolioIdFilter.include` | `array<string>` | Yes |  |
+| `includeExtendedDataFields` | `string` | No | Whether to include extended data fields in the response |
 
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `portfolioId` | `string \| integer` |  |
-| `name` | `string \| null` |  |
-| `budget` | `object \| any` |  |
-| `inBudget` | `boolean \| null` |  |
-| `state` | `string \| null` |  |
-| `creationDate` | `integer \| null` |  |
-| `lastUpdatedDate` | `integer \| null` |  |
-| `servingStatus` | `string \| null` |  |
-
-
-</details>
 
 ## Sponsored Product Campaigns
 
@@ -495,7 +484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Sponsored Product Campaigns Get
 
-Retrieves a single sponsored product campaign by its ID using the v2 API.
+Fetches a single sponsored product campaign by ID through the v3 list endpoint using an ID filter.
 
 
 #### CLI
@@ -507,7 +496,9 @@ airbyte-agent connectors execute --json '{
   "entity": "sponsored_product_campaigns",
   "action": "get",
   "params": {
-    "campaignId": 0
+    "campaignIdFilter": {
+      "include": []
+    }
   }
 }'
 ```
@@ -516,7 +507,9 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await amazon_ads.sponsored_product_campaigns.get(
-    campaign_id=0
+    campaign_id_filter={
+        "include": []
+    }
 )
 ```
 
@@ -530,7 +523,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "sponsored_product_campaigns",
     "action": "get",
     "params": {
-        "campaignId": 0
+        "campaignIdFilter": {
+            "include": []
+        }
     }
 }'
 ```
@@ -540,36 +535,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `campaignId` | `integer` | Yes | The unique identifier of the campaign |
+| `campaignIdFilter` | `object` | Yes | Pass \{"include": ["\<campaignId\>"]\} to fetch the campaign with this ID. |
+| `campaignIdFilter.include` | `array<string>` | Yes |  |
 
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `campaignId` | `string \| integer` |  |
-| `portfolioId` | `string \| integer \| any` |  |
-| `name` | `string \| null` |  |
-| `campaignType` | `string \| null` |  |
-| `tags` | `object \| null` |  |
-| `targetingType` | `string \| null` |  |
-| `premiumBidAdjustment` | `boolean \| null` |  |
-| `state` | `string \| null` |  |
-| `dynamicBidding` | `object \| any` |  |
-| `bidding` | `object \| any` |  |
-| `startDate` | `string \| null` |  |
-| `endDate` | `string \| null` |  |
-| `dailyBudget` | `number \| null` |  |
-| `budget` | `object \| any` |  |
-| `extendedData` | `object \| null` |  |
-| `marketplaceBudgetAllocation` | `string \| null` |  |
-| `offAmazonSettings` | `object \| null` |  |
-
-
-</details>
 
 ## Sponsored Product Ad Groups
 

@@ -11,11 +11,12 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
+import requests
 import responses
 import source_mixpanel
 from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
-from source_mixpanel.streams import Export
+from source_mixpanel.streams import Export, MixpanelStreamBackoffStrategy
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import (
@@ -40,6 +41,19 @@ from .utils import get_url_to_mock, init_stream, read_incremental, setup_respons
 logger = logging.getLogger("airbyte")
 
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
+
+
+def test_backoff_strategy_uses_retry_after_header(config_raw):
+    stream = init_stream("export", config=config_raw)
+    backoff_strategy = MixpanelStreamBackoffStrategy(stream=stream)
+
+    response = requests.Response()
+    response.status_code = 429
+    response.headers["Retry-After"] = "12"
+
+    assert backoff_strategy.backoff_time(response) == 12.0
+    assert backoff_strategy.backoff_time(requests.Response()) is None
+    assert backoff_strategy.backoff_time(requests.RequestException()) is None
 
 
 @pytest.fixture(autouse=True)

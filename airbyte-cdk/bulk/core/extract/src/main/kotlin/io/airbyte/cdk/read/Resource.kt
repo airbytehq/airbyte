@@ -37,12 +37,12 @@ class ResourceAcquirer(val acquierers: List<Resource<*>>) {
     @Inject
     constructor(
         cr: ConcurrencyResource,
-        sr: SocketResource
+        sr: SocketResource,
     ) : this(
         listOf(
             cr,
             sr,
-        )
+        ),
     )
 
     fun tryAcquire(requested: List<ResourceType>): Map<ResourceType, Resource.Acquired>? {
