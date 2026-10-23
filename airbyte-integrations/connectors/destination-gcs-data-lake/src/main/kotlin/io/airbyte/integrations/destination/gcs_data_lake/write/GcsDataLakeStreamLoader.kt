@@ -24,6 +24,29 @@ import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Sets [primaryKeyNames] as the table's identifier fields when the table is new or has none.
+ * Iceberg requires identifier fields to be required columns, so PK columns that were created as
+ * optional (e.g. the table was first written in Append mode) are made required first.
+ */
+internal fun reconcileIdentifierFields(table: Table, primaryKeyNames: List<String>) {
+    if (primaryKeyNames.isEmpty()) return
+    if (table.history().isEmpty() || table.schema().identifierFieldIds().isEmpty()) {
+        logger.info { "Setting identifier fields to primary keys: $primaryKeyNames" }
+        val update = table.updateSchema().allowIncompatibleChanges()
+        primaryKeyNames.forEach { update.requireColumn(it) }
+        update.setIdentifierFields(primaryKeyNames).commit()
+        table.refresh()
+    } else {
+        // For existing tables with PK changes, let the IcebergTableSynchronizer handle it
+        // (it will set identifier fields after schema evolution in
+        // computeOrExecuteSchemaUpdate)
+        logger.info {
+            "Table already has identifier fields. Will let schema synchronizer handle PK changes."
+        }
+    }
+}
+
 class GcsDataLakeStreamLoader(
     private val icebergConfiguration: GcsDataLakeConfiguration,
     override val stream: DestinationStream,
@@ -77,8 +100,6 @@ class GcsDataLakeStreamLoader(
                 schema = incomingSchema,
             )
 
-        // Reconcile identifier fields after BigLake creates the table
-        // BigLake reassigns field IDs, so we need to update the schema with the correct field names
         val primaryKeyNames =
             when (val importType = stream.tableSchema.importType) {
                 is Dedupe -> {
@@ -94,22 +115,9 @@ class GcsDataLakeStreamLoader(
                 else -> emptyList()
             }
 
-        if (primaryKeyNames.isNotEmpty()) {
-            logger.info { "Setting identifier fields to primary keys: $primaryKeyNames" }
-            // Only set identifier fields if the table was just created.
-            // For existing tables with PK changes, let the IcebergTableSynchronizer handle it
-            // (it will set identifier fields after schema evolution in
-            // computeOrExecuteSchemaUpdate)
-            if (table.history().isEmpty() || table.schema().identifierFieldIds().isEmpty()) {
-                table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
-                // Refresh to get the updated schema with identifier fields
-                table.refresh()
-            } else {
-                logger.info {
-                    "Table already has identifier fields. Will let schema synchronizer handle PK changes."
-                }
-            }
-        }
+        // Reconcile identifier fields after BigLake creates the table.
+        // BigLake reassigns field IDs, so we need to update the schema with the correct field names.
+        reconcileIdentifierFields(table, primaryKeyNames)
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.
