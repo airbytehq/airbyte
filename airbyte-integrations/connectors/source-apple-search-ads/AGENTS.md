@@ -152,7 +152,7 @@ exponential backoff strategy without a configured factor; report handlers allow 
 their factor from `backoff_factor` (default 5).
 
 Apple sunsets Campaign Management API v5 on 2027-01-26 (see the [API v5
-changelog](https://developer.apple.com/documentation/apple_ads/apple-ads-campaign-management-api-5-changelog)).
+changelog](https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5)).
 The connector must migrate to the Apple Ads Platform API at `https://api.ads.apple.com/v1/` before
 then.
 

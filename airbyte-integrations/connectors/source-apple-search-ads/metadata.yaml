@@ -74,7 +74,7 @@ data:
     - title: Calling the Apple Ads API (rate limits)
       url: https://developer.apple.com/documentation/apple_ads/calling-the-apple-search-ads-api
       type: rate_limits
-    - title: Apple Ads Campaign Management API 5 changelog
-      url: https://developer.apple.com/documentation/apple_ads/apple-ads-campaign-management-api-5-changelog
+    - title: Apple Ads Campaign Management API 5 release notes
+      url: https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5
       type: api_release_history
 metadataSpecVersion: "1.0"
