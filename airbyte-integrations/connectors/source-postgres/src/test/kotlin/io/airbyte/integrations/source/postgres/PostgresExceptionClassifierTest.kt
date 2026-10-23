@@ -14,6 +14,7 @@ import jakarta.inject.Inject
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.sql.SQLException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.postgresql.util.PSQLException
@@ -203,6 +204,46 @@ class PostgresExceptionClassifierTest {
             ),
             "Unexpected connection status message: ${status.message}",
         )
+    }
+
+    @Test
+    fun testCheckoutTimeoutClassifiedAsTransient() {
+        val exception =
+            RuntimeException(
+                "org.postgresql.util.PSQLException: FATAL: checkout timeout",
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertNotNull(result)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        val transientError = result as TransientError
+        Assertions.assertTrue(
+            transientError.displayMessage.contains("Connection pool checkout timed out"),
+            "Expected display message to contain 'Connection pool checkout timed out' but was: ${transientError.displayMessage}",
+        )
+    }
+
+    @Test
+    fun testCheckoutTimeoutWrappedInSQLException() {
+        val cause = SQLException("FATAL: checkout timeout", "58000", 0)
+        val exception = RuntimeException("query failed", cause)
+        val result = classifier.classify(exception)
+        Assertions.assertNotNull(result)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    @Test
+    fun testCheckoutTimeoutCaseInsensitive() {
+        val exception = RuntimeException("FATAL: CHECKOUT TIMEOUT")
+        val result = classifier.classify(exception)
+        Assertions.assertNotNull(result)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    @Test
+    fun testUnrelatedExceptionNotMatchedByCheckoutTimeout() {
+        val exception = RuntimeException("some other database error")
+        val result = classifier.classify(exception)
+        Assertions.assertNull(result)
     }
 
     private fun assertUnreachableHostConfigError(result: ConnectorError?) {
