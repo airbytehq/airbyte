@@ -79,64 +79,65 @@ open class AbstractDlqWriteTest(
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll({
-            assertEquals(2, stateMessages.size)
+        assertAll(
+            {
+                assertEquals(2, stateMessages.size)
 
-            val checkpoints =
-                listOf(
-                    StreamCheckpoint(
-                            checkpoint =
-                                CheckpointMessage.Checkpoint(
-                                    unmappedName = stream.unmappedName,
-                                    unmappedNamespace = stream.unmappedNamespace,
-                                    state = """{"foo": "bar"}""".deserializeToNode(),
-                                ),
-                            sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 9,
-                                ),
-                            destinationStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 5,
-                                    rejectedRecordCount = 4,
-                                ),
-                            serializedSizeBytes = 0L,
-                            checkpointKey = null,
-                            totalRecords = 5L,
-                            totalBytes = 1242,
-                            totalRejectedRecords = 4L,
-                        )
-                        .asProtocolMessage(),
-                    StreamCheckpoint(
-                            checkpoint =
-                                CheckpointMessage.Checkpoint(
-                                    unmappedName = stream.unmappedName,
-                                    unmappedNamespace = stream.unmappedNamespace,
-                                    state = """{"foo": "bar"}""".deserializeToNode(),
-                                ),
-                            sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 2,
-                                ),
-                            destinationStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 2,
-                                ),
-                            serializedSizeBytes = 0L,
-                            checkpointKey = null,
-                            totalRecords = 7L,
-                            totalBytes = 1520,
-                            totalRejectedRecords = 4L,
-                        )
-                        .asProtocolMessage(),
-                )
+                val checkpoints =
+                    listOf(
+                        StreamCheckpoint(
+                                checkpoint =
+                                    CheckpointMessage.Checkpoint(
+                                        unmappedName = stream.unmappedName,
+                                        unmappedNamespace = stream.unmappedNamespace,
+                                        state = """{"foo": "bar"}""".deserializeToNode(),
+                                    ),
+                                sourceStats =
+                                    CheckpointMessage.Stats(
+                                        recordCount = 9,
+                                    ),
+                                destinationStats =
+                                    CheckpointMessage.Stats(
+                                        recordCount = 5,
+                                        rejectedRecordCount = 4,
+                                    ),
+                                serializedSizeBytes = 0L,
+                                checkpointKey = null,
+                                totalRecords = 5L,
+                                totalBytes = 1242,
+                                totalRejectedRecords = 4L,
+                            )
+                            .asProtocolMessage(),
+                        StreamCheckpoint(
+                                checkpoint =
+                                    CheckpointMessage.Checkpoint(
+                                        unmappedName = stream.unmappedName,
+                                        unmappedNamespace = stream.unmappedNamespace,
+                                        state = """{"foo": "bar"}""".deserializeToNode(),
+                                    ),
+                                sourceStats =
+                                    CheckpointMessage.Stats(
+                                        recordCount = 2,
+                                    ),
+                                destinationStats =
+                                    CheckpointMessage.Stats(
+                                        recordCount = 2,
+                                    ),
+                                serializedSizeBytes = 0L,
+                                checkpointKey = null,
+                                totalRecords = 7L,
+                                totalBytes = 1520,
+                                totalRejectedRecords = 4L,
+                            )
+                            .asProtocolMessage(),
+                    )
 
-            val expectedStateMessages =
-                checkpoints.map {
+                val expectedStateMessages = checkpoints.map {
                     Jsons.readValue(Jsons.writeValueAsBytes(it), AirbyteMessage::class.java)
                 }
-            assertEquals(expectedStateMessages, stateMessages)
-        },)
+                assertEquals(expectedStateMessages, stateMessages)
+            },
+        )
     }
 
     companion object {
@@ -163,13 +164,13 @@ open class AbstractDlqWriteTest(
 class NoBucketDlqWriteTest :
     AbstractDlqWriteTest(
         configContent = """{"object_storage_config":{"storage_type":"None"}}""",
-        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV),
     )
 
 class NoBucketConfigDlqWriteTest :
     AbstractDlqWriteTest(
         configContent = """{}""",
-        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV),
     )
 
 class MockBucketDlqFromRecordSampleTest :

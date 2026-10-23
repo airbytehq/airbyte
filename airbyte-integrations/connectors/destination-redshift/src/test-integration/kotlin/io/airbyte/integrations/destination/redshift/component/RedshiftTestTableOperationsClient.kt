@@ -123,7 +123,7 @@ class RedshiftTestTableOperationsClient(
                         FROM information_schema.columns
                         WHERE table_schema = '${table.namespace}'
                           AND table_name = '${table.name}'
-                        """
+                        """,
                     )
                     .use { rs ->
                         while (rs.next()) {

@@ -22,7 +22,9 @@ Adding a connector is a one-time setup step per workspace. You don't need to pic
 
 ## Workspaces and connectors
 
-A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace, and on the [Team and Custom plans](../../admin/billing.md#team) administrators can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+
+Connectors are shared within a workspace. Any user with access to the workspace can use a connector in chats, and can edit or delete it. Keep this in mind when you add credentials to a shared workspace.
 
 A workspace can hold as many connectors as you need:
 
@@ -96,13 +98,45 @@ The Connectors page also shows every connector that's already been added across 
 
 - **Filter the list**. Use the **All workspaces** and **All connectors** filters at the top of the table to narrow the list by workspace or connector type.
 
-- **Inspect a connector's history**. Click the clock icon on a row to see an agent-request history for that connector, including which tool calls hit it, when, and what succeeded.
+- **Open a connector's detail page**. Click **Details** on a row to open the connector's detail page. The page shows the connector's metadata (connector ID, workspace, and when it was created and last used), its [Context Store](../../concepts/context-store) entities, and an **Activity** section with the agent-request history for that connector, including which tool calls hit it, when, and whether they succeeded. Filter the Activity list by request type (**Direct API** or **Search**) and status, and page through older requests.
 
-- **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon to re-launch the authentication module and update them. The connector keeps its identity, so Chats that reference it don't need to be rewired.
+- **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon on a row, or **Edit** on the connector detail page, to re-launch the authentication module and update them. The connector keeps its identity, so Chats that reference it don't need to be rewired.
 
-- **Remove a connector**. Click the trash icon on a row to delete that connector. The credential is removed from the workspace immediately. Any Chat that was relying on it needs a replacement connector, or a different approach, the next time it runs.
+- **Remove a connector**. Click the trash icon on a row, or **Delete** on the connector detail page, to delete that connector. The credential is removed from the workspace immediately. Any Chat that was relying on it needs a replacement connector, or a different approach, the next time it runs.
 
 You don't have to turn off a connector before deleting it, and there's no minimum number of connectors per workspace. An empty workspace is a valid state. It just means no agent running in it can reach external data.
+
+## Control who can access each entity {#entity-access}
+
+Administrators can control which members of the connector's workspace can read from and write to each entity a connector exposes. This is useful when a workspace is shared but only some of its members should reach a sensitive entity, such as payroll records or customer contacts.
+
+Entity access permissions apply per entity, per member, and per action (read or write). They don't change what the underlying credential can reach on the third-party service; they control which members' agents are allowed to use each entity through this connector.
+
+### Who can see and edit access
+
+The access controls appear only for administrators: organization admins and members who manage the connector's workspace. Members who don't manage the workspace don't see the access columns and can't change access. Because access is granted per member, these controls matter most once the workspace has more than one member, which requires a plan that supports [multiple users](../../admin/users.md). On plans limited to a single user, you're the only member in the list.
+
+### Read the access summary
+
+Open a connector's detail page (**Connectors** > **Details**) and find the Context Store entities table. When you have access to manage the connector, the table shows two extra columns, **Reads** and **Writes**. Each cell holds a pill that summarizes who can perform that action on that entity:
+
+- **Everyone**: Every active member can perform the action.
+- **A count, such as "2 of 5"**: Only some members can. The pill shows how many of the eligible members are allowed.
+- **No one**: No member can perform the action.
+
+The **Writes** column shows a summary only for entities the connector can write to. For read-only entities, the Writes cell stays empty.
+
+### Change who has access
+
+1. On the connector detail page, click the **Reads** or **Writes** pill for the entity you want to adjust. An **Access** slide-out opens for that entity.
+
+2. The slide-out lists every active member of the connector's workspace, grouped into **Reads** and, for writable entities, **Writes**. Each member row shows their name, email, and role (**Admin** or **Member**), with a toggle for each action.
+
+3. Every member starts with access to every entity. Switch a member's toggle **off** to revoke that action for that entity, or back **on** to restore it. Each change saves on its own as you make it, so you can close the slide-out at any time.
+
+4. Close the slide-out when you're done. The summary pill on the connector detail page updates to reflect the new access, for example changing from **Everyone** to a count such as **2 of 5**.
+
+Only active members appear in the slide-out. Members who were invited but haven't signed in yet don't have access to control until their status becomes **Active**. For more about roles and member status, see [Users](../../admin/users.md).
 
 ## Doing this without the web app
 

@@ -47,6 +47,14 @@ execute(entity, action, params)
 
 This pattern is the same across every connector and every interface. Agents call the same entities and actions with the same parameters from any interface.
 
+Before an agent executes, it needs to know which entities and actions a connector supports. Rather than loading the entire connector schema into the prompt up front, agents introspect the connector just in time through **skill docs** — concise, chunked guidance the platform generates for each connector:
+
+1. **Inspect the connector** to discover its metadata and Context Store readiness.
+2. **Read skill docs** for an outline of entities and actions, then read the specific section for the operation the agent is about to run.
+3. **Execute** the chosen entity and action.
+
+This progressive flow keeps the agent's context small and its calls accurate. The `build_connector_tools` helper wires these steps up as ready-to-use tools; see [Execute operations](../interfaces/sdk/execute) for the code.
+
 Airbyte Agents act through [**Chats**](../interfaces/ui/chats) — interactive, conversational sessions where an agent responds to prompts in real time.
 
 Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.

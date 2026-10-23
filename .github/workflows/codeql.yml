@@ -4,33 +4,95 @@ on:
   push:
     branches: [master]
     paths:
-      - "**.java"
-      - "**.kt"
-      - "**.kts"
-      - "**/build.gradle"
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+      - "**/*.java"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.kt"
+      - "**/*.kts"
+      - "**/*.py"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - ".github/actions/**/action.yml"
+      - ".github/actions/**/action.yaml"
+      - ".github/codeql/**"
+      - ".github/workflows/codeql.yml"
       - "buildSrc/**"
+      - "gradle/**"
+      - "gradle.properties"
       - "settings.gradle"
+      - "settings.gradle.kts"
   pull_request:
     branches: [master]
-    paths:
-      - "**.java"
-      - "**.kt"
-      - "**.kts"
-      - "**/build.gradle"
-      - "buildSrc/**"
-      - "settings.gradle"
   schedule:
-    # Run weekly on Monday at 00:00 UTC
+    # Run weekly on Monday at 00:00 Pacific Time
     - cron: "0 0 * * 1"
+      timezone: "America/Los_Angeles"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  analyze:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      actions: ${{ steps.changes.outputs.actions }}
+      java: ${{ steps.changes.outputs.java }}
+      javascript: ${{ steps.changes.outputs.javascript }}
+      python: ${{ steps.changes.outputs.python }}
+    steps:
+      - name: Checkout repository
+        if: github.event_name == 'push'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Detect changed ecosystems
+        id: changes
+        if: github.event_name != 'schedule'
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          filters: |
+            actions:
+              - '.github/actions/**/action.yml'
+              - '.github/actions/**/action.yaml'
+              - '.github/codeql/**'
+              - '.github/workflows/**/*.yml'
+              - '.github/workflows/**/*.yaml'
+            java:
+              - '**/*.gradle'
+              - '**/*.gradle.kts'
+              - '**/*.java'
+              - '**/*.kt'
+              - '**/*.kts'
+              - '.github/codeql/**'
+              - '.github/workflows/codeql.yml'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'settings.gradle'
+              - 'settings.gradle.kts'
+            javascript:
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '.github/codeql/**'
+              - '.github/workflows/codeql.yml'
+            python:
+              - '**/*.py'
+              - '.github/codeql/**'
+              - '.github/workflows/codeql.yml'
+
+  analyze-java-kotlin:
     name: Analyze Java/Kotlin
-    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name == 'schedule' || needs.changes.outputs.java == 'true'
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 120
     permissions:
       security-events: write
@@ -38,7 +100,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install Java environment
         uses: ./.github/actions/install-java-environment
@@ -46,17 +108,14 @@ jobs:
           gradle_cache_read_only: true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
         with:
           languages: java-kotlin
-          # Extend default queries with security-and-quality
-          queries: security-and-quality
+          build-mode: manual
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Build (compile only, continue past failures)
-        # Use --continue so a single connector's dependency failure
-        # does not block analysis of the rest of the codebase.
-        # continue-on-error because --continue still exits non-zero
-        # when any task fails, which would skip the analysis step.
+        # Preserve partial extraction when an unrelated monorepo module fails.
         continue-on-error: true
         run: |
           ./gradlew compileJava compileKotlin \
@@ -67,6 +126,84 @@ jobs:
             -Dorg.gradle.jvmargs="-Xmx4g"
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
         with:
           category: "/language:java-kotlin"
+
+  analyze-python:
+    name: Analyze Python
+    needs: changes
+    if: github.event_name == 'schedule' || needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          languages: python
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          category: "/language:python"
+
+  analyze-javascript-typescript:
+    name: Analyze JavaScript/TypeScript
+    needs: changes
+    if: github.event_name == 'schedule' || needs.changes.outputs.javascript == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          category: "/language:javascript-typescript"
+
+  analyze-actions:
+    name: Analyze GitHub Actions
+    needs: changes
+    if: github.event_name == 'schedule' || needs.changes.outputs.actions == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          languages: actions
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          category: "/language:actions"

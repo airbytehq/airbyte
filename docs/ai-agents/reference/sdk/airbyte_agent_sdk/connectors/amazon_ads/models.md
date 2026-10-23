@@ -102,6 +102,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[ProfilesSearchData]
+    * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1271,7 +1272,6 @@ Classes
 `SponsoredProductCampaign(**data: Any)`
 :   A Sponsored Products campaign promotes individual product listings on Amazon.
     Campaigns contain ad groups, which contain ads and targeting settings.
-    Note: The list endpoint (v3) and get endpoint (v2) return slightly different field formats.
     
     Create a new model by parsing and validating input data from keyword arguments.
     

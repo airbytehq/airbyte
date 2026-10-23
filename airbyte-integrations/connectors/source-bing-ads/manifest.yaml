@@ -11,10 +11,7 @@ definitions:
   authenticator:
     type: OAuthAuthenticator
     refresh_request_body:
-      environment: "production"
-      oauth_scope: "msads.manage"
       scope: "https://ads.microsoft.com/msads.manage offline_access"
-      tenant: "{{ config['tenant_id'] }}"
     token_refresh_endpoint:
       'https://login.microsoftonline.com/{{ config["tenant_id"]
       }}/oauth2/v2.0/token'
@@ -22,6 +19,14 @@ definitions:
     client_id: '{{ config["client_id"] }}'
     client_secret: '{{ config["client_secret"] }}'
     refresh_token: '{{ config["refresh_token"] }}'
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path:
+        - access_token
+      refresh_token_config_path:
+        - refresh_token
+      token_expiry_date_config_path:
+        - token_expiry_date
   users_stream:
     type: DeclarativeStream
     name: users
@@ -2603,6 +2608,16 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  download_requester_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        error_message_contains: "Signature not valid in the specified time frame"
+        error_message: "Bing Ads file download URL is expired."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2649,6 +2664,7 @@ definitions:
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_requester_error_handler"
       report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
@@ -2716,6 +2732,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_requester_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
