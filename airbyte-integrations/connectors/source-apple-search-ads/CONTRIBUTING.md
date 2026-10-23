@@ -17,12 +17,12 @@ Apple's API only offers machine-to-machine OAuth: a self-signed ES256 JWT acts a
 so the connector uses a plain `OAuthAuthenticator` and intentionally has no `advanced_auth` or
 declarative OAuth spec.
 
-### 2. The four `*_report_daily` streams are genuinely keyless
+### 2. The four `*_report_daily` streams use deterministic composite primary keys
 
-Apple's reporting endpoints return metric aggregations with no record identifier. A row is
-identified by the reporting entity id plus `date` plus `countryorregion` — all three assembled by
-the connector from its own request parameters — so no stable API-provided primary key exists to
-declare. Dedupe on that tuple in the destination if needed.
+Apple's reporting endpoints return metric aggregations with no record identifier. The connector
+assembles each row's key from the reporting entity id, `date`, and `countryorregion` and declares
+that deterministic composite as the primary key. Changes to `groupBy`, `granularity`, or cursor
+`step` can change row identity and require a major version bump.
 
 ### 3. Deletions are replicated as a `deleted` flag on the entity streams
 

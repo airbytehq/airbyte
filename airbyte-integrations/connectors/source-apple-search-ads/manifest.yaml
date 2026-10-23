@@ -233,6 +233,10 @@ definitions:
             - reportingDataResponse
             - row
       name: campaigns_report_daily
+      primary_key:
+        - campaignId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -348,6 +352,10 @@ definitions:
             - reportingDataResponse
             - row
       name: adgroups_report_daily
+      primary_key:
+        - adGroupId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -472,6 +480,10 @@ definitions:
             - reportingDataResponse
             - row
       name: keywords_report_daily
+      primary_key:
+        - keywordId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -659,6 +671,10 @@ definitions:
     ads_report_daily:
       type: DeclarativeStream
       name: ads_report_daily
+      primary_key:
+        - adId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -1014,7 +1030,11 @@ schemas:
       countryOrRegionServingStateReasons:
         type: object
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       dailyBudgetAmount:
         type: object
         properties:
@@ -1027,7 +1047,11 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: integer
       locInvoiceDetails:
@@ -1048,7 +1072,11 @@ schemas:
               - "null"
               - string
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       name:
         type: string
       orgId:
@@ -1062,7 +1090,11 @@ schemas:
       servingStatus:
         type: string
       startTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       status:
         type: string
       supplySources:
@@ -1081,7 +1113,11 @@ schemas:
       cpaGoal:
         type: "null"
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       defaultBidAmount:
         type: object
         properties:
@@ -1094,11 +1130,19 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: integer
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       name:
         type: string
       orgId:
@@ -1114,7 +1158,11 @@ schemas:
       servingStatus:
         type: string
       startTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       status:
         type: string
       targetingDimensions:
@@ -1217,7 +1265,11 @@ schemas:
       campaignId:
         type: integer
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       deleted:
         type: boolean
       id:
@@ -1225,7 +1277,11 @@ schemas:
       matchType:
         type: string
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       status:
         type: string
       text:
@@ -1277,7 +1333,11 @@ schemas:
           displayStatus:
             type: string
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           orgId:
             type: integer
           servingStateReasons:
@@ -1300,7 +1360,10 @@ schemas:
       campaignId:
         type: integer
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -1321,7 +1384,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1396,19 +1462,34 @@ schemas:
           deleted:
             type: boolean
           endTime:
-            type: "null"
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           orgId:
             type: integer
           pricingModel:
             type: string
           startTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       adGroupId:
         type: integer
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -1429,7 +1510,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1502,9 +1586,16 @@ schemas:
           matchType:
             type: string
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -1518,7 +1609,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1605,6 +1699,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creativeId:
         type:
           - number
@@ -1623,6 +1719,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       name:
         type:
           - string
@@ -1691,6 +1789,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           creativeId:
             type:
               - number
@@ -1707,6 +1807,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           orgId:
             type:
               - number
@@ -1728,7 +1830,10 @@ schemas:
           - string
           - "null"
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type:
           - array
@@ -1755,6 +1860,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date
             impressions:
               type:
                 - number
