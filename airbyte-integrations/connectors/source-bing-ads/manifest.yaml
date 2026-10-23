@@ -2729,13 +2729,10 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      # Re-polls BulkDownloadStatus for a fresh ResultFileUrl right before each download.
-      type: CustomRequester
-      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
+      type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
       error_handler: "#/definitions/download_requester_error_handler"
-      report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder

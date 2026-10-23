@@ -591,7 +591,6 @@ class BingAdsGzipCsvDecoder(Decoder):
 
 
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
-BING_ADS_BULK_POLL_URL = "https://bulk.api.bingads.microsoft.com/Bulk/v13/BulkDownloadStatus/Query"
 
 
 @dataclass
@@ -653,14 +652,11 @@ class BingAdsReportDownloadRequester(HttpRequester):
         )
 
     def _get_fresh_download_url(self, stream_slice: StreamSlice) -> Optional[str]:
-        """Re-poll Bing Ads Reporting or Bulk API to obtain a fresh SAS download URL."""
+        """Re-poll Bing Ads Reporting API to obtain a fresh SAS download URL."""
         creation_response = stream_slice.extra_fields.get("creation_response", {})
-        # Bulk jobs return a DownloadRequestId instead, and their ResultFileUrl must be
-        # used within five minutes, so they are re-polled through BulkDownloadStatus.
-        is_bulk = "DownloadRequestId" in creation_response
-        request_id = creation_response.get("DownloadRequestId" if is_bulk else "ReportRequestId")
-        if not request_id:
-            logger.warning("No ReportRequestId or DownloadRequestId in creation_response; using existing download URL")
+        report_request_id = creation_response.get("ReportRequestId")
+        if not report_request_id:
+            logger.warning("No ReportRequestId in creation_response; using existing download URL")
             return None
 
         account_id = stream_slice.partition.get("account_id", "")
@@ -685,22 +681,22 @@ class BingAdsReportDownloadRequester(HttpRequester):
             )
             _, response = http_client.send_request(
                 http_method="POST",
-                url=BING_ADS_BULK_POLL_URL if is_bulk else BING_ADS_REPORTING_POLL_URL,
+                url=BING_ADS_REPORTING_POLL_URL,
                 headers=headers,
-                json={"RequestId": str(request_id)} if is_bulk else {"ReportRequestId": str(request_id)},
+                json={"ReportRequestId": str(report_request_id)},
                 request_kwargs={"timeout": 30},
             )
             data = response.json()
-            fresh_url = data.get("ResultFileUrl") if is_bulk else data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
+            fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
             if fresh_url:
-                logger.info("Obtained fresh download URL via re-poll for request %s", request_id)
+                logger.info("Obtained fresh download URL via re-poll for report request %s", report_request_id)
                 return fresh_url
-            logger.warning("Re-poll did not return a download URL for request %s", request_id)
+            logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
             return None
         except Exception:
             logger.warning(
-                "Re-poll failed for request %s; falling back to existing download URL",
-                request_id,
+                "Re-poll failed for report request %s; falling back to existing download URL",
+                report_request_id,
                 exc_info=True,
             )
             return None
