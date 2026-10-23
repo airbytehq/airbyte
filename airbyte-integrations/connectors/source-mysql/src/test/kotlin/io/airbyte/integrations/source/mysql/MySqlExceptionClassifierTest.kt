@@ -324,6 +324,35 @@ class MySqlExceptionClassifierTest {
         assertZeroTablesGuidance(status.message)
     }
 
+    @Test
+    fun testNamespacedZeroTablesGuidanceDoesNotMatchUnqueryableTables() {
+        val namespacedMessage =
+            "Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables, " +
+                "that the configured user has permission to list and select them, and that table filters, if any, don't exclude all of them."
+        val (trace: AirbyteErrorTraceMessage, status: AirbyteConnectionStatus) =
+            exceptionHandler.handleCheckFailure(ConfigErrorException(namespacedMessage))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType,
+        )
+        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
+        assertZeroTablesGuidance(status.message)
+
+        val siblingMessage =
+            "Unable to query any of the 2 discovered table(s). Check that the configured user has SELECT permission on the tables to sync."
+        val (siblingTrace: AirbyteErrorTraceMessage, siblingStatus: AirbyteConnectionStatus) =
+            exceptionHandler.handleCheckFailure(ConfigErrorException(siblingMessage))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            siblingTrace.failureType,
+        )
+        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, siblingStatus.status)
+        Assertions.assertFalse(
+            siblingStatus.message.contains("No tables are visible to the configured user"),
+            "The unqueryable-tables error must not receive zero-tables guidance: ${siblingStatus.message}",
+        )
+    }
+
     private fun ruleWithPatternContaining(fragment: String): RegexExceptionClassifierRule {
         val matching: List<RegexExceptionClassifierRule> =
             classifier.rules.filter { it.pattern.contains(fragment) }

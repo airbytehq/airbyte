@@ -200,8 +200,10 @@ airbyte:
           # The connection test found no table in the configured database: the CDK's CheckOperation
           # throws ConfigErrorException("Discovered zero tables."), which this rule reaches only because
           # the regex classifier runs ahead of the default one (order: 0 above).
-          - pattern: (?i)^Discovered zero tables\.?$
-            input-example: Discovered zero tables.
+          - pattern: (?i)^Discovered zero tables\b
+            input-example: >-
+              Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables,
+              that the configured user has permission to list and select them, and that table filters, if any, don't exclude all of them.
             error: config
             output: >-
               No tables are visible to the configured user in the configured database.
