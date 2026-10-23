@@ -44,7 +44,7 @@ class GcsResumableStreamingUpload(
     private val key: String,
     private val config: GcsClientConfiguration,
     metadata: Map<String, String>,
-    chunkSizeBytes: Int = 1 * 1024 * 1024 // 8MB default chunk size
+    chunkSizeBytes: Int = 1 * 1024 * 1024, // 8MB default chunk size
 ) : StreamingUpload<GcsBlob> {
 
     private val log = KotlinLogging.logger {}

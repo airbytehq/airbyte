@@ -34,20 +34,22 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb = PostgresTestDatabase.`in`(this.serverImage).with("CREATE SCHEMA %S;", SCHEMA_NAME)
         config = getConfig(testdb.userName, testdb.password, SCHEMA_NAME)
-        testdb.query<Any?>({ ctx ->
-            ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
-            )
-            ctx.fetch("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
-            )
-            ctx.fetch(
-                "CREATE MATERIALIZED VIEW $SCHEMA_NAME.testview AS select * from $SCHEMA_NAME.id_and_name where id = '2';"
-            )
-            null
-        },)
+        testdb.query<Any?>(
+            { ctx ->
+                ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
+                ctx.fetch(
+                    "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+                )
+                ctx.fetch("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
+                ctx.fetch(
+                    "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+                )
+                ctx.fetch(
+                    "CREATE MATERIALIZED VIEW $SCHEMA_NAME.testview AS select * from $SCHEMA_NAME.id_and_name where id = '2';",
+                )
+                null
+            },
+        )
     }
 
     private val limitPermissionRoleName: String
