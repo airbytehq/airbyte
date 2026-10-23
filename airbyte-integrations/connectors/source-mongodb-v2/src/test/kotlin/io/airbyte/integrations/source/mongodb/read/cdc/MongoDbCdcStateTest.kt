@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 /**
  * [MongoDbCdcState] must read both its own shape and the legacy `source-mongodb-v2` (Debezium)
- * shape, so existing connections resume on v3 without a reset.
+ * shape, so existing connections resume on v3 with no clear or refresh.
  */
 class MongoDbCdcStateTest {
 

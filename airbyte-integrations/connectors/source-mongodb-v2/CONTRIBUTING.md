@@ -4,7 +4,7 @@ Since version 3.0.0, `source-mongodb-v2` is a Bulk CDK (`airbyte-cdk/bulk`, `ext
 toolkits) connector. It replaced the Debezium-based Java implementation (versions ≤ 2.1.1, the
 "legacy connector" below) in place, under the **same connector definition** (`definitionId
 b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`), so existing connections
-upgrade without a reset. The legacy connector is the parity oracle: `spec`, `check`, `discover` and
+upgrade with no clear or refresh. The legacy connector is the parity oracle: `spec`, `check`, `discover` and
 `read` output, saved configurations and persisted state must stay compatible with it. The
 user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration and
 troubleshooting pages next to it); keep it in step with behaviour changes.
@@ -299,7 +299,7 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   and extracts `resume_token`: Debezium stores the server's own token, as the hex `_data` string
   (Debezium 2.x, v2 ≤ 2.0.x) or as the base64-encoded BSON of the token document (Debezium 3.x,
   v2 ≥ 2.1.0) — both are accepted — so an upgraded connection resumes from where v2 left off with
-  no reset or migration. **Downgrade path:** the legacy `state` and `schema_enforced` are carried
+  no clear, refresh or migration. **Downgrade path:** the legacy `state` and `schema_enforced` are carried
   into every later checkpoint byte-for-byte and never updated (`MongoDbCdcState.of(…, prior)`;
   `testLegacyVariablesAreCarriedVerbatimAndNeverUpdated`), while `resumeToken` is the only position
   3.0.0 reads (used when present, created from the legacy offset otherwise). Pinned back to 2.1.1, a

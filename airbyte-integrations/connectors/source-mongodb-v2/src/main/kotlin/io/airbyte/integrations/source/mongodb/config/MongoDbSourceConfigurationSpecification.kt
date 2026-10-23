@@ -70,7 +70,7 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("invalid_cdc_cursor_position_behavior")
     @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
     @JsonSchemaDescription(
-        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+        "Determines whether Airbyte should fail or re-sync data when the saved change stream position is stale or invalid (no longer in the oplog). If 'Fail sync' is chosen, the sync fails until the connection is refreshed or cleared. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
     )
     @JsonSchemaInject(
         json =

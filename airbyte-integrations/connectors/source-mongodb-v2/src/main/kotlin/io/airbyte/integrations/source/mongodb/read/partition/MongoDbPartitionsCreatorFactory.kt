@@ -141,8 +141,8 @@ class MongoDbPartitionsCreatorFactory(
                 ?: configEnforced
         if (setOf(configEnforced, catalogEnforced, stateEnforced).size > 1) {
             val remedy =
-                if (configEnforced == catalogEnforced) "Please reset your data."
-                else "Please refresh source schema and reset streams."
+                if (configEnforced == catalogEnforced) "Please refresh or clear your data."
+                else "Please refresh the source schema, then refresh or clear the streams."
             throw ConfigErrorException(
                 "Mismatch between schema enforcing mode in sync configuration ($configEnforced), " +
                     "catalog ($catalogEnforced) and saved state ($stateEnforced). $remedy",
@@ -172,7 +172,7 @@ class MongoDbPartitionsCreatorFactory(
         if (saved !in allowed) {
             throw ConfigErrorException(
                 "Stream ${stream.name} is ${stream.configuredSyncMode} but the saved status $saved " +
-                    "doesn't match. Please reset this stream",
+                    "doesn't match. Please refresh or clear this stream",
             )
         }
     }

@@ -964,7 +964,7 @@ class MongoDbSourceReadTest {
             incrementalCatalog(),
             state,
             "Mismatch between schema enforcing mode in sync configuration (true), catalog (true) " +
-                "and saved state (false). Please reset your data.",
+                "and saved state (false). Please refresh or clear your data.",
         )
     }
 
@@ -972,7 +972,7 @@ class MongoDbSourceReadTest {
     fun testInvalidResumeTokenFailsSyncByDefault() {
         val state = globalState(MongoDbSnapshotStatus.COMPLETE, resumeToken = BOGUS_RESUME_TOKEN)
         // A token the server cannot parse is a corrupt state, not an oplog-retention problem.
-        assertReadFails(incrementalCatalog(), state, "please reset the connection")
+        assertReadFails(incrementalCatalog(), state, "please refresh or clear the connection")
     }
 
     @Test

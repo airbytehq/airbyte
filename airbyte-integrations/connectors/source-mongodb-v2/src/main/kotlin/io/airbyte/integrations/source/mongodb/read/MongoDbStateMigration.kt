@@ -11,7 +11,7 @@ object MongoDbStateMigration {
     fun failure(detail: String, cause: Throwable? = null): Nothing =
         throw ConfigErrorException(
             "Failed to migrate to the new connector version state protocol: $detail. " +
-                "Reset the connection to start from a fresh snapshot.",
+                "Refresh or clear the connection to start from a fresh snapshot.",
             cause,
         )
 

@@ -176,7 +176,7 @@
       },
       "invalid_cdc_cursor_position_behavior": {
         "type": "string",
-        "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+        "description": "Determines whether Airbyte should fail or re-sync data when the saved change stream position is stale or invalid (no longer in the oplog). If 'Fail sync' is chosen, the sync fails until the connection is refreshed or cleared. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
         "title": "Invalid CDC position behavior (Advanced)",
         "enum": ["Fail sync", "Re-sync data"],
         "default": "Fail sync",

@@ -92,7 +92,7 @@ class MongoDbCdcPartitionReader(
                 InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
                     throw ConfigErrorException(
                         if (isHistoryLost(e)) {
-                            "Saved offset is not valid. Please reset the connection, and then " +
+                            "Saved offset is not valid. Please refresh or clear the connection, and then " +
                                 "increase oplog retention and/or increase sync frequency to " +
                                 "prevent this from happening in the future. See " +
                                 "https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams " +
@@ -100,7 +100,7 @@ class MongoDbCdcPartitionReader(
                         } else {
                             "The saved change stream position cannot be read by the server " +
                                 "(${e.message}). The connection's state is corrupt or was taken " +
-                                "from another cluster; please reset the connection."
+                                "from another cluster; please refresh or clear the connection."
                         },
                         e,
                     )
