@@ -190,7 +190,7 @@ elif [[ "$failing_count" != 0 ]]; then
 
 $bullets
 
-Reply in each one, resolve it, then run /ai-breaking-change-ready again."
+Reply in each one, resolve it, then run /breaking-change-ready again."
   printf 'Gate result: %s of %s recommendation conversations are not ready.\n%s\n' \
     "$failing_count" "$conversation_count" "$status_body"
 else
