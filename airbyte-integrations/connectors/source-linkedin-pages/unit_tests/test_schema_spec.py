@@ -20,8 +20,8 @@ def test_spec_and_concurrency_are_certification_ready():
     spec = manifest["spec"]["connection_specification"]
     properties = spec["properties"]
 
-    assert spec["required"] == ["org_id", "credentials"]
-    assert "airbyte_secret" not in properties["org_id"]
+    assert spec["required"] == ["org_id"]
+    assert properties["org_id"]["airbyte_secret"] is True
     assert "123456789" in properties["org_id"]["description"]
     assert "default" not in properties["start_date"]
     assert "bit.ly" not in properties["start_date"]["description"]

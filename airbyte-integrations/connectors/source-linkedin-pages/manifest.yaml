@@ -796,7 +796,6 @@ spec:
     type: object
     required:
       - org_id
-      - credentials
     properties:
       credentials:
         type: object
@@ -856,6 +855,7 @@ spec:
         examples:
           - "123456789"
         description: The numeric ID of the LinkedIn organization (company page) to sync. Find it in the page admin URL, e.g. linkedin.com/company/123456789/admin.
+        airbyte_secret: true
       start_date:
         type: string
         order: 2
