@@ -41,8 +41,18 @@ CONFIG = {
     }
 }
 
-WEBINAR_1 = {"id": 81111111111, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "Webinar one"}
-WEBINAR_2 = {"id": 82222222222, "uuid": "/abc//d==", "topic": "Webinar two"}
+WEBINAR_1 = {
+    "id": 81111111111,
+    "uuid": "wPUYIy/pR2mPs5r9no2GmA==",
+    "topic": "Webinar one",
+    "created_at": "2026-09-01T10:00:00Z",
+}
+WEBINAR_2 = {
+    "id": 82222222222,
+    "uuid": "/abc//d==",
+    "topic": "Webinar two",
+    "created_at": "2026-10-10T10:00:00Z",
+}
 WEBINARS = [WEBINAR_1, WEBINAR_2]
 ENCODED_UUIDS = {
     WEBINAR_1["uuid"]: "wPUYIy%252FpR2mPs5r9no2GmA%253D%253D",
@@ -59,9 +69,6 @@ _WEBINARS_NEXT_PAGE_TOKEN = "webinars-page-2"
 # schemas declare it `["null", "string"]`. Fixing it changes the emitted type, so it is a separate, breaking change.
 # Remove a stream from this map once its schema and `AddFields` agree.
 KNOWN_SCHEMA_DRIFT = {
-    "webinar_registrants": {"webinar_id"},
-    "webinar_polls": {"webinar_id"},
-    "webinar_registration_questions": {"webinar_id"},
     "webinar_tracking_sources": {"webinar_id"},
 }
 

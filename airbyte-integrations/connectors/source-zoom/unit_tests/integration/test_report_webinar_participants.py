@@ -74,9 +74,21 @@ class TestReportWebinarParticipants(TestCase):
 
             assert_completed_without_errors(output, _STREAM)
             assert sorted(records_data(output), key=lambda r: r["id"]) == [
-                {**_participant("p1"), "webinar_uuid": WEBINAR_1["uuid"]},
-                {**_participant("p2"), "webinar_uuid": WEBINAR_1["uuid"]},
-                {**_participant("p3"), "webinar_uuid": WEBINAR_2["uuid"]},
+                {
+                    **_participant("p1"),
+                    "webinar_uuid": WEBINAR_1["uuid"],
+                    "webinar_created_at": WEBINAR_1["created_at"],
+                },
+                {
+                    **_participant("p2"),
+                    "webinar_uuid": WEBINAR_1["uuid"],
+                    "webinar_created_at": WEBINAR_1["created_at"],
+                },
+                {
+                    **_participant("p3"),
+                    "webinar_uuid": WEBINAR_2["uuid"],
+                    "webinar_created_at": WEBINAR_2["created_at"],
+                },
             ]
             for paged_request in (webinar_1_page_1, webinar_1_page_2, webinar_2_page_1):
                 http_mocker.assert_number_of_calls(paged_request, 1)
@@ -93,7 +105,13 @@ class TestReportWebinarParticipants(TestCase):
         output = read_stream(_STREAM)
 
         assert_completed_without_errors(output, _STREAM)
-        assert records_data(output) == [{**_participant("p1"), "webinar_uuid": WEBINAR_1["uuid"]}]
+        assert records_data(output) == [
+            {
+                **_participant("p1"),
+                "webinar_uuid": WEBINAR_1["uuid"],
+                "webinar_created_at": WEBINAR_1["created_at"],
+            }
+        ]
         assert output.is_in_logs("Zoom returned code 3001")
 
     def test_parent_400_yields_no_records(self):

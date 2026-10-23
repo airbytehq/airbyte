@@ -6893,10 +6893,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         created_at:
           type:
           - 'null'
           - string
+          format: date-time
         custom_attributes:
           type:
           - 'null'
@@ -6956,6 +6958,14 @@ streams:
           type:
           - 'null'
           - string
+        login_types:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - integer
         last_client_version:
           type:
           - 'null'
@@ -6964,6 +6974,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         last_name:
           type:
           - 'null'
@@ -7236,9 +7247,23 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "meetings_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
         type: ParentStreamConfig
     type: SimpleRetriever
   schema_loader:
@@ -7275,6 +7300,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         duration:
           type:
           - 'null'
@@ -7316,6 +7342,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               status:
                 type:
                 - 'null'
@@ -7345,6 +7372,7 @@ streams:
               type:
               - 'null'
               - string
+              format: date-time
             end_times:
               type:
               - 'null'
@@ -7816,6 +7844,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         start_url:
           type:
           - 'null'
@@ -7859,6 +7888,19 @@ streams:
           - number
   type: DeclarativeStream
   name: "meetings"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
   primary_key: "id"
 - retriever:
     requester:
@@ -8221,6 +8263,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
@@ -8596,7 +8639,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "meeting_polls"
-  primary_key: "id"
+  primary_key: [meeting_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -8887,6 +8930,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               polling_id:
                 type:
                 - 'null'
@@ -8897,6 +8941,7 @@ streams:
                 - string
   type: DeclarativeStream
   name: "meeting_poll_results"
+  primary_key: [meeting_id, name]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -9200,6 +9245,7 @@ streams:
                 - boolean
   type: DeclarativeStream
   name: "meeting_registration_questions"
+  primary_key: [meeting_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -9430,9 +9476,23 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
         type: ParentStreamConfig
     type: SimpleRetriever
   schema_loader:
@@ -9465,6 +9525,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         duration:
           type:
           - 'null'
@@ -9494,6 +9555,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               status:
                 type:
                 - 'null'
@@ -9511,6 +9573,7 @@ streams:
               type:
               - 'null'
               - string
+              format: date-time
             end_times:
               type:
               - 'null'
@@ -9790,6 +9853,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         start_url:
           type:
           - 'null'
@@ -9833,6 +9897,19 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinars"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
   primary_key: "id"
 - retriever:
     requester:
@@ -10125,6 +10202,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinar_panelists"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -10390,7 +10468,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - number
         id:
           type:
           - 'null'
@@ -10484,12 +10562,14 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
           - string
   type: DeclarativeStream
   name: "webinar_registrants"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -10849,6 +10929,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
@@ -11108,7 +11189,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - number
         id:
           type:
           - 'null'
@@ -11221,6 +11302,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinar_polls"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -11451,9 +11533,24 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        extra_fields:
+        - - id
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -11462,6 +11559,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_id
+      value: "{{ stream_slice.extra_fields.get('id') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -11473,6 +11574,10 @@ streams:
           type:
           - 'null'
           - string
+        webinar_id:
+          type:
+          - 'null'
+          - number
         email:
           type:
           - 'null'
@@ -11498,6 +11603,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               polling_id:
                 type:
                 - 'null'
@@ -11508,6 +11614,7 @@ streams:
                 - string
   type: DeclarativeStream
   name: "webinar_poll_results"
+  primary_key: [webinar_id, name]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -11762,7 +11869,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - number
         custom_questions:
           type:
           - 'null'
@@ -11811,6 +11918,7 @@ streams:
                 - boolean
   type: DeclarativeStream
   name: "webinar_registration_questions"
+  primary_key: [webinar_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -12321,9 +12429,24 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        extra_fields:
+        - - id
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -12332,6 +12455,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_id
+      value: "{{ stream_slice.extra_fields.get('id') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -12343,6 +12470,10 @@ streams:
           type:
           - 'null'
           - string
+        webinar_id:
+          type:
+          - 'null'
+          - number
         email:
           type:
           - 'null'
@@ -12370,6 +12501,7 @@ streams:
                 - string
   type: DeclarativeStream
   name: "webinar_qna_results"
+  primary_key: [webinar_id, name]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -12600,11 +12732,34 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "meetings_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
+        extra_fields:
+        - - created_at
         type: ParentStreamConfig
     type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - meeting_created_at
+      value: "{{ stream_slice.extra_fields.get('created_at') }}"
+      type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12615,6 +12770,11 @@ streams:
           type:
           - 'null'
           - string
+        meeting_created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
         custom_keys:
           type:
           - 'null'
@@ -12644,6 +12804,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         host_id:
           type:
           - 'null'
@@ -12660,6 +12821,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         topic:
           type:
           - 'null'
@@ -12703,6 +12865,19 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_meetings"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: meeting_created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
   primary_key: "id"
 - retriever:
     requester:
@@ -12948,9 +13123,25 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "meetings_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
+        extra_fields:
+        - - created_at
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -12959,6 +13150,10 @@ streams:
     - path:
       - "meeting_id"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - meeting_created_at
+      value: "{{ stream_slice.extra_fields.get('created_at') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -12970,6 +13165,11 @@ streams:
           type:
           - 'null'
           - string
+        meeting_created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
         meeting_id:
           type:
           - 'null'
@@ -12994,10 +13194,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         leave_time:
           type:
           - 'null'
           - string
+          format: date-time
         name:
           type:
           - 'null'
@@ -13032,7 +13234,20 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_meeting_participants"
-  primary_key: "id"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: meeting_created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
+  primary_key: [meeting_id, user_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -13266,9 +13481,25 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        incremental_dependency: true
+        extra_fields:
+        - - created_at
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -13277,6 +13508,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_created_at
+      value: "{{ stream_slice.extra_fields.get('created_at') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -13288,6 +13523,11 @@ streams:
           type:
           - 'null'
           - string
+        webinar_created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
         custom_keys:
           type:
           - 'null'
@@ -13317,6 +13557,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         id:
           type:
           - 'null'
@@ -13329,6 +13570,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         topic:
           type:
           - 'null'
@@ -13372,6 +13614,20 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinars"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: webinar_created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
+  primary_key: [uuid]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -13619,9 +13875,25 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        incremental_dependency: true
+        extra_fields:
+        - - created_at
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -13630,6 +13902,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_created_at
+      value: "{{ stream_slice.extra_fields.get('created_at') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -13641,6 +13917,11 @@ streams:
           type:
           - 'null'
           - string
+        webinar_created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
         customer_key:
           type:
           - 'null'
@@ -13661,10 +13942,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         leave_time:
           type:
           - 'null'
           - string
+          format: date-time
         name:
           type:
           - 'null'
@@ -13687,6 +13970,20 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinar_participants"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: webinar_created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
+  primary_key: [webinar_uuid, user_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -14542,7 +14839,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
         - "2026-01-01T00:00:00Z"
-        description: "UTC date-time from which to replicate the report_user_meetings and report_daily streams (report_daily starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are moved up to that window. Leave empty to sync everything Zoom still serves."
+        description: "UTC date-time from which to replicate meetings, report_meetings, report_meeting_participants, webinars, report_webinars, report_webinar_participants, report_user_meetings, and report_daily (report_daily starts at the beginning of that month). Zoom only serves reports for roughly the last six months, so earlier dates are moved up to that window. Leave empty to sync everything Zoom still serves."
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
