@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
@@ -42,6 +43,7 @@ import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQu
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -359,20 +361,28 @@ open class PostgresSourceJdbcPartitionFactory(
             val sql = "SELECT pg_relation_filenode(?::regclass)"
             val jdbcFieldType: JdbcFieldType<*> = LongFieldType
             val filenode: Any? =
-                querySingleValue(
-                    jdbcConnectionFactory,
-                    sql,
-                    { stmt ->
-                        stmt.setString(
-                            1,
-                            with(streamState.stream) { toQualifiedTableName(namespace, name) },
-                        )
-                    },
-                    { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) },
-                )
+                try {
+                    querySingleValue(
+                        jdbcConnectionFactory,
+                        sql,
+                        { stmt ->
+                            stmt.setString(
+                                1,
+                                with(streamState.stream) { toQualifiedTableName(namespace, name) },
+                            )
+                        },
+                        { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) },
+                    )
+                } catch (e: SQLException) {
+                    throw SystemErrorException(filenodeLookupErrorMessage(streamState.stream.id), e)
+                }
             log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
             return filenode as? Filenode
         }
+
+        fun filenodeLookupErrorMessage(streamId: StreamIdentifier): String =
+            "Failed to read table metadata (pg_relation_filenode) for stream '$streamId'. " +
+                "The database server returned an error."
 
         const val POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE: Int = 14
 

@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaFieldDecorator
@@ -38,8 +39,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.postgresql.util.PSQLException
+import org.postgresql.util.ServerErrorMessage
 
 class PostgresSourceJdbcPartitionFactoryTest {
 
@@ -416,15 +421,32 @@ class PostgresSourceJdbcPartitionFactoryTest {
         return connectionFactory
     }
 
+    private fun failingConnectionFactory(
+        exception: PSQLException,
+    ): PostgresSourceJdbcConnectionFactory {
+        val stmt = mockk<PreparedStatement>(relaxed = true)
+        every { stmt.executeQuery() } throws exception
+        val connection = mockk<Connection>(relaxed = true)
+        every { connection.metaData.databaseMajorVersion } returns 17
+        every { connection.prepareStatement(any()) } returns stmt
+        val connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+        every { connectionFactory.get() } returns connection
+        return connectionFactory
+    }
+
     /** One factory per call: `tidRangeScanCapableDBServer` is a lazy val on the instance. */
-    private fun cdcFactory(databaseMajorVersion: Int): PostgresSourceJdbcPartitionFactory =
+    private fun cdcFactory(
+        databaseMajorVersion: Int,
+        connectionFactory: PostgresSourceJdbcConnectionFactory =
+            connectionFactory(databaseMajorVersion),
+    ): PostgresSourceJdbcPartitionFactory =
         PostgresSourceJdbcPartitionFactory(
             sharedState = mockk<DefaultJdbcSharedState>(relaxed = true),
             selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
             config = cdcConfig,
             // Strict mock: any ResetStream / InvalidCursor / ... emission fails the test.
             handler = mockk<CatalogValidationFailureHandler>(),
-            connectionFactory = connectionFactory(databaseMajorVersion),
+            connectionFactory = connectionFactory,
         )
 
     private fun streamFeedBootstrap(
@@ -441,6 +463,60 @@ class PostgresSourceJdbcPartitionFactoryTest {
             8192,
             ClockFactory().fixed(),
         )
+
+    @Test
+    fun `create throws a contextual system error when filenode lookup fails`() {
+        val exception =
+            PSQLException(
+                ServerErrorMessage(
+                    "SERROR\u0000VERROR\u0000CXX000\u0000Minternal server error\u0000",
+                ),
+            )
+        val bootstrap = streamFeedBootstrap(cdcIncrementalStream, null)
+
+        val error =
+            assertThrows(SystemErrorException::class.java) {
+                cdcFactory(
+                        databaseMajorVersion = 17,
+                        connectionFactory = failingConnectionFactory(exception),
+                    )
+                    .create(bootstrap)
+            }
+
+        assertEquals(
+            "Failed to read table metadata (pg_relation_filenode) for stream 'public.users'. " +
+                "The database server returned an error.",
+            error.message,
+        )
+        assertSame(exception, error.cause)
+    }
+
+    @Test
+    fun `getStreamFilenode throws a contextual system error when metadata lookup fails`() {
+        val exception =
+            PSQLException(
+                ServerErrorMessage(
+                    "SERROR\u0000VERROR\u0000CXX000\u0000Minternal server error\u0000",
+                ),
+            )
+        val bootstrap = streamFeedBootstrap(cdcIncrementalStream, null)
+        val streamState = cdcFactory(databaseMajorVersion = 17).streamState(bootstrap)
+
+        val error =
+            assertThrows(SystemErrorException::class.java) {
+                PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+                    streamState,
+                    failingConnectionFactory(exception),
+                )
+            }
+
+        assertEquals(
+            "Failed to read table metadata (pg_relation_filenode) for stream 'public.users'. " +
+                "The database server returned an error.",
+            error.message,
+        )
+        assertSame(exception, error.cause)
+    }
 
     @Test
     fun `create cold starts for empty object state in CDC mode`() {
