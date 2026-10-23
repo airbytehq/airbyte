@@ -8,9 +8,18 @@ Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request
 `X-AP-Context: orgId={{ config.org_id }}` header, which the API requires on all campaign-management
 calls.
 
-Streams: `campaigns`, `adgroups`, `keywords`, `ads` (entity streams, `primary_key: [id]`,
-full refresh) and `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`,
-`ads_report_daily` (report streams, incremental on `date`).
+Streams: `campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, `product_pages` (entity streams, `primary_key: [id]`, full refresh),
+`organization` (`GET /acls`, `primary_key: [orgId]`, full refresh, no `X-AP-Context` header because
+the ACL call lists every organization the API user can access) and `campaigns_report_daily`,
+`adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily`, `search_terms_report_daily`
+(report streams, incremental on `date`).
+
+`product_pages` is partitioned by the app (`adamId`) of each campaign through a deduplicating
+`GroupingPartitionRouter` (`group_size: 1`), so an app advertised by several campaigns is requested
+once. `search_terms_report_daily` only requests campaigns whose `supplySources` include
+`APPSTORE_SEARCH_RESULTS` (a `RecordFilter` on the parent `campaigns` stream): search terms only
+exist for Search Results campaigns. Campaigns without `supplySources` are kept.
 
 ## 1. Authentication is two-legged only; there is no user-consent OAuth flow
 
@@ -39,18 +48,19 @@ user-consent flow at all, so the `client_id` / `client_secret` pair is the only 
 shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
 connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
 
-## 2. The four `*_report_daily` streams are genuinely keyless
+## 2. The five `*_report_daily` streams are genuinely keyless
 
-`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, and `ads_report_daily`
-declare no `primary_key`. They are aggregate reporting streams: the request is a `POST` to
-`/reports/campaigns[/{campaignId}/{adgroups|keywords|ads}]` with `granularity: DAILY`,
+`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily`, and
+`search_terms_report_daily` declare no `primary_key`. They are aggregate reporting streams: the request is a `POST` to
+`/reports/campaigns[/{campaignId}/{adgroups|keywords|ads|searchterms}]` with `granularity: DAILY`,
 `groupBy: ['countryOrRegion']`, and a `startTime`/`endTime` window; the API returns
 `data.reportingDataResponse.row[]` where each row is a metric aggregation, not a stored object. No
 row carries an API-assigned record identifier.
 
 What actually identifies a row is a composite of fields the connector assembles itself with
 `AddFields` transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or
-`adId`, lifted out of the nested `record.metadata`), the `date` copied from
+`adId`, lifted out of the nested `record.metadata`; search-term rows also get `adGroupId`, `keywordId`,
+and `searchTermText`, and `searchTermText` is null for Apple's low-volume rollup row), the `date` copied from
 `stream_slice.start_time`, and `countryorregion` lifted from `record.metadata.countryOrRegion`
 (the single `groupBy` dimension). Metrics are nested under the `granularity` array; entity
 attributes stay under `metadata`.
@@ -64,7 +74,7 @@ declared PK afterwards is a breaking change for every existing connection. Keyle
 honest description of what the API returns.
 
 **Why this matters:** S-1 requires either a real primary key on every stream or a named exception
-per stream with the reason. These four streams are the exception, and the reason is not "we did not
+per stream with the reason. These five streams are the exception, and the reason is not "we did not
 get around to it": the identifying tuple is derived from the connector's own request parameters
 rather than from the API, so it is not a stable record identity. Users who need deduplicated
 reporting rows should dedupe on `(<entity>Id, date, countryorregion)` in the destination.
@@ -175,8 +185,8 @@ deprecated and folded into it) and the
 | `ad_group_report`    | covered | `adgroups_report_daily`                                                                                                                                                                                                                              |
 | `keyword_report`     | covered | `keywords_report_daily`                                                                                                                                                                                                                              |
 | `ad_report`          | covered | `ads_report_daily`                                                                                                                                                                                                                                   |
-| `organization`       | missing | Apple exposes [`GET /acls`](https://developer.apple.com/documentation/apple_ads/get-user-acl) (org id, name, currency, timezone, payment model) and `GET /me`; neither is implemented as a stream.                                                   |
-| `search_term_report` | missing | Apple exposes `POST /reports/campaigns/{campaignId}/searchterms` and the [ad-group-scoped variant](https://developer.apple.com/documentation/apple_ads/get-search-term-level-within-ad-group-reports); no `search_terms_report_daily` stream exists. |
+| `organization`       | covered | `organization` ([`GET /acls`](https://developer.apple.com/documentation/apple_ads/get-user-acl))                                                                                                                                                     |
+| `search_term_report` | covered | `search_terms_report_daily` (campaign-scoped `POST /reports/campaigns/{campaignId}/searchterms`)                                                                                                                                                     |
 
 Two notes on the `covered` verdicts, so they are not read as more than they are. First, Fivetran's
 `*_history` tables are versioned snapshots produced by Fivetran's history mode; the matching Airbyte
@@ -185,15 +195,11 @@ Fivetran flattens report metrics into columns (`impressions`, `taps`, `local_spe
 these streams keep Apple's nested response shape — metrics live in the `granularity` array and
 entity attributes in `metadata`, so the data is present but not column-per-metric.
 
-The two `missing` rows are real and are **not** justified here as out of scope: both endpoints exist
-and both are ordinary reporting/reference resources. Implementing them belongs in its own sub-issue
-of the certification epic (V-1 asks for a single sub-issue listing all missing streams), not in a
-documentation change. Separately, Apple's v5 API also exposes resources neither Fivetran nor this
-connector covers — impression-share reports, product pages, and app locale resources among them;
-they are outside the V-1 comparison because V-1 is scored against competitor coverage, but they are
-worth knowing about when scoping that sub-issue.
+Beyond the Fivetran tables, the connector also syncs `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, and `product_pages`. Apple's impression-share reports are not covered:
+they use the asynchronous custom-report flow (create a report, poll until it completes, then
+download it), which has not been verified against a live account.
 
 **Why this matters:** V-1 asks whether stream coverage matches the market, and passes only when
-there are no `missing` rows or each is justified. This connector has two genuine gaps, so the table
-is the record of that — deliberately not inflated to a clean sheet. Anyone adding streams here
+there are no `missing` rows or each is justified. Every Fivetran table now has a matching stream. Anyone adding streams here
 should update this table in the same change.

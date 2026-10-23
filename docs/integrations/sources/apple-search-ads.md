@@ -52,6 +52,11 @@ The Apple Ads source connector exposes the following streams. For full schema an
 - [`adgroups`](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) — ad groups across all campaigns.
 - [`keywords`](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group) — targeting keywords across all ad groups.
 - [`ads`](https://developer.apple.com/documentation/apple_ads/get-all-ads) — ads across all ad groups.
+- [`organization`](https://developer.apple.com/documentation/apple_ads/get-user-acl) — organizations the API user can access, with currency, time zone, and payment model.
+- [`creatives`](https://developer.apple.com/documentation/apple_ads/get-all-creatives) — creatives in the organization.
+- [`campaign_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-campaign-negative-keywords) — negative keywords set on each campaign.
+- [`adgroup_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-ad-group-negative-keywords) — negative keywords set on each ad group.
+- [`product_pages`](https://developer.apple.com/documentation/apple_ads/get-product-pages) — custom product pages for each app advertised by a campaign.
 
 ### Daily report streams
 
@@ -61,6 +66,7 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`adgroups_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports) — ad-group-level daily metrics.
 - [`keywords_report_daily`](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports) — keyword-level daily metrics.
 - [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
+- [`search_terms_report_daily`](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports) — search-term-level daily metrics for Search Results campaigns.
 
 :::note
 Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
@@ -103,6 +109,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.2.0 | 2026-10-23 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |
