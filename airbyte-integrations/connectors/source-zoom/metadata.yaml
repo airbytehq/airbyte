@@ -1,4 +1,16 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.zoom.us
+      - zoom.us
+  maxSecondsBetweenMessages: 5400
+  suggestedStreams:
+    streams:
+      - users
+      - meetings
+      - meeting_registrants
+      - report_meetings
+      - report_meeting_participants
   ab_internal:
     ql: 200
     sl: 100
