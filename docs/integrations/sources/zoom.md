@@ -124,24 +124,24 @@ The connector reads account users, then each user's meetings and webinars, and t
 | Stream | Endpoint | Primary key |
 | :----- | :------- | :---------- |
 | `users` | [GET /users](https://developers.zoom.us/docs/api/users/#tag/users/GET/users) | `id` |
-| `meetings` | [GET /meetings/{meetingId}](https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/meetings/{meetingId}) | `id` |
-| `meeting_registrants` | [GET /meetings/{meetingId}/registrants](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants) | `id` |
-| `meeting_polls` | [GET /meetings/{meetingId}/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/meetings/{meetingId}/polls) | `id` |
-| `meeting_poll_results` | [GET /past_meetings/{meetingId}/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/past_meetings/{meetingId}/polls) | — |
-| `meeting_registration_questions` | [GET /meetings/{meetingId}/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants/questions) | — |
-| `webinars` | [GET /webinars/{webinarId}](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}) | `id` |
-| `webinar_panelists` | [GET /webinars/{webinarId}/panelists](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/panelists) | — |
-| `webinar_registrants` | [GET /webinars/{webinarId}/registrants](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants) | — |
-| `webinar_absentees` | [GET /past_webinars/{webinarId}/absentees](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/absentees) | `id` |
-| `webinar_polls` | [GET /webinars/{webinarId}/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/polls) | — |
-| `webinar_poll_results` | [GET /past_webinars/{webinarId}/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/polls) | — |
-| `webinar_registration_questions` | [GET /webinars/{webinarId}/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants/questions) | — |
-| `webinar_tracking_sources` | [GET /webinars/{webinarId}/tracking_sources](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/tracking_sources) | `id` |
-| `webinar_qna_results` | [GET /past_webinars/{webinarId}/qa](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/qa) | — |
-| `report_meetings` | [GET /report/meetings/{meetingId}](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}) | `id` |
-| `report_meeting_participants` | [GET /report/meetings/{meetingId}/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}/participants) | `id` |
-| `report_webinars` | [GET /report/webinars/{webinarId}](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}) | — |
-| `report_webinar_participants` | [GET /report/webinars/{webinarId}/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}/participants) | — |
+| `meetings` | [GET /meetings/&#123;meetingId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/meetings/{meetingId}) | `id` |
+| `meeting_registrants` | [GET /meetings/&#123;meetingId&#125;/registrants](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants) | `id` |
+| `meeting_polls` | [GET /meetings/&#123;meetingId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/meetings/{meetingId}/polls) | `id` |
+| `meeting_poll_results` | [GET /past_meetings/&#123;meetingId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/past_meetings/{meetingId}/polls) | — |
+| `meeting_registration_questions` | [GET /meetings/&#123;meetingId&#125;/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants/questions) | — |
+| `webinars` | [GET /webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}) | `id` |
+| `webinar_panelists` | [GET /webinars/&#123;webinarId&#125;/panelists](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/panelists) | — |
+| `webinar_registrants` | [GET /webinars/&#123;webinarId&#125;/registrants](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants) | — |
+| `webinar_absentees` | [GET /past_webinars/&#123;webinarId&#125;/absentees](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/absentees) | `id` |
+| `webinar_polls` | [GET /webinars/&#123;webinarId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/polls) | — |
+| `webinar_poll_results` | [GET /past_webinars/&#123;webinarId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/polls) | — |
+| `webinar_registration_questions` | [GET /webinars/&#123;webinarId&#125;/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants/questions) | — |
+| `webinar_tracking_sources` | [GET /webinars/&#123;webinarId&#125;/tracking_sources](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/tracking_sources) | `id` |
+| `webinar_qna_results` | [GET /past_webinars/&#123;webinarId&#125;/qa](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/qa) | — |
+| `report_meetings` | [GET /report/meetings/&#123;meetingId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}) | `id` |
+| `report_meeting_participants` | [GET /report/meetings/&#123;meetingId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}/participants) | `id` |
+| `report_webinars` | [GET /report/webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/report/webinars/{webinarId}) | — |
+| `report_webinar_participants` | [GET /report/webinars/&#123;webinarId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/report/webinars/{webinarId}/participants) | — |
 
 ## Limitations and troubleshooting
 
