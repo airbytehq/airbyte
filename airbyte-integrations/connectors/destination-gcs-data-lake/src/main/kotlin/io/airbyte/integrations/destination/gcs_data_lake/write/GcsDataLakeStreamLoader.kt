@@ -116,7 +116,8 @@ class GcsDataLakeStreamLoader(
             }
 
         // Reconcile identifier fields after BigLake creates the table.
-        // BigLake reassigns field IDs, so we need to update the schema with the correct field names.
+        // BigLake reassigns field IDs, so we need to update the schema with the correct field
+        // names.
         reconcileIdentifierFields(table, primaryKeyNames)
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
