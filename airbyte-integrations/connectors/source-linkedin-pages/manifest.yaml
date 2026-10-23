@@ -25,6 +25,74 @@ definitions:
       access_token:
         type: BearerAuthenticator
         api_token: "{{ config['credentials']['access_token'] }}"
+  unauthorized_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes: [401]
+    error_message: >-
+      LinkedIn rejected the credentials (401). The access token has expired or
+      was revoked; re-authenticate the source. LinkedIn said:
+      {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+  forbidden_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes: [403]
+    error_message: >-
+      LinkedIn denied the request (403). The token needs the r_organization_social
+      and rw_organization_admin scopes and the user must be an ADMIN of
+      organization {{ config['org_id'] }}. LinkedIn said:
+      {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+  rate_limit_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    http_codes: [429]
+    error_message: "LinkedIn daily API quota reached (429); retrying with backoff. Quotas reset at midnight UTC."
+  server_error_filter:
+    type: HttpResponseFilter
+    action: RETRY
+    http_codes: [500, 502, 503, 504]
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/unauthorized_filter"
+      - $ref: "#/definitions/forbidden_filter"
+      - $ref: "#/definitions/rate_limit_filter"
+      - $ref: "#/definitions/server_error_filter"
+  time_bound_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [400]
+        error_message_contains: Invalid timeIntervals parameter
+        error_message: >-
+          LinkedIn rejected the statistics time window (400). Statistics are
+          only available from 12 months before to 2 days before today (UTC);
+          check the Start Date. LinkedIn said:
+          {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+      - $ref: "#/definitions/unauthorized_filter"
+      - $ref: "#/definitions/forbidden_filter"
+      - $ref: "#/definitions/rate_limit_filter"
+      - $ref: "#/definitions/server_error_filter"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
 check:
   type: CheckStream
   stream_names:
@@ -114,6 +182,10 @@ streams:
                     type:
                       - string
                       - "null"
+                additionalProperties:
+                  type:
+                    - string
+                    - "null"
                 type:
                   - object
                   - "null"
@@ -144,6 +216,10 @@ streams:
           specialties:
             type:
               - array
+              - "null"
+          staffCountRange:
+            type:
+              - string
               - "null"
           vanityName:
             type:
@@ -180,23 +256,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Organization Lookup: LinkedIn API requests
-                    are rate limited.\n" + "Rate limits specify the maximum
-                    number of API calls that can be made in a 24 hour period.\n"
-                    + "These limits reset at midnight UTC every day.\n" + "You
-                    can find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
+          $ref: "#/definitions/base_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -276,23 +336,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Follower Statistics: LinkedIn API requests
-                    are rate limited.\n" + "Rate limits specify the maximum
-                    number of API calls that can be made in a 24 hour period.\n"
-                    + "These limits reset at midnight UTC every day.\n" + "You
-                    can find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
+          $ref: "#/definitions/base_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -386,23 +430,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Share Statistics: LinkedIn API requests are
-                    rate limited.\n" + "Rate limits specify the maximum number
-                    of API calls that can be made in a 24 hour period.\n" +
-                    "These limits reset at midnight UTC every day.\n" + "You can
-                    find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
+          $ref: "#/definitions/base_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -454,23 +482,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Total Follower Count: LinkedIn API requests
-                    are rate limited.\n" + "Rate limits specify the maximum
-                    number of API calls that can be made in a 24 hour period.\n"
-                    + "These limits reset at midnight UTC every day.\n" + "You
-                    can find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
+          $ref: "#/definitions/base_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -578,35 +590,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Follower Statistics: LinkedIn API requests
-                    are rate limited.\n" + "Rate limits specify the maximum
-                    number of API calls that can be made in a 24 hour period.\n"
-                    + "These limits reset at midnight UTC every day.\n" + "You
-                    can find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 400
-                  error_message: >-
-                    {{ "\n\n" }}Stream Follower Statistics Time Bound: Start
-                    Date must be atmost 12 months before the request date (UTC)
-                    and atleast 2 days prior to the request date (UTC). {{ "\n"
-                    }}See https://bit.ly/linkedin-pages-date-rules
-                  error_message_contains: Invalid timeIntervals parameter
+          $ref: "#/definitions/time_bound_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -646,10 +630,8 @@ streams:
       datetime_format: "%ms"
       start_datetime:
         type: MinMaxDatetime
-        datetime:
-          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
-          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
-          }}"
+        datetime: >-
+          {{ max(day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z', config['start_date'][:10] + 'T00:00:00Z') if config.get('start_date') else day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z' }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
@@ -661,7 +643,7 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: share_statistics_time_bound
@@ -753,36 +735,7 @@ streams:
               type: BearerAuthenticator
               api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 429
-                  error_message: >-
-                    {{ "\n\nStream Share Statistics Time Bound: LinkedIn API
-                    requests are rate limited.\n" + "Rate limits specify the
-                    maximum number of API calls that can be made in a 24 hour
-                    period.\n" + "These limits reset at midnight UTC every
-                    day.\n" + "You can find more information here
-                    https://docs.airbyte.com/integrations/sources/linkedin-pages.\n"
-                    + "Also quotas and usage are here:
-                    https://www.linkedin.com/developers/apps.\n" }}
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 400
-                  error_message: >-
-                    {{ "\n\n" }}Stream Share Statistics Time Bound: Start Date
-                    must be atmost 12 months before the request date (UTC) and
-                    atleast 2 days prior to the request date (UTC). {{ "\n"
-                    }}See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails
-                    }}
-                  error_message_contains: Invalid timeIntervals parameter
+          $ref: "#/definitions/time_bound_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -822,10 +775,8 @@ streams:
       datetime_format: "%ms"
       start_datetime:
         type: MinMaxDatetime
-        datetime:
-          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
-          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
-          }}"
+        datetime: >-
+          {{ max(day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z', config['start_date'][:10] + 'T00:00:00Z') if config.get('start_date') else day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z' }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
@@ -837,7 +788,7 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 spec:
   connection_specification:
@@ -845,6 +796,7 @@ spec:
     type: object
     required:
       - org_id
+      - credentials
     properties:
       credentials:
         type: object
@@ -903,20 +855,18 @@ spec:
         title: Organization ID
         examples:
           - "123456789"
-        description: Specify the Organization ID
-        airbyte_secret: true
+        description: The numeric ID of the LinkedIn organization (company page) to sync. Find it in the page admin URL, e.g. linkedin.com/company/123456789/admin.
       start_date:
         type: string
         order: 2
         title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        default: "2023-01-01T00:00:00Z"
         description: >-
-          Start date for getting metrics per time period. Must be atmost 12
-          months before the request date (UTC) and atleast 2 days prior to the
-          request date (UTC). See https://bit.ly/linkedin-pages-date-rules {{ "\n"
-          }} {{ response.errorDetails }}
+          UTC date and time from which to sync time-bound statistics, in the
+          format YYYY-MM-DDT00:00:00Z. LinkedIn only returns statistics from the
+          last 12 months up to 2 days before today; an earlier date is clamped
+          to 12 months ago. Leave blank to sync the full available window.
       time_granularity_type:
         enum:
           - DAY
@@ -928,6 +878,16 @@ spec:
         description: >-
           Granularity of the statistics for metrics per time period. Must be
           either "DAY" or "MONTH"
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 10
+        default: 3
+        order: 4
+        description: >-
+          Number of concurrent requests. LinkedIn enforces a per-application
+          daily quota, so increase this only if you understand your quota.
     additionalProperties: true
   type: Spec
 metadata:
