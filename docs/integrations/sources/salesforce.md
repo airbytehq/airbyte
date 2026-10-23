@@ -23,9 +23,9 @@ You may also need the following. This article explains how to get them.
 
 #### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
 
-Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
+Follow the instructions below to create a user with the Minimum Access - Salesforce standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
-While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
+While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access - Salesforce standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
 
 Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
 
@@ -37,7 +37,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
       1. Leave `role` unspecified
       2. Select `Salesforce` for the User License
-      3. Select `Standard User` for Profile.
+      3. Select `Minimum Access - Salesforce` for Profile.
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
@@ -69,7 +69,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
 :::info
-**Profile vs. Permission Set:** remember that the user's profile provides their baseline permissions. The permission set adds or restricts permissions on top of that.
+**Profile vs. Permission Set:** remember that the user's profile provides their baseline permissions. Permission sets grant additional permissions on top of that baseline. They can't remove permissions that the profile already grants.
 **Object-Level vs. Field-Level Security:** This guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields.
 :::
 
@@ -104,7 +104,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 5. To authenticate:
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. Data updated on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
@@ -124,7 +124,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 5. To authenticate:
    **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. Data updated on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
@@ -143,6 +143,8 @@ The Salesforce source connector supports the following [sync modes](https://docs
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+
+Incremental sync is available for objects that have a `SystemModstamp`, `LastModifiedDate`, `CreatedDate`, or `LoginTime` field. The connector uses the first of these fields it finds, in that order, as the cursor. Objects without any of these fields support full refresh only. The following objects also support full refresh only, even if they have one of these fields: `ActivityFieldHistory`, `ApiEvent`, `BulkApiResultEventStore`, `ContentDocumentLink`, `EmbeddedServiceDetail`, `EmbeddedServiceLabel`, `FormulaFunction`, `FormulaFunctionAllowedType`, `FormulaFunctionCategory`, `IdentityProviderEventStore`, `IdentityVerificationEvent`, `LightningUriEvent`, `ListViewEvent`, `LoginAsEvent`, `LoginEvent`, `LogoutEvent`, `Publisher`, `RecordActionHistory`, `ReportEvent`, `TabDefinition`, and `UriEvent`.
 
 ## Supported Streams
 
@@ -214,6 +216,16 @@ The Salesforce connector is restricted by Salesforce's [Daily Rate Limits](https
 
 The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field.
 
+### Deleted, renamed, or restricted fields
+
+The connector builds each stream's query from the fields in the object's describe response, excluding binary (`base64`) and compound object fields. If Salesforce can't resolve one of those fields when the query runs, because the field was deleted or renamed, or the authenticated user lost field-level read access to it, Salesforce rejects the query with an `INVALID_FIELD` error and the sync fails with a message like:
+
+```text
+Field 'Foo__c' requested by stream 'Account' does not exist in Salesforce or is not visible to the authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.
+```
+
+This is reported as a configuration error because it reflects a change in your Salesforce org rather than a connector fault. To fix it, restore the field or grant the Airbyte user field-level read access to it, then run the sync again. If you want the connection's catalog to reflect the current set of fields, also refresh the source schema. Starting in version 2.9.2, the error names the stream and, when Salesforce's response identifies the column, the field. Earlier versions reported the raw Salesforce response as a system error.
+
 ### Syncing Deletes
 
 The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
@@ -222,33 +234,60 @@ The Salesforce connector supports retrieving deleted records from the Salesforce
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
-- The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
+- The Salesforce object has fields that the BULK API doesn't support: binary fields (`base64` type) or compound fields (`address` and `location` types)
 - The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
   - AcceptedEventRelation
+  - AccountBrandShare
+  - AccountFeed
+  - AggregateResult
+  - AssetFeed
+  - AssetTokenEvent
+  - AttachedContentDocument
+  - AttachedContentNote
   - Attachment
   - CaseStatus
+  - CaseTeamMember
+  - CaseTeamRole
+  - CaseTeamTemplate
+  - CaseTeamTemplateMember
+  - CaseTeamTemplateRecord
+  - ChannelProgramLevelShare
+  - CombinedAttachment
+  - ContentFolderItem
   - ContractStatus
   - DeclinedEventRelation
+  - EventWhoRelation
   - FieldSecurityClassification
+  - FolderedContentDocument
   - KnowledgeArticle
   - KnowledgeArticleVersion
   - KnowledgeArticleVersionHistory
   - KnowledgeArticleViewStat
   - KnowledgeArticleVoteStat
+  - LookedUpFromActivity
+  - Name
+  - NoteAndAttachment
+  - OpenActivity
   - OrderStatus
+  - OwnedContentDocument
   - PartnerRole
+  - QuoteTemplateRichTextData
   - RecentlyViewed
   - ServiceAppointmentStatus
   - ShiftStatus
   - SolutionStatus
   - TaskPriority
   - TaskStatus
+  - TaskWhoRelation
   - UndecidedEventRelation
+  - UserRecordAccess
+  - WorkOrderLineItemStatus
+  - WorkOrderStatus
 
 More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
 :::info Force Using Bulk API
-If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
+If you enable **Force to use BULK API**, the connector excludes binary and compound fields from objects that have them and syncs those objects with the BULK API instead of the REST API. Objects in the list above still sync with the REST API.
 :::
 
 ### Session expiry on long-running Bulk API syncs
@@ -259,9 +298,17 @@ If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is
 
 ### Session expiry during REST pagination
 
-Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. Prior to connector version 2.10.3, these REST streams authenticated with the access token captured when the stream was created, so they could neither refresh it nor pick up a token refreshed by another stream. When that session ended mid-sync, for example after the proactive refresh described above with Refresh Token Rotation enabled, the REST stream kept retrying with the dead token until the sync failed with `Exhausted available request attempts ... Salesforce session expired or invalid`.
+Objects that can't use the Bulk API, such as objects with compound `address` fields, sync through the REST `queryAll` endpoint, which returns large results in pages linked by a `nextRecordsUrl`. Before version 2.10.3, these REST streams kept the access token from the start of the sync and couldn't refresh it. If that session ended mid-sync, the stream retried the next page with the dead token until the sync failed with `Exhausted available request attempts` and `Salesforce session expired or invalid`. This was most common with [Refresh Token Rotation](#refresh-token-rotation-rtr) enabled, because each mid-sync token refresh ends the previous session.
 
-Starting in version 2.10.3, REST streams read the access token that is current at each request and retry, so they pick up a refresh made by any stream. They don't trigger the 30-minute refresh themselves: if their session ends, the `INVALID_SESSION_ID` response forces a token refresh before the retry. Salesforce keeps query results available to the same user across sessions, so the retried `nextRecordsUrl` continues where the stream stopped. If Salesforce rejects the refresh, the sync fails right away with a configuration error asking you to re-authenticate, instead of exhausting its retries.
+Starting in version 2.10.3, REST streams use the current access token on every request and retry, so they pick up a refresh made by any stream. If a REST request gets an `INVALID_SESSION_ID` response, the connector refreshes the token and retries the same page. Salesforce ties query results to the user rather than the session, so the retried `nextRecordsUrl` continues where the stream stopped. If Salesforce rejects the refresh, the sync fails immediately with an error asking you to re-authenticate.
+
+### Syncs that stop producing output after a token refresh
+
+Before version 2.10.2, the connector sent its OAuth token and object describe requests without a timeout. If Salesforce accepted the connection but never responded, the sync stopped producing output without logging an error, typically right after a `Refreshing Salesforce OAuth token` log message. Every stream waits on the token refresh, so one stalled request froze the whole sync until it was cancelled.
+
+Starting in version 2.10.2, these requests time out if the connection takes longer than 30 seconds to establish or if no data arrives for 120 seconds. The connector retries timed-out requests. If a mid-sync token refresh still fails, the connector keeps using the current access token and tries the refresh again about 5 minutes later.
+
+If your syncs stall after a token refresh log message, verify that the connector is running version 2.10.2 or later.
 
 ### Refresh Token Rotation (RTR)
 
@@ -296,7 +343,7 @@ Salesforce does not guarantee that recently created or updated records are immed
 - The same source synced to a different destination at a later time does not have missing records
 - No errors appear in sync logs
 
-**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
+**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). If you use the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode, re-reading overlapping data doesn't create duplicates in the destination. With Incremental Sync - Append, re-read records are appended again.
 
 The lookback window uses the ISO 8601 duration format. The format is `PT<number><unit>`, where `P` marks the start of the duration and `T` separates date from time components. Common examples:
 
@@ -331,8 +378,8 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
 | 2.10.1 | 2026-10-20 | [89399](https://github.com/airbytehq/airbyte/pull/89399) | Update dependencies |
-| 2.10.0 | 2026-10-15 | [89008](https://github.com/airbytehq/airbyte/pull/89008) | Upgrade to Python 3.13 and base image 4.1.1 |
-| 2.9.3 | 2026-10-07 | [88170](https://github.com/airbytehq/airbyte/pull/88170) | Surface the underlying request error and retry, instead of failing with an `AttributeError`, when a Salesforce request raises a non-HTTP error such as an invalid URL |
+| 2.10.0 | 2026-10-16 | [89008](https://github.com/airbytehq/airbyte/pull/89008) | Upgrade to Python 3.13 and base image 4.1.1 |
+| 2.9.3 | 2026-10-08 | [88170](https://github.com/airbytehq/airbyte/pull/88170) | Surface the underlying request error and retry, instead of failing with an `AttributeError`, when a Salesforce request raises a non-HTTP error such as an invalid URL |
 | 2.9.2 | 2026-09-10 | [85166](https://github.com/airbytehq/airbyte/pull/85166) | Report a Salesforce field that no longer exists or is not accessible to the authenticated user as a configuration error naming the stream and field, instead of a system error containing the raw Salesforce response |
 | 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
 | 2.9.0 | 2026-08-25 | [82722](https://github.com/airbytehq/airbyte/pull/82722) | Add an optional end date for bounded incremental syncs |
@@ -351,10 +398,10 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full refresh syncs |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
+| 2.7.16-rc.1 | 2025-10-28 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
 | 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
-| 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
+| 2.7.13 | 2025-10-16 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
 | 2.7.12 | 2025-09-15 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
