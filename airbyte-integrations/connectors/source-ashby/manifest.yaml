@@ -38,6 +38,17 @@ definitions:
       error_message: >-
         Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
         lack access; generate a new key in Ashby under Admin > API Keys.
+    sync_token_rejected:
+      type: HttpResponseFilter
+      action: RESET_SYNC_TOKEN
+      predicate: >-
+        {{ response.get('success', true) == false and
+        ((response.get('errorInfo') or {}).get('code') in ['sync_token_expired', 'sync_token_invalid']
+        or 'sync_token_expired' in (response.get('errors') or [])
+        or 'sync_token_invalid' in (response.get('errors') or [])) }}
+      error_message: >-
+        Ashby rejected the stored sync token
+        ({{ (response.get('errorInfo') or {}).get('code') or (response.get('errors') or ['sync_token_expired'])[0] }})
     success_false:
       type: HttpResponseFilter
       action: FAIL
@@ -81,6 +92,22 @@ definitions:
       - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/missing_endpoint_permission"
       - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/success_false"
+  candidates_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/response_filters/rate_limited"
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/sync_token_rejected"
       - $ref: "#/definitions/response_filters/success_false"
   streams:
     interview_plans:
@@ -762,6 +789,15 @@ streams:
     name: candidates
     primary_key:
       - id
+    incremental_sync:
+      type: SyncTokenCursor
+      token_path: ["syncToken"]
+      cursor_field: updatedAt
+      token_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: syncToken
+      completion_condition: "{{ response.moreDataAvailable == false }}"
     retriever:
       type: SimpleRetriever
       requester:
@@ -774,7 +810,7 @@ streams:
         path: /candidate.list
         http_method: POST
         error_handler:
-          $ref: "#/definitions/error_handler"
+          $ref: "#/definitions/candidates_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
