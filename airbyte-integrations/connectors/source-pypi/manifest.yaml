@@ -763,11 +763,21 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 8
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 2
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [502, 503, 504]
+              action: RETRY
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path: [info]
     schema_loader:
       type: InlineSchemaLoader
       schema:
