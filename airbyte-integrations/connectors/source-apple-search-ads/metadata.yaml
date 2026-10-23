@@ -30,6 +30,7 @@ data:
       2.0.0:
         message: "Date and timestamp fields are now typed (`date` as date; `creationTime`, `modificationTime`, `startTime`, `endTime` as timestamp with timezone) on all streams, and the four daily report streams now declare a primary key of (<entity>Id, date, countryorregion). Refresh the affected streams (Refresh → Clear data) so destinations re-create the tables with the new types and keys."
         upgradeDeadline: "2026-12-22"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
