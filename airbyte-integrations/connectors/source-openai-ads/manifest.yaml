@@ -645,6 +645,11 @@ definitions:
       schema:
         $ref: '#/schemas/campaign_insights_by_product'
 
+  # 0.1.x kept one cursor per entity. The grouped conversions streams keep one cursor per stream.
+  conversions_state_migration:
+    type: CustomStateMigration
+    class_name: source_declarative_manifest.components.PerEntityToGlobalCursorStateMigration
+
   conversions_requester:
     $ref: '#/definitions/requester'
     path: /conversions/insights
@@ -658,13 +663,15 @@ definitions:
       attribution_time_basis: ad_event_time
       attribution_window_days: 30
       view_through_attribution_window_days: 1
-      entity_ids: '{{ [ stream_slice["entity_id"] ] }}'
+      entity_ids: '{{ stream_slice["entity_id"] }}'
       time_ranges: >-
         {{ [ '{"type":"date_range","since":"' ~ stream_slice["start_time"] ~ '","until":"' ~ stream_slice["end_time"] ~ '"}' ] }}
 
   campaign_conversions_stream:
     type: DeclarativeStream
     name: campaign_conversions
+    state_migrations:
+      - $ref: '#/definitions/conversions_state_migration'
     primary_key:
       - entity_id
       - date
@@ -677,13 +684,16 @@ definitions:
       record_selector:
         $ref: '#/definitions/record_selector'
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: '#/definitions/campaigns_stream'
-            parent_key: id
-            partition_field: entity_id
+        type: GroupingPartitionRouter
+        group_size: 100
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: '#/definitions/campaigns_stream'
+              parent_key: id
+              partition_field: entity_id
     incremental_sync:
       $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
       cursor_field: date
@@ -695,6 +705,8 @@ definitions:
   ad_group_conversions_stream:
     type: DeclarativeStream
     name: ad_group_conversions
+    state_migrations:
+      - $ref: '#/definitions/conversions_state_migration'
     primary_key:
       - entity_id
       - date
@@ -707,13 +719,16 @@ definitions:
       record_selector:
         $ref: '#/definitions/record_selector'
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: '#/definitions/ad_groups_stream'
-            parent_key: id
-            partition_field: entity_id
+        type: GroupingPartitionRouter
+        group_size: 100
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: '#/definitions/ad_groups_stream'
+              parent_key: id
+              partition_field: entity_id
     incremental_sync:
       $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
       cursor_field: date
@@ -725,6 +740,8 @@ definitions:
   ad_conversions_stream:
     type: DeclarativeStream
     name: ad_conversions
+    state_migrations:
+      - $ref: '#/definitions/conversions_state_migration'
     primary_key:
       - entity_id
       - date
@@ -737,13 +754,16 @@ definitions:
       record_selector:
         $ref: '#/definitions/record_selector'
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: '#/definitions/ads_stream'
-            parent_key: id
-            partition_field: entity_id
+        type: GroupingPartitionRouter
+        group_size: 100
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: '#/definitions/ads_stream'
+              parent_key: id
+              partition_field: entity_id
     incremental_sync:
       $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
       cursor_field: date
@@ -815,7 +835,7 @@ spec:
         type: integer
         title: Lookback Window
         description: How far into the past to look for records (in days) on every sync, so conversions attributed after the ad interaction are picked up. The connector requests conversions with a 30-day click window, and OpenAI needs at least one day to process conversions, so keep this at 32 or higher when you sync conversions streams. Used only for insights streams in incremental sync mode.
-        minimum: 0
+        minimum: 1
         maximum: 90
         default: 32
         order: 3
@@ -824,10 +844,32 @@ spec:
         type: integer
         title: Number of concurrent workers
         description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases.
-        minimum: 1
+        minimum: 2
         maximum: 20
         default: 3
         order: 4
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Raise lookback_window to 1 and num_workers to 2, the minimums since 1.0.0. Version 0.1.x accepted 0 and 1.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - lookback_window
+                value: '{{ 1 }}'
+                value_type: integer
+            condition: '{{ config.get("lookback_window") is not none and config["lookback_window"] < 1 }}'
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - num_workers
+                value: '{{ 2 }}'
+                value_type: integer
+            condition: '{{ config.get("num_workers") is not none and config["num_workers"] < 2 }}'
 
 metadata:
   autoImportSchema:
@@ -1444,10 +1486,12 @@ schemas:
         type:
           - string
           - 'null'
+        format: date
       end_date:
         type:
           - string
           - 'null'
+        format: date
       amount_micros:
         type:
           - integer
