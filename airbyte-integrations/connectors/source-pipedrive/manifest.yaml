@@ -950,6 +950,9 @@ definitions:
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
+              - $ref: "#/definitions/error_filters/not_found"
               - $ref: "#/definitions/error_filters/html_error_page"
               # A JSON 403 skips this whole batch of up to 100 deals, as the per-deal route skipped one deal before 4.1.0.
               - type: HttpResponseFilter
@@ -1158,6 +1161,8 @@ definitions:
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
               - $ref: "#/definitions/error_filters/html_error_page"
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1193,14 +1198,22 @@ definitions:
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
-                http_codes: [402, 404, 415]
+                http_codes: [402, 415]
                 error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping projects."
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/gone"
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
               - $ref: "#/definitions/error_filters/html_error_page"
+              # After the HTML guard: Pipedrive's plan responses are JSON, while an HTML 404 is an API v2 route
+              # Pipedrive no longer serves and must not empty the stream silently.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes: [404]
+                error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping projects."
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [403]
@@ -1241,14 +1254,22 @@ definitions:
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
-                http_codes: [402, 404, 415]
+                http_codes: [402, 415]
                 error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping tasks."
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/gone"
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
               - $ref: "#/definitions/error_filters/html_error_page"
+              # After the HTML guard: Pipedrive's plan responses are JSON, while an HTML 404 is an API v2 route
+              # Pipedrive no longer serves and must not empty the stream silently.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes: [404]
+                error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping tasks."
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [403]
@@ -1291,6 +1312,9 @@ definitions:
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
+              - $ref: "#/definitions/error_filters/not_found"
               - $ref: "#/definitions/error_filters/html_error_page"
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1419,6 +1443,8 @@ definitions:
               - $ref: "#/definitions/error_filters/not_implemented"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/server_error_retry"
+              - $ref: "#/definitions/error_filters/gateway_error_retry"
+              - $ref: "#/definitions/error_filters/client_error"
               - $ref: "#/definitions/error_filters/html_error_page"
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1548,33 +1574,65 @@ definitions:
         the window reported by the x-ratelimit-reset header and retries. Burst limits are 20-120 requests
         per 2 seconds per token depending on plan. If every request is rejected, the daily API token budget
         is exhausted and resets at midnight (Pipedrive server time): reduce sync frequency or upgrade the plan.
-    # Restates the CDK default so HTML 503 maintenance and gateway pages retry rather than fail.
+    # The CDK default retries these too, but on the per-stream handlers they must match before html_error_page,
+    # or an HTML maintenance or gateway page fails instead of being retried. No message, so the CDK mapping keeps
+    # its text for these statuses.
     server_error_retry:
       type: HttpResponseFilter
       http_codes: [408, 500, 502, 503, 504]
       action: RETRY
-    # Cloudflare HTML 403s use the base forbidden message; status filters must precede this because
-    # the predicate cannot see status and HttpResponseFilter matches status OR predicate.
+    # The other standard 5xx and Cloudflare's 520-527 and 530, for the same reason. The CDK mapping has no text for
+    # them, so the message keeps Pipedrive's body in the final error once the retries run out.
+    gateway_error_retry:
+      type: HttpResponseFilter
+      http_codes: [505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526, 527, 530]
+      action: RETRY
+      error_message: >-
+        Pipedrive or its Cloudflare edge answered with a server or gateway error on every retry
+        ({{ (((response if response is mapping else {}).get('error') or 'server error') ~ '')[:300] }}). Retry the sync later.
+    # No message or failure type, so the CDK default classification applies (FAIL, system_error). Listed before
+    # html_error_page so an HTML 400 or 405 keeps it.
+    client_error:
+      type: HttpResponseFilter
+      http_codes: [400, 405]
+      action: FAIL
+    # The same, for requesters that do not skip a 404: API v2 answers a route it does not know with an HTML 404 page.
+    not_found:
+      type: HttpResponseFilter
+      http_codes: [404]
+      action: FAIL
+    # Every status filter must come first: the predicate cannot see the status, and HttpResponseFilter matches
+    # status OR predicate. Pipedrive answers with HTML for Cloudflare's 403 block after repeated rate-limit
+    # violations and for an API v2 route it does not know (404); a missing record answers with JSON.
     html_error_page:
-      $ref: "#/definitions/error_filters/forbidden"
-      http_codes: []
+      type: HttpResponseFilter
       predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Pipedrive answered with an HTML page instead of JSON. Pipedrive's Cloudflare protection sends one (403)
+        after repeated rate-limit violations: reduce the sync frequency and retry later. If this keeps happening,
+        Pipedrive may no longer serve an endpoint this stream reads; report it to Airbyte with the stream name.
   substream_missing_parent_error_handler:
     $ref: "#/definitions/base_error_handler"
     response_filters:
-      - type: HttpResponseFilter
-        http_codes: [404, 410]
-        action: IGNORE
-        error_message: >-
-          Pipedrive no longer has the parent record for this request ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }});
-          it was deleted or merged after the parent stream was read. Skipping its child records and continuing.
       - $ref: "#/definitions/error_filters/unauthorized"
       - $ref: "#/definitions/error_filters/payment_required"
       - $ref: "#/definitions/error_filters/feature_not_enabled"
       - $ref: "#/definitions/error_filters/not_implemented"
       - $ref: "#/definitions/error_filters/rate_limited"
       - $ref: "#/definitions/error_filters/server_error_retry"
+      - $ref: "#/definitions/error_filters/gateway_error_retry"
+      - $ref: "#/definitions/error_filters/client_error"
       - $ref: "#/definitions/error_filters/html_error_page"
+      # After the HTML guard: a deleted or merged parent answers with JSON, while an HTML 404 is a route
+      # Pipedrive no longer serves and must not empty the stream silently.
+      - type: HttpResponseFilter
+        http_codes: [404, 410]
+        action: IGNORE
+        error_message: >-
+          Pipedrive no longer has the parent record for this request ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }});
+          it was deleted or merged after the parent stream was read. Skipping its child records and continuing.
       - type: HttpResponseFilter
         http_codes: [403]
         action: IGNORE
