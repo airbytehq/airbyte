@@ -43,7 +43,7 @@ class PartitionedDeltaWriter(
         io,
         targetFileSize,
         schema,
-        identifierFieldIds
+        identifierFieldIds,
     ) {
 
     private val partitionKey = PartitionKey(spec, schema)

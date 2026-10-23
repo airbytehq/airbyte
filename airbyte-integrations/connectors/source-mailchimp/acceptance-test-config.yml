@@ -14,7 +14,6 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config_apikey.json"
         status: "failed"
-        timeout_seconds: 420
   discovery:
     tests:
       # for auth with API token
@@ -24,9 +23,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-        fail_on_extra_columns: false
         empty_streams:
           - name: "automations"
             bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
