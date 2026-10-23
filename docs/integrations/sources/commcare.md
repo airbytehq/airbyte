@@ -33,6 +33,10 @@ The Commcare source connector supports the following streams:
 - Case
 - Form
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,7 @@ The Commcare source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.40 | 2026-06-02 | [78626](https://github.com/airbytehq/airbyte/pull/78626) | Update dependencies |
 | 0.1.39 | 2025-05-24 | [60382](https://github.com/airbytehq/airbyte/pull/60382) | Update dependencies |
 | 0.1.38 | 2025-05-10 | [60011](https://github.com/airbytehq/airbyte/pull/60011) | Update dependencies |
 | 0.1.37 | 2025-05-03 | [59396](https://github.com/airbytehq/airbyte/pull/59396) | Update dependencies |

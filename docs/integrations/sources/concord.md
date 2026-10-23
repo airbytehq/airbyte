@@ -12,7 +12,7 @@ The API is accessible from two environments, sandbox and production. You can lea
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `environment` | `string` | enviornment. The environment from where you want to access the API https://api.doc.concordnow.com/#section/Environments. |  |
+| `env` | `string` | Environment. The environment from where you want to access the API (`api` for production, `uat` for sandbox) https://api.doc.concordnow.com/#section/Environments. |  |
 
 
 ## Streams
@@ -24,6 +24,11 @@ The API is accessible from two environments, sandbox and production. You can lea
 | folders | id | No pagination | ✅ |  ❌  |
 | reports | id | DefaultPaginator | ✅ |  ❌  |
 | tags | id | No pagination | ✅ |  ❌  |
+| organization_members | user_id | DefaultPaginator | ✅ |  ❌  |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -32,6 +37,25 @@ The API is accessible from two environments, sandbox and production. You can lea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-10-20 | [89168](https://github.com/airbytehq/airbyte/pull/89168) | Update dependencies |
+| 0.0.58 | 2026-10-13 | [88575](https://github.com/airbytehq/airbyte/pull/88575) | Update dependencies |
+| 0.0.57 | 2026-10-07 | [88318](https://github.com/airbytehq/airbyte/pull/88318) | Use `user_organizations` as the check stream and pass the required `organizationId` to the `tags` endpoint |
+| 0.0.56 | 2026-10-06 | [87820](https://github.com/airbytehq/airbyte/pull/87820) | Update dependencies |
+| 0.0.55 | 2026-09-29 | [87121](https://github.com/airbytehq/airbyte/pull/87121) | Update dependencies |
+| 0.0.54 | 2026-09-22 | [86567](https://github.com/airbytehq/airbyte/pull/86567) | Update dependencies |
+| 0.0.53 | 2026-09-15 | [85983](https://github.com/airbytehq/airbyte/pull/85983) | Update dependencies |
+| 0.0.52 | 2026-09-08 | [85451](https://github.com/airbytehq/airbyte/pull/85451) | Update dependencies |
+| 0.0.51 | 2026-08-18 | [84543](https://github.com/airbytehq/airbyte/pull/84543) | Update dependencies |
+| 0.0.50 | 2026-08-11 | [83892](https://github.com/airbytehq/airbyte/pull/83892) | Update dependencies |
+| 0.0.49 | 2026-08-04 | [83395](https://github.com/airbytehq/airbyte/pull/83395) | Update dependencies |
+| 0.0.48 | 2026-07-28 | [82884](https://github.com/airbytehq/airbyte/pull/82884) | Update dependencies |
+| 0.0.47 | 2026-07-21 | [82380](https://github.com/airbytehq/airbyte/pull/82380) | Update dependencies |
+| 0.0.46 | 2026-07-14 | [81783](https://github.com/airbytehq/airbyte/pull/81783) | Update dependencies |
+| 0.0.45 | 2026-06-30 | [81017](https://github.com/airbytehq/airbyte/pull/81017) | Update dependencies |
+| 0.0.44 | 2026-06-23 | [80431](https://github.com/airbytehq/airbyte/pull/80431) | Update dependencies |
+| 0.0.43 | 2026-06-16 | [79804](https://github.com/airbytehq/airbyte/pull/79804) | Update dependencies |
+| 0.0.42 | 2026-06-09 | [79265](https://github.com/airbytehq/airbyte/pull/79265) | Update dependencies |
+| 0.0.41 | 2026-06-02 | [78654](https://github.com/airbytehq/airbyte/pull/78654) | Update dependencies |
 | 0.0.40 | 2026-04-28 | [77203](https://github.com/airbytehq/airbyte/pull/77203) | Update dependencies |
 | 0.0.39 | 2026-04-21 | [76549](https://github.com/airbytehq/airbyte/pull/76549) | Update dependencies |
 | 0.0.38 | 2026-03-03 | [74153](https://github.com/airbytehq/airbyte/pull/74153) | Update dependencies |

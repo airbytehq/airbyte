@@ -132,6 +132,10 @@ Asana's organization export endpoints are only available to Enterprise organizat
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Asana REST API](https://developers.asana.com/reference/rest-api-reference). All API requests use the `https://app.asana.com/api/1.0` endpoint.

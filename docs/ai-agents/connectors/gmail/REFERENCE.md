@@ -8,12 +8,12 @@ The Gmail connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profile | [Get](#profile-get), [Context Store Search](#profile-context-store-search) |
-| Messages | [List](#messages-list), [Get](#messages-get), [Create](#messages-create), [Update](#messages-update), [Context Store Search](#messages-context-store-search) |
-| Labels | [List](#labels-list), [Create](#labels-create), [Get](#labels-get), [Update](#labels-update), [Delete](#labels-delete), [Context Store Search](#labels-context-store-search) |
-| Drafts | [List](#drafts-list), [Create](#drafts-create), [Get](#drafts-get), [Update](#drafts-update), [Delete](#drafts-delete), [Context Store Search](#drafts-context-store-search) |
+| Profile | [Get](#profile-get), [Context Store Search](#profile-context-store-search), [Context Store SQL Query](#profile-context-store-sql-query) |
+| Messages | [List](#messages-list), [Get](#messages-get), [Create](#messages-create), [Update](#messages-update), [Context Store Search](#messages-context-store-search), [Context Store SQL Query](#messages-context-store-sql-query) |
+| Labels | [List](#labels-list), [Create](#labels-create), [Get](#labels-get), [Update](#labels-update), [Delete](#labels-delete), [Context Store Search](#labels-context-store-search), [Context Store SQL Query](#labels-context-store-sql-query) |
+| Drafts | [List](#drafts-list), [Create](#drafts-create), [Get](#drafts-get), [Update](#drafts-update), [Delete](#drafts-delete), [Context Store Search](#drafts-context-store-search), [Context Store SQL Query](#drafts-context-store-sql-query) |
 | Drafts Send | [Create](#drafts-send-create) |
-| Threads | [List](#threads-list), [Get](#threads-get), [Context Store Search](#threads-context-store-search) |
+| Threads | [List](#threads-list), [Get](#threads-get), [Context Store Search](#threads-context-store-search), [Context Store SQL Query](#threads-context-store-sql-query) |
 | Messages Trash | [Create](#messages-trash-create) |
 | Messages Untrash | [Create](#messages-untrash-create) |
 
@@ -22,6 +22,17 @@ The Gmail connector supports the following entities and actions.
 ### Profile Get
 
 Gets the current user's Gmail profile including email address and mailbox statistics
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "profile",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
@@ -62,6 +73,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter profile records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "profile",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "emailAddress": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -89,7 +120,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -122,11 +153,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Profile Context Store SQL Query
+
+Run a SQL query against profile records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "profile",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.profile.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profile",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Messages
 
 ### Messages List
 
 Lists the messages in the user's mailbox. Returns message IDs and thread IDs.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -181,6 +286,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Get
 
 Gets the full email message content including headers, body, and attachments metadata
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "get",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -243,6 +362,21 @@ first, including headers such as To and Subject plus a blank line before the
 body, then base64url-encode that message before calling this operation.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "raw": "<str>",
+    "threadId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -303,6 +437,22 @@ Modifies the labels on a message. Use this to archive (remove INBOX label),
 mark as read (remove UNREAD label), mark as unread (add UNREAD label),
 star (add STARRED label), or apply custom labels.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "update",
+  "params": {
+    "addLabelIds": [],
+    "removeLabelIds": [],
+    "messageId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -365,6 +515,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -392,7 +562,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -433,11 +603,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Messages Context Store SQL Query
+
+Run a SQL query against messages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Labels
 
 ### Labels List
 
 Lists all labels in the user's mailbox including system and user-created labels
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -483,6 +727,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Labels Create
 
 Creates a new label in the user's mailbox
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "messageListVisibility": "<str>",
+    "labelListVisibility": "<str>",
+    "color": {}
+  }
+}'
+```
 
 #### Python SDK
 
@@ -551,6 +812,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a specific label by ID including message and thread counts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "get",
+  "params": {
+    "labelId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -606,6 +881,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Labels Update
 
 Updates the specified label
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "name": "<str>",
+    "messageListVisibility": "<str>",
+    "labelListVisibility": "<str>",
+    "color": {},
+    "labelId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -680,6 +974,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Deletes the specified label and removes it from any messages and threads
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "delete",
+  "params": {
+    "labelId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -715,6 +1023,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -742,7 +1070,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -777,11 +1105,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Labels Context Store SQL Query
+
+Run a SQL query against labels records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Drafts
 
 ### Drafts List
 
 Lists the drafts in the user's mailbox
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -835,6 +1237,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Drafts Create
 
 Creates a new draft with the specified message content
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "create",
+  "params": {
+    "message": {
+      "raw": "<str>"
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -890,6 +1308,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets the specified draft including its message content
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "get",
+  "params": {
+    "draftId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -938,6 +1370,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Drafts Update
 
 Replaces a draft's content with the specified message content
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "update",
+  "params": {
+    "message": {
+      "raw": "<str>"
+    },
+    "draftId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -996,6 +1445,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Immediately and permanently deletes the specified draft (does not move to trash)
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "delete",
+  "params": {
+    "draftId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1031,6 +1494,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter drafts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1058,7 +1541,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1087,11 +1570,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Drafts Context Store SQL Query
+
+Run a SQL query against drafts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Drafts Send
 
 ### Drafts Send Create
 
 Sends the specified existing draft to its recipients
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts_send",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1150,6 +1710,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists the threads in the user's mailbox
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1204,6 +1775,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Threads Get
 
 Gets the specified thread including all messages in the conversation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "get",
+  "params": {
+    "threadId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1266,6 +1851,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1293,7 +1898,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1324,11 +1929,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Threads Context Store SQL Query
+
+Run a SQL query against threads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.threads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Messages Trash
 
 ### Messages Trash Create
 
 Moves the specified message to the trash
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages_trash",
+  "action": "create",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1386,6 +2068,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Untrash Create
 
 Removes the specified message from the trash
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages_untrash",
+  "action": "create",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

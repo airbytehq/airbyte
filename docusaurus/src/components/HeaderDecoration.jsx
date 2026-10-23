@@ -193,7 +193,7 @@ const boolStringToBool = (boolString) => {
   return null;
 };
 
- const getSupportLevelDisplay=(rawSupportLevel) => {
+const getSupportLevelDisplay = (rawSupportLevel) => {
   switch (rawSupportLevel) {
     case "certified":
       return "Airbyte";
@@ -206,7 +206,7 @@ const boolStringToBool = (boolString) => {
     default:
       return null;
   }
-}
+};
 
 // COMPONENTS
 
@@ -218,9 +218,13 @@ const MetricIcon = ({ iconComponent, level }) => {
 
   if (!Object.keys(iconComponent).includes(level.toLowerCase())) return null;
 
+  const displayLabel =
+    level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+
   return (
     <div className={styles.metricIcon} title={level}>
       {iconComponent[level?.toLowerCase()]}
+      <span className={styles.metricLabel}>{displayLabel}</span>
     </div>
   );
 };
@@ -248,8 +252,10 @@ const ConnectorMetadataCallout = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
+  isAgent,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -278,17 +284,22 @@ const ConnectorMetadataCallout = ({
           >
             <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
           </Chip>
-          <Chip
-            className={
-              isEnterprise || isOss ? styles.available : styles.unavailable
-            }
-          >
-            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed
-            Enterprise
-          </Chip>
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> PyAirbyte
           </Chip>
+        </div>
+      </MetadataStat>
+      <MetadataStat label="Connector type (beta)">
+        <div className={styles.availability}>
+          <Chip className={styles.available}>
+            <EnabledIcon isEnabled /> Data replication
+          </Chip>
+          <Chip className={isAgent ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isAgent} /> Agent
+          </Chip>
+          <a href="/platform/move-data/sources-destinations-connectors#connector-capabilities">
+            (learn more)
+          </a>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
@@ -326,6 +337,18 @@ const ConnectorMetadataCallout = ({
       {usageRate && (
         <MetadataStat label="Usage Rate">
           <MetricIcon iconComponent={USAGE_ICON} level={usageRate} />
+        </MetadataStat>
+      )}
+      {defaultDataWorkers && (
+        <MetadataStat label="Data workers used">
+          <span title="Applies to Airbyte Cloud plans on capacity-based pricing. Actual usage can vary if your organization has custom resource overrides.">
+            {defaultDataWorkers} per sync
+          </span>
+          {" ("}
+          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#data-worker-consumption-by-source-type">
+            Learn more
+          </a>
+          {")"}
         </MetadataStat>
       )}
       {isEnterprise && (
@@ -384,14 +407,17 @@ export const HeaderDecoration = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
+  isAgent: isAgentString,
   "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
+  const isAgent = boolStringToBool(isAgentString) === true;
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
 
   return (
@@ -419,8 +445,10 @@ export const HeaderDecoration = ({
         isLatestCDK={isLatestCDK}
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
+        defaultDataWorkers={defaultDataWorkers}
         lastUpdated={lastUpdated}
         definitionId={definitionId}
+        isAgent={isAgent}
       />
     </>
   );

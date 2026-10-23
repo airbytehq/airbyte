@@ -96,7 +96,7 @@ class GcsDataLakeCatalogUtil(
         config: GcsDataLakeConfiguration,
         catalogConfig: BigLakeCatalogConfiguration,
         gcsProperties: Map<String, String>,
-        accessToken: String
+        accessToken: String,
     ): Map<String, String> {
         val bigLakeProperties =
             mapOfNotNull(
@@ -113,7 +113,7 @@ class GcsDataLakeCatalogUtil(
 
     private fun buildPolarisProperties(
         catalogConfig: PolarisCatalogConfiguration,
-        gcsProperties: Map<String, String>
+        gcsProperties: Map<String, String>,
     ): Map<String, String> {
         val credential = "${catalogConfig.clientId}:${catalogConfig.clientSecret}"
         val polarisProperties =

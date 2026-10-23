@@ -8,18 +8,29 @@ The Linear connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](#issues-list), [Get](#issues-get), [Create](#issues-create), [Update](#issues-update), [Context Store Search](#issues-context-store-search) |
-| Projects | [List](#projects-list), [Get](#projects-get), [Create](#projects-create), [Update](#projects-update), [Context Store Search](#projects-context-store-search) |
-| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
-| Workflow States | [List](#workflow-states-list), [Context Store Search](#workflow-states-context-store-search) |
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
-| Comments | [List](#comments-list), [Get](#comments-get), [Create](#comments-create), [Update](#comments-update), [Context Store Search](#comments-context-store-search) |
+| Issues | [List](#issues-list), [Get](#issues-get), [Create](#issues-create), [Update](#issues-update), [Context Store Search](#issues-context-store-search), [Context Store SQL Query](#issues-context-store-sql-query), [Semantic Search](#issues-semantic-search) |
+| Projects | [List](#projects-list), [Get](#projects-get), [Create](#projects-create), [Update](#projects-update), [Context Store Search](#projects-context-store-search), [Context Store SQL Query](#projects-context-store-sql-query) |
+| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search), [Context Store SQL Query](#teams-context-store-sql-query) |
+| Workflow States | [List](#workflow-states-list), [Context Store Search](#workflow-states-context-store-search), [Context Store SQL Query](#workflow-states-context-store-sql-query) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Comments | [List](#comments-list), [Get](#comments-get), [Create](#comments-create), [Update](#comments-update), [Context Store Search](#comments-context-store-search), [Context Store SQL Query](#comments-context-store-sql-query), [Semantic Search](#comments-semantic-search) |
 
 ## Issues
 
 ### Issues List
 
 Returns a paginated list of issues via GraphQL with pagination support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -80,6 +91,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single issue by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -135,6 +160,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Create
 
 Create a new issue via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "create",
+  "params": {
+    "teamId": "<str>",
+    "title": "<str>",
+    "description": "<str>",
+    "stateId": "<str>",
+    "priority": 0,
+    "projectId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -211,6 +255,26 @@ To assign a user, provide assigneeId with the user's ID (get user IDs from the u
 Omit assigneeId to leave the current assignee unchanged.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "title": "<str>",
+    "description": "<str>",
+    "stateId": "<str>",
+    "priority": 0,
+    "assigneeId": "<str>",
+    "projectId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -286,6 +350,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "addedToCycleAt": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -313,7 +397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -444,11 +528,177 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Issues Context Store SQL Query
+
+Run a SQL query against issues records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.issues.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Issues Semantic Search
+
+Search issues records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `issues.context_store_search` helper only accepts `query`.
+
+```python
+await linear.execute(
+    "issues",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 |  |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `creatorName`, `assigneeName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.url` | `string` | Source record field |
+| `data[].entity.identifier` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.creatorId` | `string` | Source record field |
+| `data[].entity.assigneeId` | `string` | Source record field |
+| `data[].entity.createdAt` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.creatorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.assigneeName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Projects
 
 ### Projects List
 
 Returns a paginated list of projects via GraphQL with pagination support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -508,6 +758,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -562,6 +826,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Create
 
 Create a new project via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "teamIds": [],
+    "description": "<str>",
+    "state": "<str>",
+    "startDate": "<str>",
+    "targetDate": "<str>",
+    "leadId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -640,6 +924,26 @@ Update an existing project via GraphQL mutation. All fields except id are option
 Use this to rename projects, change descriptions, update dates, or change the project state.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "name": "<str>",
+    "description": "<str>",
+    "state": "<str>",
+    "startDate": "<str>",
+    "targetDate": "<str>",
+    "leadId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -715,6 +1019,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "canceledAt": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -742,7 +1066,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -847,11 +1171,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Projects Context Store SQL Query
+
+Run a SQL query against projects records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.projects.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Teams
 
 ### Teams List
 
 Returns a list of teams via GraphQL with pagination support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -909,6 +1307,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single team by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -962,6 +1374,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "activeCycle": {}
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -989,7 +1421,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1021,17 +1453,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `groupIssueHistory` | `boolean` |  |
 | `icon` | `string` |  |
 | `id` | `string` |  |
-| `inviteHash` | `string` |  |
 | `issueCount` | `number` |  |
 | `issueEstimationAllowZero` | `boolean` |  |
 | `issueEstimationExtended` | `boolean` |  |
 | `issueEstimationType` | `string` |  |
 | `key` | `string` |  |
-| `markedAsDuplicateWorkflowState` | `object` |  |
-| `markedAsDuplicateWorkflowStateId` | `string` |  |
 | `name` | `string` |  |
 | `parentTeamId` | `string` |  |
-| `private` | `boolean` |  |
 | `requirePriorityToLeaveTriage` | `boolean` |  |
 | `scimManaged` | `boolean` |  |
 | `setIssueSortOrderOnStateChange` | `string` |  |
@@ -1040,6 +1468,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `triageIssueStateId` | `string` |  |
 | `upcomingCycleCount` | `number` |  |
 | `updatedAt` | `string` |  |
+| `visibility` | `string` |  |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1072,17 +1501,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].groupIssueHistory` | `boolean` |  |
 | `data[].icon` | `string` |  |
 | `data[].id` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].issueCount` | `number` |  |
 | `data[].issueEstimationAllowZero` | `boolean` |  |
 | `data[].issueEstimationExtended` | `boolean` |  |
 | `data[].issueEstimationType` | `string` |  |
 | `data[].key` | `string` |  |
-| `data[].markedAsDuplicateWorkflowState` | `object` |  |
-| `data[].markedAsDuplicateWorkflowStateId` | `string` |  |
 | `data[].name` | `string` |  |
 | `data[].parentTeamId` | `string` |  |
-| `data[].private` | `boolean` |  |
 | `data[].requirePriorityToLeaveTriage` | `boolean` |  |
 | `data[].scimManaged` | `boolean` |  |
 | `data[].setIssueSortOrderOnStateChange` | `string` |  |
@@ -1091,6 +1516,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].triageIssueStateId` | `string` |  |
 | `data[].upcomingCycleCount` | `number` |  |
 | `data[].updatedAt` | `string` |  |
+| `data[].visibility` | `string` |  |
+
+</details>
+
+### Teams Context Store SQL Query
+
+Run a SQL query against teams records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.teams.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1099,6 +1588,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Workflow States List
 
 Returns workflow states for a team via GraphQL, including name and UUID for status transitions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "workflow_states",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1157,6 +1657,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter workflow states records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "workflow_states",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1184,7 +1704,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1231,11 +1751,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Workflow States Context Store SQL Query
+
+Run a SQL query against workflow states records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "workflow_states",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.workflow_states.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "workflow_states",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Users
 
 ### Users List
 
 Returns a paginated list of users in the organization via GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1294,6 +1888,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1348,6 +1956,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1375,7 +2003,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1397,7 +2025,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `guest` | `boolean` |  |
 | `id` | `string` |  |
 | `initials` | `string` |  |
-| `inviteHash` | `string` |  |
 | `isMe` | `boolean` |  |
 | `lastSeen` | `string` |  |
 | `name` | `string` |  |
@@ -1428,7 +2055,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].guest` | `boolean` |  |
 | `data[].id` | `string` |  |
 | `data[].initials` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].isMe` | `boolean` |  |
 | `data[].lastSeen` | `string` |  |
 | `data[].name` | `string` |  |
@@ -1440,11 +2066,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Comments
 
 ### Comments List
 
 Returns a paginated list of comments for an issue via GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "issueId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1507,6 +2210,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single comment by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1558,6 +2275,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Create
 
 Create a new comment on an issue via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "create",
+  "params": {
+    "issueId": "<str>",
+    "body": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1616,6 +2348,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing comment via GraphQL mutation
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "body": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1673,6 +2420,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "body": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1700,7 +2467,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1752,6 +2519,158 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].url` | `string` |  |
 | `data[].user` | `object` |  |
 | `data[].userId` | `string` |  |
+
+</details>
+
+### Comments Context Store SQL Query
+
+Run a SQL query against comments records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linear.comments.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Comments Semantic Search
+
+Search comments records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `comments.context_store_search` helper only accepts `query`.
+
+```python
+await linear.execute(
+    "comments",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 |  |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `authorName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.url` | `string` | Source record field |
+| `data[].entity.issueId` | `string` | Source record field |
+| `data[].entity.userId` | `string` | Source record field |
+| `data[].entity.createdAt` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.authorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

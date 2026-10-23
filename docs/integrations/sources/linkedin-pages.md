@@ -104,15 +104,21 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    * Click **Request access token** and once generated, **save your Refresh token**
 
 6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 2 and 5 to autorize the LinkedIn Pages connector within the Airbyte UI.
-   * As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
+   - As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                              |
-|:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
+| 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
 | 1.1.24 | 2025-05-10 | [59786](https://github.com/airbytehq/airbyte/pull/59786) | Update dependencies |
 | 1.1.23 | 2025-05-03 | [58801](https://github.com/airbytehq/airbyte/pull/58801) | Update dependencies |

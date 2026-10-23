@@ -241,6 +241,21 @@ class TestMigrateSecretsPathInConnector:
         migration_instance = MigrateSecretsPathInConnector()
         assert not migration_instance._should_migrate(new_config)
 
+    def test_does_not_overwrite_existing_credentials_access_token(self):
+        config = {
+            "account_ids": ["01234567890"],
+            "access_token": "stale_top_level_token",
+            "credentials": {
+                "auth_type": "Client",
+                "client_id": "id",
+                "client_secret": "secret",
+                "access_token": "valid_oauth_token",
+            },
+        }
+        migrated = MigrateSecretsPathInConnector._transform(config)
+        assert migrated["credentials"]["access_token"] == "valid_oauth_token"
+        assert migrated["access_token"] == "stale_top_level_token"
+
 
 class TestRemoveActionReportTimeMigration:
     OLD_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_old_config.json")

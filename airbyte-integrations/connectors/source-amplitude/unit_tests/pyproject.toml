@@ -4,12 +4,14 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "source-amplitude-tests"
 version = "0.0.0"
-description = "Unit tests for source-intercom"
+description = "Unit tests for source-amplitude"
 authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = "^7.32.0"
 pytest = "^8"
+freezegun = "^1.4.0"
+requests-mock = "^1.12.1"
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"

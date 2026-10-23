@@ -142,6 +142,10 @@ This source will generate an dataset with products (skinny), customers (fat) and
 
 None!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -149,6 +153,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.47 | 2026-10-20 | [89548](https://github.com/airbytehq/airbyte/pull/89548) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
 | 0.0.46 | 2025-10-21 | [68285](https://github.com/airbytehq/airbyte/pull/68285) | Update dependencies |
 | 0.0.45 | 2025-10-14 | [67921](https://github.com/airbytehq/airbyte/pull/67921) | Update dependencies |
 | 0.0.44 | 2025-10-07 | [67413](https://github.com/airbytehq/airbyte/pull/67413) | Update dependencies |

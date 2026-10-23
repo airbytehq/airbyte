@@ -65,6 +65,10 @@ The Insightly source connector supports the following streams, some of them may 
 
 The connector is restricted by Insightly [requests limitation](https://api.na1.insightly.com/v3.1/#!/Overview/Introduction).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -74,7 +78,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.3.26 | 2025-10-14 | [67374](https://github.com/airbytehq/airbyte/pull/67374) | Update dependencies |
 | 0.3.25 | 2025-09-30 | [61132](https://github.com/airbytehq/airbyte/pull/61132) | Update dependencies |
-| 0.3.24 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.3.24 | 2025-09-12 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7 |
 | 0.3.23 | 2025-05-24 | [60654](https://github.com/airbytehq/airbyte/pull/60654) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [58762](https://github.com/airbytehq/airbyte/pull/58762) | Update dependencies |
 | 0.3.21 | 2025-04-19 | [58172](https://github.com/airbytehq/airbyte/pull/58172) | Update dependencies |

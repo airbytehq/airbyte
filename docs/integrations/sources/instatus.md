@@ -60,6 +60,10 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 | SSL connection    | Yes                  |
 | Namespaces        | No                   |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -67,6 +71,8 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.17 | 2026-10-20 | [78787](https://github.com/airbytehq/airbyte/pull/78787) | Update dependencies |
+| 0.2.16 | 2026-10-14 | [88959](https://github.com/airbytehq/airbyte/pull/88959) | Update to source-declarative-manifest 7.37.0 and CDK v7 for unit tests |
 | 0.2.15 | 2025-05-24 | [60617](https://github.com/airbytehq/airbyte/pull/60617) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59859](https://github.com/airbytehq/airbyte/pull/59859) | Update dependencies |
 | 0.2.13 | 2025-05-03 | [59233](https://github.com/airbytehq/airbyte/pull/59233) | Update dependencies |

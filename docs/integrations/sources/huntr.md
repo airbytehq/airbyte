@@ -18,14 +18,21 @@ A connector for the Huntr application
 | actions | id | DefaultPaginator | ✅ |  ❌  |
 | candidates | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.1.0 | 2025-01-29 | Add new streams |
-| 0.0.1 | 2025-01-15 | Initial release by [@krokrob](https://github.com/krokrob) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.3 | 2026-10-20 | [89252](https://github.com/airbytehq/airbyte/pull/89252) | Update dependencies |
+| 0.1.2 | 2026-10-13 | [88653](https://github.com/airbytehq/airbyte/pull/88653) | Update dependencies |
+| 0.1.1 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88309) | Update base image to `source-declarative-manifest:7.33.0` so the connector image builds again |
+| 0.1.0 | 2025-01-29 | | Add new streams |
+| 0.0.1 | 2025-01-15 | | Initial release by [@krokrob](https://github.com/krokrob) via Connector Builder|
 
 </details>

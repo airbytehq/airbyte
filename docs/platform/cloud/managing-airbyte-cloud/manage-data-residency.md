@@ -1,5 +1,5 @@
 ---
-products: cloud, oss-enterprise
+products: cloud, oss-community
 ---
 
 # Set data residency
@@ -30,7 +30,7 @@ flowchart LR
 
 - **Cloud**: If you're a cloud customer, you can choose from Airbyte's managed regions. If you're an [Enterprise Flex](../../enterprise-flex/) customer, you can also choose one of your own self-managed regions.
 
-- **Self-Managed**: If you're a [Self-Managed Enterprise](../../enterprise-setup/) customer, you can choose one of your own self-managed regions.
+- **Self-Managed**: If you're an Airbyte Core user, you can choose one of your own self-managed regions.
 
 ### Connector Builder data residency
 
@@ -55,3 +55,24 @@ When you assign a region to a workspace, all connections in that workspace run i
 3. Under **Region**, select the region you want that workspace to use.
 
 4. Click **Save changes**.
+
+## Assign a region with the API or Terraform
+
+The [Airbyte API](https://reference.airbyte.com/reference/createworkspace) and the [Terraform provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/workspace) accept a `regionId` (`region_id` in Terraform) when you create or update a workspace. Cloud's managed regions use the following IDs.
+
+| Region     | `regionId`                             |
+| ---------- | -------------------------------------- |
+| US         | `645a183f-b12b-4c6e-8ad3-99e165603450` |
+| US-Central | `153996d3-208e-4887-b8b1-e5fe48104450` |
+| EU         | `b9e48d61-f082-4a14-a8d0-799a907938cb` |
+
+For example, in Terraform:
+
+```hcl
+resource "airbyte_workspace" "my_workspace" {
+  name      = "My workspace"
+  region_id = "b9e48d61-f082-4a14-a8d0-799a907938cb" # EU
+}
+```
+
+These IDs are the same for every Cloud organization and are not secrets (they’re the same identifiers used by the Cloud UI region selector). The API's `/regions` endpoints only list self-managed regions, so they don't return the managed region IDs above.

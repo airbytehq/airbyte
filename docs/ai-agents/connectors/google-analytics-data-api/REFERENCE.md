@@ -8,20 +8,34 @@ The Google-Analytics-Data-Api connector supports the following entities and acti
 
 | Entity | Actions |
 |--------|---------|
-| Website Overview | [List](#website-overview-list), [Context Store Search](#website-overview-context-store-search) |
-| Daily Active Users | [List](#daily-active-users-list), [Context Store Search](#daily-active-users-context-store-search) |
-| Weekly Active Users | [List](#weekly-active-users-list), [Context Store Search](#weekly-active-users-context-store-search) |
-| Four Weekly Active Users | [List](#four-weekly-active-users-list), [Context Store Search](#four-weekly-active-users-context-store-search) |
-| Traffic Sources | [List](#traffic-sources-list), [Context Store Search](#traffic-sources-context-store-search) |
-| Pages | [List](#pages-list), [Context Store Search](#pages-context-store-search) |
-| Devices | [List](#devices-list), [Context Store Search](#devices-context-store-search) |
-| Locations | [List](#locations-list), [Context Store Search](#locations-context-store-search) |
+| Website Overview | [List](#website-overview-list), [Context Store Search](#website-overview-context-store-search), [Context Store SQL Query](#website-overview-context-store-sql-query) |
+| Daily Active Users | [List](#daily-active-users-list), [Context Store Search](#daily-active-users-context-store-search), [Context Store SQL Query](#daily-active-users-context-store-sql-query) |
+| Weekly Active Users | [List](#weekly-active-users-list), [Context Store Search](#weekly-active-users-context-store-search), [Context Store SQL Query](#weekly-active-users-context-store-sql-query) |
+| Four Weekly Active Users | [List](#four-weekly-active-users-list), [Context Store Search](#four-weekly-active-users-context-store-search), [Context Store SQL Query](#four-weekly-active-users-context-store-sql-query) |
+| Traffic Sources | [List](#traffic-sources-list), [Context Store Search](#traffic-sources-context-store-search), [Context Store SQL Query](#traffic-sources-context-store-sql-query) |
+| Pages | [List](#pages-list), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query) |
+| Devices | [List](#devices-list), [Context Store Search](#devices-context-store-search), [Context Store SQL Query](#devices-context-store-sql-query) |
+| Locations | [List](#locations-list), [Context Store Search](#locations-context-store-search), [Context Store SQL Query](#locations-context-store-sql-query) |
 
 ## Website Overview
 
 ### Website Overview List
 
 Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -51,16 +65,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -89,6 +103,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter website overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -116,7 +150,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -165,11 +199,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Website Overview Context Store SQL Query
+
+Run a SQL query against website overview records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.website_overview.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "website_overview",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Daily Active Users
 
 ### Daily Active Users List
 
 Returns daily active user counts (1-day active users) by date.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -199,16 +310,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -237,6 +348,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter daily active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active1DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -264,7 +395,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -299,11 +430,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Daily Active Users Context Store SQL Query
+
+Run a SQL query against daily active users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.daily_active_users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "daily_active_users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Weekly Active Users
 
 ### Weekly Active Users List
 
 Returns weekly active user counts (7-day active users) by date.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -333,16 +541,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -371,6 +579,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active7DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -398,7 +626,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -433,11 +661,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Weekly Active Users Context Store SQL Query
+
+Run a SQL query against weekly active users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.weekly_active_users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "weekly_active_users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Four Weekly Active Users
 
 ### Four Weekly Active Users List
 
 Returns 28-day active user counts by date.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -467,16 +772,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -505,6 +810,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter four weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active28DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -532,7 +857,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -567,11 +892,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Four Weekly Active Users Context Store SQL Query
+
+Run a SQL query against four weekly active users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.four_weekly_active_users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "four_weekly_active_users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Traffic Sources
 
 ### Traffic Sources List
 
 Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -601,16 +1003,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -639,6 +1041,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter traffic sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -666,7 +1088,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -719,11 +1141,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Traffic Sources Context Store SQL Query
+
+Run a SQL query against traffic sources records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.traffic_sources.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "traffic_sources",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Pages
 
 ### Pages List
 
 Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -753,16 +1252,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -791,6 +1290,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "bounceRate": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -818,7 +1337,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -859,11 +1378,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Pages Context Store SQL Query
+
+Run a SQL query against pages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.pages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Devices
 
 ### Devices List
 
 Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -893,16 +1489,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -931,6 +1527,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter devices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -958,7 +1574,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1013,11 +1629,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Devices Context Store SQL Query
+
+Run a SQL query against devices records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.devices.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "devices",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Locations
 
 ### Locations List
 
 Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1047,16 +1740,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -1085,6 +1778,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1112,7 +1825,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1164,6 +1877,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].sessionsPerUser` | `number` | Average number of sessions per user |
 | `data[].startDate` | `string` | Start date of the reporting period |
 | `data[].totalUsers` | `integer` | Total number of unique users |
+
+</details>
+
+### Locations Context Store SQL Query
+
+Run a SQL query against locations records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_analytics_data_api.locations.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "locations",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

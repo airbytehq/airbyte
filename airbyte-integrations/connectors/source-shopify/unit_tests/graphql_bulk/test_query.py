@@ -3,16 +3,41 @@
 #
 
 
+import json
+from pathlib import Path
+
 import pytest
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCustomer,
     MetafieldProductImage,
+    Product,
+    ProductImage,
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
 )
 from source_shopify.streams.streams import Customers, Products
+
+
+def test_product_query_includes_category(auth_config) -> None:
+    query = Product(auth_config).get(
+        filter_field="updated_at",
+        start="2026-01-01T00:00:00+00:00",
+        end="2026-01-02T00:00:00+00:00",
+    )
+
+    assert (
+        "category { id name level full_name: fullName is_leaf: isLeaf is_root: isRoot "
+        "is_archived: isArchived parent_id: parentId ancestor_ids: ancestorIds }"
+    ) in " ".join(query.split())
+
+
+def test_products_schema_includes_nullable_category() -> None:
+    schema_path = Path(__file__).resolve().parents[2] / "source_shopify" / "schemas" / "products.json"
+    schema = json.loads(schema_path.read_text())
+
+    assert schema["properties"]["category"]["type"] == ["null", "object"]
 
 
 def test_query_status() -> None:
@@ -42,6 +67,7 @@ def test_bulk_query_prepare() -> None:
                     query: """
                     {some_query}
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -59,6 +85,12 @@ def test_bulk_query_prepare() -> None:
     input_query_from_slice = "{some_query}"
     template = ShopifyBulkTemplates.prepare(input_query_from_slice)
     assert repr(template) == repr(expected)
+
+
+def test_bulk_query_prepare_preserves_grouped_jsonl_output() -> None:
+    template = ShopifyBulkTemplates.prepare("{ codeDiscountNodes { edges { node { id } } } }")
+
+    assert "groupObjects: true" in template
 
 
 def test_bulk_query_cancel() -> None:
@@ -381,3 +413,16 @@ def test_bulk_query(auth_config, query_class, filter_field, start, end, parent_s
         stream_query = query_class(auth_config)
 
     assert stream_query.get(filter_field, start, end) == expected.render()
+
+
+def test_product_image_query_does_not_grow_across_slices(auth_config) -> None:
+    parent_stream = Products(auth_config)
+    parent_stream_cursor_alias = f"{parent_stream.name}_{parent_stream.cursor_field}"
+    class_nodes = list(ProductImage.nodes)
+    stream_query = ProductImage(auth_config, parent_stream_cursor_alias)
+
+    for _ in range(2):
+        query = stream_query.get("updated_at", "2023-01-01", "2023-01-02")
+
+    assert query.count(parent_stream_cursor_alias) == 1
+    assert ProductImage.nodes == class_nodes

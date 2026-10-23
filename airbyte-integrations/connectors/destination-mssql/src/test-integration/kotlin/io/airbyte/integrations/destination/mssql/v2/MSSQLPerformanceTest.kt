@@ -18,12 +18,11 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MSSQLDataValidator(
     private val getConfiguration:
-        (spec: ConfigurationSpecification, stream: DestinationStream) -> MSSQLConfiguration
+        (spec: ConfigurationSpecification, stream: DestinationStream) -> MSSQLConfiguration,
 ) : DataValidator {
     override fun count(spec: ConfigurationSpecification, stream: DestinationStream): Long? {
         val config = getConfiguration(spec as MSSQLSpecification, stream)
@@ -32,7 +31,7 @@ class MSSQLDataValidator(
 
         return dataSource.connection.use { connection ->
             COUNT_FROM.toQuery(sqlBuilder.outputSchema, sqlBuilder.tableName).executeQuery(
-                connection
+                connection,
             ) { rs ->
                 while (rs.next()) {
                     return@executeQuery rs.getLong(1)
@@ -104,11 +103,9 @@ class MSSQLStandardInsertPerformanceTest :
     }
 }
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
 class MSSQLBulkInsertPerformanceTest :
     MSSQLPerformanceTest(
-        configContents = Files.readString(Path.of("secrets/bulk_upload_config.json")),
+        configContents = Files.readString(Path.of("secrets/azure_bulk_config.json")),
         configUpdater = FakeConfigurationUpdater,
         getConfiguration = { spec, _ ->
             MSSQLConfigurationFactory().makeWithOverrides(spec as MSSQLSpecification, emptyMap())

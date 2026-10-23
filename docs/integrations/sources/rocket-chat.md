@@ -16,7 +16,7 @@ This source can sync data from the [Rocket.chat API](https://developer.rocket.ch
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
-| :--_ | :--_ | :--\* |
+| :--- | :--- | :--- |
 | Full Refresh Sync | Yes | |
 | Incremental Sync | No | |
 
@@ -34,6 +34,10 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 - user_id
 - endpoint
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -41,6 +45,7 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.26 | 2026-10-07 | [88258](https://github.com/airbytehq/airbyte/pull/88258) | Fix pagination: request 100 records per page instead of 1 for `teams`, `channels` and `users`; update base image |
 | 0.2.25 | 2025-05-10 | [60126](https://github.com/airbytehq/airbyte/pull/60126) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59590](https://github.com/airbytehq/airbyte/pull/59590) | Update dependencies |
 | 0.2.23 | 2025-04-27 | [59030](https://github.com/airbytehq/airbyte/pull/59030) | Update dependencies |

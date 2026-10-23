@@ -25,9 +25,9 @@ class MySqlSourceSelectQuerier(
         parameters: SelectQuerier.Parameters,
     ): SelectQuerier.Result {
         val mySqlParameters: SelectQuerier.Parameters =
-        // MySQL requires this fetchSize setting on JDBC Statements to enable adaptive fetching.
-        // The ResultSet fetchSize value is what's used as an actual hint by the JDBC driver.
-        parameters.copy(statementFetchSize = Int.MIN_VALUE)
+            // MySQL requires this fetchSize setting on JDBC Statements to enable adaptive fetching.
+            // The ResultSet fetchSize value is what's used as an actual hint by the JDBC driver.
+            parameters.copy(statementFetchSize = Int.MIN_VALUE)
         return wrapped.executeQuery(q, mySqlParameters)
     }
 }

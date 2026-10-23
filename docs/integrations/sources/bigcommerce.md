@@ -51,6 +51,10 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 4. The generated `Access Token` is what you'll use as the `access_token` for the integration.
 5. You're ready to set up BigCommerce in Airbyte!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

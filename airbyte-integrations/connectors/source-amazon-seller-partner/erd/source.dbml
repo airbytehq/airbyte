@@ -1054,10 +1054,42 @@ Table "GET_VENDOR_TRAFFIC_REPORT" {
     "queryEndDate" string
 }
 
+Table "FbaInboundShipments" {
+    "ShipmentId" string [pk]
+    "ShipmentName" string
+    "DestinationFulfillmentCenterId" string
+    "ShipmentStatus" string
+    "LabelPrepType" string
+    "AreCasesRequired" boolean
+    "ConfirmedNeedByDate" string
+    "ShipFromAddress" object
+    "BoxContentsSource" string
+    "EstimatedBoxContentsFee" object
+}
+
+Table "FbaInboundShipmentItems" {
+    "ShipmentId" string
+    "SellerSKU" string
+    "FulfillmentNetworkSKU" string
+    "QuantityShipped" integer
+    "QuantityReceived" integer
+    "QuantityInCase" integer
+    "ReleaseDate" string
+    "PrepDetailsList" array
+
+    indexes {
+        (ShipmentId, SellerSKU) [pk]
+    }
+}
+
 Ref {
     "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"."shipment-id" <> "VendorOrders"."purchaseOrderNumber"
 }
 
 Ref {
     "OrderItems"."AmazonOrderId" <> "Orders"."AmazonOrderId"
+}
+
+Ref {
+    "FbaInboundShipmentItems"."ShipmentId" <> "FbaInboundShipments"."ShipmentId"
 }
