@@ -153,6 +153,45 @@ definitions:
             type:
               - string
               - "null"
+          on_demand_usage:
+            type:
+              - number
+              - "null"
+            description: "On-demand (overage) spend in USD for this session, excluding child sessions. Populated only for Teams plans; 0 when fully covered by quota."
+          devin_mode:
+            type:
+              - string
+              - "null"
+          origin:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          subcategory:
+            type:
+              - string
+              - "null"
+          automation_id:
+            type:
+              - string
+              - "null"
+          security_profile:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              selection:
+                type:
+                  - string
+                  - "null"
+              profile_id:
+                type:
+                  - string
+                  - "null"
           structured_output:
             type:
               - object
@@ -267,6 +306,45 @@ definitions:
             type:
               - string
               - "null"
+          on_demand_usage:
+            type:
+              - number
+              - "null"
+            description: "On-demand (overage) spend in USD for this session, excluding child sessions. Populated only for Teams plans; 0 when fully covered by quota."
+          devin_mode:
+            type:
+              - string
+              - "null"
+          origin:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          subcategory:
+            type:
+              - string
+              - "null"
+          automation_id:
+            type:
+              - string
+              - "null"
+          security_profile:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              selection:
+                type:
+                  - string
+                  - "null"
+              profile_id:
+                type:
+                  - string
+                  - "null"
           structured_output:
             type:
               - object
@@ -280,6 +358,10 @@ definitions:
               - integer
               - "null"
           session_size:
+            type:
+              - string
+              - "null"
+          analysis_status:
             type:
               - string
               - "null"

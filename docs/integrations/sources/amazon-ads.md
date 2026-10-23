@@ -76,6 +76,10 @@ The Amazon Ads source connector supports only **seller** and **vendor** profile 
 Both **view** and **edit** access levels are supported. Accounts with view-only permissions (common for Vendor Central accounts) will retrieve profiles and sync data normally.
 :::
 
+:::important
+Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent, and using or refreshing the token does not extend that date. Tokens issued before July 30, 2026 do not expire unless access is revoked. When a refresh token expires, syncs fail with a configuration error asking you to re-authenticate. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -140,8 +144,8 @@ Each report stream is available in two variants:
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::warning
-Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (for example, `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
+:::note
+Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
 :::
 
 ### Sponsored Brands report types
@@ -228,6 +232,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
+| 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
+| 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
+| 9.2.8 | 2026-10-13 | [88523](https://github.com/airbytehq/airbyte/pull/88523) | Update dependencies |
 | 9.2.7 | 2026-10-06 | [87668](https://github.com/airbytehq/airbyte/pull/87668) | Skip profiles that return HTTP 401 Unauthorized on attribution report streams instead of failing the sync |
 | 9.2.6 | 2026-10-06 | [87739](https://github.com/airbytehq/airbyte/pull/87739) | Update dependencies |
 | 9.2.5 | 2026-09-29 | [87079](https://github.com/airbytehq/airbyte/pull/87079) | Update dependencies |

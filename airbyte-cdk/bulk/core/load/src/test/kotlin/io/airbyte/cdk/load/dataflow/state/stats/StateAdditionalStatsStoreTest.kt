@@ -23,19 +23,19 @@ internal class StateAdditionalStatsStoreTest {
             partitionKey = partitionKey1,
             streamDescriptor = stream,
             metric = metric,
-            value = 1.0
+            value = 1.0,
         )
         store.add(
             partitionKey = partitionKey2,
             streamDescriptor = stream,
             metric = metric,
-            value = 1.0
+            value = 1.0,
         )
         store.add(
             partitionKey = partitionKey1,
             streamDescriptor = stream,
             metric = StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT,
-            value = 5.0
+            value = 5.0,
         )
 
         val stats = store.drain(listOf(partitionKey1, partitionKey2))
@@ -46,8 +46,8 @@ internal class StateAdditionalStatsStoreTest {
             stats
                 .getValue(stream)
                 .get(
-                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName
-                )
+                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName,
+                ),
         )
     }
 
@@ -62,7 +62,7 @@ internal class StateAdditionalStatsStoreTest {
             partitionKey = partitionKey,
             streamDescriptor = stream,
             metric = metric,
-            value = 1.0
+            value = 1.0,
         )
 
         val stats = store.drain(listOf(partitionKey))
@@ -73,8 +73,8 @@ internal class StateAdditionalStatsStoreTest {
             stats
                 .getValue(stream)
                 .get(
-                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName
-                )
+                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName,
+                ),
         )
     }
 
