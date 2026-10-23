@@ -763,6 +763,12 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
       record_selector:
         type: RecordSelector
         extractor:
@@ -1146,6 +1152,12 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
       record_selector:
         type: RecordSelector
         extractor:
@@ -1438,6 +1450,12 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
       record_selector:
         type: RecordSelector
         extractor:
