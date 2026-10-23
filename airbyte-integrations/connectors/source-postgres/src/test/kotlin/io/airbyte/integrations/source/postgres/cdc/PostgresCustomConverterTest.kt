@@ -9,7 +9,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import java.math.BigDecimal
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.apache.kafka.connect.data.SchemaBuilder
 import org.junit.jupiter.api.Test
 import org.postgresql.util.PGInterval
@@ -38,6 +40,51 @@ class PostgresCustomConverterTest {
     }
 
     @Test
+    fun `preserves precision of large numeric values`() {
+        val converter = converterFor(typeName = "numeric")
+
+        assertEquals(
+            "12345678901234567890123456789012345",
+            converter.convert(BigDecimal("12345678901234567890123456789012345")),
+        )
+        assertEquals("9007199254740993", converter.convert(BigDecimal("9007199254740993")))
+        assertEquals(
+            "99999999999999999999",
+            converter.convert(BigDecimal("99999999999999999999")),
+        )
+    }
+
+    @Test
+    fun `preserves fractional numeric precision`() {
+        val converter = converterFor(typeName = "numeric")
+
+        assertEquals(
+            "1234567890.123456789",
+            converter.convert(BigDecimal("1234567890.1234567890")),
+        )
+    }
+
+    @Test
+    fun `strips trailing zeros from numeric values`() {
+        val converter = converterFor(typeName = "numeric")
+
+        assertEquals("123", converter.convert(BigDecimal("123.000")))
+        assertEquals("0", converter.convert(BigDecimal("0.00")))
+    }
+
+    @Test
+    fun `returns null for a null numeric value without a default`() {
+        val converter =
+            converterFor(
+                typeName = "numeric",
+                defaultValue = null,
+                hasDefaultValue = false,
+            )
+
+        assertNull(converter.convert(null))
+    }
+
+    @Test
     fun `microsecondsToPgInterval decomposes microseconds into days hours minutes seconds`() {
         val result = PostgresCustomConverter().microsecondsToPgInterval(90_061_000_000L)
 
@@ -51,11 +98,15 @@ class PostgresCustomConverterTest {
         assertEquals(PGInterval(0, 0, -1, -1, -1, -1.0), result)
     }
 
-    private fun converterFor(defaultValue: Long): CustomConverter.Converter {
+    private fun converterFor(
+        defaultValue: Any? = 0L,
+        typeName: String = "interval",
+        hasDefaultValue: Boolean = true,
+    ): CustomConverter.Converter {
         val field = mockk<RelationalColumn>()
-        every { field.typeName() } returns "interval"
+        every { field.typeName() } returns typeName
         every { field.isOptional() } returns false
-        every { field.hasDefaultValue() } returns true
+        every { field.hasDefaultValue() } returns hasDefaultValue
         every { field.defaultValue() } returns defaultValue
 
         val registration = mockk<CustomConverter.ConverterRegistration<SchemaBuilder?>>()

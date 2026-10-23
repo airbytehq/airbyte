@@ -23,6 +23,7 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFacto
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -158,6 +159,16 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
             record.changes[AMOUNT],
             "a failed mapping must be flagged in _airbyte_meta.changes",
         )
+    }
+
+    @Test
+    fun `a converted numeric string is emitted as an exact JSON number`() {
+        val expected = BigDecimal("12345678901234567890123456789012345")
+        val amount =
+            assertNotNull(deserialize("""{"id": 1, "amount": "$expected"}""").data["amount"])
+
+        assertEquals(expected, amount.fieldValue)
+        assertEquals(expected, amount.encode().decimalValue())
     }
 
     @Test
