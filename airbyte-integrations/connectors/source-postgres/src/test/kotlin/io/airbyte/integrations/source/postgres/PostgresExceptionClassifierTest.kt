@@ -205,6 +205,45 @@ class PostgresExceptionClassifierTest {
         )
     }
 
+    @Test
+    fun testDatabaseSystemShuttingDown() {
+        val exception =
+            RuntimeException(
+                "org.postgresql.util.PSQLException: FATAL: the database system is shutting down",
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        val displayMessage: String = (result as TransientError).displayMessage
+        Assertions.assertTrue(
+            displayMessage.contains("database system was shutting down"),
+            "Unexpected display message: $displayMessage",
+        )
+    }
+
+    @Test
+    fun testDatabaseSystemShuttingDownCaseInsensitive() {
+        val exception =
+            RuntimeException(
+                "org.postgresql.util.PSQLException: FATAL: The Database System Is Shutting Down",
+            )
+        Assertions.assertInstanceOf(TransientError::class.java, classifier.classify(exception))
+    }
+
+    @Test
+    fun testRecoveryInProgressStillClassifiedSeparately() {
+        // The recovery-in-progress rule precedes the shutting-down rule and is also classified
+        // as transient, but with a different message. Verify it still matches its own rule.
+        val exception =
+            RuntimeException("org.postgresql.util.PSQLException: ERROR: recovery is in progress")
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        val displayMessage: String = (result as TransientError).displayMessage
+        Assertions.assertTrue(
+            displayMessage.contains("recovery mode"),
+            "Expected recovery-in-progress message but got: $displayMessage",
+        )
+    }
+
     private fun assertUnreachableHostConfigError(result: ConnectorError?) {
         Assertions.assertInstanceOf(ConfigError::class.java, result)
         val displayMessage: String = (result as ConfigError).displayMessage
