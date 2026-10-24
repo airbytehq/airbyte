@@ -241,7 +241,7 @@ internal class SnowflakeInsertBufferFlushConcurrencyTest {
                         Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234),
                         Meta.COLUMN_NAME_AB_META to StringValue("{}"),
                         Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
-                    )
+                    ),
                 )
             }
 }

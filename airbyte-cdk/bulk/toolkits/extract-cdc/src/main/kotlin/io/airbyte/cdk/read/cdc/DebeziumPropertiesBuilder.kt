@@ -58,12 +58,14 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // A null value in a column with default value won't be generated correctly in CDC
         // unless we set the following.
         with("value.converter.replace.null.with.default", "false")
-        // Timeout for DebeziumEngine's close() method.
+        // Timeouts for DebeziumEngine's close() method.
         // We find that in production, substantial time is in fact legitimately required here.
-        with(
-            "debezium.embedded.shutdown.pause.before.interrupt.ms",
-            5.minutes.inWholeMilliseconds.toString()
-        )
+        // How long records already handed to the consumer get to finish before the consumer thread
+        // is interrupted.
+        with("record.processing.shutdown.timeout.ms", 5.minutes.inWholeMilliseconds.toString())
+        // How long the source task gets to commit offsets and stop. Debezium also uses it as the
+        // task startup timeout, which includes replaying the schema history.
+        with("internal.task.management.timeout.ms", 5.minutes.inWholeMilliseconds.toString())
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
     }
@@ -127,8 +129,9 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
                 with("column.include.list", "$^")
             }
         }
-        val tableIncludeList: List<String> =
-            streams.map { Pattern.quote("${it.namespace}.${it.name}") }
+        val tableIncludeList: List<String> = streams.map {
+            Pattern.quote("${it.namespace}.${it.name}")
+        }
         val columnIncludeList: List<String> =
             streams.zip(tableIncludeList).map { (stream: Stream, prefix: String) ->
                 val suffix: String = stream.fields.joinToString("|") { Pattern.quote(it.id) }
@@ -141,11 +144,11 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     }
 
     fun withConverters(
-        vararg converters: KClass<out RelationalColumnCustomConverter>
+        vararg converters: KClass<out RelationalColumnCustomConverter>,
     ): DebeziumPropertiesBuilder = withConverters(*converters.map { it.java }.toTypedArray())
 
     fun withConverters(
-        vararg converters: Class<out RelationalColumnCustomConverter>
+        vararg converters: Class<out RelationalColumnCustomConverter>,
     ): DebeziumPropertiesBuilder {
         val classByKey: Map<String, Class<out RelationalColumnCustomConverter>> =
             converters.associateBy {

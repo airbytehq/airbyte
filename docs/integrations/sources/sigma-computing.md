@@ -43,6 +43,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-20 | [89382](https://github.com/airbytehq/airbyte/pull/89382) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88805](https://github.com/airbytehq/airbyte/pull/88805) | Update dependencies |
 | 0.0.63 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88228) | Authenticate with the `client_credentials` grant (no refresh token needed); fix API docs link |
 | 0.0.62 | 2026-10-06 | [88027](https://github.com/airbytehq/airbyte/pull/88027) | Update dependencies |

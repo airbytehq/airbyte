@@ -34,8 +34,8 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
         return S3Client.builder()
             .credentialsProvider(
                 StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey)
-                )
+                    AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey),
+                ),
             )
             .region(Region.of(s3Config.s3BucketRegion))
             .build()

@@ -325,16 +325,17 @@ Classes
 
     ### Methods
 
-    `get(self, portfolio_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_ads.models.Portfolio`
-    :   Retrieves a single portfolio by its ID using the v2 API.
+    `get(self, portfolio_id_filter: PortfoliosGetParamsPortfolioidfilter, include_extended_data_fields: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Fetches a single portfolio by ID through the v3 list endpoint using an ID filter.
         
         
         Args:
-            portfolio_id: The unique identifier of the portfolio
+            portfolio_id_filter: Pass \{"include": ["&lt;portfolioId&gt;"]\} to fetch the portfolio with this ID.
+            include_extended_data_fields: Whether to include extended data fields in the response
             **kwargs: Additional parameters
         
         Returns:
-            Portfolio
+            dict[str, Any]
 
     `list(self, include_extended_data_fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_ads.models.AmazonAdsExecuteResultWithMeta[dict[str, Any], PortfoliosListResultMeta]`
     :   Returns a list of portfolios for the specified profile. Portfolios are used to
@@ -507,16 +508,16 @@ Classes
 
     ### Methods
 
-    `get(self, campaign_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductCampaign`
-    :   Retrieves a single sponsored product campaign by its ID using the v2 API.
+    `get(self, campaign_id_filter: SponsoredProductCampaignsGetParamsCampaignidfilter, **kwargs) ‑> dict[str, typing.Any]`
+    :   Fetches a single sponsored product campaign by ID through the v3 list endpoint using an ID filter.
         
         
         Args:
-            campaign_id: The unique identifier of the campaign
+            campaign_id_filter: Pass \{"include": ["&lt;campaignId&gt;"]\} to fetch the campaign with this ID.
             **kwargs: Additional parameters
         
         Returns:
-            SponsoredProductCampaign
+            dict[str, Any]
 
     `list(self, state_filter: SponsoredProductCampaignsListParamsStatefilter | None = None, max_results: int | None = None, next_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_ads.models.AmazonAdsExecuteResultWithMeta[dict[str, Any], SponsoredProductCampaignsListResultMeta]`
     :   Returns a list of sponsored product campaigns for the specified profile.
