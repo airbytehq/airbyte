@@ -7,7 +7,12 @@ from typing import Dict
 from unittest.mock import Mock, patch
 
 import pytest
-from destination_motherduck.destination import CONFIG_DEFAULT_SCHEMA, DestinationMotherDuck, validated_sql_name
+from destination_motherduck.destination import (
+    CONFIG_DEFAULT_SCHEMA,
+    DestinationMotherDuck,
+    get_custom_user_agent,
+    validated_sql_name,
+)
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -30,6 +35,21 @@ def test_validated_sql_name() -> None:
     assert validated_sql_name("valid_name") == "valid_name"
     with pytest.raises(ValueError):
         validated_sql_name("invalid-name")
+
+
+def test_get_custom_user_agent(monkeypatch) -> None:
+    monkeypatch.delenv("AIRBYTE_VERSION", raising=False)
+    monkeypatch.delenv("AIRBYTE_EDITION", raising=False)
+    assert get_custom_user_agent() == "airbyte"
+
+    monkeypatch.setenv("AIRBYTE_VERSION", "1.8.2")
+    assert get_custom_user_agent() == "airbyte/1.8.2"
+
+    monkeypatch.setenv("AIRBYTE_EDITION", "CLOUD")
+    assert get_custom_user_agent() == "airbyte/1.8.2(CLOUD)"
+
+    monkeypatch.delenv("AIRBYTE_VERSION")
+    assert get_custom_user_agent() == "airbyte(CLOUD)"
 
 
 @patch("os.makedirs")
