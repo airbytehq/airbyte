@@ -478,8 +478,7 @@ class EnforceDeclaredSchema(RecordTransformation):
                 del record[field_name]
 
         for field_name, value in list(record.items()):
-            field_schema = properties[field_name]
-            field_type = field_schema.get("type")
+            field_type = properties[field_name].get("type")
             field_types = field_type if isinstance(field_type, list) else [field_type]
             if "array" in field_types and value is not None and not isinstance(value, list) and isinstance(value, (str, int, float, bool)):
                 record[field_name] = [value]
