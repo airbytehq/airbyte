@@ -17,7 +17,7 @@ Apple's API only offers machine-to-machine OAuth: a self-signed ES256 JWT acts a
 so the connector uses a plain `OAuthAuthenticator` and intentionally has no `advanced_auth` or
 declarative OAuth spec.
 
-### 2. The four `*_report_daily` streams are genuinely keyless
+### 2. The five `*_report_daily` streams are genuinely keyless
 
 Apple's reporting endpoints return metric aggregations with no record identifier. A row is
 identified by the reporting entity id plus `date` plus `countryorregion` — all three assembled by
@@ -47,7 +47,7 @@ this if the connector ever migrates.
 
 ### 6. Stream coverage versus Fivetran (parity table)
 
-Eight of Fivetran's ten Apple Search Ads tables have a matching stream. Two are genuinely missing:
-`organization` (`GET /acls`) and `search_term_report`
-(`POST /reports/campaigns/{campaignId}/searchterms`). Implementing them belongs in its own issue; see
-the parity table in [AGENTS.md](./AGENTS.md) for the row-by-row verdicts and caveats.
+All ten of Fivetran's Apple Search Ads tables have a matching stream, including `organization`
+(`GET /acls`) and `search_terms_report_daily` (`POST /reports/campaigns/{campaignId}/searchterms`).
+Impression-share reports are not covered. See the parity table in [AGENTS.md](./AGENTS.md) for the
+row-by-row verdicts and caveats.
