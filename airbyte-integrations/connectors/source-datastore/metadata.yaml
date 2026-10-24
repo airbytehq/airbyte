@@ -1,0 +1,44 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
+      - datastore.googleapis.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: database
+  connectorType: source
+  definitionId: d08ceea8-112a-462a-8bf9-ed895510441f
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-datastore
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-cloud-datastore
+  githubIssueLabel: source-datastore
+  icon: icon.svg
+  license: ELv2
+  name: Google Cloud Datastore
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-datastore
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  externalDocumentationUrls:
+    - title: Google Cloud Datastore documentation
+      url: https://cloud.google.com/datastore/docs
+      type: api_reference
+    - title: Authentication (service accounts)
+      url: https://cloud.google.com/docs/authentication/service-accounts
+      type: authentication_guide
+metadataSpecVersion: "1.0"
