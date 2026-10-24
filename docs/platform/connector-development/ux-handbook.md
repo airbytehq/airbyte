@@ -1,283 +1,1492 @@
-# UX Handbook
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
-## Connector Development UX Handbook
+# Connector UX handbook
 
-![Connector UX Handbook](/.gitbook/assets/uivsux.png)
+Use this handbook when you make decisions that affect how people configure or use connectors. Each form rule has a stable ID (for example, UX-01) so reviews and automated checks can link to it.
 
-### Overview
+## Personas
 
-The goal of this handbook is to allow scaling high quality decision making when developing connectors.
+| Persona | What you can expect |
+| --- | --- |
+| Data analyst | Uses spreadsheets, SQL, and dashboards. May not read API documentation, but can follow clear steps to generate an API key. |
+| Analytics engineer | Uses SQL, `dbt`, Git, and a scripting language. May know containers, but less about infrastructure than a data engineer. |
+| Data engineer | Uses SQL, `dbt`, multiple programming languages, cloud services, and orchestration tools. Builds or consumes APIs and manages infrastructure. |
 
-The Handbook is a living document, meant to be continuously updated. It is the best snapshot we can produce of the lessons learned from building and studying hundreds of connectors. While helpful, this snapshot is never perfect. Therefore, this Handbook is not a replacement for good judgment, but rather learnings that should help guide your work.
+The mix of personas varies by connector. A technical connector such as Kafka may have few data analysts.
 
-### How to use this handbook
+## Guiding principles
 
-1. When thinking about a UX-impacting decision regarding connectors, consult this Handbook.
-2. If the Handbook does not answer your question, then consider proposing an update to the Handbook if you believe your question will be applicable to more cases.
+Airbyte is infrastructure in a user's data pipeline. Users rely on it to move data securely, accurately, and reliably; they should not need to debug the infrastructure.
 
-### Definition of UX-impacting changes
+The hierarchy of user needs is security, data integrity, reliability, speed, ease of use, and feature set. Protect credentials and data, preserve records and their meaning, and make connectors reliable. Then optimize speed and usability while covering useful cases.
 
-UX-impacting changes are ones which impact how the user directly interacts with, consumes, or perceives the product.
+**Security** means protecting confidential data and credentials. Do not expose credentials in logs or plain text.
 
-**Examples**:
+**Data integrity** means replicating complete and correct data. For example, preserve leading zeroes in postal codes and account for database time zones.
 
-1. Public-facing documentation
-2. Input configuration
-3. Output schema
-4. Prerequisite configuration by the user (e.g: you need to link an instagram account to your Facebook page for this connector to work properly)
-5. Consolidating two connectors into one, or splitting one connector into two
-6. Wait time for human-at-keyboard
-7. Anything that negatively impacts the runtime of the connector (e.g: a change that makes the runtime go from 10 minutes to 20 minutes on the same data size)
-8. Any other change which you deem UX-impacting
-   1. The guide can’t cover everything, so this is an escape hatch based on the developer’s judgment.
+**Reliability** means handling large, unusual, and incorrectly formatted inputs without requiring users to debug the connector.
 
-**Examples of UX-impacting changes**:
+**Speed** reduces the time users wait for value and lets them iterate on configurations.
 
-1. Adding or removing an input field to/from spec.json
-2. Adding or removing fields from the output schema
-3. Adding a new stream or category of stream (e.g: supporting views in databases)
-4. Adding OAuth support
+**Ease of use** means sensible defaults, predictable output, and little unnecessary friction.
 
-**Examples of non-UX-impacting changes**:
+**Feature set** means supporting as many useful cases as practical without making configuration harder to understand.
 
-1. Refactoring without changing functionality
-2. Bugfix (e.g: pagination doesn’t work correctly)
+## How the connector form renders your spec
 
-### Guiding Principles
+- **`required`**: Required fields appear in the main form unless they have a default. Required fields with a default collapse like optional fields. A default of `false`, `""`, `null`, or an empty array doesn't count, and neither does a default on an `airbyte_secret` field. Root-level collapsed fields without `order` go into **Optional fields** at the end of the form. Collapsed fields with `order`, and nested collapsed fields, collapse in place.
+- **`default`**: When the web app creates a new configuration, it fills initial form values from schema defaults. API, Terraform, and PyAirbyte callers do not receive defaults from the web app.
+- **`order`**: Orders fields within their required or optional sections; required fields still precede optional fields.
+- **`group`**: Places root-level fields in a named group. Group titles come from the form's group metadata.
+- **`always_show`**: Keeps a field expanded with the main form fields, including a required field with a default.
+- **`airbyte_hidden`**: Hides a field from the form.
+- **`oneOf`**: Renders a selector for the alternatives. Each option's `title` is its selector label. `oneOf` blocks and groups other than resource allocation are always expanded.
+- **`enum`**: Renders a dropdown for a scalar field.
+- **`examples`**: Displays example values next to the field's description when users open the field's info icon.
+- **`type: string` with `format: date` or `format: date-time`**: Renders a date picker; `date-time` includes a time control. `pattern` alone does not select the date picker.
+- **`pattern` and `pattern_descriptor`**: `pattern` validates the value. `pattern_descriptor` displays a readable format hint beside the field.
+- **`airbyte_secret`**: Uses a secret input that masks the value.
 
-Would you trust AWS or Docker if it only worked 70, 80, or 90% of the time or if it leaked your business secrets? Yeah, me neither. You would only build on a tool if it worked at least 99% of the time. Infrastructure should give you back your time, rather than become a debugging timesink.
+## Form rules
 
-The same is true with Airbyte: if it worked less than 99% of the time, many users will stop using it. Airbyte is an infrastructure component within a user’s data pipeline. Our users’ goal is to move data; Airbyte is an implementation detail. In that sense, it is much closer to Terraform, Docker, or AWS than an end application.
+| ID | Rule |
+| --- | --- |
+| [UX-01](#ux-01) | Every field has a title and description |
+| [UX-02](#ux-02) | Titles use sentence case |
+| [UX-03](#ux-03) | Description says more than the title |
+| [UX-04](#ux-04) | Required fields have a default when a safe value exists |
+| [UX-05](#ux-05) | `pattern` has a readable `pattern_descriptor` |
+| [UX-06](#ux-06) | Secrets marked `airbyte_secret` |
+| [UX-07](#ux-07) | Fields with a default are required |
+| [UX-08](#ux-08) | Explain meaning and impact |
+| [UX-09](#ux-09) | Say where to get each value |
+| [UX-10](#ux-10) | Doc links point to anchors |
+| [UX-11](#ux-11) | Auth is not entirely optional |
+| [UX-12](#ux-12) | Date pattern also sets `format: date`/`date-time` |
 
-#### Trust & Reliability are the top concerns
+### UX-01: Every field has a title and description {#ux-01}
 
-Our users have the following hierarchy of needs:&#x20;
+**Rule:** Give every user-facing field a clear `title` and `description`. The description should help the user understand what to enter.
 
-![](/.gitbook/assets/ux_hierarchy_pyramid2.png)
+**Why:** Without a title or description, users see a raw property name and have no explanation of the value.
 
-**Security**
+**Exceptions:** A `oneOf` selector and its discriminator `const` fields do not need their own title and description.
 
-Users often move very confidential data like revenue numbers, salaries, or confidential documents through Airbyte. A user therefore must trust that their data is secure. This means no leaking credentials in logs or plain text, no vulnerabilities in the product, no frivolous sharing of credentials or data over internal slack channels, video calls, or other communications etc.
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
 
-**Data integrity**
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      data_format:
+        type: string
+        enum: [csv, json]
+```
 
-Data replicated by Airbyte must be correct and complete. If a user moves data with Airbyte, then all of the data must be present, and it must all be correct - no corruption, incorrect values, or wrongly formatted data.
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      aws_region_name:
+        type: string
+        title: AWS region
+        description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
+```
 
-Some tricky examples which can break data integrity if not handled correctly:
+</TabItem>
+<TabItem value="python" label="Python">
 
-- Zipcodes for the US east coast should not lose their leading zeros because of being detected as integer
-- Database timezones could affect the value of timestamps
-- Esoteric text values (e.g: weird UTF characters)
+```python title="Poor"
+max_retries: Optional[PositiveInt] = Field(...)
+```
 
-**Reliability**
+```python title="Good"
+access_token: Optional[str] = Field(
+    title="Access token",
+    description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
+    airbyte_secret=True,
+)
+```
 
-A connector needs to be reliable. Otherwise, a user will need to spend a lot of time debugging, and at that point, they’re better off using a competing product. The connector should be able to handle large inputs, weirdly formatted inputs, all data types, and basically anything a user should throw at it.
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
 
-In other words, a connector should work 100% of the time, but 99.9% is occasionally acceptable.
-
-#### Speed
-
-Sync speed minimizes the time needed for deriving value from data. It also provides a better user experience as it allows quick iteration on connector configurations without suffering through long wait times.&#x20;
-
-**Ease of use**
-
-People love and trust a product that is easy to use. This means that it works as quickly as possible, introduces no friction, and uses sensible defaults that are good enough for 95% of users.
-
-An important component of usability is predictability. That is, as much as possible, a user should know before running a connector what its output will be and what the different tables will mean.
-
-Ideally, they would even see an ERD describing the output schema they can expect to find in the destination. (This particular feature is tracked [here](https://github.com/airbytehq/airbyte/issues/3731)).
-
-**Feature Set**
-
-Our connectors should cover as many use cases as is feasible. While it may not always work like that given our incremental delivery preference, we should always strive to provide the most featureful connectors which cover as much of the underlying API or database surface as possible.
-
-There is also a tension between featureset and ease of use. The more features are available, the more thought it takes to make the product easy and intuitive to use. We’ll elaborate on this later.
-
-### Airbyte's Target Personas
-
-Without repeating too many details mentioned elsewhere, the important thing to know is Airbyte serves all the following personas:
-
-| **Persona**        | **Level of technical knowledge**                                                                                                                                                                                                                                                                                                          |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data Analyst       | <p>Proficient with:<br/><br/>Data manipulation tools like Excel or SQL<br/>Dashboard tools like Looker<br/><br/>Not very familiar with reading API docs and doesn't know what a curl request is. But might be able to generate an API key if you tell them exactly how.</p>                                                               |
-| Analytics Engineer | <p>Proficient with:<br/><br/>SQL &#x26; DBT<br/>Git<br/>A scripting language like Python<br/>Shallow familiarity with infra tools like Docker<br/><br/>Much more technical than a data analyst, but not as much as a data engineer</p>                                                                                                    |
-| Data Engineer      | <p>Proficient with:<br/><br/>SQL &#x26; DBT<br/>Git<br/>2 or more programming languages<br/>Infra tools like Docker or Kubernetes<br/>Cloud technologies like AWS or GCP<br/>Building or consuming APIs<br/>orhestartion tools like Airflow<br/><br/>The most technical persona we serve. Think of them like an engineer on your team</p> |
-
-Keep in mind that the distribution of served personas will differ per connector. Data analysts are highly unlikely to form the majority of users for a very technical connector like say, Kafka.
-
-## Specific Guidelines
-
-### Input Configuration
-
-_aka spec.json_
-
-**Avoid configuration completely when possible**
-
-Configuration means more work for the user and more chances for confusion, friction, or misconfiguration. If I could wave a magic wand, a user wouldn’t have to configure anything at all. Unfortunately, this is not reality, and some configuration is strictly required. When this is the case, follow the guidelines below.
-
-**Avoid exposing implementation details in configuration**
-
-If a configuration controls an implementation detail (like how many retries a connector should make before failing), then there should be almost no reason to expose this. If you feel a need to expose it, consider it might be a smell that the connector implementation is not robust.
-
-Put another way, if a configuration tells the user how to do its job of syncing data rather than what job to achieve, it’s a code smell.
-
-For example, the memory requirements for a database connector which syncs a table with very wide rows (50mb rows) can be very different than when syncing a table with very narrow rows (10kb per row). In this case, it may be acceptable to ask the user for some sort of “hint”/tuning parameter in configuration (hidden behind advanced configuration) to ensure the connector performs reliably or quickly. But even then, this option would strictly be a necessary evil/escape hatch. It is much more preferable for the connector to auto-detect what this setting should be and never need to bother the user with it.
-
-**Minimize required configurations by setting defaults whenever possible**
-
-In many cases, a configuration can be avoided by setting a default value for it but still making it possible to set other values. Whenever possible, follow this pattern.
-
-**Hide technical or niche parameters under an “Advanced” section**
-
-Sometimes, it’s inevitable that we need to expose some advanced or technical configuration. For example, the option to upload a TLS certificate to connect to a database, or the option to configure the number of retries done by an API connector: while these may be useful to some small percentage of users, it’s not worth making all users think or get confused about them.
-
-Note: this is currently blocked by this [issue](https://github.com/airbytehq/airbyte/issues/3681).
-
-**Add a “title” and “description” property for every input parameter**
-
-This displays this information to the user in a polished way and gives less technical users (e.g: analysts) confidence that they can use this product. Be specific and unambiguous in the wording, explaining more than just the field name alone provides.
-
-For example, the following spec:
-
-```json
+```json title="Poor"
 {
-  "type": "object",
   "properties": {
-    "user_name": {
-      "type": "string"
+    "query_timeout_seconds": {
+      "type": "integer",
+      "description": "Timeout in seconds before the connector cancels a query."
     }
   }
 }
 ```
 
-produces the following input field in the UI:&#x20;
+```kotlin title="Good: Kotlin"
+@JsonProperty("database")
+@JsonSchemaTitle("Database name")
+@JsonPropertyDescription("Name of the database that contains the tables to replicate. Enter the name shown in your database management console.")
+lateinit var database: String
+```
 
-![](/.gitbook/assets/ux_username_bad.png)
-
-Whereas the following specification:
-
-```json
+```json title="Good: spec.json"
 {
-  "type": "object",
+  "required": ["database"],
   "properties": {
-    "user_name": {
+    "database": {
       "type": "string",
-      "description": "The username you use to login to the database",
-      "title": "Username"
+      "title": "Database name",
+      "description": "Name of the database that contains the tables to replicate. Enter the name shown in your database management console."
     }
   }
 }
 ```
 
-produces the following UI:
+</TabItem>
+</Tabs>
 
-![](/.gitbook/assets/ux_username_good.png)
+### UX-02: Titles use sentence case {#ux-02}
 
-The title should use Pascal Case “with spaces” e.g: “Attribution Lookback Window”, “Host URL”, etc...
+**Rule:** Write titles in sentence case: capitalize the first word and proper nouns, not every word. Keep product names and acronyms correctly capitalized.
 
-**Clearly document the meaning and impact of all parameters**
+**Why:** Sentence case makes field labels easier to scan and keeps the form consistent.
 
-All configurations must have an unmistakable explanation describing their purpose and impact, even the obvious ones. Remember, something that is obvious to an analyst may not be obvious to an engineer, and vice-versa.
+**Exceptions:** Preserve capitalization in product names and acronyms, such as “API key” and “Azure Blob Storage.”
 
-For example, in some Ads APIs like Facebook, the user’s data may continue to be updated up to 28 days after it is created. This happens because a user may take action because of an ad (like buying a product) many days after they see the ad. In this case, the user may want to configure a “lookback” window for attributing.
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
 
-Adding a parameter “attribution_lookback_window” with no explanation might confuse the user more than it helps them. Instead, we should add a clear title and description which describes what this parameter is and how different values will impact the data output by the connector.
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      account_name:
+        type: string
+        title: Account Name
+        description: Name to assign to the account created by this connector.
+```
 
-**Document how users can obtain configuration parameters**
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      account_name:
+        type: string
+        title: Account name
+        description: Name to assign to the account created by this connector.
+```
 
-If a user needs to obtain an API key or host name, tell them exactly where to find it. Ideally you would show them screenshots, though include a date and API version in those if possible, so it’s clear when they’ve aged out of date.
+</TabItem>
+<TabItem value="python" label="Python">
 
-**Links should point to page anchors where applicable**.
+```python title="Poor"
+access_token: Optional[str] = Field(
+    title="Access Token",
+    description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
+    airbyte_secret=True,
+)
+```
 
-Often, you are trying to redirect the user to a specific part of the page. For example, if you wanted to point someone to the "Input Configuration" section of this doc, it is better to point them to `https://docs.airbyte.com/connector-development/ux-handbook#input-configuration` instead of `https://docs.airbyte.com/connector-development/ux-handbook`.
+```python title="Good"
+access_token: Optional[str] = Field(
+    title="Access token",
+    description="Generate a Meta system user access token in Meta Business Settings > Users > System users.",
+    airbyte_secret=True,
+)
+```
 
-**Fail fast & actionably**
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
 
-A user should not be able to configure something that will not work. If a user’s configuration is invalid, we should inform them as precisely as possible about what they need to do to fix the issue.
+```json title="Poor"
+{
+  "required": ["ca_certificate"],
+  "properties": {
+    "ca_certificate": {
+      "type": "string",
+      "title": "CA Certificate",
+      "description": "Certificate used to verify the database server's TLS identity. Obtain it from your database provider's SSL/TLS settings.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
 
-One helpful aid is to use the json-schema “pattern” keyword to accept inputs which adhere to the correct input shape.
+```kotlin title="Good: Kotlin"
+@JsonProperty("ca_certificate")
+@JsonSchemaTitle("CA certificate")
+@JsonPropertyDescription("Certificate used to verify the database server's TLS identity. Obtain it from your database provider's SSL/TLS settings.")
+@JsonSchemaInject(json = """{"airbyte_secret":true}""")
+lateinit var sslCertificate: String
+```
 
-### Output Data & Schemas
+```json title="Good: spec.json"
+{
+  "required": ["ca_certificate"],
+  "properties": {
+    "ca_certificate": {
+      "type": "string",
+      "title": "CA certificate",
+      "description": "Certificate used to verify the database server's TLS identity. Obtain it from your database provider's SSL/TLS settings.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
 
-#### Strongly Favor ELT over ETL
+</TabItem>
+</Tabs>
 
-Extract-Load-Transform (ELT) means extracting and loading the data into a destination while leaving its format/schema as unchanged as possible, and making transformation the responsibility of the consumer. By contrast, ETL means transforming data before it is sent to the destination, for example changing its schema to make it easier to consume in the destination.
+### UX-03: Description says more than the title {#ux-03}
 
-When extracting data, strongly prefer ELT to ETL for the following reasons:
+**Rule:** Explain the field's purpose in its description instead of repeating its title. Add context that helps the user choose a value.
 
-**Removes Airbyte as a development bottleneck**
+**Why:** A description that repeats the label does not help users decide what to enter.
 
-If we get into the habit of structuring the output of each source according to how some users want to use it, then we will invite more feature requests from users asking us to transform data in a particular way. This introduces Airbyte’s dev team as an unnecessary bottleneck for these users.
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
 
-Instead, we should set the standard that a user should be responsible for transformations once they’ve loaded data in a destination.
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      lookback_window:
+        type: integer
+        title: Lookback window
+        description: Lookback window in days.
+```
 
-**Will always be backwards compatible**
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      lookback_window:
+        type: integer
+        title: Lookback window
+        description: Also known as the attribution or conversion window, this sets how many days of past records the connector revisits. A larger window can capture late-arriving updates but increases the records processed.
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+lookback_window: Optional[PositiveInt] = Field(
+    title="Lookback window",
+    description="Lookback window",
+)
+```
+
+```python title="Good"
+client_secret: str = Field(
+    title="Client secret",
+    description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
+    airbyte_secret=True,
+)
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```kotlin title="Poor: Kotlin"
+@JsonProperty("project_id")
+@JsonSchemaTitle("Project ID")
+@JsonPropertyDescription("Project ID.")
+lateinit var projectId: String
+```
+
+```json title="Poor: spec.json"
+{
+  "required": ["project_id"],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID",
+      "description": "Project ID."
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("project_id")
+@JsonSchemaTitle("Project ID")
+@JsonPropertyDescription("Google Cloud project ID containing the BigQuery datasets to read. Find it in Google Cloud Console, then follow the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">BigQuery setup guide</a>.")
+lateinit var projectId: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["project_id"],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID",
+      "description": "Google Cloud project ID containing the BigQuery datasets to read. Find it in Google Cloud Console, then follow the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">BigQuery setup guide</a>."
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-04: Required fields have a default when a safe value exists {#ux-04}
+
+**Rule:** Give required fields a default when a safe value exists. A common region or `is_sandbox: false` can be a safe default; never default credentials or IDs.
+
+**Why:** A safe default pre-fills the form and saves users from choosing a value that works for most configurations. The field also collapses out of the main form, unless it sets `always_show: true`.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    required: [aws_region_name]
+    properties:
+      aws_region_name:
+        type: string
+        title: AWS region
+        description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [aws_region_name]
+    properties:
+      aws_region_name:
+        type: string
+        title: AWS region
+        description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
+        default: us-east-1
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+aws_region_name: str = Field(
+    ...,
+    title="AWS region",
+    description="AWS region in which CloudTrail stores trail events.",
+)
+```
+
+```json title="Good"
+{
+  "required": ["format"],
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": ["csv", "json"],
+      "default": "csv",
+      "title": "File format",
+      "description": "Format used to parse each source file. Choose a value that matches the file's encoding."
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```json title="Poor"
+{
+  "required": ["aws_region_name"],
+  "properties": {
+    "aws_region_name": {
+      "type": "string",
+      "title": "AWS region",
+      "description": "AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console."
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("aws_region_name")
+@JsonSchemaTitle("AWS region")
+@JsonPropertyDescription("AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.")
+@JsonSchemaInject(json = """{"default":"us-east-1"}""")
+var awsRegionName: String = "us-east-1"
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["aws_region_name"],
+  "properties": {
+    "aws_region_name": {
+      "type": "string",
+      "title": "AWS region",
+      "description": "AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.",
+      "default": "us-east-1"
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-05: `pattern` has a readable `pattern_descriptor` {#ux-05}
+
+**Rule:** When you validate a value with `pattern`, provide a readable `pattern_descriptor`. Describe the expected format rather than relying on users to interpret a regular expression.
+
+**Why:** The form shows a readable hint beside the field when `pattern_descriptor` is set or the web application recognizes the pattern. An explicit descriptor keeps other patterns understandable.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      account_identifier:
+        type: string
+        title: Account identifier
+        description: Account identifier used to select the account to replicate. Find it in the account settings page.
+        pattern: "^[A-Z]{3}-[0-9]{4}$"
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      account_identifier:
+        type: string
+        title: Account identifier
+        description: Account identifier used to select the account to replicate. Find it in the account settings page.
+        pattern: "^[A-Z]{3}-[0-9]{4}$"
+        pattern_descriptor: Enter three uppercase letters, a hyphen, and four digits.
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```json title="Poor"
+{
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Customer ID(s)",
+      "description": "Comma-separated list of 10-digit customer IDs without dashes. Find these IDs in the Google Ads account using the <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">setup guide</a>.",
+      "pattern": "^[0-9]{10}(,[0-9]{10})*$"
+    }
+  }
+}
+```
+
+```json title="Good"
+{
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Customer ID(s)",
+      "description": "Comma-separated list of 10-digit customer IDs without dashes. Find these IDs in the Google Ads account using the <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">setup guide</a>.",
+      "pattern": "^[0-9]{10}(,[0-9]{10})*$",
+      "pattern_descriptor": "The customer ID must be 10 digits. Separate multiple customer IDs using commas.",
+      "examples": ["6783948572,5839201945"]
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```kotlin title="Poor: Kotlin"
+@JsonProperty("cluster_name")
+@JsonSchemaTitle("Cluster name")
+@JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
+@JsonSchemaInject(json = """{"pattern":"^[A-Za-z0-9_.-]*$"}""")
+lateinit var clusterName: String
+```
+
+```json title="Poor: spec.json"
+{
+  "required": ["cluster_name"],
+  "properties": {
+    "cluster_name": {
+      "type": "string",
+      "title": "Cluster name",
+      "description": "Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.",
+      "pattern": "^[A-Za-z0-9_.-]*$"
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("cluster_name")
+@JsonSchemaTitle("Cluster name")
+@JsonPropertyDescription("Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.")
+@JsonSchemaInject(json = """{"pattern":"^[A-Za-z0-9_.-]*$","pattern_descriptor":"Use letters, numbers, periods, underscores, or hyphens."}""")
+lateinit var clusterName: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["cluster_name"],
+  "properties": {
+    "cluster_name": {
+      "type": "string",
+      "title": "Cluster name",
+      "description": "Name of the ClickHouse cluster configured for this destination. Find it in the ClickHouse Cloud service details.",
+      "pattern": "^[A-Za-z0-9_.-]*$",
+      "pattern_descriptor": "Use letters, numbers, periods, underscores, or hyphens."
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-06: Secrets marked `airbyte_secret` {#ux-06}
+
+**Rule:** Mark every secret field with `airbyte_secret: true`. Do not mark public values, IDs, or other non-secret fields as secrets.
+
+**Why:** Unmarked credentials appear in a regular text control instead of a masked secret control.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    required: [aws_secret_key]
+    properties:
+      aws_secret_key:
+        type: string
+        title: AWS secret access key
+        description: Used to sign CloudTrail API requests. Create an access key for the connector's IAM user in AWS IAM.
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [aws_secret_key]
+    properties:
+      aws_secret_key:
+        type: string
+        title: AWS secret access key
+        description: Used to sign CloudTrail API requests. Create an access key for the connector's IAM user in AWS IAM.
+        airbyte_secret: true
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+client_secret: str = Field(
+    title="Client secret",
+    description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
+)
+```
+
+```python title="Good"
+client_secret: str = Field(
+    title="Client secret",
+    description="Secret used to authenticate the Facebook Marketing app. Find it in Meta for Developers under your app's Basic settings.",
+    airbyte_secret=True,
+)
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```kotlin title="Poor: Kotlin"
+@JsonProperty("password")
+@JsonSchemaTitle("Password")
+@JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
+lateinit var password: String
+```
+
+```json title="Poor: spec.json"
+{
+  "required": ["password"],
+  "properties": {
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Password associated with the MySQL username. Use the value configured for that account in the database."
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("password")
+@JsonSchemaTitle("Password")
+@JsonPropertyDescription("Password associated with the MySQL username. Use the value configured for that account in the database.")
+@JsonSchemaInject(json = """{"airbyte_secret":true}""")
+lateinit var password: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["password"],
+  "properties": {
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Password associated with the MySQL username. Use the value configured for that account in the database.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-07: Fields with a default are required {#ux-07}
+
+**Rule:** If a field has a default, add it to the parent's list of required properties. This ensures every saved configuration contains the value that determines the connector's behavior.
+
+**Why:** The web app fills defaults only when someone creates a configuration in the UI. API, Terraform, and PyAirbyte callers do not get those defaults, so an optional field with a default may be missing from saved configurations. Required fields with a default collapse out of the main form, so this rule doesn't add clutter. Set `always_show: true` when users should see the field right away.
+
+:::warning
+Making an existing optional field required is a breaking change, because API and Terraform updates of saved configurations that lack the field fail validation. Apply this rule to new fields, and handle changes to existing fields as breaking changes.
+:::
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      num_workers:
+        type: integer
+        title: Worker count
+        description: Number of workers used to process the replication job; larger counts can process data faster but use more resources.
+        default: 2
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [aws_region_name]
+    properties:
+      aws_region_name:
+        type: string
+        title: AWS region
+        description: AWS region in which CloudTrail stores trail events. Choose the region used by your trail in the AWS console.
+        default: us-east-1
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+time_increment: Optional[PositiveInt] = Field(
+    default=1,
+    title="Time increment",
+    description="Number of days used to aggregate statistics for custom insights; larger values yield wider reporting periods.",
+    minimum=1,
+    maximum=89,
+)
+```
+
+```json title="Good"
+{
+  "required": ["format"],
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": ["csv", "json"],
+      "default": "csv",
+      "title": "File format",
+      "description": "Format used to parse each source file. Choose a value that matches the file's encoding."
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```kotlin title="Poor: Kotlin"
+@JsonProperty("discover_timeout_seconds")
+@JsonSchemaTitle("Discovery timeout")
+@JsonPropertyDescription("Number of seconds to wait for the connector to discover available schemas.")
+@JsonSchemaInject(json = """{"default":600}""")
+var discoverTimeoutSeconds: Int? = 600
+```
+
+```json title="Poor: spec.json"
+{
+  "properties": {
+    "discover_timeout_seconds": {
+      "type": "integer",
+      "title": "Discovery timeout",
+      "description": "Number of seconds to wait for the connector to discover available schemas.",
+      "default": 600
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("schema")
+@JsonSchemaTitle("Schema name")
+@JsonPropertyDescription("Name of the SQL Server schema where the destination creates tables. The public schema is a common default when no custom schema is needed.")
+@JsonSchemaInject(json = """{"default":"public"}""")
+var schema: String = "public"
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["schema"],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "title": "Schema name",
+      "description": "Name of the SQL Server schema where the destination creates tables. The public schema is a common default when no custom schema is needed.",
+      "default": "public"
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-08: Explain meaning and impact {#ux-08}
+
+**Rule:** Explain what a field controls and how changing it affects the data, sync, or output. Give users enough context to choose a value.
+
+**Why:** A vague label or short description leaves users guessing about the effect of a setting.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      lookback_window:
+        type: integer
+        title: Lookback window
+        description: Number of days before the cursor to check for records.
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      lookback_window:
+        type: integer
+        title: Lookback window
+        description: Number of days before the cursor to revisit during incremental sync. A larger window can capture late-arriving updates but increases the records and API requests processed.
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+lookback_window: Optional[PositiveInt] = Field(
+    title="Lookback window",
+    description="Number of days before the cursor to check for records.",
+)
+```
+
+```python title="Good"
+insights_lookback_window: Optional[PositiveInt] = Field(
+    title="Insights lookback window",
+    maximum=28,
+    minimum=1,
+    description=(
+        "The attribution period to refresh for custom insights. A larger value includes older "
+        "insights that may have changed and can increase the amount of data requested."
+    ),
+)
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```kotlin title="Poor: Kotlin"
+@JsonProperty("connection_timeout_seconds")
+@JsonSchemaTitle("Connection timeout")
+@JsonPropertyDescription("Timeout in seconds for connection requests.")
+var connectionTimeoutSeconds: Int? = null
+```
+
+```json title="Poor: spec.json"
+{
+  "properties": {
+    "connection_timeout_seconds": {
+      "type": "integer",
+      "title": "Connection timeout",
+      "description": "Timeout in seconds for connection requests."
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("credentials_json")
+@JsonSchemaTitle("Service account key JSON")
+@JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Without a valid key, the connector cannot read the dataset. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
+@JsonSchemaInject(json = """{"airbyte_secret":true}""")
+lateinit var credentialsJson: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["credentials_json"],
+  "properties": {
+    "credentials_json": {
+      "type": "string",
+      "title": "Service account key JSON",
+      "description": "JSON key for the service account that lets the connector authenticate to BigQuery. Without a valid key, the connector cannot read the dataset. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-09: Say where to get each value {#ux-09}
+
+**Rule:** Tell users where to find each value they must provide. Link to setup instructions when they can explain the steps.
+
+**Why:** Users should not have to search a vendor's site or guess which credential or identifier you need.
+
+**Exceptions:** Do not apply this rule to fields OAuth fills in through `advanced_auth.complete_oauth_output_specification`.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    required: [access_key]
+    properties:
+      access_key:
+        type: string
+        title: Gong access key
+        description: Key used to authenticate requests to the Gong API.
+        airbyte_secret: true
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [api_key]
+    properties:
+      api_key:
+        type: string
+        title: API key
+        description: API key for your Amplitude project. Create it in your organization's settings using the <a href="https://docs.airbyte.com/integrations/sources/amplitude#setup-guide">setup guide</a>.
+        airbyte_secret: true
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+access_key: str = Field(
+    title="Gong access key",
+    description="Key used to authenticate requests to the Gong API.",
+    airbyte_secret=True,
+)
+```
+
+```python title="Good"
+access_token: Optional[str] = Field(
+    title="Access token",
+    description="Generate a Meta system user access token in Meta Business Settings > Users > System users > Generate new token for your app.",
+    airbyte_secret=True,
+)
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```json title="Poor"
+{
+  "required": ["credentials_json"],
+  "properties": {
+    "credentials_json": {
+      "type": "string",
+      "title": "Service account key JSON",
+      "description": "JSON key used to authenticate the BigQuery connection.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("credentials_json")
+@JsonSchemaTitle("Service account key JSON")
+@JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
+@JsonSchemaInject(json = """{"airbyte_secret":true}""")
+lateinit var credentialsJson: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["credentials_json"],
+  "properties": {
+    "credentials_json": {
+      "type": "string",
+      "title": "Service account key JSON",
+      "description": "JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-10: Doc links point to anchors {#ux-10}
+
+**Rule:** Link to the relevant heading or setup section when a page has one. Use a stable, current URL rather than sending users to a page's top-level overview.
+
+**Why:** An anchored link takes users directly to the instructions they need.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    required: [access_token]
+    properties:
+      access_token:
+        type: string
+        title: Private app access token
+        description: Create a private app in HubSpot and copy its access token. See the <a href="https://docs.airbyte.com/integrations/sources/hubspot">HubSpot setup guide</a>.
+        airbyte_secret: true
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [api_key]
+    properties:
+      api_key:
+        type: string
+        title: API key
+        description: API key for your Amplitude project. Create it in your organization's settings using the <a href="https://docs.airbyte.com/integrations/sources/amplitude#setup-guide">setup guide</a>.
+        airbyte_secret: true
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+access_token: str = Field(
+    ...,
+    title="Access token",
+    description="Generate a Meta system user access token in Meta Business Settings > Users > System users. See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">Facebook Marketing setup guide</a>.",
+    airbyte_secret=True,
+)
+```
+
+```json title="Good"
+{
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "title": "Customer ID(s)",
+      "description": "Comma-separated list of 10-digit customer IDs without dashes. Find these IDs in the Google Ads account using the <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">setup guide</a>.",
+      "pattern": "^[0-9]{10}(,[0-9]{10})*$",
+      "pattern_descriptor": "The customer ID must be 10 digits. Separate multiple customer IDs using commas.",
+      "examples": ["6783948572,5839201945"]
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```json title="Poor"
+{
+  "required": ["credentials_json"],
+  "properties": {
+    "credentials_json": {
+      "type": "string",
+      "title": "Service account key JSON",
+      "description": "Create and download the key from Google Cloud Console using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery\">service account key instructions</a>.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("credentials_json")
+@JsonSchemaTitle("Service account key JSON")
+@JsonPropertyDescription("JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.")
+@JsonSchemaInject(json = """{"airbyte_secret":true}""")
+lateinit var credentialsJson: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["credentials_json"],
+  "properties": {
+    "credentials_json": {
+      "type": "string",
+      "title": "Service account key JSON",
+      "description": "JSON key for the service account that lets the connector authenticate to BigQuery. Create and download it using the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">service account key instructions</a>.",
+      "airbyte_secret": true
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-11: Auth is not entirely optional {#ux-11}
+
+**Rule:** Put the method selector (`credentials`) in the top-level `required` list and define one `oneOf` option per authentication method. If anonymous access is supported, represent **No auth** as an explicit option rather than making the selector optional; GitHub, HubSpot, and Jira manifests demonstrate required selectors with method options.
+
+**Why:** If the selector is optional, users can save a configuration without choosing or providing an authentication method.
+
+**Exceptions:** Deliberately optional credentials, such as a public API key or a database password that can be omitted, are still reported. You can ignore the finding when the connector intentionally supports that configuration.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose API key authentication or no authentication.
+        oneOf:
+          - title: API key
+            type: object
+            required: [auth_type, api_key]
+            properties:
+              auth_type:
+                type: string
+                const: API_KEY
+              api_key:
+                type: string
+                title: API key
+                description: Create an API key in the provider's developer console.
+                airbyte_secret: true
+          - title: No auth
+            type: object
+            required: [auth_type]
+            properties:
+              auth_type:
+                type: string
+                const: NO_AUTH
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    required: [credentials]
+    properties:
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose API key authentication or no authentication.
+        oneOf:
+          - title: API key
+            type: object
+            required: [auth_type, api_key]
+            properties:
+              auth_type:
+                type: string
+                const: API_KEY
+              api_key:
+                type: string
+                title: API key
+                description: Create an API key in the provider's developer console.
+                airbyte_secret: true
+          - title: No auth
+            type: object
+            required: [auth_type]
+            properties:
+              auth_type:
+                type: string
+                const: NO_AUTH
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```python title="Poor"
+credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
+    title="Authentication",
+    description="Credentials for connecting to the Facebook Marketing API.",
+    type="object",
+)
+```
+
+```python title="Good"
+credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
+    title="Authentication",
+    description="Credentials for connecting to the Facebook Marketing API",
+    type="object",
+)
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```json title="Poor"
+{
+  "properties": {
+    "credentials": {
+      "type": "object",
+      "title": "Authentication",
+      "description": "Choose API key authentication or no authentication.",
+      "oneOf": [
+        {
+          "title": "API key",
+          "type": "object",
+          "required": ["auth_type", "api_key"],
+          "properties": {
+            "auth_type": {"type": "string", "const": "API_KEY"},
+            "api_key": {
+              "type": "string",
+              "title": "API key",
+              "description": "Create an API key in the provider's developer console.",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "title": "No auth",
+          "type": "object",
+          "required": ["auth_type"],
+          "properties": {
+            "auth_type": {"type": "string", "const": "NO_AUTH"}
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ApiKeyCredentials::class, name = "API_KEY"),
+    JsonSubTypes.Type(value = NoAuthCredentials::class, name = "NO_AUTH"),
+)
+@JsonSchemaTitle("Authentication")
+@JsonSchemaDescription("Choose API key authentication or no authentication.")
+sealed interface Credentials
+
+@JsonSchemaTitle("API key")
+class ApiKeyCredentials : Credentials {
+    @JsonProperty("api_key", required = true)
+    @JsonSchemaTitle("API key")
+    @JsonPropertyDescription("Create an API key in the provider's developer console.")
+    @JsonSchemaInject(json = """{"airbyte_secret":true}""")
+    lateinit var apiKey: String
+}
+
+@JsonSchemaTitle("No auth")
+class NoAuthCredentials : Credentials
+
+class SourceSpec {
+    @JsonProperty("credentials", required = true)
+    @JsonSchemaTitle("Authentication")
+    @JsonPropertyDescription("Choose API key authentication or no authentication.")
+    lateinit var credentials: Credentials
+}
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["credentials"],
+  "properties": {
+    "credentials": {
+      "type": "object",
+      "title": "Authentication",
+      "description": "Choose API key authentication or no authentication.",
+      "oneOf": [
+        {
+          "title": "API key",
+          "type": "object",
+          "required": ["auth_type", "api_key"],
+          "properties": {
+            "auth_type": {"type": "string", "const": "API_KEY"},
+            "api_key": {
+              "type": "string",
+              "title": "API key",
+              "description": "Create an API key in the provider's developer console.",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "title": "No auth",
+          "type": "object",
+          "required": ["auth_type"],
+          "properties": {
+            "auth_type": {"type": "string", "const": "NO_AUTH"}
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### UX-12: Date pattern also sets `format: date`/`date-time` {#ux-12}
+
+**Rule:** For a date or date-time field, set `type: string`, the matching `format`, and a `pattern` with a readable `pattern_descriptor`. Use `date` for a date and `date-time` when the value includes a time.
+
+**Why:** The date picker requires the string type and date format. A pattern without a format renders a plain text field.
+
+<Tabs groupId="cdk">
+<TabItem value="yaml" label="YAML">
+
+```yaml title="Poor"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        description: Date from which to start syncing records; earlier records are not replicated.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: YYYY-MM-DD
+```
+
+```yaml title="Good"
+spec:
+  connection_specification:
+    type: object
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        description: UTC date from which to start syncing Google Ads records; earlier records are not replicated.
+        format: date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: YYYY-MM-DD
+```
+
+</TabItem>
+<TabItem value="python" label="Python">
+
+```json title="Poor"
+{
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "title": "Start date",
+      "description": "UTC date from which to start syncing Google Ads records; earlier records are not replicated.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "pattern_descriptor": "YYYY-MM-DD"
+    }
+  }
+}
+```
+
+```json title="Good"
+{
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "title": "Start date",
+      "description": "UTC date from which to start syncing Google Ads records; earlier records are not replicated.",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "pattern_descriptor": "YYYY-MM-DD",
+      "examples": ["2017-01-25"]
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="java" label="Java/Kotlin">
+
+```json title="Poor"
+{
+  "required": ["start_date"],
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "title": "Start date",
+      "description": "Date from which to start syncing records; earlier records are not replicated.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "pattern_descriptor": "YYYY-MM-DD"
+    }
+  }
+}
+```
+
+```kotlin title="Good: Kotlin"
+@JsonProperty("start_date")
+@JsonSchemaTitle("Start date")
+@JsonPropertyDescription("Date from which to start syncing records; earlier records are not replicated.")
+@JsonSchemaInject(json = """{"format":"date","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$","pattern_descriptor":"YYYY-MM-DD"}""")
+lateinit var startDate: String
+
+@JsonProperty("created_at")
+@JsonSchemaTitle("Creation timestamp")
+@JsonPropertyDescription("Timestamp when the record was created, including its time and UTC timezone.")
+@JsonSchemaInject(json = """{"format":"date-time","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$","pattern_descriptor":"YYYY-MM-DDTHH:mm:ssZ"}""")
+lateinit var createdAt: String
+```
+
+```json title="Good: spec.json"
+{
+  "required": ["start_date", "created_at"],
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "title": "Start date",
+      "description": "Date from which to start syncing records; earlier records are not replicated.",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "pattern_descriptor": "YYYY-MM-DD"
+    },
+    "created_at": {
+      "type": "string",
+      "title": "Creation timestamp",
+      "description": "Timestamp when the record was created, including its time and UTC timezone.",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "pattern_descriptor": "YYYY-MM-DDTHH:mm:ssZ"
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Other form guidance
+
+Configuration adds work and creates opportunities for confusion. Avoid asking users to configure a behavior when the connector can choose a safe value or handle it automatically. Avoid exposing implementation details such as retry counts unless users need them to reach a goal.
+
+Use `order` and `group` to arrange related fields. Keep technical or niche options out of the main flow with collapsed groups, and use `always_show` only when users need to see a field that would otherwise collapse. Give every `oneOf` option a `title`, add useful `examples`, and use `enum` instead of free text when the accepted values are fixed.
+
+Fail fast and provide an actionable error. Use `pattern` to reject malformed values and `pattern_descriptor` to explain the expected format. See [UX-05](#ux-05) and [UX-12](#ux-12).
+
+## Output data and schemas
+
+### Strongly favor ELT over ETL
+
+Extract-load-transform (ELT) means a connector loads data into the destination in the shape the source provides it, and users transform it afterward. Extract-transform-load (ETL) means the connector reshapes data before loading it.
+
+A connector's features shouldn't stand between users and their goals. When a connector honors the most literal representation of the source API and leaves transformation to the user's warehouse, every user gets a faithful copy of their data and full control over its final shape. ELT is the most democratic model Airbyte can offer, for the following reasons.
+
+#### Removes Airbyte as a bottleneck
+
+If a connector shapes its output for one way of using the data, users who need a different shape must ask for connector changes and wait for them. When the connector loads data the way the source provides it, each user can transform it in their destination, on their own schedule and with their own tools.
+
+#### Will always be backwards compatible
 
 APIs already follow strong conventions to maintain backwards compatibility. By transforming data, we break this guarantee, which means we may break downstream flows for our users.
 
-**Future proof**
+#### Future proof
 
-We may have a vision of what a user needs today. But if our persona evolves next year, then we’ll probably also need to adapt our transformation logic, which would require significant dev and data migration efforts.
+We may have a vision of what a user needs today. But if our persona evolves next year, then we’ll probably also need to adapt our transformation logic, which would require significant development and data migration efforts.
 
-**More flexible**
+#### More flexible
 
 Current users have different needs from data. By being opinionated on how they should consume data, we are effectively favoring one user persona over the other. While there might be some cases where this is warranted, it should be done with extreme intentionality.
 
-**More efficient**
+#### More efficient
 
 With ETL, if the “T” ever needs to change, then we need to re-extract all data for all users. This is computationally and financially expensive and will place a lot of pressure on the source systems as we re-extract all data.
 
-#### Describe output schemas as completely and reliably as possible
+### Describe output schemas as completely and reliably as possible
 
-Our most popular destinations are strongly typed like Postgres, BigQuery, or Parquet & Avro.
+Our most popular destinations use strongly typed systems such as Postgres and BigQuery, and file formats such as Parquet.
 
-Being strongly typed enables optimizations and syntactic sugar to make it very easy & performant for the user to query data.
+Being strongly typed enables optimizations and syntactic sugar to make it very easy and efficient for the user to query data.
 
 To provide the best UX when moving data to these destinations, Airbyte source connectors should describe their schema in as much detail as correctness allows.
 
-In some cases, describing schemas is impossible to do reliably. For example, MongoDB doesn’t have any schemas. To infer the schema, one needs to read all the records in a particular table. And even then, once new records are added, they also must all be read in order to update the inferred schema. At the time of writing, this is infeasible to do performantly in Airbyte since we do not have an intermediate staging area to do this. In this case, we should do the “best we can” to describe the schema, keeping in mind that reliability of the described schema is more important than expressiveness.
+In some cases, describing schemas is impossible to do reliably. For example, MongoDB doesn’t have any schemas. To infer the schema, one needs to read all the records in a particular table. And even then, once new records are added, they also must all be read in order to update the inferred schema. At the time of writing, this is infeasible to do efficiently in Airbyte since we do not have an intermediate staging area to do this. In this case, we should do the “best we can” to describe the schema, keeping in mind that reliability of the described schema is more important than expressiveness.
 
 That is, we would rather not describe a schema at all than describe it incorrectly, as incorrect descriptions **will** lead to failures downstream.
 
-To keep schema descriptions reliable, [automate schema generation](https://docs.airbyte.com/connector-development/cdk-python/schemas#generating-schemas-from-openapi-definitions) whenever possible.
+To keep schema descriptions reliable, [automate schema generation](https://docs.airbyte.com/platform/connector-development/cdk-python/schemas#generating-schemas-from-openapi-definitions) whenever possible.
 
-#### Be very cautious about breaking changes to output schemas
+### Be very cautious about breaking changes to output schemas
 
 Assuming we follow ELT over ETL, and automate generation of output schemas, this should come up very rarely. However, it is still important enough to warrant mention.
 
 If for any reason we need to change the output schema declared by a connector in a backwards breaking way, consider it a necessary evil that should be avoided if possible. Basically, the only reasons for a backwards breaking change should be:
 
-- a connector previously had an incorrect schema, or
-- It was not following ELT principles and is now being changed to follow them
+- A connector previously had an incorrect schema.
+- A connector was not following ELT principles and is now being changed to follow them.
 
 Other breaking changes should probably be escalated for approval.
 
-### Prerequisite Configurations & assumptions
+## Prerequisite configurations and assumptions
 
-**Document all assumptions**
+### Document all assumptions
 
 If a connector makes assumptions about the underlying data source, then these assumptions must be documented. For example: for some features of the Facebook Pages connector to work, a user must have an Instagram Business account linked to an Instagram page linked to their Facebook Page. In this case, the externally facing documentation page for the connector must be very clear about this.
 
-**Provide how-tos for prerequisite configuration**
+### Provide how-tos for prerequisite configuration
 
 If a user needs to set up their data source in a particular way to pull data, then we must provide documentation for how they should do it.
 
-For example, to set up CDC for databases, a user must create logical replication slots and do a few other things. These steps should be documented with examples or screenshots wherever possible (e.g: here are the SQL statements you need to run, with the following permissions, on the following screen, etc.)
+For example, to set up CDC for databases, a user must create logical replication slots and do a few other things. These steps should be documented with examples or screenshots wherever possible (for example, the SQL statements to run, the required permissions, and the relevant screen).
 
-### External Documentation
+## External documentation
 
-This section is concerned with the external-facing documentation of a connector that goes in [https://docs.airbyte.com](https://docs.airbyte.com) e.g: [this one](https://docs.airbyte.com/integrations/sources/amazon-seller-partner)
+Write external-facing connector documentation on [docs.airbyte.com](https://docs.airbyte.com), such as the [Amazon Seller Partner page](https://docs.airbyte.com/integrations/sources/amazon-seller-partner).
 
-**Documentation should communicate persona-impacting behaviors**
+### Documentation should communicate persona-impacting behaviors
 
 When writing documentation ask: who is the intended target persona for a piece of documentation, and what information do they need to understand how this connector impacts their workflows?
 
-For example, data analysts & analytics engineers probably don’t care if we use Debezium for database replication. To them, the important thing is that we provide Change Data Capture (CDC) -- Debezium is an implementation detail. Therefore, when communicating information about our database replication logic, we should emphasize the end behaviors, rather than implementation details.
+For example, data analysts and analytics engineers probably do not care which implementation we use for database replication. To them, the important thing is that we provide Change Data Capture (CDC). The implementation is a detail. Therefore, when communicating information about database replication, we should emphasize the end behaviors rather than implementation details.
 
-**Example**: Don’t say: “Debezium cannot process UTF-16 character set“.
+**Example**: Don’t say: “The CDC implementation cannot process UTF-16 characters.”
 
-Instead, say: “When using CDC, UTF-16 characters are not currently supported”
+Instead, say: “When using CDC, UTF-16 characters are not currently supported.”
 
-A user who doesn’t already know what Debezium is might be left confused by the first phrasing, so we should use the second phrasing.
-
-\*: _this is a fake example. AFAIK there is no such limitation in Debezi-- I mean, the Postgres connector._
+A user who does not know which implementation we use might be confused by the first phrasing, so we should use the second phrasing.
