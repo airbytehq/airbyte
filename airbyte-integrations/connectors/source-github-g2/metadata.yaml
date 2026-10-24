@@ -34,6 +34,7 @@ data:
       1.0.0:
         message: "The workflow_job_steps, contributor_activity_weeks, and release_assets child streams were removed. Their data is now available in the steps, weeks, and assets array columns on workflow_jobs, contributor_activity, and releases. Refresh the source schema and clear the affected streams."
         upgradeDeadline: "2026-11-07"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:

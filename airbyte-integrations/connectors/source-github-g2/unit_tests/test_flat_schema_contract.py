@@ -190,6 +190,7 @@ def test_known_primary_keys_and_incremental_cursor_are_exposed():
             "id",
             "node_id",
             "name",
+            "digest",
             "content_type",
             "size",
             "download_count",

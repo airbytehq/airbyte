@@ -244,6 +244,7 @@ def test_releases_assets_are_flattened_from_graphql(rate_limit_mock_response, re
             {
                 "node_id": "RA_kwDOAbcDEf4AAAAB",
                 "name": "asset.zip",
+                "digest": "sha256:012345",
                 "content_type": "application/zip",
                 "size": 42,
                 "download_count": 5,
@@ -267,6 +268,7 @@ def test_releases_assets_are_flattened_from_graphql(rate_limit_mock_response, re
             "id": 1,
             "node_id": "RA_kwDOAbcDEf4AAAAB",
             "name": "asset.zip",
+            "digest": "sha256:012345",
             "content_type": "application/zip",
             "size": 42,
             "download_count": 5,
