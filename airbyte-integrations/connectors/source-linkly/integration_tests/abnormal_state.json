@@ -1,0 +1,32 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "clicks" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "workspace_id": 1, "parent_slice": {} },
+            "cursor": { "t": "2099-12-31" }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "conversions" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "workspace_id": 1, "parent_slice": {} },
+            "cursor": { "inserted_at": "2099-12-31T00:00:00" }
+          }
+        ]
+      }
+    }
+  }
+]
