@@ -10,6 +10,7 @@ This page contains the setup guide and reference information for the [Ashby](htt
 
 - An Ashby account
 - An Ashby API key with the appropriate permissions for the streams you want to sync. See the [Ashby authentication docs](https://developers.ashbyhq.com/reference/authentication) for details on how to create an API key.
+- A start date, in `YYYY-MM-DDTHH:MM:SSZ` format. The connector replicates only applications, application feedback, and interview schedules created on or after this date. See the [setup guide](#setup-guide) for how the start date affects other streams.
 
 Your API key must have read permissions enabled for the modules that correspond to the streams you want to sync:
 
@@ -59,7 +60,7 @@ This source syncs the following streams:
 - [application_feedback](https://developers.ashbyhq.com/reference/applicationfeedbacklist)
 - [application_history](https://developers.ashbyhq.com/reference/applicationlisthistory) (substream of applications)
 - [approvals](https://developers.ashbyhq.com/reference/approvallist)
-- [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
+- [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist-1)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
 - [candidates](https://developers.ashbyhq.com/reference/candidatelist)
 - [custom_fields](https://developers.ashbyhq.com/reference/customfieldlist)
@@ -75,12 +76,12 @@ This source syncs the following streams:
 - [job_postings](https://developers.ashbyhq.com/reference/jobpostinglist)
 - [job_templates](https://developers.ashbyhq.com/reference/jobtemplatelist)
 - [jobs](https://developers.ashbyhq.com/reference/joblist)
-- [locations](https://developers.ashbyhq.com/reference/locationlist)
+- [locations](https://developers.ashbyhq.com/reference/locationlist-1)
 - [offers](https://developers.ashbyhq.com/reference/offerlist)
 - [openings](https://developers.ashbyhq.com/reference/openinglist-1)
 - [projects](https://developers.ashbyhq.com/reference/projectlist-1)
 - [source_tracking_links](https://developers.ashbyhq.com/reference/sourcetrackinglinklist-1)
-- [sources](https://developers.ashbyhq.com/reference/sourcelist)
+- [sources](https://developers.ashbyhq.com/reference/sourcelist-1)
 - [survey_form_definitions](https://developers.ashbyhq.com/reference/surveyformdefinitionlist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
@@ -161,7 +162,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 | 1.4.0 | 2026-09-30 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fail syncs on Ashby `success: false` errors, sync `interview_stages` per interview plan, paginate `application_criteria_evaluations`, and include archived and deactivated records in lookup streams |
 | 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |
 | 1.3.3 | 2026-09-22 | [86515](https://github.com/airbytehq/airbyte/pull/86515) | Update dependencies |
-| 1.3.2 | 2026-09-21 | [86501](https://github.com/airbytehq/airbyte/pull/86501) | chore(source-ashby): wire sandbox acceptance-test secret, mark offers/interview_stages empty, add mock server tests |
+| 1.3.2 | 2026-09-21 | [86501](https://github.com/airbytehq/airbyte/pull/86501) | Add mock-server tests and sandbox acceptance-test secret |
 | 1.3.1 | 2026-09-15 | [85974](https://github.com/airbytehq/airbyte/pull/85974) | Update dependencies |
 | 1.3.0 | 2026-09-09 | [85755](https://github.com/airbytehq/airbyte/pull/85755) | Add `application_feedback` stream; send the API key as the Basic auth username with a blank password per Ashby docs |
 | 1.2.1 | 2026-09-08 | [85402](https://github.com/airbytehq/airbyte/pull/85402) | Update dependencies |
@@ -171,7 +172,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 | 1.0.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Breaking: declare documented API fields across stream schemas, including element schemas for previously untyped array columns. Data-lake users must refresh the affected streams, then recreate the affected tables if a sync still fails. See the [migration guide](/integrations/sources/ashby-migrations). |
 | 0.3.9 | 2026-08-18 | [78554](https://github.com/airbytehq/airbyte/pull/78554) | Update dependencies |
 | 0.3.8 | 2026-08-11 | [84215](https://github.com/airbytehq/airbyte/pull/84215) | Promoted release candidate to GA |
-| 0.3.8-rc.5 | 2026-08-11 | [84214](https://github.com/airbytehq/airbyte/pull/84214) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
+| 0.3.8-rc.5 | 2026-08-11 | [84214](https://github.com/airbytehq/airbyte/pull/84214) | Revert concurrency support |
 | 0.3.8-rc.4 | 2026-08-11 | [83816](https://github.com/airbytehq/airbyte/pull/83816) | Add missing application, candidate, and source fields to the declared schemas, and remove duplicated unreferenced manifest blocks. |
 | 0.3.8-rc.3 | 2026-05-26 | [78434](https://github.com/airbytehq/airbyte/pull/78434) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
 | 0.3.8-rc.2 | 2026-05-21 | [78307](https://github.com/airbytehq/airbyte/pull/78307) | Decrease default concurrency to 3 after Phase 1 rollout monitoring found source-read regressions and a 429 retry warning. |
