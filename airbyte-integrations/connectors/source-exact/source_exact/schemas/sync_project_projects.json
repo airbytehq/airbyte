@@ -1,0 +1,248 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncProjectProjects",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Account": {
+      "description": "The account for this project",
+      "type": ["null", "string"]
+    },
+    "AccountCode": {
+      "description": "Code of Account",
+      "type": ["null", "string"]
+    },
+    "AccountContact": {
+      "description": "Contact person of Account",
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "description": "Name of Account",
+      "type": ["null", "string"]
+    },
+    "AllowAdditionalInvoicing": {
+      "description": "Indicates if additional invoice is allowed for project",
+      "type": ["null", "boolean"]
+    },
+    "AllowMemberEntryOnly": {
+      "description": "Allow only member to create time or cost entry",
+      "type": ["null", "boolean"]
+    },
+    "BlockEntry": {
+      "description": "Block time and cost entries",
+      "type": ["null", "boolean"]
+    },
+    "BlockInvoicing": {
+      "description": "Block invoicing",
+      "type": ["null", "boolean"]
+    },
+    "BlockPlanning": {
+      "description": "Block planning and reservations",
+      "type": ["null", "boolean"]
+    },
+    "BlockPurchasing": {
+      "description": "Block purchasing",
+      "type": ["null", "boolean"]
+    },
+    "BlockRebilling": {
+      "description": "Block rebilling",
+      "type": ["null", "boolean"]
+    },
+    "BudgetedAmount": {
+      "description": "Budgeted amount of sales in the default currency of the company",
+      "type": ["null", "number"]
+    },
+    "BudgetedCosts": {
+      "description": "Budgeted amount of costs in the default currency of the company",
+      "type": ["null", "number"]
+    },
+    "BudgetedRevenue": {
+      "description": "Budgeted amount of revenue in the default currency of the company",
+      "type": ["null", "number"]
+    },
+    "BudgetOverrunHours": {
+      "description": "BudgetOverrunHours: 10-Allowed, 20-Not Allowed",
+      "type": ["null", "integer"]
+    },
+    "BudgetType": {
+      "description": "Budget type",
+      "type": ["null", "integer"]
+    },
+    "BudgetTypeDescription": {
+      "description": "Budget type description",
+      "type": ["null", "string"]
+    },
+    "Classification": {
+      "description": "Used only for PSA to link a project classification to the project",
+      "type": ["null", "string"]
+    },
+    "ClassificationDescription": {
+      "description": "Description of Classification",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "Code",
+      "type": ["null", "string"]
+    },
+    "CostsAmountFC": {
+      "description": "Used only for PSA to store the budgetted costs of a project (except for project type Campaign and Non-billable). Positive quantities only",
+      "type": ["null", "number"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "CustomerPOnumber": {
+      "description": "Used only for PSA to store the customer's PO number",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "Description of the project",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "DivisionName": {
+      "description": "Name of Division",
+      "type": ["null", "string"]
+    },
+    "EndDate": {
+      "description": "End date of the project. In combination with the start date the status is determined",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FixedPriceItem": {
+      "description": "Item used for fixed price invoicing. To be defined per project. If empty the functionality relies on the setting",
+      "type": ["null", "string"]
+    },
+    "FixedPriceItemDescription": {
+      "description": "Description of FixedPriceItem",
+      "type": ["null", "string"]
+    },
+    "HasWBSLines": {
+      "description": "Indicates if whether the Project has WBS",
+      "type": ["null", "boolean"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "IncludeInvoiceSpecification": {
+      "description": "Include invoice specification. E.g: 1 = Based on account, 2 = Always, 3 = Never",
+      "type": ["null", "integer"]
+    },
+    "IncludeSpecificationInInvoicePdf": {
+      "description": "Indicates whether to include invoice specification in invoice PDF",
+      "type": ["null", "boolean"]
+    },
+    "InternalNotes": {
+      "description": "Internal notes not to be printed in invoice",
+      "type": ["null", "string"]
+    },
+    "InvoiceAddress": {
+      "description": "Invoice address",
+      "type": ["null", "string"]
+    },
+    "InvoiceAsQuoted": {
+      "description": "Indicates whether the project is invoice as quoted",
+      "type": ["null", "boolean"]
+    },
+    "Manager": {
+      "description": "Responsible person for this project",
+      "type": ["null", "string"]
+    },
+    "ManagerFullname": {
+      "description": "Name of Manager",
+      "type": ["null", "string"]
+    },
+    "MarkupPercentage": {
+      "description": "Purchase markup percentage",
+      "type": ["null", "number"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "For additional information about projects",
+      "type": ["null", "string"]
+    },
+    "PaymentCondition": {
+      "description": "Payment condition code for this project",
+      "type": ["null", "string"]
+    },
+    "PrepaidItem": {
+      "description": "Used only for PSA. This item is used for prepaid invoicing. If left empty, the functionality relies on a setting",
+      "type": ["null", "string"]
+    },
+    "PrepaidItemDescription": {
+      "description": "Description of PrepaidItem",
+      "type": ["null", "string"]
+    },
+    "PrepaidType": {
+      "description": "PrepaidType: 1-Retainer, 2-Hour type bundle",
+      "type": ["null", "integer"]
+    },
+    "PrepaidTypeDescription": {
+      "description": "Description of PrepaidType",
+      "type": ["null", "string"]
+    },
+    "SalesTimeQuantity": {
+      "description": "Budgeted time. Total number of hours estimated for the fixed price project",
+      "type": ["null", "number"]
+    },
+    "SourceQuotation": {
+      "description": "Source quotation",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Start date of a project. In combination with the end date the status is determined",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "TimeQuantityToAlert": {
+      "description": "Alert when exceeding (Hours)",
+      "type": ["null", "number"]
+    },
+    "Type": {
+      "description": "Reference to ProjectTypes. E.g: 1 = Campaign , 2 = Fixed Price, 3 = Time and Material, 4 = Non billable, 5 = Prepaid",
+      "type": ["null", "integer"]
+    },
+    "TypeDescription": {
+      "description": "Description of Type",
+      "type": ["null", "string"]
+    },
+    "UseBillingMilestones": {
+      "description": "Indicates whether the Project is using billing milestones",
+      "type": ["null", "boolean"]
+    }
+  }
+}
