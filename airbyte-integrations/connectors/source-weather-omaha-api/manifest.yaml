@@ -1,0 +1,168 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: Omaha 10 day forecast using Open Meteo
+
+check:
+  type: CheckStream
+  stream_names:
+    - omaha_10_day_forecast
+
+streams:
+  - type: DeclarativeStream
+    name: omaha_10_day_forecast
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.open-meteo.com/v1/forecast?latitude=41.2586&longitude=-95.9378&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=10
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          daily:
+            type:
+              - object
+              - "null"
+            properties:
+              time:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              weather_code:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              temperature_2m_max:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              temperature_2m_min:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              wind_speed_10m_max:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              precipitation_probability_max:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          elevation:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          daily_units:
+            type:
+              - object
+              - "null"
+            properties:
+              time:
+                type:
+                  - string
+                  - "null"
+              weather_code:
+                type:
+                  - string
+                  - "null"
+              temperature_2m_max:
+                type:
+                  - string
+                  - "null"
+              temperature_2m_min:
+                type:
+                  - string
+                  - "null"
+              wind_speed_10m_max:
+                type:
+                  - string
+                  - "null"
+              precipitation_probability_max:
+                type:
+                  - string
+                  - "null"
+          generationtime_ms:
+            type:
+              - number
+              - "null"
+          utc_offset_seconds:
+            type:
+              - number
+              - "null"
+          timezone_abbreviation:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  documentation_url: https://open-meteo.com/en/docs
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://open-meteo.com/en/docs
+  testedStreams:
+    omaha_10_day_forecast:
+      isStale: false
+      hasRecords: true
+      streamHash: 4b286ed0edb41e601bdb96fee18681a98f18b70f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    omaha_10_day_forecast: true
