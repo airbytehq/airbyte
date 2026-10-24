@@ -262,6 +262,20 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -316,8 +330,25 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: id
+              incremental_dependency: true
+              extra_fields: [["updated_at"]]
               stream:
                 $ref: "#/definitions/streams/tickets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: ticket_updated_at
+        start_datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+        end_datetime: "9999-12-31T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: ["ticket_updated_at"]
+              value: "{{ stream_slice.extra_fields['updated_at'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1517,6 +1548,27 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: ["executed_at_cursor"]
+              value: "{{ [record['executed_at'], now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')] | min if record.get('executed_at') else None }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: executed_at_cursor
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: executed_after
+          inject_into: request_parameter
+        lookback_window: P{{ config['lookback_window_in_days'] or 14 }}D
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1717,7 +1769,7 @@ spec:
           - "2020-12-01T00:00:00Z"
       lookback_window_in_days:
         type: integer
-        description: Number of days for lookback window for the stream Satisfaction Ratings
+        description: Number of days for lookback window for the streams Satisfaction Ratings and Time Entries
         order: 4
         title: Lookback Window
         default: 14
@@ -2289,6 +2341,10 @@ schemas:
           - string
           - "null"
       updated_at:
+        type:
+          - string
+          - "null"
+      ticket_updated_at:
         type:
           - string
           - "null"
@@ -3803,6 +3859,10 @@ schemas:
           - string
           - "null"
       executed_at:
+        type:
+          - string
+          - "null"
+      executed_at_cursor:
         type:
           - string
           - "null"
