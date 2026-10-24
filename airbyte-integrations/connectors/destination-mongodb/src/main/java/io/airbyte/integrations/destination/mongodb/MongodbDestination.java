@@ -8,6 +8,7 @@ import static com.mongodb.client.model.Projections.excludeId;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
@@ -23,8 +24,13 @@ import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -32,6 +38,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,15 +53,41 @@ import org.slf4j.LoggerFactory;
 public class MongodbDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
+  private static final String TLS_REQUIRED_ERR_MSG = "TLS is required for the MongoDB connection.";
 
   private final MongodbNameTransformer namingResolver;
+  private final FeatureFlags featureFlags;
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MongodbDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MongodbDestination() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  MongodbDestination(final FeatureFlags featureFlags) {
     namingResolver = new MongodbNameTransformer();
+    this.featureFlags = featureFlags;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
+
+  /**
+   * When running in cloud deployment mode, remove the TLS option from the spec for standalone
+   * instances to enforce TLS connections. This replaces the need for a separate strict-encrypt
+   * connector.
+   */
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (cloudDeploymentMode()) {
+      // Remove TLS property for standalone instance to disable possibility to switch off TLS connection
+      ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
+    }
+    return spec;
   }
 
   public static void main(final String[] args) throws Exception {
@@ -64,8 +97,33 @@ public class MongodbDestination extends BaseConnector implements Destination {
     LOGGER.info("completed destination: {}", MongodbDestination.class);
   }
 
+  /**
+   * In cloud deployments TLS is mandatory. Standalone instances may opt out of TLS, and legacy
+   * host/port configs always connect without TLS, so both are rejected.
+   */
+  @VisibleForTesting
+  void enforceCloudTls(final JsonNode config) {
+    if (!cloudDeploymentMode()) {
+      return;
+    }
+    if (!config.has(MongoUtils.INSTANCE_TYPE)) {
+      throw new ConfigErrorException(TLS_REQUIRED_ERR_MSG);
+    }
+    final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
+    final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !standaloneTlsEnabled(instanceConfig)) {
+      throw new ConfigErrorException(TLS_REQUIRED_ERR_MSG);
+    }
+  }
+
+  /** TLS is enabled by default when the standalone instance config omits the property. */
+  private static boolean standaloneTlsEnabled(final JsonNode instanceConfig) {
+    return !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
+  }
+
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
+    enforceCloudTls(config);
     try {
       final MongoDatabase database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
@@ -102,6 +160,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    enforceCloudTls(config);
     final MongoDatabase database = getDatabase(config);
 
     final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
@@ -161,8 +220,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
     switch (instance) {
       case STANDALONE -> {
-        // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
-        final var tls = !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
+        final var tls = standaloneTlsEnabled(instanceConfig);
         connectionStrBuilder.append(
             String.format(MongoUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
