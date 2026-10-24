@@ -480,8 +480,7 @@ class TestDisplayReportStreams:
             for error in trace_errors
         ), f"expected a descriptive retention-window error, got: {output.errors}"
         assert all(
-            error.message != "HTTP Status Code: 400. Error: Bad request. Please check your request parameters."
-            for error in trace_errors
+            error.message != "HTTP Status Code: 400. Error: Bad request. Please check your request parameters." for error in trace_errors
         )
 
     def test_given_unrecognized_400_when_create_report_then_emit_amazon_detail(
