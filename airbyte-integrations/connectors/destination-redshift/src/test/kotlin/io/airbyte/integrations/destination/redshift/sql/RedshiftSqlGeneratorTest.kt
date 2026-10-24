@@ -55,7 +55,7 @@ internal class RedshiftSqlGeneratorTest {
     private fun typeChangeSql(
         oldType: String,
         newType: String,
-        columnName: String = "col"
+        columnName: String = "col",
     ): String =
         sqlGenerator.matchSchemas(
             TableName(namespace = "ns", name = "tbl"),
@@ -66,7 +66,7 @@ internal class RedshiftSqlGeneratorTest {
                         ColumnTypeChange(
                             originalType = ColumnType(oldType, true),
                             newType = ColumnType(newType, true),
-                        )
+                        ),
                 ),
         )
 
