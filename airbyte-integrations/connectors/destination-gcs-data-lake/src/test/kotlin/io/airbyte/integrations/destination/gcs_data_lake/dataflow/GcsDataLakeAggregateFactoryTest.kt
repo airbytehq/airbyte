@@ -45,6 +45,16 @@ import org.junit.jupiter.api.Test
 
 internal class GcsDataLakeAggregateFactoryTest {
     @Test
+    fun `commit locks are shared only by the same table identifier`() {
+        val firstTableLock = GcsDataLakeAggregate.commitLockFor("namespace.first")
+        val sameTableLock = GcsDataLakeAggregate.commitLockFor("namespace.first")
+        val otherTableLock = GcsDataLakeAggregate.commitLockFor("namespace.second")
+
+        assertThat(firstTableLock).isSameAs(sameTableLock)
+        assertThat(firstTableLock).isNotSameAs(otherTableLock)
+    }
+
+    @Test
     fun testCreateUsesStreamStateStagingBranch() {
         val stagingBranchName = "airbyte_staging_unique"
         val stream = makeStream()
@@ -54,6 +64,7 @@ internal class GcsDataLakeAggregateFactoryTest {
                 Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val table: Table = mockk { every { newAppend() } returns mockk<AppendFiles>() }
+        every { table.name() } returns "test.namespace.name"
         val append: AppendFiles = mockk {
             every { toBranch(stagingBranchName) } returns this
             every { commit() } just runs
@@ -106,6 +117,7 @@ internal class GcsDataLakeAggregateFactoryTest {
                 Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val table: Table = mockk()
+        every { table.name() } returns "test.namespace.name"
         every { table.refresh() } just runs
         every { table.refs() } returns emptyMap()
         val append: AppendFiles = mockk {

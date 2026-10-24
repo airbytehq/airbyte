@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.SupersededDataFileProvider
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.iceberg.Schema
@@ -44,7 +45,10 @@ class GcsDataLakeAggregate(
 ) : Aggregate {
     companion object {
         val converter = AirbyteValueToIcebergRecord()
-        val commitLock: Any = Any()
+        private val commitLocks = ConcurrentHashMap<String, Any>()
+
+        internal fun commitLockFor(tableIdentifier: String): Any =
+            commitLocks.computeIfAbsent(tableIdentifier) { Any() }
     }
 
     private val operationType =
@@ -145,10 +149,12 @@ class GcsDataLakeAggregate(
             }
         }
         if (resolvedDeletesEnabled) {
-            withContext(Dispatchers.IO) { synchronized(commitLock) { completeAndCommit() } }
+            withContext(Dispatchers.IO) {
+                synchronized(commitLockFor(table.name())) { completeAndCommit() }
+            }
         } else {
             val writeResult = writer.complete()
-            synchronized(commitLock) {
+            synchronized(commitLockFor(table.name())) {
                 if (writeResult.deleteFiles().isNotEmpty()) {
                     val delta = table.newRowDelta().toBranch(stagingBranchName)
                     writeResult.dataFiles().forEach { delta.addRows(it) }
