@@ -11193,6 +11193,8 @@ definitions:
             description: The ID of the pull request comment to which the reaction belongs.
             type: *id1058
         additionalProperties: false
+api_budget:
+  type: HTTPAPIBudget
   policies:
   - type: MovingWindowCallRatePolicy
     rates:

@@ -76,6 +76,13 @@ def test_flatten_exemptions_are_exactly_the_approved_fields():
     assert {stream: set(fields) for stream, fields in FLATTEN_EXEMPTIONS.items()} == EXPECTED_EXEMPTION_KEYS
 
 
+def test_manifest_declares_http_api_budget_with_policies():
+    api_budget = make_source(config=CONFIG)._source_config["api_budget"]
+
+    assert api_budget["type"] == "HTTPAPIBudget"
+    assert api_budget["policies"]
+
+
 def test_array_item_object_properties_must_be_scalar():
     with pytest.raises(AssertionError, match="item properties must have one scalar type"):
         _assert_array_items_are_flat_objects(
