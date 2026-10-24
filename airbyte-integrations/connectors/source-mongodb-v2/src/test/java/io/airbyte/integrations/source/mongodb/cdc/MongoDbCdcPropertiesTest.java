@@ -12,6 +12,8 @@ import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.HE
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.HEARTBEAT_INTERVAL_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_VALUE;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.TASK_MANAGEMENT_TIMEOUT_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.TASK_MANAGEMENT_TIMEOUT_MS;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.TOMBSTONE_ON_DELETE_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.TOMBSTONE_ON_DELETE_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,12 +26,14 @@ class MongoDbCdcPropertiesTest {
   @Test
   void testDebeziumProperties() {
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
-    assertEquals(5, debeziumProperties.size());
+    assertEquals(6, debeziumProperties.size());
     assertEquals(CONNECTOR_CLASS_VALUE, debeziumProperties.get(CONNECTOR_CLASS_KEY));
     assertEquals(SNAPSHOT_MODE_VALUE, debeziumProperties.get(SNAPSHOT_MODE_KEY));
     assertEquals(CAPTURE_MODE_VALUE, debeziumProperties.get(CAPTURE_MODE_KEY));
     assertEquals(HEARTBEAT_FREQUENCY_MS, debeziumProperties.get(HEARTBEAT_INTERVAL_KEY));
     assertEquals(TOMBSTONE_ON_DELETE_VALUE, debeziumProperties.get(TOMBSTONE_ON_DELETE_KEY));
+    assertEquals("180000", debeziumProperties.get(TASK_MANAGEMENT_TIMEOUT_KEY));
+    assertEquals(TASK_MANAGEMENT_TIMEOUT_MS, debeziumProperties.get(TASK_MANAGEMENT_TIMEOUT_KEY));
   }
 
 }
