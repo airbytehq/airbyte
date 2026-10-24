@@ -33,15 +33,13 @@ import org.apache.iceberg.util.PropertyUtil
 class IcebergTableWriterFactory {
     class InvalidGenerationIdException(message: String) : Exception(message)
 
-    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
+    private val generationIdRegex = Regex("""ab-generation-id-(\d+)-e""")
 
-    private fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
-        if (!generationIdRegex.matches(generationId)) {
-            throw InvalidGenerationIdException(
+    private fun parseGenerationIdSuffix(generationId: String): Long =
+        generationIdRegex.matchEntire(generationId)?.groupValues?.get(1)?.toLongOrNull()
+            ?: throw InvalidGenerationIdException(
                 "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
             )
-        }
-    }
 
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
@@ -56,8 +54,16 @@ class IcebergTableWriterFactory {
         generationId: String,
         importType: ImportType,
         schema: Schema,
+        positionalDeleteRef: String? = null,
+        positionalDeleteState: PositionalDeleteResolutionState? = null,
+        allowWholeFileSupersession: Boolean = false,
+        suppressDeletedPositions: Boolean = true,
+        deleteMode: IcebergDeleteMode = IcebergDeleteMode.EQUALITY,
     ): BaseTaskWriter<Record> {
-        assertGenerationIdSuffixIsOfValidFormat(generationId)
+        val currentGenerationId = parseGenerationIdSuffix(generationId)
+        if (importType is Dedupe) {
+            validateDeleteMode(table, deleteMode)
+        }
         val format =
             FileFormat.valueOf(
                 table
@@ -66,6 +72,14 @@ class IcebergTableWriterFactory {
                     .uppercase(),
             )
         val identifierFieldIds = schema.identifierFieldIds()
+        if (deleteMode != IcebergDeleteMode.EQUALITY) {
+            require(positionalDeleteRef != null) {
+                "Resolved delete files require a delete ref to write to"
+            }
+            require(identifierFieldIds.isNotEmpty()) {
+                "Positional deletes require at least one identifier field"
+            }
+        }
         val writerFactory =
             createWriterFactory(
                 table = table,
@@ -74,6 +88,38 @@ class IcebergTableWriterFactory {
             )
         val outputFileFactory =
             createOutputFileFactory(table = table, format = format, generationId = generationId)
+        val positionalDeleteResolver =
+            if (deleteMode == IcebergDeleteMode.EQUALITY) {
+                null
+            } else {
+                val resolutionState =
+                    requireNotNull(positionalDeleteState) {
+                        "Positional delete writers require stream-scoped resolution state"
+                    }
+                PositionalDeleteResolver(
+                    table,
+                    positionalDeleteRef!!,
+                    schema,
+                    identifierFieldIds,
+                    writerFactory,
+                    outputFileFactory,
+                    state = resolutionState,
+                    allowWholeFileSupersession = allowWholeFileSupersession,
+                    suppressDeletedPositions = suppressDeletedPositions,
+                    writeDeletionVectors = deleteMode == IcebergDeleteMode.DELETION_VECTOR,
+                    currentGenerationId = currentGenerationId,
+                    deletionVectorOutputFileFactory =
+                        if (deleteMode == IcebergDeleteMode.DELETION_VECTOR) {
+                            createOutputFileFactory(
+                                table = table,
+                                format = FileFormat.PUFFIN,
+                                generationId = generationId,
+                            )
+                        } else {
+                            null
+                        },
+                )
+            }
         val targetFileSize =
             PropertyUtil.propertyAsLong(
                 table.properties(),
@@ -92,15 +138,28 @@ class IcebergTableWriterFactory {
                     format = format,
                 )
             is Dedupe ->
-                newDeltaWriter(
-                    table = table,
-                    schema = schema,
-                    identifierFieldIds = identifierFieldIds,
-                    writerFactory = writerFactory,
-                    targetFileSize = targetFileSize,
-                    outputFileFactory = outputFileFactory,
-                    format = format,
-                )
+                if (positionalDeleteResolver == null) {
+                    newDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format,
+                    )
+                } else {
+                    newPositionDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format,
+                        positionalDeleteResolver = positionalDeleteResolver,
+                    )
+                }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
@@ -197,6 +256,45 @@ class IcebergTableWriterFactory {
                 targetFileSize = targetFileSize,
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
+            )
+        }
+    }
+
+    private fun newPositionDeltaWriter(
+        table: Table,
+        schema: Schema,
+        format: FileFormat,
+        writerFactory: GenericFileWriterFactory,
+        outputFileFactory: OutputFileFactory,
+        targetFileSize: Long,
+        identifierFieldIds: Set<Int>,
+        positionalDeleteResolver: PositionalDeleteResolver,
+    ): BaseTaskWriter<Record> {
+        return if (table.spec().isUnpartitioned) {
+            UnpartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                resolver = positionalDeleteResolver,
+            )
+        } else {
+            PartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                resolver = positionalDeleteResolver,
             )
         }
     }
