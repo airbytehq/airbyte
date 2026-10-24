@@ -1,0 +1,1756 @@
+version: 5.12.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - germany
+streams:
+- type: DeclarativeStream
+  name: germany
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        cases:
+          type: integer
+        deaths:
+          type: integer
+        recovered:
+          type: integer
+        weekIncidence:
+          type: number
+        casesPer100k:
+          type: number
+        casesPerWeek:
+          type: integer
+        delta:
+          type: object
+          properties:
+            cases:
+              type: integer
+            deaths:
+              type: integer
+            recovered:
+              type: integer
+          required:
+          - cases
+          - deaths
+          - recovered
+        r:
+          type: object
+          properties:
+            value:
+              type: number
+            rValue4Days:
+              type: object
+              properties:
+                value:
+                  type: number
+                date:
+                  type: string
+              required:
+              - date
+              - value
+            rValue7Days:
+              type: object
+              properties:
+                value:
+                  type: number
+                date:
+                  type: string
+              required:
+              - date
+              - value
+            lastUpdate:
+              type: string
+          required:
+          - lastUpdate
+          - rValue4Days
+          - rValue7Days
+          - value
+        hospitalization:
+          type: object
+          properties:
+            cases7Days:
+              type: integer
+            incidence7Days:
+              type: number
+            date:
+              type: string
+            lastUpdate:
+              type: string
+          required:
+          - cases7Days
+          - date
+          - incidence7Days
+          - lastUpdate
+        meta:
+          type: object
+          properties:
+            source:
+              type: string
+            contact:
+              type: string
+            info:
+              type: string
+            lastUpdate:
+              type: string
+            lastCheckedForUpdate:
+              type: string
+          required:
+          - contact
+          - info
+          - lastCheckedForUpdate
+          - lastUpdate
+          - source
+      required:
+      - cases
+      - casesPer100k
+      - casesPerWeek
+      - deaths
+      - delta
+      - hospitalization
+      - meta
+      - r
+      - recovered
+      - weekIncidence
+- type: DeclarativeStream
+  name: germany_states
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+        - '*'
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - integer
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        population:
+          type:
+          - integer
+          - 'null'
+        cases:
+          type:
+          - integer
+          - 'null'
+        deaths:
+          type:
+          - integer
+          - 'null'
+        casesPerWeek:
+          type:
+          - integer
+          - 'null'
+        deathsPerWeek:
+          type:
+          - integer
+          - 'null'
+        recovered:
+          type:
+          - integer
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+        weekIncidence:
+          type:
+          - number
+          - 'null'
+        casesPer100k:
+          type:
+          - number
+          - 'null'
+        delta:
+          type: object
+          properties:
+            cases:
+              type:
+              - integer
+              - 'null'
+            deaths:
+              type:
+              - integer
+              - 'null'
+            recovered:
+              type:
+              - integer
+              - 'null'
+            weekIncidence:
+              type:
+              - number
+              - 'null'
+          required:
+          - cases
+          - deaths
+          - recovered
+          - weekIncidence
+        hospitalization:
+          type: object
+          properties:
+            cases7Days:
+              type:
+              - integer
+              - 'null'
+            incidence7Days:
+              type:
+              - number
+              - 'null'
+            date:
+              type:
+              - string
+              - 'null'
+            lastUpdate:
+              type:
+              - string
+              - 'null'
+          required:
+          - cases7Days
+          - date
+          - incidence7Days
+          - lastUpdate
+      required:
+      - abbreviation
+      - cases
+      - casesPer100k
+      - casesPerWeek
+      - deaths
+      - deathsPerWeek
+      - delta
+      - hospitalization
+      - id
+      - name
+      - population
+      - recovered
+      - weekIncidence
+- type: DeclarativeStream
+  name: germany_age_groups
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/age-groups
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        A00-A04:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A05-A14:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A15-A34:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A35-A59:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A60-A79:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A80+:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+      required:
+      - A00-A04
+      - A05-A14
+      - A15-A34
+      - A35-A59
+      - A60-A79
+      - A80+
+- type: DeclarativeStream
+  name: germany_states_age_groups
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/age-groups
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesAgeGroupsExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        abbreviation:
+          type: string
+        A00-A04:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A05-A14:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type: string
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A15-A34:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A35-A59:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A60-A79:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+        A80+:
+          type: object
+          properties:
+            casesMale:
+              type:
+              - number
+              - integer
+            casesFemale:
+              type:
+              - number
+              - integer
+            deathsMale:
+              type:
+              - number
+              - integer
+            deathsFemale:
+              type:
+              - number
+              - integer
+            casesMalePer100k:
+              type:
+              - number
+              - integer
+            casesFemalePer100k:
+              type:
+              - number
+              - integer
+            deathsMalePer100k:
+              type:
+              - number
+              - integer
+            deathsFemalePer100k:
+              type:
+              - number
+              - integer
+            hospitalization:
+              type: object
+              properties:
+                cases7Days:
+                  type:
+                  - number
+                  - integer
+                incidence7Days:
+                  type:
+                  - number
+                  - integer
+                date:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - cases7Days
+              - date
+              - incidence7Days
+          required:
+          - casesFemale
+          - casesFemalePer100k
+          - casesMale
+          - casesMalePer100k
+          - deathsFemale
+          - deathsFemalePer100k
+          - deathsMale
+          - deathsMalePer100k
+          - hospitalization
+      required:
+      - A00-A04
+      - A05-A14
+      - A15-A34
+      - A35-A59
+      - A60-A79
+      - A80+
+- type: DeclarativeStream
+  name: germany_history_cases
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/cases
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        cases:
+          type: integer
+        date:
+          type: string
+      required:
+      - cases
+      - date
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: &id001
+    - '%Y-%m-%dT%H:%M:%S.%fZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: &id002
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%d'
+    end_datetime: &id003
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+      datetime_format: '%Y-%m-%d'
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: german_history_incidence
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/incidence
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        weekIncidence:
+          type: number
+        date:
+          type: string
+      required:
+      - date
+      - weekIncidence
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: *id002
+    end_datetime: *id003
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: german_history_deaths
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/deaths
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        deaths:
+          type: integer
+        date:
+          type: string
+      required:
+      - date
+      - deaths
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: *id002
+    end_datetime: *id003
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: german_history_recovered
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/recovered
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        recovered:
+          type: integer
+        date:
+          type: string
+      required:
+      - date
+      - recovered
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: *id002
+    end_datetime: *id003
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: german_history_frozen_incidence
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/frozen-incidence
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+        - history
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        weekIncidence:
+          type: number
+        date:
+          type: string
+      required:
+      - date
+      - weekIncidence
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: *id002
+    end_datetime: *id003
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: german_history_hospitalization
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: germany/history/hospitalization
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        cases7Days:
+          type: integer
+        incidence7Days:
+          type:
+          - number
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        fixedCases7Days:
+          type:
+          - integer
+          - 'null'
+        updatedCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedLowerCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedUpperCases7Days:
+          type:
+          - integer
+          - 'null'
+        fixedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        updatedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedLowerIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedUpperIncidence7Days:
+          type:
+          - number
+          - 'null'
+      required:
+      - adjustedCases7Days
+      - adjustedIncidence7Days
+      - adjustedLowerCases7Days
+      - adjustedLowerIncidence7Days
+      - adjustedUpperCases7Days
+      - adjustedUpperIncidence7Days
+      - cases7Days
+      - date
+      - fixedCases7Days
+      - fixedIncidence7Days
+      - incidence7Days
+      - updatedCases7Days
+      - updatedIncidence7Days
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+    start_datetime: *id002
+    end_datetime: *id003
+    step: P3650D
+    cursor_granularity: PT0.001S
+- type: DeclarativeStream
+  name: states_history_cases
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/cases
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        cases:
+          type:
+          - integer
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - cases
+      - date
+      - name
+- type: DeclarativeStream
+  name: states_history_incidence
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/incidence
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        weekIncidence:
+          type:
+          - number
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - date
+      - name
+      - weekIncidence
+- type: DeclarativeStream
+  name: states_history_frozen_incidence
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/frozen-incidence
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        weekIncidence:
+          type:
+          - number
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - dataSource
+      - date
+      - name
+      - weekIncidence
+- type: DeclarativeStream
+  name: states_history_deaths
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/deaths
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        deaths:
+          type:
+          - integer
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - date
+      - deaths
+      - name
+- type: DeclarativeStream
+  name: states_history_recovered
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/recovered
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        recovered:
+          type:
+          - integer
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - date
+      - name
+      - recovered
+- type: DeclarativeStream
+  name: states_history_hospitalization
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.corona-zahlen.org/
+      path: states/history/hospitalization
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.StatesHistoryExtractor
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        cases7Days:
+          type: integer
+        incidence7Days:
+          type:
+          - number
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        fixedCases7Days:
+          type:
+          - integer
+          - 'null'
+        updatedCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedLowerCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedCases7Days:
+          type:
+          - integer
+          - 'null'
+        adjustedUpperCases7Days:
+          type:
+          - integer
+          - 'null'
+        fixedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        updatedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedLowerIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedIncidence7Days:
+          type:
+          - number
+          - 'null'
+        adjustedUpperIncidence7Days:
+          type:
+          - number
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        abbreviation:
+          type:
+          - string
+          - 'null'
+      required:
+      - abbreviation
+      - adjustedCases7Days
+      - adjustedIncidence7Days
+      - adjustedLowerCases7Days
+      - adjustedLowerIncidence7Days
+      - adjustedUpperCases7Days
+      - adjustedUpperIncidence7Days
+      - cases7Days
+      - date
+      - fixedCases7Days
+      - fixedIncidence7Days
+      - incidence7Days
+      - name
+      - updatedCases7Days
+      - updatedIncidence7Days
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/rki-covid
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: RKI Covid Spec
+    type: object
+    required:
+    - start_date
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date in the format 2017-01-25. Any data before this date will not be replicated.
+        order: 1
+metadata:
+  autoImportSchema:
+    germany: false
+    germany_states: false
+    germany_age_groups: false
+    germany_states_age_groups: false
+    germany_history_cases: false
+    german_history_incidence: false
+    german_history_deaths: false
+    german_history_recovered: false
+    german_history_frozen_incidence: false
+    german_history_hospitalization: false
+    states_history_cases: false
+    states_history_incidence: false
+    states_history_frozen_incidence: false
+    states_history_deaths: false
+    states_history_recovered: false
+    states_history_hospitalization: false
