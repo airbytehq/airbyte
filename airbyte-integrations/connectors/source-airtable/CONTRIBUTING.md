@@ -11,3 +11,7 @@ Airtable's OAuth implementation issues single-use refresh tokens. Every time an 
 In addition to the single-use refresh tokens above, Airtable access tokens expire **60 minutes after they are issued** ([Airtable token expiry docs](https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens)). This means tokens are refreshed frequently, and the single-use rotation in section 1 happens on every refresh.
 
 **Why this matters:** During long syncs or extended local testing sessions, expect a token refresh (and refresh-token rotation) roughly every hour. This makes the persistence concern in section 1 more likely to surface than for connectors whose access tokens live for days.
+
+## 3. Incremental Sync via filterByFormula
+
+Dynamic table streams use the synthetic `_airtable_extracted_at` cursor, stamped with the end time of the sync window because Airtable records do not include a last-modified timestamp. Incremental requests compare `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. The filter is omitted for full refreshes and the first incremental sync. This approach does not capture changes only to computed fields (formula, rollup, lookup, or count) or deleted records.
