@@ -76,10 +76,10 @@ The Amazon Ads API uses report-based data access for most metrics. The `profiles
 | sponsored_products_search_terms_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
 | sponsored_products_targets_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
 | sponsored_products_targets_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
-| attribution_report_performance_adgroup | medium | child of profiles_filtered | none | none | deferred_child |  |
-| attribution_report_performance_campaign | medium | child of profiles_filtered | none | none | deferred_child |  |
-| attribution_report_performance_creative | medium | child of profiles_filtered | none | none | deferred_child |  |
-| attribution_report_products | medium | child of profiles_filtered | none | none | deferred_child |  |
+| attribution_report_performance_adgroup | medium | child of profiles_filtered | reportDate | startDate/endDate | incremental | `DatetimeBasedCursor` via `incremental_sync_attribution_report_datetime_cursor`; `reportDate` is the sync end date and lookback is at least 14 days |
+| attribution_report_performance_campaign | medium | child of profiles_filtered | reportDate | startDate/endDate | incremental | `DatetimeBasedCursor` via `incremental_sync_attribution_report_datetime_cursor`; `reportDate` is the sync end date and lookback is at least 14 days |
+| attribution_report_performance_creative | medium | child of profiles_filtered | reportDate | startDate/endDate | incremental | `DatetimeBasedCursor` via `incremental_sync_attribution_report_datetime_cursor`; `reportDate` is the sync end date and lookback is at least 14 days |
+| attribution_report_products | medium | child of profiles_filtered | reportDate | startDate/endDate | incremental | `DatetimeBasedCursor` via `incremental_sync_attribution_report_datetime_cursor`; `reportDate` is the sync end date and lookback is at least 14 days |
 | portfolios | medium | child of profiles_filtered | none | none | deferred_child |  |
 | sponsored_brands_ad_groups | medium | child of profiles_filtered | none | none | deferred_child |  |
 | sponsored_brands_ads | medium | child of profiles_filtered | none | none | deferred_child |  |
