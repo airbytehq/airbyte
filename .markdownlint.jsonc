@@ -8,6 +8,10 @@
     "MD010": false, // Disable the "no-hard-tabs" rule (allows hard tabs instead of spaces)
     "MD041": false, // Disable the "first-line-heading/first-line-h1" rule (allows files without a top-level heading as the first line)
     "MD034": false, // Disable the rule that suggests using angle brackets instead of bare URLs. Angle brackets break the Docusaurus build.
+    "MD045": true, // Require non-empty alternative text for images.
+    "MD025": {
+        "front_matter_title": "" // Ignore frontmatter titles when enforcing a single H1.
+    },
     "MD046": { 
         "style": "fenced" // Enforce fenced code blocks (e.g. ` or ```) and don't permit code sample indentation without fences
     },
