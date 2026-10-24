@@ -52,26 +52,6 @@ def _assert_opaque_json(stream_name: str, field_name: str, schema: Mapping[str, 
     ), f"{stream_name}.{field_name}: expected an opaque JSON declaration, got {schema!r}"
 
 
-def _assert_array_items_are_flat_objects(stream_name: str, field_name: str, item_schema: Mapping[str, Any]) -> None:
-    assert item_schema.get("type") == "object", f"{stream_name}.{field_name}: object array items must be objects"
-    assert item_schema.get("additionalProperties") is False, f"{stream_name}.{field_name}: item additionalProperties must be false"
-    item_properties = item_schema.get("properties")
-    assert isinstance(item_properties, dict), f"{stream_name}.{field_name}: item properties must be an object"
-    for item_field_name, item_field_schema in item_properties.items():
-        assert _is_scalar_type(
-            item_field_schema.get("type")
-        ), f"{stream_name}.{field_name}.{item_field_name}: item properties must have one scalar type"
-
-
-def _assert_array_of_flat_objects(stream: Any, field_name: str, expected_fields: set[str]) -> None:
-    schema = stream.get_json_schema()["properties"][field_name]
-    assert schema.get("type") == ["null", "array"]
-    item_schema = schema.get("items")
-    assert isinstance(item_schema, dict)
-    _assert_array_items_are_flat_objects(stream.name, field_name, item_schema)
-    assert set(item_schema["properties"]) == expected_fields
-
-
 def test_flatten_exemptions_are_exactly_the_approved_fields():
     assert {stream: set(fields) for stream, fields in FLATTEN_EXEMPTIONS.items()} == EXPECTED_EXEMPTION_KEYS
 
@@ -81,19 +61,6 @@ def test_manifest_declares_http_api_budget_with_policies():
 
     assert api_budget["type"] == "HTTPAPIBudget"
     assert api_budget["policies"]
-
-
-def test_array_item_object_properties_must_be_scalar():
-    with pytest.raises(AssertionError, match="item properties must have one scalar type"):
-        _assert_array_items_are_flat_objects(
-            "workflow_jobs",
-            "steps",
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {"nested": {"type": "object"}},
-            },
-        )
 
 
 @pytest.mark.parametrize(
@@ -123,10 +90,9 @@ def test_every_stream_has_a_flat_declared_schema(stream_name, stream):
             for keyword in ("oneOf", "anyOf", "allOf"):
                 assert keyword not in value, f"{stream_name}.{path}: forbidden {keyword}"
             for key, nested in value.items():
-                item_schema_path = path.startswith("properties.") and path.endswith(".items") and path.count(".") == 2
-                if key == "properties" and path and not item_schema_path:
+                if key == "properties" and path:
                     raise AssertionError(f"{stream_name}.{path}: nested properties are forbidden")
-                if key == "additionalProperties" and path and not item_schema_path:
+                if key == "additionalProperties" and path:
                     raise AssertionError(f"{stream_name}.{path}: nested additionalProperties is forbidden")
                 check_forbidden_keywords(nested, f"{path}.{key}" if path else key)
         elif isinstance(value, list):
@@ -148,17 +114,11 @@ def test_every_stream_has_a_flat_declared_schema(stream_name, stream):
             }, f"{stream_name}.{field_name}: array type may only include null"
             item_schema = field_schema.get("items")
             assert isinstance(item_schema, dict), f"{stream_name}.{field_name}: array items schema is required"
-            if item_schema.get("type") == "object":
-                _assert_array_items_are_flat_objects(stream_name, field_name, item_schema)
-            else:
-                assert _is_scalar_type(item_schema.get("type")), f"{stream_name}.{field_name}: array items must have one scalar type"
+            assert _is_scalar_type(item_schema.get("type")), f"{stream_name}.{field_name}: array items must have one scalar type"
         elif field_type == "array":
             item_schema = field_schema.get("items")
             assert isinstance(item_schema, dict), f"{stream_name}.{field_name}: array items schema is required"
-            if item_schema.get("type") == "object":
-                _assert_array_items_are_flat_objects(stream_name, field_name, item_schema)
-            else:
-                assert _is_scalar_type(item_schema.get("type")), f"{stream_name}.{field_name}: array items must have one scalar type"
+            assert _is_scalar_type(item_schema.get("type")), f"{stream_name}.{field_name}: array items must have one scalar type"
         else:
             assert _is_scalar_type(field_type), f"{stream_name}.{field_name}: invalid flat field type {field_type!r}"
 
@@ -177,29 +137,8 @@ def test_known_primary_keys_and_incremental_cursor_are_exposed():
     assert _primary_key_fields(streams["issues"]) == ["id"]
     assert _primary_key_fields(streams["pull_requests"]) == ["id"]
     assert _field_names(streams["issues"].cursor_field) == ["updated_at"]
-    _assert_array_of_flat_objects(
-        streams["workflow_jobs"],
-        "steps",
-        {"number", "name", "status", "conclusion", "started_at", "completed_at"},
-    )
-    _assert_array_of_flat_objects(streams["contributor_activity"], "weeks", {"w", "a", "d", "c"})
-    _assert_array_of_flat_objects(
-        streams["releases"],
-        "assets",
-        {
-            "id",
-            "node_id",
-            "name",
-            "digest",
-            "content_type",
-            "size",
-            "download_count",
-            "created_at",
-            "updated_at",
-            "browser_download_url",
-            "url",
-            "uploader_id",
-            "uploader_login",
-            "uploader_type",
-        },
-    )
+    asset_download_urls = streams["releases"].get_json_schema()["properties"]["asset_download_urls"]
+    assert asset_download_urls.get("type") == ["null", "array"]
+    assert asset_download_urls.get("items", {}).get("type") == ["null", "string"]
+    assert "steps" not in streams["workflow_jobs"].get_json_schema()["properties"]
+    assert "weeks" not in streams["contributor_activity"].get_json_schema()["properties"]

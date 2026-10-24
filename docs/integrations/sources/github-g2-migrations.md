@@ -2,19 +2,19 @@
 
 ## Upgrading to 1.0.0
 
-This release removes the `workflow_job_steps`, `contributor_activity_weeks`, and `release_assets` child streams. Their data is now included as arrays on the parent streams.
+This release removes the `workflow_job_steps`, `contributor_activity_weeks`, and `release_assets` child streams. `workflow_job_steps` and `contributor_activity_weeks` have no replacement; release asset download URLs move to `releases.asset_download_urls`.
 
 ### What changed
 
-- `workflow_jobs.steps` contains the workflow job steps.
-- `contributor_activity.weeks` contains the contributor's weekly activity.
-- `releases.assets` contains up to 100 release assets per release.
-- `releases.assets` does not include the removed `release_assets` stream's `label` and `state` fields because GitHub's GraphQL `ReleaseAsset` type does not expose them. Keep the existing `release_assets` table before dropping it if you need those values.
+- `workflow_job_steps` is removed with no replacement. Job-level `status`, `conclusion`, `started_at`, `completed_at`, and `created_at` remain on `workflow_jobs`; per-step timing and step names are no longer emitted.
+- `contributor_activity_weeks` is removed with no replacement. Per-week additions, deletions, and commits are no longer emitted.
+- `releases.asset_download_urls` contains up to 100 asset download URLs per release.
+- Other release asset metadata (`id`, `name`, `size`, `download_count`, `content_type`, `digest`, `label`, `state`, and uploader) is no longer emitted. Keep the existing `release_assets` table if you need those values.
 
 ### Required actions
 
 After upgrading to version 1.0.0:
 
-1. **Refresh your source schema** to add the array columns and remove the child streams.
-2. **Clear or reset `workflow_jobs`, `contributor_activity`, and `releases`** if you need historical data in the new array columns.
+1. **Refresh your source schema** to add `releases.asset_download_urls` and remove the child streams.
+2. **Clear or reset `releases`** if you need historical asset download URLs.
 3. **Drop the downstream tables** for `workflow_job_steps`, `contributor_activity_weeks`, and `release_assets` after confirming they are no longer needed.

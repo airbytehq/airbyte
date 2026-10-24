@@ -166,9 +166,7 @@ def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0", created_at="2022
         "tagCommit": {"target_commitish": "abc123"},
         "author": {"__typename": "User", "node_id": "U_1", "id": 7, "login": "octocat"},
         "assets": {
-            # `RA_kwDOAbcDEf4AAAAB` decodes to a msgpack array whose last 4 bytes are the
-            # asset's numeric database ID.
-            "nodes": [{"node_id": "RA_kwDOAbcDEf4AAAAB", "name": "asset.zip", "uploader": {"id": 7}}],
+            "nodes": [{"downloadUrl": "https://github.com/download/asset.zip"}],
             "pageInfo": {"hasNextPage": False},
         },
         "reaction_groups": [
@@ -201,8 +199,8 @@ def _partitioned_releases_state(**per_repository_cursor):
     ]
 
 
-def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_response, requests_mock):
-    """Release records keep all scalar fields and entity identities in a flat shape."""
+def test_releases_record_preserves_synthesized_rest_urls(rate_limit_mock_response, requests_mock):
+    """Release records retain the REST URL fields synthesized from the GraphQL response."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
 
@@ -227,7 +225,8 @@ def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_respons
     assert record["reactions_rocket"] == 0
     assert record["reactions_eyes"] == 0
     assert record["reactions_total_count"] == 4
-    assert record["assets"][0]["id"] == 1
+    assert record["asset_download_urls"] == ["https://github.com/download/asset.zip"]
+    assert "assets" not in record
     # GraphQL returns none of these; they are synthesized to match the old REST payload.
     assert record["url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11"
     assert record["assets_url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11/assets"
@@ -236,25 +235,13 @@ def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_respons
     assert record["zipball_url"] == f"https://api.github.com/repos/{REPOSITORY}/zipball/v1.0.0"
 
 
-def test_releases_assets_are_flattened_from_graphql(rate_limit_mock_response, requests_mock):
+def test_releases_asset_download_urls_follow_graphql_order(rate_limit_mock_response, requests_mock):
     _mock_repository_resolution(requests_mock)
     node = _release_node()
     node["assets"] = {
         "nodes": [
-            {
-                "node_id": "RA_kwDOAbcDEf4AAAAB",
-                "name": "asset.zip",
-                "digest": "sha256:012345",
-                "content_type": "application/zip",
-                "size": 42,
-                "download_count": 5,
-                "created_at": "2022-01-03T00:00:00Z",
-                "updated_at": "2022-01-04T00:00:00Z",
-                "browser_download_url": "https://github.com/download/asset.zip",
-                "url": "https://api.github.com/assets/1",
-                "uploader": {"__typename": "User", "id": 7, "login": "octocat"},
-                "extra": 1,
-            }
+            {"downloadUrl": "https://github.com/download/first.zip"},
+            {"downloadUrl": "https://github.com/download/second.zip"},
         ],
         "pageInfo": {"hasNextPage": False},
     }
@@ -263,27 +250,15 @@ def test_releases_assets_are_flattened_from_graphql(rate_limit_mock_response, re
     records, error = _read(_config(), "releases")
 
     assert error is None
-    assert records[0]["assets"] == [
-        {
-            "id": 1,
-            "node_id": "RA_kwDOAbcDEf4AAAAB",
-            "name": "asset.zip",
-            "digest": "sha256:012345",
-            "content_type": "application/zip",
-            "size": 42,
-            "download_count": 5,
-            "created_at": "2022-01-03T00:00:00Z",
-            "updated_at": "2022-01-04T00:00:00Z",
-            "browser_download_url": "https://github.com/download/asset.zip",
-            "url": "https://api.github.com/assets/1",
-            "uploader_id": 7,
-            "uploader_login": "octocat",
-            "uploader_type": "User",
-        }
+    assert records[0]["asset_download_urls"] == [
+        "https://github.com/download/first.zip",
+        "https://github.com/download/second.zip",
     ]
+    assert "assets" not in records[0]
     query = json.loads(_graphql_requests(requests_mock)[0].body)["query"]
     assert "assets: releaseAssets(first: 100)" in query
-    assert not any(request.path.endswith("/releases/11/assets") for request in requests_mock.request_history)
+    assert "nodes { downloadUrl }" in query
+    assert not any("/releases/11/assets" in request.path for request in requests_mock.request_history)
 
 
 def test_releases_sends_owner_and_name_as_graphql_variables(rate_limit_mock_response, requests_mock):
@@ -494,7 +469,7 @@ def test_releases_warns_when_a_release_has_more_than_100_assets(rate_limit_mock_
     _mock_repository_resolution(requests_mock)
     node = _release_node()
     node["assets"] = {
-        "nodes": [{"node_id": f"RA_{index}", "name": f"asset_{index}.zip", "uploader": {"id": 1}} for index in range(100)],
+        "nodes": [{"downloadUrl": f"https://github.com/download/asset_{index}.zip"} for index in range(100)],
         "pageInfo": {"hasNextPage": True},
     }
     requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [node]))
@@ -502,7 +477,8 @@ def test_releases_warns_when_a_release_has_more_than_100_assets(rate_limit_mock_
     records, error = _read(_config(), "releases")
 
     assert error is None
-    assert len(records[0]["assets"]) == 100
+    assert len(records[0]["asset_download_urls"]) == 100
+    assert "assets" not in records[0]
     assert any(">100 assets" in message for message in caplog.messages)
 
 

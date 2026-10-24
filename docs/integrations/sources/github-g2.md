@@ -90,7 +90,9 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 ## Output shape
 
-All streams emit flat records with deterministic scalar columns, arrays of scalars, and arrays of flat objects. Embedded GitHub identities use prefixed identity columns. Child streams are used only when their members require a separate API call; none of the current streams needs a child stream for an array available in its parent response. `events.payload` and `deployments.payload` remain opaque JSON fields under approved exemptions.
+All streams emit flat records with deterministic scalar columns and arrays of scalars. Embedded GitHub identities use prefixed identity columns. Child streams are used only when their members require a separate API call; none of the current streams needs a child stream for an array available in its parent response. `events.payload` and `deployments.payload` remain opaque JSON fields under approved exemptions.
+
+`workflow_jobs` keeps job-level `status`, `conclusion`, `started_at`, `completed_at`, and `created_at`; step names and per-step timing are not emitted. `releases.asset_download_urls` contains up to 100 asset download URLs per release; other per-asset metadata is not emitted. `contributor_activity` emits `author_id`, `author_login`, `author_type`, `repository`, and `total`, but not per-week additions, deletions, or commits.
 
 Every field is strongly typed; values without a stable shape are opaque JSON (`payload`), never partially described objects. Every stream root uses `additionalProperties: false`; a future need for fields beyond declared columns requires a dedicated opaque JSON column kept separate from declared columns, never root `additionalProperties`, and human approval recorded in `FLATTEN_EXEMPTIONS`.
 
@@ -245,7 +247,7 @@ GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an in
 
 #### Release assets
 
-The `releases.assets` array contains up to 100 assets per release. If a release has more than 100 assets, the remaining assets are truncated and the connector logs a warning.
+The `releases.asset_download_urls` array contains up to 100 download URLs per release. If a release has more than 100 assets, the remaining URLs are truncated and the connector logs a warning. Other asset metadata (`id`, `name`, `size`, `download_count`, `content_type`, `digest`, `label`, `state`, and uploader) is no longer emitted; keep the existing `release_assets` table if you need those values.
 
 #### Stargazers stream requires admin or collaborator access
 
@@ -303,7 +305,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Fold workflow_job_steps, contributor_activity_weeks and release_assets into their parents as array columns |
+| 1.0.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Drop workflow_job_steps and contributor_activity_weeks data; replace release_assets with download URLs |
 | 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |
 | 0.1.0 | 2026-10-20 | - | Initial release, forked from source-github 2.7.9 |
 

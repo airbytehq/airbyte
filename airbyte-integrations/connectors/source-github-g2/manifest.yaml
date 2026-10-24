@@ -8620,6 +8620,7 @@ definitions:
       - - id
       - - login
       - - type
+      - - weeks
     - type: CustomTransformation
       class_name: source_declarative_manifest.components.EnforceDeclaredSchema
       schema:
@@ -8640,30 +8641,6 @@ definitions:
             type:
             - 'null'
             - string
-          weeks:
-            type:
-            - 'null'
-            - array
-            items:
-              type: object
-              additionalProperties: false
-              properties:
-                w:
-                  type:
-                  - 'null'
-                  - integer
-                a:
-                  type:
-                  - 'null'
-                  - integer
-                d:
-                  type:
-                  - 'null'
-                  - integer
-                c:
-                  type:
-                  - 'null'
-                  - integer
           total:
             type:
             - 'null'
@@ -8689,30 +8666,6 @@ definitions:
             type:
             - 'null'
             - string
-          weeks:
-            type:
-            - 'null'
-            - array
-            items:
-              type: object
-              additionalProperties: false
-              properties:
-                w:
-                  type:
-                  - 'null'
-                  - integer
-                a:
-                  type:
-                  - 'null'
-                  - integer
-                d:
-                  type:
-                  - 'null'
-                  - integer
-                c:
-                  type:
-                  - 'null'
-                  - integer
           total:
             type:
             - 'null'
@@ -9331,40 +9284,6 @@ definitions:
               type: &id949
               - 'null'
               - string
-          steps:
-            type:
-            - 'null'
-            - array
-            items:
-              type: object
-              additionalProperties: false
-              properties:
-                number:
-                  type:
-                  - 'null'
-                  - integer
-                name:
-                  type:
-                  - 'null'
-                  - string
-                status:
-                  type:
-                  - 'null'
-                  - string
-                conclusion:
-                  type:
-                  - 'null'
-                  - string
-                started_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                completed_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
           runner_id:
             type: &id950
             - integer
@@ -9453,40 +9372,6 @@ definitions:
             type: *id948
             items:
               type: *id949
-          steps:
-            type:
-            - 'null'
-            - array
-            items:
-              type: object
-              additionalProperties: false
-              properties:
-                number:
-                  type:
-                  - 'null'
-                  - integer
-                name:
-                  type:
-                  - 'null'
-                  - string
-                status:
-                  type:
-                  - 'null'
-                  - string
-                conclusion:
-                  type:
-                  - 'null'
-                  - string
-                started_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                completed_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
           runner_id:
             description: Identifier of the runner
             type: *id950
@@ -9622,22 +9507,7 @@ definitions:
                         }
                       }
                       assets: releaseAssets(first: 100) {
-                        nodes {
-                          node_id: id
-                          name
-                          digest
-                          content_type: contentType
-                          size
-                          download_count: downloadCount
-                          created_at: createdAt
-                          updated_at: updatedAt
-                          browser_download_url: downloadUrl
-                          url
-                          uploader: uploadedBy {
-                            __typename
-                            ... on User { id: databaseId login }
-                          }
-                        }
+                        nodes { downloadUrl }
                         pageInfo { hasNextPage }
                       }
                       reaction_groups: reactionGroups {
@@ -9779,72 +9649,14 @@ definitions:
             type: &id975
             - 'null'
             - string
-          assets:
+          asset_download_urls:
             type:
             - 'null'
             - array
             items:
-              type: object
-              additionalProperties: false
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - integer
-                node_id:
-                  type:
-                  - 'null'
-                  - string
-                name:
-                  type:
-                  - 'null'
-                  - string
-                digest:
-                  type:
-                  - 'null'
-                  - string
-                content_type:
-                  type:
-                  - 'null'
-                  - string
-                size:
-                  type:
-                  - 'null'
-                  - integer
-                download_count:
-                  type:
-                  - 'null'
-                  - integer
-                created_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                updated_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                browser_download_url:
-                  type:
-                  - 'null'
-                  - string
-                url:
-                  type:
-                  - 'null'
-                  - string
-                uploader_id:
-                  type:
-                  - 'null'
-                  - integer
-                uploader_login:
-                  type:
-                  - 'null'
-                  - string
-                uploader_type:
-                  type:
-                  - 'null'
-                  - string
+              type:
+              - 'null'
+              - string
           body_html:
             type: &id976
             - 'null'
@@ -9974,72 +9786,14 @@ definitions:
             type: *id974
           author_type:
             type: *id975
-          assets:
+          asset_download_urls:
             type:
             - 'null'
             - array
             items:
-              type: object
-              additionalProperties: false
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - integer
-                node_id:
-                  type:
-                  - 'null'
-                  - string
-                name:
-                  type:
-                  - 'null'
-                  - string
-                digest:
-                  type:
-                  - 'null'
-                  - string
-                content_type:
-                  type:
-                  - 'null'
-                  - string
-                size:
-                  type:
-                  - 'null'
-                  - integer
-                download_count:
-                  type:
-                  - 'null'
-                  - integer
-                created_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                updated_at:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                browser_download_url:
-                  type:
-                  - 'null'
-                  - string
-                url:
-                  type:
-                  - 'null'
-                  - string
-                uploader_id:
-                  type:
-                  - 'null'
-                  - integer
-                uploader_login:
-                  type:
-                  - 'null'
-                  - string
-                uploader_type:
-                  type:
-                  - 'null'
-                  - string
+              type:
+              - 'null'
+              - string
           body_html:
             description: The HTML body of the release.
             type: *id976

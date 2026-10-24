@@ -35,7 +35,9 @@ Splitting an array out of the parent's response with `RecordExpander` is not a r
 is a destination limitation: Iceberg currently stores `list<struct>` as `list<string>`. Fix that
 in the destination with native struct support ([PR 89660](https://github.com/airbytehq/airbyte/pull/89660)),
 not by exploding source rows. Do not add a separate API call when the parent query can return its
-members inline, as the `releases` GraphQL query does for assets.
+members inline, as the `releases` GraphQL query does for asset download URLs. Do not carry nested
+arrays a consumer does not need; prefer a scalar array (for example, `asset_download_urls`) over an
+array of objects when one field suffices.
 
 `unit_tests/` is a self-contained Poetry project (`unit_tests/pyproject.toml`,
 `package-mode = false`). Run the suite as CI does:

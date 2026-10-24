@@ -10,10 +10,7 @@ alone. Pagination, page-size reduction, error handling and incremental behavior 
 handled by the manifest.
 """
 
-import base64
-import binascii
 import logging
-import struct
 from dataclasses import InitVar, dataclass
 from itertools import groupby
 from os import getenv
@@ -54,28 +51,6 @@ GRAPHQL_REACTION_TO_REST = {
 }
 
 
-def _extract_database_id_from_node_id(node_id: Optional[str]) -> Optional[int]:
-    """Extract the numeric database ID from a GitHub GraphQL Node ID.
-
-    GitHub Node IDs with type prefixes (e.g. 'RA_...') are URL-safe base64 encodings of a
-    msgpack array: [type_flag, repo_database_id, entity_database_id]. The last 4 bytes encode
-    the entity's numeric database ID as a big-endian uint32.
-
-    Release assets are the only place this is needed: the GraphQL `ReleaseAsset` type exposes
-    no `databaseId`, but the REST-shaped schema has always carried a numeric `id`.
-    """
-    if not node_id or "_" not in node_id:
-        return None
-    try:
-        encoded = node_id.split("_", 1)[1]
-        decoded = base64.urlsafe_b64decode(encoded + "==")
-        if len(decoded) >= 4:
-            return struct.unpack(">I", decoded[-4:])[0]
-    except (ValueError, struct.error, binascii.Error):
-        return None
-    return None
-
-
 def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
     """Interpolate and coerce a page size supplied to a custom component.
 
@@ -114,13 +89,13 @@ def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
 
 @dataclass
 class ReleasesRecordTransformation(RecordTransformation):
-    """Reshape a GraphQL `Release` node into the REST-compatible `releases` record.
+    """Reshape a GraphQL `Release` node into the flat `releases` record.
 
-    Ported verbatim from the legacy `streams.Releases.parse_response`. Five separate
-    concerns, none of them expressible as AddFields/RemoveFields:
+    Adapted from the legacy `streams.Releases.parse_response`. Five separate concerns, none
+    of them expressible as AddFields/RemoveFields:
 
-    - `assets`: unwrap the connection, flatten uploader identity, and recover each asset's
-      numeric `id` from its node ID.
+    - `asset_download_urls`: extract the URLs from the asset connection and warn if more than
+      100 assets exist for a release.
     - `reactions`: collapse `reactionGroups` into the REST reaction-count object, including
       the zero entries for reactions nobody used and the `total_count` sum.
     - `mentions_count`: unwrap a `totalCount`-only connection.
@@ -143,7 +118,7 @@ class ReleasesRecordTransformation(RecordTransformation):
         if record.get("author"):
             record["author"]["type"] = record["author"].pop("__typename", "User")
 
-        record["assets"] = self._assets(record)
+        record["asset_download_urls"] = self._asset_download_urls(record)
         record["reactions"] = self._reactions(record)
 
         mentions_connection = record.pop("mentions_connection", None)
@@ -163,8 +138,8 @@ class ReleasesRecordTransformation(RecordTransformation):
             )
         )
 
-    def _assets(self, record: Mapping[str, Any]) -> list:
-        assets_data = record.get("assets") or {}
+    def _asset_download_urls(self, record: MutableMapping[str, Any]) -> list:
+        assets_data = record.pop("assets", None) or {}
         if (assets_data.get("pageInfo") or {}).get("hasNextPage"):
             # The query asks for `releaseAssets(first: 100)` and the manifest paginates the
             # releases connection only, so a release with more than 100 assets is truncated.
@@ -175,14 +150,7 @@ class ReleasesRecordTransformation(RecordTransformation):
                 record.get("id"),
                 record.get("repository"),
             )
-        assets = assets_data.get("nodes", [])
-        for asset in assets:
-            uploader = asset.pop("uploader", None)
-            asset["uploader_id"] = uploader.get("id") if uploader else None
-            asset["uploader_login"] = uploader.get("login") if uploader else None
-            asset["uploader_type"] = uploader.get("__typename") if uploader else None
-            asset["id"] = _extract_database_id_from_node_id(asset.get("node_id"))
-        return assets
+        return [asset["downloadUrl"] for asset in assets_data.get("nodes", [])]
 
     def _reactions(self, record: MutableMapping[str, Any]) -> Optional[Mapping[str, Any]]:
         reaction_groups = record.pop("reaction_groups", None)
@@ -515,14 +483,6 @@ class EnforceDeclaredSchema(RecordTransformation):
             field_types = field_type if isinstance(field_type, list) else [field_type]
             if "array" in field_types and value is not None and not isinstance(value, list) and isinstance(value, (str, int, float, bool)):
                 record[field_name] = [value]
-                value = record[field_name]
-            item_properties = (field_schema.get("items") or {}).get("properties")
-            if isinstance(value, list) and isinstance(item_properties, Mapping):
-                for item in value:
-                    if isinstance(item, MutableMapping):
-                        for item_field in list(item):
-                            if item_field not in item_properties:
-                                del item[item_field]
 
 
 @dataclass
