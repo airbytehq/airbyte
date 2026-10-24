@@ -6,9 +6,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_microsoft_sharepoint/spec.yaml"
-        # changed from "Document File Type Format (Experimental)" to "Unstructured Document Format".
+        # CDK 7 widened start_date.pattern to also accept YYYY-MM-DD and other ISO 8601 forms; previously valid values still match.
         backward_compatibility_tests_config:
-          disable_for_version: "0.6.0"
+          disable_for_version: "0.10.4"
   connection:
     tests:
       - config_path: "secrets/config.json"
