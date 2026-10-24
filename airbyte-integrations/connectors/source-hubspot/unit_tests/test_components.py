@@ -2,10 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 import requests
+import yaml
 from requests import Response
 
 from airbyte_cdk.models import FailureType
@@ -15,6 +17,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+EXPECTED_TOKEN_ENDPOINT = "https://api.hubapi.com/oauth/2026-03/token"
 
 
 @pytest.mark.parametrize(
@@ -527,7 +532,7 @@ def test_associations_extractor_with_permissions_error(requests_mock, oauth_conf
     # Mock the OAuth token refresh endpoint so REFRESH_TOKEN_THEN_RETRY can refresh the token
     requests_mock.register_uri(
         "POST",
-        "https://api.hubapi.com/oauth/v1/token",
+        EXPECTED_TOKEN_ENDPOINT,
         [{"json": {"access_token": "refreshed_token", "expires_in": 3600}, "status_code": 200}],
     )
     requests_mock.register_uri(
@@ -756,6 +761,32 @@ def test_build_associations_retriever_uses_rate_limited_for_429():
                 response_filter.action == ResponseAction.RATE_LIMITED
             ), f"Expected RATE_LIMITED for HTTP 429 in associations retriever, got {response_filter.action}"
     assert found_429_filter, "No response filter found for HTTP 429 in associations retriever"
+
+
+def test_oauth_token_endpoint_uses_date_based_version(components_module):
+    """HubSpot removes the legacy /oauth/v1/token endpoint on 2027-02-16, so every OAuth token URL
+    the connector uses must point at the date-based /oauth/2026-03/token endpoint."""
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+
+    assert manifest["definitions"]["oauth_auth"]["token_refresh_endpoint"] == EXPECTED_TOKEN_ENDPOINT
+    oauth_input_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
+    assert oauth_input_spec["access_token_url"] == EXPECTED_TOKEN_ENDPOINT
+
+    retriever = components_module.build_associations_retriever(
+        associations_list=["companies"],
+        parent_entity=InterpolatedString.create("deals", parameters={}),
+        config={
+            "start_date": "2021-01-10T00:00:00Z",
+            "credentials": {
+                "credentials_title": "OAuth Credentials",
+                "client_id": "test_client_id",
+                "client_secret": "test_client_secret",
+                "refresh_token": "test_refresh_token",
+            },
+        },
+    )
+
+    assert retriever.requester.authenticator.get_token_refresh_endpoint() == EXPECTED_TOKEN_ENDPOINT
 
 
 @pytest.mark.parametrize(
