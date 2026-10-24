@@ -94,7 +94,7 @@ def get_authenticator(source: YamlDeclarativeSource, config: Mapping[str, Any]) 
     constructed with: a differently resolved config yields a different cached instance."""
     return source._constructor.create_component(
         model_type=RateLimitedMultipleTokenAuthenticatorModel,
-        component_definition=source.resolved_manifest["definitions"]["requester_base"]["authenticator"],
+        component_definition=source.resolved_manifest["definitions"]["requester_base"]["authenticator"]["authenticators"]["token"],
         config=config,
     )
 
