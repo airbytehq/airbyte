@@ -8,19 +8,42 @@ import logging
 import re
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import pendulum
 import requests
 from pendulum import DateTime
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.core import IncrementalMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import (
+    ErrorHandler,
+    ErrorResolution,
+    HttpStatusErrorHandler,
+    ResponseAction,
+)
 
 
 logger = logging.getLogger("airbyte")
+
+
+class YandexMetricaErrorHandler(HttpStatusErrorHandler):
+    """Retries 429 and 5xx like the default handler, but hands other 4xx responses back to the caller instead of raising."""
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if (
+            isinstance(response_or_exception, requests.Response)
+            and 400 <= response_or_exception.status_code < 500
+            and response_or_exception.status_code != 429
+        ):
+            return ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Yandex Metrica API returned HTTP {response_or_exception.status_code}: {response_or_exception.text}",
+            )
+        return super().interpret_response(response_or_exception)
 
 
 class YandexMetricaStream(HttpStream, ABC):
@@ -55,9 +78,18 @@ class YandexMetricaStream(HttpStream, ABC):
     def get_request_fields(self) -> List[str]:
         return list(super().get_json_schema().get("properties"))
 
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return False
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return YandexMetricaErrorHandler(logger=logger)
+
+    def _send(self, http_method: str, path: str, params: Optional[Mapping[str, Any]] = None) -> requests.Response:
+        _, response = self._http_client.send_request(
+            http_method=http_method,
+            url=f"{self.url_base}{self.counter_id}/{path}",
+            request_kwargs={},
+            headers=self.request_headers(stream_state={}),
+            params=params,
+        )
+        return response
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -73,21 +105,13 @@ class YandexMetricaStream(HttpStream, ABC):
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
-        request_headers = self.request_headers(stream_state={})
         request_params = {
             "date1": self.config.get("start_date"),
             "date2": self.config.get("end_date"),
             "source": self._source,
             "fields": self.get_request_fields(),
         }
-        request = requests.Request(
-            "GET",
-            f"{self.url_base}{self.counter_id}/logrequests/evaluate",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=request_params,
-        )
-        prepared_request = self._session.prepare_request(request)
-        response = self._send_request(prepared_request, {})
+        response = self._send("GET", "logrequests/evaluate", params=request_params)
         return response.json().get("log_request_evaluation", {}).get("possible") if response.status_code == 200 else False
 
     def create_logrequest(self):
@@ -96,21 +120,13 @@ class YandexMetricaStream(HttpStream, ABC):
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
         """
-        request_headers = self.request_headers(stream_state={})
         request_params = {
             "date1": self.params["start_date"],
             "date2": self.params["end_date"],
             "source": self._source,
             "fields": self.get_request_fields(),
         }
-        request = requests.Request(
-            "POST",
-            f"{self.url_base}{self.counter_id}/logrequests",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=request_params,
-        )
-        prepared_request = self._session.prepare_request(request)
-        response = self._send_request(prepared_request, {})
+        response = self._send("POST", "logrequests", params=request_params)
         return response.json().get("log_request", {}).get("request_id")
 
     def wait_for_job(self, logrequest_id: str) -> Tuple[str, int]:
@@ -121,16 +137,9 @@ class YandexMetricaStream(HttpStream, ABC):
         """
         wait_timeout_hours = 2
         expiration_time: DateTime = pendulum.now().add(hours=wait_timeout_hours)
-        request_headers = self.request_headers(stream_state={})
-        request = requests.Request(
-            "GET",
-            f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-        )
-        prepared_request = self._session.prepare_request(request)
         job_status = "created"
         while pendulum.now() < expiration_time:
-            response = self._send_request(prepared_request, {}).json()
+            response = self._send("GET", f"logrequest/{logrequest_id}").json()
             job_status = response["log_request"]["status"]
             if job_status in ("processed", "processing_failed"):
                 if job_status == "processing_failed":
@@ -143,14 +152,7 @@ class YandexMetricaStream(HttpStream, ABC):
             raise Exception(f"Export Job processing failed, skipping reading stream {self.name}")
 
     def download_report_part(self, logrequest_id: str, part_number: int) -> Iterable[Mapping]:
-        request_headers = self.request_headers(stream_state={})
-        request = requests.Request(
-            "GET",
-            f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}/part/{part_number}/download",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-        )
-        prepared_request = self._session.prepare_request(request)
-        response = self._send_request(prepared_request, {})
+        response = self._send("GET", f"logrequest/{logrequest_id}/part/{part_number}/download")
         reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
         for row in reader:
             # Remove 'ym:s:' or 'ym:pv:' prefix
@@ -166,14 +168,7 @@ class YandexMetricaStream(HttpStream, ABC):
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
-        request_headers = self.request_headers(stream_state={})
-        request = requests.Request(
-            "POST",
-            f"{self.url_base}{self.counter_id}/logrequest/{logrequest_id}/clean",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-        )
-        prepared_request = self._session.prepare_request(request)
-        self._send_request(prepared_request, {})
+        self._send("POST", f"logrequest/{logrequest_id}/clean")
 
     def fetch_records(self, stream_state: Mapping[str, Any] = {}) -> Iterable[Mapping]:
         # Configure state
