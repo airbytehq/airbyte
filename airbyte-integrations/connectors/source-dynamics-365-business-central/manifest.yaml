@@ -1,0 +1,1375 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Dynamics 365 Business Central connector for Airbyte. Syncs financial and
+  business data from Microsoft Dynamics 365 Business Central via the OData v4
+  REST API (v2.0), including general ledger entries, chart of accounts,
+  customers, vendors, invoices, and journals.
+
+check:
+  type: CheckStream
+  stream_names:
+    - companies
+
+definitions:
+  streams:
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ config.get('company_id') is none or config.get('company_id') == '' or record['id'] == config['company_id'] }}
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+
+    general_ledger_entries:
+      type: DeclarativeStream
+      name: general_ledger_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/generalLedgerEntries
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/general_ledger_entries"
+
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/accounts
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/customers
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+
+    vendors:
+      type: DeclarativeStream
+      name: vendors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/vendors
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vendors"
+
+    sales_invoices:
+      type: DeclarativeStream
+      name: sales_invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/salesInvoices
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales_invoices"
+
+    purchase_invoices:
+      type: DeclarativeStream
+      name: purchase_invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/purchaseInvoices
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_invoices"
+
+    journals:
+      type: DeclarativeStream
+      name: journals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /companies({{ stream_partition.company_id }})/journals
+          http_method: GET
+          request_parameters:
+            $orderby: lastModifiedDateTime asc
+            $filter: >-
+              {{ 'lastModifiedDateTime ge ' ~ stream_interval.start_time if stream_interval else '' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          $ref: "#/definitions/odata_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2017-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/journals"
+
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      https://api.businesscentral.dynamics.com/v2.0/{{ config['tenant_id'] }}/{{ config.get('environment_name', 'production') }}/api/v2.0
+    authenticator:
+      type: OAuthAuthenticator
+      scopes: []
+      client_id: "{{ config['client_id'] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_request_body:
+        scope: https://api.businesscentral.dynamics.com/.default
+      token_refresh_endpoint: >-
+        https://login.microsoftonline.com/{{ config['tenant_id'] }}/oauth2/v2.0/token
+
+  odata_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: $skiptoken
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: >-
+        {{ response.get("@odata.nextLink", "") | regex_search('\$skiptoken=([^&]+)') }}
+      stop_condition: >-
+        {{ response.get("@odata.nextLink") is none }}
+
+streams:
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/general_ledger_entries"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/sales_invoices"
+  - $ref: "#/definitions/streams/purchase_invoices"
+  - $ref: "#/definitions/streams/journals"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - tenant_id
+      - client_id
+      - client_secret
+    properties:
+      tenant_id:
+        type: string
+        order: 0
+        title: Azure AD Tenant ID
+        description: >-
+          The Azure Active Directory (Entra ID) tenant ID for your
+          Dynamics 365 Business Central environment.
+        airbyte_secret: true
+      client_id:
+        type: string
+        order: 1
+        title: Client ID
+        description: >-
+          The OAuth 2.0 client (application) ID registered in Azure AD
+          for accessing Business Central APIs.
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 2
+        title: Client Secret
+        description: >-
+          The OAuth 2.0 client secret for the registered application.
+        airbyte_secret: true
+      environment_name:
+        type: string
+        order: 3
+        title: Environment Name
+        description: >-
+          The name of the Business Central environment to connect to.
+          Defaults to "production".
+        default: production
+        examples:
+          - production
+          - sandbox
+      company_id:
+        type: string
+        order: 4
+        title: Company ID
+        description: >-
+          Optional. The GUID of a specific company to sync. If not
+          provided, data from all companies in the environment is synced.
+      start_date:
+        type: string
+        order: 5
+        title: Start Date
+        description: >-
+          The earliest date from which to sync incremental data, in
+          ISO 8601 format (e.g. 2017-01-01T00:00:00Z). Defaults to
+          2017-01-01T00:00:00Z.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2017-01-01T00:00:00Z"
+          - "2024-01-01T00:00:00Z"
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    companies: false
+    general_ledger_entries: false
+    accounts: false
+    customers: false
+    vendors: false
+    sales_invoices: false
+    purchase_invoices: false
+    journals: false
+  testedStreams: {}
+  assist:
+    docsUrl: >-
+      https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/
+
+schemas:
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      systemVersion:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      businessProfileId:
+        type:
+          - string
+          - "null"
+      systemCreatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      systemCreatedBy:
+        type:
+          - string
+          - "null"
+      systemModifiedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      systemModifiedBy:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+
+  general_ledger_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      entryNumber:
+        type:
+          - integer
+          - "null"
+      postingDate:
+        type:
+          - string
+          - "null"
+        format: date
+      documentNumber:
+        type:
+          - string
+          - "null"
+      documentType:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      accountNumber:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      debitAmount:
+        type:
+          - number
+          - "null"
+      creditAmount:
+        type:
+          - number
+          - "null"
+      additionalCurrencyDebitAmount:
+        type:
+          - number
+          - "null"
+      additionalCurrencyCreditAmount:
+        type:
+          - number
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      number:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      subCategory:
+        type:
+          - string
+          - "null"
+      blocked:
+        type:
+          - boolean
+          - "null"
+      accountType:
+        type:
+          - string
+          - "null"
+      directPosting:
+        type:
+          - boolean
+          - "null"
+      netChange:
+        type:
+          - number
+          - "null"
+      consolidationTranslationMethod:
+        type:
+          - string
+          - "null"
+      consolidationDebitAccount:
+        type:
+          - string
+          - "null"
+      consolidationCreditAccount:
+        type:
+          - string
+          - "null"
+      excludeFromConsolidation:
+        type:
+          - boolean
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      number:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      addressLine1:
+        type:
+          - string
+          - "null"
+      addressLine2:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      salespersonCode:
+        type:
+          - string
+          - "null"
+      balanceDue:
+        type:
+          - number
+          - "null"
+      creditLimit:
+        type:
+          - number
+          - "null"
+      taxLiable:
+        type:
+          - boolean
+          - "null"
+      taxAreaId:
+        type:
+          - string
+          - "null"
+      taxAreaDisplayName:
+        type:
+          - string
+          - "null"
+      taxRegistrationNumber:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type:
+          - string
+          - "null"
+      shipmentMethodId:
+        type:
+          - string
+          - "null"
+      paymentMethodId:
+        type:
+          - string
+          - "null"
+      blocked:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+
+  vendors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      number:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      addressLine1:
+        type:
+          - string
+          - "null"
+      addressLine2:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      taxRegistrationNumber:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      irs1099Code:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type:
+          - string
+          - "null"
+      paymentMethodId:
+        type:
+          - string
+          - "null"
+      taxLiable:
+        type:
+          - boolean
+          - "null"
+      blocked:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+
+  sales_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      number:
+        type:
+          - string
+          - "null"
+      externalDocumentNumber:
+        type:
+          - string
+          - "null"
+      invoiceDate:
+        type:
+          - string
+          - "null"
+        format: date
+      postingDate:
+        type:
+          - string
+          - "null"
+        format: date
+      dueDate:
+        type:
+          - string
+          - "null"
+        format: date
+      promisedPayDate:
+        type:
+          - string
+          - "null"
+        format: date
+      customerPurchaseOrderReference:
+        type:
+          - string
+          - "null"
+      customerId:
+        type:
+          - string
+          - "null"
+      customerNumber:
+        type:
+          - string
+          - "null"
+      customerName:
+        type:
+          - string
+          - "null"
+      billToName:
+        type:
+          - string
+          - "null"
+      billToCustomerId:
+        type:
+          - string
+          - "null"
+      billToCustomerNumber:
+        type:
+          - string
+          - "null"
+      shipToName:
+        type:
+          - string
+          - "null"
+      shipToContact:
+        type:
+          - string
+          - "null"
+      sellToAddressLine1:
+        type:
+          - string
+          - "null"
+      sellToAddressLine2:
+        type:
+          - string
+          - "null"
+      sellToCity:
+        type:
+          - string
+          - "null"
+      sellToCountry:
+        type:
+          - string
+          - "null"
+      sellToState:
+        type:
+          - string
+          - "null"
+      sellToPostCode:
+        type:
+          - string
+          - "null"
+      billToAddressLine1:
+        type:
+          - string
+          - "null"
+      billToAddressLine2:
+        type:
+          - string
+          - "null"
+      billToCity:
+        type:
+          - string
+          - "null"
+      billToCountry:
+        type:
+          - string
+          - "null"
+      billToState:
+        type:
+          - string
+          - "null"
+      billToPostCode:
+        type:
+          - string
+          - "null"
+      shipToAddressLine1:
+        type:
+          - string
+          - "null"
+      shipToAddressLine2:
+        type:
+          - string
+          - "null"
+      shipToCity:
+        type:
+          - string
+          - "null"
+      shipToCountry:
+        type:
+          - string
+          - "null"
+      shipToState:
+        type:
+          - string
+          - "null"
+      shipToPostCode:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      shortcutDimension1Code:
+        type:
+          - string
+          - "null"
+      shortcutDimension2Code:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      orderId:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type:
+          - string
+          - "null"
+      shipmentMethodId:
+        type:
+          - string
+          - "null"
+      salesperson:
+        type:
+          - string
+          - "null"
+      pricesIncludeTax:
+        type:
+          - boolean
+          - "null"
+      remainingAmount:
+        type:
+          - number
+          - "null"
+      discountAmount:
+        type:
+          - number
+          - "null"
+      discountAppliedBeforeTax:
+        type:
+          - boolean
+          - "null"
+      totalAmountExcludingTax:
+        type:
+          - number
+          - "null"
+      totalTaxAmount:
+        type:
+          - number
+          - "null"
+      totalAmountIncludingTax:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+
+  purchase_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      number:
+        type:
+          - string
+          - "null"
+      postingDate:
+        type:
+          - string
+          - "null"
+        format: date
+      invoiceDate:
+        type:
+          - string
+          - "null"
+        format: date
+      dueDate:
+        type:
+          - string
+          - "null"
+        format: date
+      vendorInvoiceNumber:
+        type:
+          - string
+          - "null"
+      vendorId:
+        type:
+          - string
+          - "null"
+      vendorNumber:
+        type:
+          - string
+          - "null"
+      vendorName:
+        type:
+          - string
+          - "null"
+      payToName:
+        type:
+          - string
+          - "null"
+      payToContact:
+        type:
+          - string
+          - "null"
+      payToVendorId:
+        type:
+          - string
+          - "null"
+      payToVendorNumber:
+        type:
+          - string
+          - "null"
+      shipToName:
+        type:
+          - string
+          - "null"
+      shipToContact:
+        type:
+          - string
+          - "null"
+      buyFromAddressLine1:
+        type:
+          - string
+          - "null"
+      buyFromAddressLine2:
+        type:
+          - string
+          - "null"
+      buyFromCity:
+        type:
+          - string
+          - "null"
+      buyFromCountry:
+        type:
+          - string
+          - "null"
+      buyFromState:
+        type:
+          - string
+          - "null"
+      buyFromPostCode:
+        type:
+          - string
+          - "null"
+      shipToAddressLine1:
+        type:
+          - string
+          - "null"
+      shipToAddressLine2:
+        type:
+          - string
+          - "null"
+      shipToCity:
+        type:
+          - string
+          - "null"
+      shipToCountry:
+        type:
+          - string
+          - "null"
+      shipToState:
+        type:
+          - string
+          - "null"
+      shipToPostCode:
+        type:
+          - string
+          - "null"
+      payToAddressLine1:
+        type:
+          - string
+          - "null"
+      payToAddressLine2:
+        type:
+          - string
+          - "null"
+      payToCity:
+        type:
+          - string
+          - "null"
+      payToCountry:
+        type:
+          - string
+          - "null"
+      payToState:
+        type:
+          - string
+          - "null"
+      payToPostCode:
+        type:
+          - string
+          - "null"
+      shortcutDimension1Code:
+        type:
+          - string
+          - "null"
+      shortcutDimension2Code:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      orderId:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      purchaser:
+        type:
+          - string
+          - "null"
+      pricesIncludeTax:
+        type:
+          - boolean
+          - "null"
+      discountAmount:
+        type:
+          - number
+          - "null"
+      discountAppliedBeforeTax:
+        type:
+          - boolean
+          - "null"
+      totalAmountExcludingTax:
+        type:
+          - number
+          - "null"
+      totalTaxAmount:
+        type:
+          - number
+          - "null"
+      totalAmountIncludingTax:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+
+  journals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      code:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      templateDisplayName:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+      balancingAccountId:
+        type:
+          - string
+          - "null"
+      balancingAccountNumber:
+        type:
+          - string
+          - "null"
+    required:
+      - id
