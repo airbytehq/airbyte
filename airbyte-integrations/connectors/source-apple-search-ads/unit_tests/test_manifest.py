@@ -7,6 +7,7 @@ Validates the declarative manifest structure to catch copy-paste errors
 and typos in stream definitions.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -194,7 +195,7 @@ def test_date_like_fields_are_typed(manifest, stream_name):
             elif name in date_time_fields:
                 found_fields.append(name)
                 assert field_schema["format"] == "date-time"
-                assert field_schema["airbyte_type"] == "timestamp_with_timezone"
+                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
                 types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
                 assert "string" in types
                 assert "null" in types
@@ -206,3 +207,31 @@ def test_date_like_fields_are_typed(manifest, stream_name):
 
     walk(manifest["schemas"][stream_name])
     assert found_fields, f"{stream_name} must have at least one date-like field"
+
+
+def test_timestamp_fields_declared_without_timezone_match_observed_values(manifest):
+    observed_value = "2026-09-29T09:36:45.541"
+    assert datetime.fromisoformat(observed_value).tzinfo is None
+
+    timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    found_fields = 0
+
+    def walk(schema):
+        nonlocal found_fields
+        if not isinstance(schema, dict):
+            return
+        for name, field_schema in schema.get("properties", {}).items():
+            if name in timestamp_fields:
+                found_fields += 1
+                assert field_schema["format"] == "date-time"
+                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
+            walk(field_schema)
+        if "items" in schema:
+            walk(schema["items"])
+        for branch in schema.get("anyOf", []):
+            walk(branch)
+
+    for schema in manifest["schemas"].values():
+        walk(schema)
+
+    assert found_fields > 0

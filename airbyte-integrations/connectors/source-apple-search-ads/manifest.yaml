@@ -1034,7 +1034,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       dailyBudgetAmount:
         type: object
         properties:
@@ -1051,7 +1051,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       locInvoiceDetails:
@@ -1076,7 +1076,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1094,7 +1094,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       supplySources:
@@ -1117,7 +1117,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       defaultBidAmount:
         type: object
         properties:
@@ -1134,7 +1134,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       modificationTime:
@@ -1142,7 +1142,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1162,7 +1162,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       targetingDimensions:
@@ -1269,7 +1269,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       deleted:
         type: boolean
       id:
@@ -1281,7 +1281,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       text:
@@ -1337,7 +1337,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           servingStateReasons:
@@ -1466,13 +1466,13 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           modificationTime:
             type:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           pricingModel:
@@ -1482,7 +1482,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
       adGroupId:
         type: integer
       date:
@@ -1590,7 +1590,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
       date:
         type:
           - string
@@ -1700,7 +1700,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       creativeId:
         type:
           - number
@@ -1720,7 +1720,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - string
@@ -1790,7 +1790,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           creativeId:
             type:
               - number
@@ -1808,7 +1808,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           orgId:
             type:
               - number

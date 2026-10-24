@@ -4,7 +4,7 @@
 
 This breaking release types date and timestamp fields across all streams and adds primary keys to
 the four daily report streams. `date` is now a date; `creationTime`, `modificationTime`,
-`startTime`, and `endTime` are timestamps with timezone. The daily report stream primary keys are
+`startTime`, and `endTime` are timestamps without timezone. The daily report stream primary keys are
 `(campaignId, date, countryorregion)`, `(adGroupId, date, countryorregion)`,
 `(keywordId, date, countryorregion)`, and `(adId, date, countryorregion)`, respectively.
 Incremental - Append + Deduped is now available for report streams.
