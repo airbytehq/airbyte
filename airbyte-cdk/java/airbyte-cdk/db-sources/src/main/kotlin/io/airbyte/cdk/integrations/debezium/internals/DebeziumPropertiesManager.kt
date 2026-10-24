@@ -28,8 +28,8 @@ abstract class DebeziumPropertiesManager(
         // debezium engine configuration
         offsetManager.setDebeziumProperties(props)
         // default values from debezium CommonConnectorConfig
-        props.setProperty("max.batch.size", "2048")
-        props.setProperty("max.queue.size", "8192")
+        props.putIfAbsent("max.batch.size", "2048")
+        props.putIfAbsent("max.queue.size", "8192")
 
         props.setProperty("errors.max.retries", "0")
         // This property must be strictly less than errors.retry.delay.max.ms
