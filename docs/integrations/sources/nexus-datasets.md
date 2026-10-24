@@ -176,6 +176,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.17 | 2026-10-20 | [84023](https://github.com/airbytehq/airbyte/pull/84023) | Update dependencies |
 | 0.1.16 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` and `secret_key` as `airbyte_secret` |
 | 0.1.15 | 2026-10-07 | [88193](https://github.com/airbytehq/airbyte/pull/88193) | Fix sync failing on every ready export: accept the `binary/octet-stream` Content-Type the Infor Nexus export returns; treat HTTP 202 (dataset not ready) as a transient error |
 | 0.1.14 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
