@@ -592,3 +592,60 @@ def test_custom_report_status_filters_allow_more_than_six_values(test_config, fi
     validate(valid_statuses, status_schema)
     with pytest.raises(ValidationError):
         validate(invalid_statuses, status_schema)
+
+
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_with_only_required_fields_build_creation_request_body(requests_mock, test_config):
+    # Configs created via the API only carry the required custom report fields; spec defaults
+    # are not injected, so the optional fields must not leave unresolved templates in the body.
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    columns = ["ADVERTISER_ID", "CAMPAIGN_ID", "SPEND_IN_DOLLAR"]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "minimal_campaign_report",
+            "level": "CAMPAIGN",
+            "granularity": "DAY",
+            "columns": columns,
+        }
+    ]
+    expected_date_ranges = [
+        ("2023-11-20", "2024-05-22"),
+        ("2024-05-23", "2024-11-23"),
+        ("2024-11-24", "2025-05-27"),
+        ("2025-05-28", "2025-11-28"),
+        ("2025-11-29", "2026-05-21"),
+    ]
+    expected_bodies = [
+        {
+            "start_date": start_date,
+            "end_date": end_date,
+            "level": "CAMPAIGN",
+            "granularity": "DAY",
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "columns": columns,
+        }
+        for start_date, end_date in expected_date_ranges
+    ]
+    request_bodies = []
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        request_bodies.append(json.loads(raw))
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"campaign_id": [{"spend": 1}]})
+
+    output = read_from_stream(config, "custom_minimal_campaign_report", SyncMode.incremental)
+
+    assert sorted(request_bodies, key=lambda body: body["start_date"]) == expected_bodies
+    assert [record.record.data for record in output.records] == [{"spend": 1}] * len(expected_date_ranges)
