@@ -149,7 +149,7 @@ def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None
     }
 
 
-def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0", created_at="2022-01-01T00:00:00Z"):
+def _release_node(node_id="RE_1", database_id=11, tag="v0.2.0", created_at="2022-01-01T00:00:00Z"):
     return {
         "node_id": node_id,
         "id": database_id,
@@ -231,8 +231,8 @@ def test_releases_record_preserves_synthesized_rest_urls(rate_limit_mock_respons
     assert record["url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11"
     assert record["assets_url"] == f"https://api.github.com/repos/{REPOSITORY}/releases/11/assets"
     assert record["upload_url"] == f"https://uploads.github.com/repos/{REPOSITORY}/releases/11/assets{{?name,label}}"
-    assert record["tarball_url"] == f"https://api.github.com/repos/{REPOSITORY}/tarball/v1.0.0"
-    assert record["zipball_url"] == f"https://api.github.com/repos/{REPOSITORY}/zipball/v1.0.0"
+    assert record["tarball_url"] == f"https://api.github.com/repos/{REPOSITORY}/tarball/v0.2.0"
+    assert record["zipball_url"] == f"https://api.github.com/repos/{REPOSITORY}/zipball/v0.2.0"
 
 
 def test_releases_asset_download_urls_follow_graphql_order(rate_limit_mock_response, requests_mock):
