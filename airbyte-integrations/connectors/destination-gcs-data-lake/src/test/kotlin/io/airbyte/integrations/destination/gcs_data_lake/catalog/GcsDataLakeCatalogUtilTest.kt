@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 class GcsDataLakeCatalogUtilTest {
     private val util =
         GcsDataLakeCatalogUtil(
-            IcebergUtil(SimpleTableIdGenerator("namespace"), AirbyteValueCoercer())
+            IcebergUtil(SimpleTableIdGenerator("namespace"), AirbyteValueCoercer()),
         )
 
     @Test
@@ -53,8 +53,8 @@ class GcsDataLakeCatalogUtilTest {
         val properties =
             util.toCatalogProperties(
                 gcsConfiguration(
-                    catalogConfiguration = BigLakeCatalogConfiguration("catalog", "us")
-                )
+                    catalogConfiguration = BigLakeCatalogConfiguration("catalog", "us"),
+                ),
             )
 
         assertTrue(properties.getValue("header.Authorization").startsWith("Bearer "))
@@ -64,15 +64,10 @@ class GcsDataLakeCatalogUtilTest {
 
     @Test
     fun `local emulator uses no auth and custom service host`() {
-        val properties =
-            util.toCatalogProperties(
-                gcsConfiguration(gcsEndpoint = "http://gcs:4443") // # ignore-https-check
-            )
+        val emulatorEndpoint = "http://gcs:4443" // # ignore-https-check
+        val properties = util.toCatalogProperties(gcsConfiguration(gcsEndpoint = emulatorEndpoint))
 
-        assertEquals(
-            "http://gcs:4443",
-            properties[GCPProperties.GCS_SERVICE_HOST]
-        ) // # ignore-https-check
+        assertEquals(emulatorEndpoint, properties[GCPProperties.GCS_SERVICE_HOST])
         assertEquals("true", properties[GCPProperties.GCS_NO_AUTH])
 
         val fileIO = GcsDataLakeFileIO()

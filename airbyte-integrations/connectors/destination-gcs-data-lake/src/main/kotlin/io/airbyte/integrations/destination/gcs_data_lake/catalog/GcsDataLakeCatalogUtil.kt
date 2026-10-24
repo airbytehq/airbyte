@@ -149,7 +149,7 @@ class GcsDataLakeFileIO : DelegateFileIO {
                                     OAuth2CredentialsWithRefresh.newBuilder()
                                         .setAccessToken(config.accessToken())
                                         .setRefreshHandler { config.accessToken() }
-                                        .build()
+                                        .build(),
                                 )
                             } else {
                                 setCredentials(NoCredentials.getInstance())
@@ -222,9 +222,9 @@ private fun GcsDataLakeConfiguration.configureFileIO() {
                 AccessToken(
                     token.tokenValue,
                     token.expirationTime
-                        ?: Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1))
+                        ?: Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1)),
                 )
-            }
-        )
+            },
+        ),
     )
 }
