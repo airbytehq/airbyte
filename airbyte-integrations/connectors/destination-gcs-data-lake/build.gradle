@@ -43,6 +43,7 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-gcp:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
+    compileOnly("org.apache.iceberg:iceberg-bundled-guava:${project.ext.apacheIcebergVersion}")
 
     // Google Cloud Storage
     implementation("com.google.cloud:google-cloud-storage:${project.ext.googleCloudStorageVersion}")

@@ -8,6 +8,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.NoCredentials
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.ByteArrayInputStream
 import org.apache.iceberg.gcp.GCPProperties
 import org.apache.iceberg.gcp.auth.GoogleAuthManager
@@ -21,6 +22,10 @@ import org.apache.iceberg.util.SerializableSupplier
 class GcsDataLakeFileIO : DelegateFileIO {
     private lateinit var delegate: GCSFileIO
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        "Kotlin lateinit/isInitialized guard is required",
+    )
     override fun initialize(props: Map<String, String>) {
         if (::delegate.isInitialized) {
             delegate.close()
@@ -54,6 +59,10 @@ class GcsDataLakeFileIO : DelegateFileIO {
 
     override fun properties(): Map<String, String> = delegate.properties()
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        "Kotlin lateinit/isInitialized guard is required",
+    )
     override fun close() {
         if (::delegate.isInitialized) {
             delegate.close()

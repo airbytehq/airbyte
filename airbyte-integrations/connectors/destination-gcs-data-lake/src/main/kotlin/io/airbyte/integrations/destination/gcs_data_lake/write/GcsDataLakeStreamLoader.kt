@@ -406,6 +406,10 @@ class GcsDataLakeStreamLoader(
         }
     }
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        "Kotlin lateinit/isInitialized guard is required before looking up the optional legacy ref",
+    )
     private fun removeLegacyStagingBranch() {
         if (!this::table.isInitialized || mainBranchName == DEFAULT_STAGING_BRANCH) {
             return
