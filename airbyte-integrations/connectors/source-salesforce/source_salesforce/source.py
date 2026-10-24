@@ -44,12 +44,15 @@ from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .api import (
+    AUTH_TYPE_CLIENT,
+    AUTH_TYPE_CLIENT_CREDENTIALS,
     PARENT_SALESFORCE_OBJECTS,
     UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS,
     UNSUPPORTED_FILTERING_STREAMS,
     Salesforce,
     SalesforceTokenProvider,
 )
+from .exceptions import MISSING_CLIENT_CREDENTIALS_MESSAGE, MISSING_DOMAIN_URL_MESSAGE, MISSING_REFRESH_TOKEN_MESSAGE
 from .streams import (
     DEFAULT_LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
@@ -106,14 +109,45 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         self._job_tracker = JobTracker(limit=100)
 
     def _get_sf_object(self, config: MutableMapping[str, Any]) -> Salesforce:
+        self._validate_auth_config(config)
+        auth_type = config.get("auth_type") or AUTH_TYPE_CLIENT
+        logger.info(f"Authenticating with Salesforce using the {auth_type} method.")
         sf = Salesforce(**config)
         # Persist on every rotation, not just this first login: under Refresh Token Rotation the
         # connector also re-logs-in mid-sync (proactive refresh and on INVALID_SESSION_ID), and each
         # of those rotates the single-use refresh token too. Registering before login() covers the
         # initial rotation as well.
-        sf.set_refresh_token_observer(lambda new_refresh_token: self._persist_rotated_refresh_token(new_refresh_token, config))
+        if not sf.uses_client_credentials:
+            sf.set_refresh_token_observer(lambda new_refresh_token: self._persist_rotated_refresh_token(new_refresh_token, config))
         sf.login()
         return sf
+
+    @staticmethod
+    def _validate_auth_config(config: Mapping[str, Any]) -> None:
+        auth_type = config.get("auth_type") or AUTH_TYPE_CLIENT
+        if auth_type == AUTH_TYPE_CLIENT:
+            if not config.get("refresh_token"):
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The Client authentication method requires a refresh token.",
+                    message=MISSING_REFRESH_TOKEN_MESSAGE,
+                )
+        elif auth_type == AUTH_TYPE_CLIENT_CREDENTIALS:
+            domain_url = config.get("domain_url")
+            if not domain_url or not domain_url.strip():
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The ClientCredentials authentication method requires a My Domain URL.",
+                    message=MISSING_DOMAIN_URL_MESSAGE,
+                )
+            client_id = config.get("client_id")
+            client_secret = config.get("client_secret")
+            if any(not value or not value.strip() or value == "******" for value in (client_id, client_secret)):
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The ClientCredentials authentication method requires an External Client App client ID and secret.",
+                    message=MISSING_CLIENT_CREDENTIALS_MESSAGE,
+                )
 
     def _persist_rotated_refresh_token(self, new_refresh_token: str, config: MutableMapping[str, Any]) -> None:
         if not new_refresh_token or new_refresh_token == config.get("refresh_token"):

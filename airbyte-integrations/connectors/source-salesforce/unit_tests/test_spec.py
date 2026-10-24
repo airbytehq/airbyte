@@ -4,10 +4,12 @@
 
 import base64
 import hashlib
+import re
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import jinja2
+import pytest
 import yaml
 
 
@@ -19,6 +21,64 @@ def _load_oauth_spec():
         spec = yaml.safe_load(spec_file)
     oauth_spec = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
     return oauth_spec
+
+
+def test_auth_type_spec_exposes_both_authentication_methods():
+    with SPEC_PATH.open() as spec_file:
+        spec = yaml.safe_load(spec_file)
+
+    auth_type = spec["connectionSpecification"]["properties"]["auth_type"]
+    assert auth_type["enum"] == ["Client", "ClientCredentials"]
+    assert auth_type["default"] == "Client"
+    assert auth_type["always_show"] is True
+    assert auth_type["order"] == 0
+    assert spec["connectionSpecification"]["required"] == ["client_id", "client_secret"]
+
+
+@pytest.mark.parametrize(
+    "domain_url",
+    [
+        "https://acme.my.salesforce.com",
+        "https://acme.my.salesforce.com/",
+        "https://acme--uat.sandbox.my.salesforce.com",
+        "https://acme-dev-ed.develop.my.salesforce.com",
+        "https://x.scratch.my.salesforce.com",
+        "https://x.trailblaze.my.salesforce.com",
+        "",
+    ],
+)
+def test_domain_url_pattern_accepts_salesforce_my_domain_urls(domain_url):
+    with SPEC_PATH.open() as spec_file:
+        spec = yaml.safe_load(spec_file)
+
+    pattern = spec["connectionSpecification"]["properties"]["domain_url"]["pattern"]
+    assert re.fullmatch(pattern, domain_url)
+
+
+@pytest.mark.parametrize(
+    "domain_url",
+    [
+        "https://login.salesforce.com",
+        "https://test.salesforce.com",
+        "https://acme.lightning.force.com",
+        "http://acme.my.salesforce.com",
+        "https://acme.my.salesforce.com/services",
+    ],
+)
+def test_domain_url_pattern_rejects_non_my_domain_urls(domain_url):
+    with SPEC_PATH.open() as spec_file:
+        spec = yaml.safe_load(spec_file)
+
+    pattern = spec["connectionSpecification"]["properties"]["domain_url"]["pattern"]
+    assert re.fullmatch(pattern, domain_url) is None
+
+
+def test_advanced_auth_is_still_scoped_to_client():
+    with SPEC_PATH.open() as spec_file:
+        spec = yaml.safe_load(spec_file)
+
+    assert spec["advanced_auth"]["predicate_key"] == ["auth_type"]
+    assert spec["advanced_auth"]["predicate_value"] == "Client"
 
 
 def test_oauth_spec_includes_pkce_parameters():
