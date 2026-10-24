@@ -62,3 +62,9 @@ Secure Cookies to false. You can do this with `abctl` by passing the `--insecure
 ```shell
 abctl local install --host [HOSTNAME] --insecure-cookies
 ```
+
+## Using an instance profile to pass an IAM role to an EC2 instance
+
+When using AWS authenticated connectors (such as S3 Destination) they can authenticate via the IAM Role attached as an instance profile to the ec2.  However when using abctl an additional property needs to be set on the ec2 instance in order for Airbyte to properly access this IAM Role:
+
+`http_put_response_hop_limit = 3`
