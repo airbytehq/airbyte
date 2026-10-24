@@ -10,6 +10,12 @@ interface MetadataQuerier : AutoCloseable {
     /** Returns all available namespaces. */
     fun streamNamespaces(): List<String>
 
+    /**
+     * Returns the namespaces which were searched for streams, including those in which none were
+     * found. Used to explain an empty discovery.
+     */
+    fun searchedNamespaces(): List<String> = streamNamespaces()
+
     /** Returns all available stream names in the given namespace. */
     fun streamNames(streamNamespace: String?): List<StreamIdentifier>
 

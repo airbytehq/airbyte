@@ -53,6 +53,22 @@ class H2SourceIntegrationTest {
     }
 
     @Test
+    fun testCheckFailNoTablesInConfiguredSchema() {
+        H2TestFixture().use { h2: H2TestFixture ->
+            val configPojo =
+                H2SourceConfigurationSpecification().apply {
+                    port = h2.port
+                    database = h2.database
+                    schemas = listOf("PUBLIC")
+                }
+            SyncsTestFixture.testCheck(
+                configPojo,
+                "Discovered zero tables in 'PUBLIC'. Check that the database or schema name is correct",
+            )
+        }
+    }
+
+    @Test
     fun testCheckSuccess() {
         H2TestFixture().use { h2: H2TestFixture ->
             h2.createConnection().use(Companion::prelude)
