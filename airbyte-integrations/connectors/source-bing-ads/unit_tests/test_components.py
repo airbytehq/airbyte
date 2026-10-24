@@ -961,10 +961,10 @@ def test_decoder_closes_raw_stream(components_module):
     assert raw.closed
 
 
-def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
+def test_decoder_raises_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
-    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
-    assert rows == [{}]
+    with pytest.raises(gzip.BadGzipFile):
+        list(components_module.BingAdsGzipCsvDecoder().decode(response))
 
 
 # --- BingAdsReportDownloadRequester tests ---

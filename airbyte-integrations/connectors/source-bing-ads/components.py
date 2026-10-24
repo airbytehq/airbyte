@@ -567,7 +567,7 @@ class BingAdsGzipCsvDecoder(Decoder):
             yield from self._decode_stream(raw)
         except Exception as e:
             logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
-            yield {}
+            raise
         finally:
             raw.close()
 
