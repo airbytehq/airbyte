@@ -450,6 +450,62 @@ class TestDisplayReportStreams:
         assert len(_creation_calls(requests_mock)) == _DUPLICATE_REPORT_MAX_ATTEMPTS * 3
         assert sleep.call_args_list.count(call(_DUPLICATE_REPORT_RETRY_WAIT_SECONDS)) == (_DUPLICATE_REPORT_MAX_ATTEMPTS - 1) * 3
 
+    def test_given_400_retention_window_error_when_create_report_then_emit_descriptive_error(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        requests_mock.post(
+            _REPORTS_URL,
+            json={
+                "code": "400",
+                "detail": "startDate (2026-08-24) must be equal to or after report type data retention start date (2026-08-25)",
+            },
+            status_code=400,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+
+        catalog = CatalogBuilder().with_stream("sponsored_brands_v3_report_stream", SyncMode.incremental).build()
+        state = StateBuilder().build()
+        source = get_source(config, state)
+        output = read(source, config, catalog, state, expecting_exception=True)
+        trace_errors = [message.trace.error for message in output.errors]
+
+        expected_message = (
+            "Amazon Ads rejected the report request because its start date is earlier than Amazon's data retention window "
+            "for this report type."
+        )
+        assert any(
+            error.message == expected_message
+            and error.failure_type == FailureType.system_error
+            and "retention start date (2026-08-25)" in error.internal_message
+            for error in trace_errors
+        ), f"expected a descriptive retention-window error, got: {output.errors}"
+        assert all(
+            error.message != "HTTP Status Code: 400. Error: Bad request. Please check your request parameters."
+            for error in trace_errors
+        )
+
+    def test_given_unrecognized_400_when_create_report_then_emit_amazon_detail(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        requests_mock.post(
+            _REPORTS_URL,
+            json={"code": "400", "detail": "Invalid column: fooBar"},
+            status_code=400,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+
+        catalog = CatalogBuilder().with_stream("sponsored_brands_v3_report_stream", SyncMode.incremental).build()
+        state = StateBuilder().build()
+        source = get_source(config, state)
+        output = read(source, config, catalog, state, expecting_exception=True)
+        trace_errors = [message.trace.error for message in output.errors]
+
+        assert any(
+            error.message == "Amazon Ads rejected the report request: Invalid column: fooBar"
+            and error.failure_type == FailureType.system_error
+            for error in trace_errors
+        ), f"expected Amazon's 400 detail in the error, got: {output.errors}"
+
     def test_given_429_then_200_on_report_polling_then_retries_and_returns_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):

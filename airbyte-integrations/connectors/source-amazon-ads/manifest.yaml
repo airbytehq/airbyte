@@ -101,6 +101,15 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "{{ response.details }}"
+      - predicate: "{{ 'must be equal to or after report type data retention start date' in response.get('detail', '') }}"
+        action: FAIL
+        failure_type: system_error
+        error_message: "Amazon Ads rejected the report request because its start date is earlier than Amazon's data retention window for this report type."
+      # Must stay last: DefaultErrorHandler returns the first matching filter.
+      - http_codes: [400]
+        action: FAIL
+        failure_type: system_error
+        error_message: "Amazon Ads rejected the report request: {{ response.get('detail') or response.get('details') or response.get('message') or 'no error detail was returned' }}"
 
   report_polling_error_handler:
     type: DefaultErrorHandler
