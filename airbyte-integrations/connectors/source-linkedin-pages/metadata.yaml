@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 1.1.27
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
@@ -55,4 +55,19 @@ data:
     - title: LinkedIn rate limits
       url: https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits
       type: rate_limits
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Version 2.0.0 declares primary keys on all six streams (`organization_lookup`, `follower_statistics`, `share_statistics`, `total_follower_count`, `follower_statistics_time_bound`, `share_statistics_time_bound`) and changes the declared type of `timeRangeStart`, `timeRangeEnd`, `created.time`, `lastModified.time` and `organization_lookup.id` from number to integer, so destinations store timestamps as epoch-millisecond integers instead of floats. `total_follower_count` gains an `organizationalEntity` field used as its key. Values, cursors and state are unchanged. After upgrading, refresh the source schema and refresh the affected streams so the destination re-creates their tables with the new keys and types. Clearing the time-bound streams is destructive: LinkedIn only returns the last 12 months of time-bound statistics, so older history cannot be re-synced. See the migration guide: https://docs.airbyte.com/integrations/sources/linkedin-pages-migrations#upgrading-to-200"
+        upgradeDeadline: "2026-12-22"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - organization_lookup
+              - follower_statistics
+              - share_statistics
+              - total_follower_count
+              - follower_statistics_time_bound
+              - share_statistics_time_bound
 metadataSpecVersion: "1.0"
