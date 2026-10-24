@@ -119,7 +119,7 @@ data:
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
       type: authentication_guide
     - title: Zendesk rate limits
-      url: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+      url: https://developer.zendesk.com/api-reference/introduction/rate-limits/
       type: rate_limits
     - title: Zendesk Status
       url: https://status.zendesk.com/
