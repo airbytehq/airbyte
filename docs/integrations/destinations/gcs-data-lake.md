@@ -230,7 +230,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. |
+| 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. Refresh Google credentials for the BigLake catalog and GCS file I/O so syncs longer than one hour no longer fail. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
 | 1.0.11 | 2026-09-01 | [84992](https://github.com/airbytehq/airbyte/pull/84992) | Upgrade to Bulk CDK 1.0.25. |

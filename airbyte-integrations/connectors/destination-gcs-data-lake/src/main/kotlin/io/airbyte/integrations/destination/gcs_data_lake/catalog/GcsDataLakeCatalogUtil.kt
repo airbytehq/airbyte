@@ -14,6 +14,8 @@ import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.gcp.GCPProperties
+import org.apache.iceberg.gcp.auth.GoogleAuthManager
+import org.apache.iceberg.rest.auth.AuthProperties
 
 /**
  * Utility for configuring Apache Iceberg with various catalog types on GCS.
@@ -40,18 +42,13 @@ class GcsDataLakeCatalogUtil(
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(config: GcsDataLakeConfiguration): Map<String, String> {
-        // Get OAuth2 access token from Google credentials
-        val credentials = config.googleCredentials
-        credentials.refreshIfExpired()
-        val accessToken = credentials.accessToken.tokenValue
-
         val catalogConfig = config.gcsCatalogConfiguration
 
-        val gcsProperties = buildGcsProperties(config, catalogConfig, accessToken)
+        val gcsProperties = buildGcsProperties(config, catalogConfig)
 
         return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
             is BigLakeCatalogConfiguration ->
-                buildBigLakeProperties(config, catalogConfiguration, gcsProperties, accessToken)
+                buildBigLakeProperties(config, catalogConfiguration, gcsProperties)
             is PolarisCatalogConfiguration ->
                 buildPolarisProperties(catalogConfiguration, gcsProperties)
         }
@@ -61,15 +58,17 @@ class GcsDataLakeCatalogUtil(
         config: GcsDataLakeConfiguration,
         catalogConfig:
             io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration,
-        accessToken: String,
     ): Map<String, String> {
         return buildMap {
-            put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.gcp.gcs.GCSFileIO")
+            put(CatalogProperties.FILE_IO_IMPL, GcsDataLakeFileIO::class.java.name)
             put(CatalogProperties.WAREHOUSE_LOCATION, catalogConfig.warehouseLocation)
 
             // GCP configuration
             put(GCPProperties.GCS_PROJECT_ID, config.projectId)
-            put(GCPProperties.GCS_OAUTH2_TOKEN, accessToken)
+            put(
+                GoogleAuthManager.GCP_CREDENTIALS_JSON_PROPERTY,
+                config.serviceAccountJson,
+            )
 
             // Add optional GCS endpoint if provided (for emulator testing)
             config.gcsEndpoint?.let { endpoint ->
@@ -83,14 +82,14 @@ class GcsDataLakeCatalogUtil(
         config: GcsDataLakeConfiguration,
         catalogConfig: BigLakeCatalogConfiguration,
         gcsProperties: Map<String, String>,
-        accessToken: String,
     ): Map<String, String> {
         val bigLakeProperties =
             mapOfNotNull(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
                 CatalogProperties.URI to "https://biglake.googleapis.com/iceberg/v1/restcatalog",
                 "prefix" to "projects/${config.projectId}/catalogs/${catalogConfig.catalogName}",
-                "header.Authorization" to "Bearer $accessToken",
+                AuthProperties.AUTH_TYPE to AuthProperties.AUTH_TYPE_GOOGLE,
+                GoogleAuthManager.GCP_CREDENTIALS_JSON_PROPERTY to config.serviceAccountJson,
                 "header.x-goog-user-project" to config.projectId,
                 "gcp.location" to catalogConfig.gcpLocation,
             )
