@@ -7,3 +7,9 @@ azure_storage_access_key_key_name = "storage_access_key"
 azure_storage_endpoint_suffix_key_name = "storage_endpoint_suffix"
 results_per_page = 999
 table_name_regex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$"
+table_json_schema = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": True,
+    "properties": {"PartitionKey": {"type": "string"}},
+}
