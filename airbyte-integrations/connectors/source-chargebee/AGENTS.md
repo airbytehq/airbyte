@@ -10,7 +10,7 @@ Chargebee has two incompatible Product Catalog versions (1.0 and 2.0), and many 
 
 ## Incremental Stream Considerations
 
-The Chargebee API supports `updated_at` filtering via `updated_at[after]` parameter on most entity list endpoints (subscriptions, customers, invoices, etc.), which the connector already uses for 23 incremental streams. The 4 remaining streams are children partitioned via `SubstreamPartitionRouter`. No FR parent streams remain.
+The Chargebee API supports `updated_at` filtering via `updated_at[after]` parameter on most entity list endpoints (subscriptions, customers, invoices, etc.), which the connector already uses for 24 incremental streams. The 3 remaining streams are children partitioned via `SubstreamPartitionRouter`. No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -37,11 +37,11 @@ The Chargebee API supports `updated_at` filtering via `updated_at[after]` parame
 | transaction | medium | top-level parent | updated_at | updated_at | incremental |  |
 | unbilled_charge | medium | top-level parent | updated_at | updated_at | incremental |  |
 | virtual_bank_account | medium | top-level parent | updated_at | updated_at | incremental |  |
-| attached_item | medium | child | none | none | deferred_child |  |
+| attached_item | medium | child | updated_at | updated_at | incremental | One attached-items request per parent item; the parent `item` is read without `incremental_dependency` because an item's `updated_at` may not change when its attached items change. |
 | contact | medium | child | none | none | deferred_child |  |
 | quote_line_group | medium | child | none | none | deferred_child |  |
 | subscription_with_scheduled_changes | medium | child | none | none | deferred_child |  |
 
 ### Future incremental stream candidates
 
-- **Child streams (4 streams):** `attached_item`, `contact`, `quote_line_group`, `subscription_with_scheduled_changes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **Child streams (3 streams):** `contact`, `quote_line_group`, `subscription_with_scheduled_changes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

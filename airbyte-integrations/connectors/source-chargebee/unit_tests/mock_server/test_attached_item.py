@@ -1,10 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 from unittest import TestCase
 
 import freezegun
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -15,10 +17,11 @@ from .response_builder import (
     item_response,
     item_response_multiple,
 )
-from .utils import config, read_output
+from .utils import catalog, config, get_source, read_output
 
 
 _STREAM_NAME = "attached_item"
+_FROZEN_NOW_EPOCH = 1705320000  # 2024-01-15T12:00:00Z
 
 
 @freezegun.freeze_time("2024-01-15T12:00:00Z")
@@ -118,3 +121,101 @@ class TestAttachedItemStream(TestCase):
 
         # Verify error message from manifest is logged
         assert output.is_in_logs("Stream is available only for Product Catalog 1.0")
+
+    @HttpMocker()
+    def test_full_refresh_does_not_send_updated_at_filter(self, http_mocker: HttpMocker) -> None:
+        """Full refresh sends no updated_at filter on attached_items requests."""
+        http_mocker.get(
+            RequestBuilder.items_endpoint().with_any_query_params().build(),
+            item_response_multiple(),
+        )
+        # Exact match: only the limit param, no updated_at[between]
+        for item_id in ("item_001", "item_002"):
+            http_mocker.get(
+                RequestBuilder.item_attached_items_endpoint(item_id).with_limit(100).build(),
+                attached_item_response(),
+            )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_incremental_first_sync_without_state_reads_all_and_emits_state(self, http_mocker: HttpMocker) -> None:
+        """First incremental sync (no state) reads all attached items: no updated_at filter is sent."""
+        http_mocker.get(
+            RequestBuilder.items_endpoint().with_any_query_params().build(),
+            item_response_multiple(),
+        )
+        # Exact match: slice start is epoch 0, so updated_at[between] must be omitted
+        for item_id in ("item_001", "item_002"):
+            http_mocker.get(
+                RequestBuilder.item_attached_items_endpoint(item_id).with_limit(100).build(),
+                attached_item_response(),
+            )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+        assert len(output.records) == 2
+        assert len(output.state_messages) > 0
+
+        stream_state = dict(output.state_messages[-1].state.stream.stream_state.__dict__)
+        assert stream_state["use_global_cursor"] is True
+        assert int(stream_state["state"]["updated_at"]) == 1705312800  # from attached_item.json
+
+    @HttpMocker()
+    def test_incremental_with_state_sends_updated_at_between_per_item(self, http_mocker: HttpMocker) -> None:
+        """Incremental sync with global state sends updated_at[between] for each parent item partition."""
+        previous_state_timestamp = 1704067200  # 2024-01-01T00:00:00
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"updated_at": previous_state_timestamp},
+                    "lookback_window": 0,
+                },
+            )
+            .build()
+        )
+        _config = config().build()
+        # ConcurrentPerPartitionCursor only consumes state when the source is built with it
+        source = get_source(config=_config, state=state)
+
+        http_mocker.get(
+            RequestBuilder.items_endpoint().with_any_query_params().build(),
+            item_response_multiple(),
+        )
+        for item_id in ("item_001", "item_002"):
+            http_mocker.get(
+                RequestBuilder.item_attached_items_endpoint(item_id)
+                .with_limit(100)
+                .with_updated_at_between(previous_state_timestamp, _FROZEN_NOW_EPOCH)
+                .build(),
+                attached_item_response(),
+            )
+
+        output = read(
+            source,
+            _config,
+            catalog(_STREAM_NAME, SyncMode.incremental),
+            state,
+        )
+
+        assert len(output.records) == 2
+        assert len(output.state_messages) > 0
+
+        stream_state = dict(output.state_messages[-1].state.stream.stream_state.__dict__)
+        assert int(stream_state["state"]["updated_at"]) > previous_state_timestamp
+
+    def test_discover_attached_item_supports_incremental(self) -> None:
+        """Discover must advertise incremental sync with a source-defined updated_at cursor."""
+        _config = config().build()
+        source = get_source(config=_config)
+        catalog = {stream.name: stream for stream in source.discover(logging.getLogger("test"), _config).streams}
+
+        stream = catalog[_STREAM_NAME]
+        assert SyncMode.incremental in stream.supported_sync_modes
+        assert stream.source_defined_cursor is True
+        assert stream.default_cursor_field == ["updated_at"]

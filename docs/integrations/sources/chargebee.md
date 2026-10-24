@@ -77,7 +77,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                                                  | ✔                   | ✔                   |
 
 :::note
-When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
+When using incremental sync mode, the `Attached Items` stream still lists all parent `Items` each sync (one attached-items request per item), but it only fetches attached items whose `updated_at` changed since the last sync. The first sync reads all attached items of the in-scope items.
 :::
 
 ## Limitations & Troubleshooting
@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.11.0 | 2026-10-15 | [89003](https://github.com/airbytehq/airbyte/pull/89003) | Add incremental sync support to the `attached_item` stream |
 | 0.10.52 | 2026-10-20 | [89159](https://github.com/airbytehq/airbyte/pull/89159) | Update dependencies |
 | 0.10.51 | 2026-10-13 | [88525](https://github.com/airbytehq/airbyte/pull/88525) | Update dependencies |
 | 0.10.50 | 2026-10-06 | [87801](https://github.com/airbytehq/airbyte/pull/87801) | Update dependencies |
