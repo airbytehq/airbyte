@@ -1,0 +1,51 @@
+# DEMO ONLY — do not merge.
+#
+# Publishes `Hydra State` check runs computed by tools/hydra/hydra.py onto this PR's head commit:
+#   - one for this PR itself (what a non-Hydra PR looks like)
+#   - one per PR listed on a `hydra-demo-targets:` line in this PR's description
+#
+# Editing the PR description (or pushing) re-runs it, so you can point it at any PR.
+name: Hydra State (demo)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+concurrency:
+  group: hydra-state-demo-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  publish:
+    name: Publish Hydra State
+    if: github.event.pull_request.head.ref == 'pedro/hydra-state-demo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Publish check runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEVIN_AI_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_AI_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          tools/hydra/hydra.py publish "$PR_NUMBER" --on-sha "$HEAD_SHA"
+          targets=$(printf '%s\n' "$PR_BODY" | grep -iE '^hydra-demo-targets:' | grep -oE '[0-9]+' | head -10 || true)
+          for target in $targets; do
+            tools/hydra/hydra.py publish "$target" --on-sha "$HEAD_SHA" --name "Hydra State · #$target" \
+              || echo "::warning::failed to publish state for #$target"
+          done
