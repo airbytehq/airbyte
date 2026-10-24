@@ -4,7 +4,7 @@
 
 The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
 
-Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. The `report_user_meetings` stream also supports Incremental syncs. The `report_daily` stream performs a Full Refresh on each sync and re-reads the last six months of daily reports.
+Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. `meetings`, `report_meetings`, `report_meeting_participants`, `webinars`, `report_webinars`, `report_webinar_participants`, and `report_user_meetings` support Incremental syncs. The `report_daily` stream performs a Full Refresh on each sync and re-reads the last six months of daily reports.
 
 ### Output schema
 
@@ -104,6 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.0.0 | 2026-10-23 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add primary keys, date-time typing and incremental sync |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |

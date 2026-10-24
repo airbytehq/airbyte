@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 1.5.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-zoom
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom
@@ -34,6 +34,38 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges:
+      2.0.0:
+        message: >
+          The users, meetings, meeting_registrants, meeting_polls, meeting_poll_results,
+          meeting_registration_questions, webinars, webinar_panelists, webinar_registrants,
+          webinar_absentees, webinar_polls, webinar_poll_results, webinar_registration_questions,
+          webinar_qna_results, report_meetings, report_meeting_participants, report_webinars,
+          and report_webinar_participants streams have breaking primary-key, date-time
+          schema, or sync-mode changes. Refresh the source schema and refresh/reset affected
+          streams after backing up their data. See the [Zoom 2.0.0 migration guide](https://docs.airbyte.com/integrations/sources/zoom-migrations#upgrading-to-200).
+        upgradeDeadline: "2026-11-23"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - users
+              - meetings
+              - meeting_registrants
+              - meeting_polls
+              - meeting_poll_results
+              - meeting_registration_questions
+              - webinars
+              - webinar_panelists
+              - webinar_registrants
+              - webinar_absentees
+              - webinar_polls
+              - webinar_poll_results
+              - webinar_registration_questions
+              - webinar_qna_results
+              - report_meetings
+              - report_meeting_participants
+              - report_webinars
+              - report_webinar_participants
       1.1.0:
         message:
           Zoom has deprecated JWT authentication in favor of OAuth. To successfully

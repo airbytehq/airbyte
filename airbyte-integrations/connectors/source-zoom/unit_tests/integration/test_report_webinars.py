@@ -55,7 +55,12 @@ class TestReportWebinars(TestCase):
 
         assert_completed_without_errors(output, _STREAM)
         assert sorted(records_data(output), key=lambda r: r["id"]) == [
-            {**_report(webinar), "webinar_uuid": webinar["uuid"]} for webinar in WEBINARS
+            {
+                **_report(webinar),
+                "webinar_uuid": webinar["uuid"],
+                "webinar_created_at": webinar["created_at"],
+            }
+            for webinar in WEBINARS
         ]
         for webinar in WEBINARS:
             http_mocker.assert_number_of_calls(_REPORT_REQUESTS[webinar["uuid"]], 1)
@@ -69,7 +74,13 @@ class TestReportWebinars(TestCase):
         output = read_stream(_STREAM)
 
         assert_completed_without_errors(output, _STREAM)
-        assert records_data(output) == [{**_report(WEBINAR_1), "webinar_uuid": WEBINAR_1["uuid"]}]
+        assert records_data(output) == [
+            {
+                **_report(WEBINAR_1),
+                "webinar_uuid": WEBINAR_1["uuid"],
+                "webinar_created_at": WEBINAR_1["created_at"],
+            }
+        ]
         assert output.is_in_logs("Zoom returned code 3001")
 
     def test_parent_400_yields_no_records(self):
