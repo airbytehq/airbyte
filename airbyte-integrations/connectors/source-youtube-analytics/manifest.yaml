@@ -285,6 +285,36 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_province_a3"
+    channel_reach_basic_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_reach_basic_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+      $parameters:
+        report_type_id: channel_reach_basic_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_reach_basic_a1"
+    channel_reach_combined_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_reach_combined_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - traffic_source_type
+        - traffic_source_detail
+        - operating_system
+        - device_type
+      $parameters:
+        report_type_id: channel_reach_combined_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_reach_combined_a1"
     channel_sharing_service_a1:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_sharing_service_a1
@@ -549,6 +579,8 @@ streams:
   - $ref: "#/definitions/streams/channel_end_screens_a1"
   - $ref: "#/definitions/streams/channel_playback_location_a3"
   - $ref: "#/definitions/streams/channel_province_a3"
+  - $ref: "#/definitions/streams/channel_reach_basic_a1"
+  - $ref: "#/definitions/streams/channel_reach_combined_a1"
   - $ref: "#/definitions/streams/channel_sharing_service_a1"
   - $ref: "#/definitions/streams/channel_subtitles_a3"
   - $ref: "#/definitions/streams/channel_traffic_source_a3"
@@ -650,6 +682,8 @@ metadata:
     channel_end_screens_a1: false
     channel_playback_location_a3: false
     channel_province_a3: false
+    channel_reach_basic_a1: false
+    channel_reach_combined_a1: false
     channel_sharing_service_a1: false
     channel_subtitles_a3: false
     channel_traffic_source_a3: false
@@ -1344,6 +1378,68 @@ schemas:
         type:
           - "null"
           - integer
+  channel_reach_basic_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      video_thumbnail_impressions:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions_ctr:
+        type:
+          - "null"
+          - number
+  channel_reach_combined_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      traffic_source_detail:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions:
+        type:
+          - "null"
+          - integer
+      video_thumbnail_impressions_ctr:
+        type:
+          - "null"
+          - number
   channel_sharing_service_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
