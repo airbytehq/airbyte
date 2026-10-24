@@ -9,8 +9,8 @@ from unittest.mock import call, patch
 import pytest
 import requests_mock
 import yaml
-from freezegun import freeze_time
 from components import _DUPLICATE_REPORT_MAX_ATTEMPTS, _DUPLICATE_REPORT_RETRY_WAIT_SECONDS
+from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
