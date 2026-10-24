@@ -1,0 +1,13 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-the-trade-desk:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: manifest.yaml
+  connection:
+    bypass_reason: "No test credentials available yet - connector awaiting partner sandbox credentials"
+  discovery:
+    bypass_reason: "No test credentials available yet - connector awaiting partner sandbox credentials"
+  basic_read:
+    bypass_reason: "No test credentials available yet - connector awaiting partner sandbox credentials"
