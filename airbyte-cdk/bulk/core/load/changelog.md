@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.9 — 2026-10-22
+
+[#78500](https://github.com/airbytehq/airbyte/pull/78500) - Fix: fallback from batch delete to sequential per-blob delete on 403 for SAS-authenticated Azure Blob Storage destinations.
+
 ### 1.1.8 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
