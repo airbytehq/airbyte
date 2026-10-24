@@ -22,30 +22,47 @@ definitions:
       name: users
       primary_key:
         - id
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - "@odata.deltaLink"
+        token_option:
+          type: RequestPath
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /users
+          path: /users/delta
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RESET_SYNC_TOKEN
+                http_codes:
+                  - 410
+                error_message: Microsoft Graph asked for a full resync (410 Gone); restarting the delta query.
+              - type: HttpResponseFilter
+                action: RESET_SYNC_TOKEN
+                predicate: "{{ response.get('error', {}).get('code') in ['syncStateNotFound', 'syncStateInvalid', 'resyncRequired'] }}"
+                error_message: The stored Microsoft Graph delta link expired or is invalid; restarting the delta query.
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - value
+          record_filter:
+            type: RecordFilter
+            condition: "{{ '@removed' not in record or stream_slice.cursor_slice.get('token') }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: $skiptoken
+            type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get("@odata.nextLink") |
-              regex_search('\$skiptoken=([^&]+)') }}
-            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+            cursor_value: "{{ response.get('@odata.nextLink') }}"
+            stop_condition: "{{ not response.get('@odata.nextLink') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -55,30 +72,47 @@ definitions:
       name: groups
       primary_key:
         - id
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path:
+          - "@odata.deltaLink"
+        token_option:
+          type: RequestPath
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /groups
+          path: /groups/delta?$select=id,deletedDateTime,classification,createdDateTime,creationOptions,description,displayName,expirationDateTime,groupTypes,isAssignableToRole,mail,mailEnabled,mailNickname,membershipRule,membershipRuleProcessingState,onPremisesDomainName,onPremisesLastSyncDateTime,onPremisesNetBiosName,onPremisesProvisioningErrors,onPremisesSamAccountName,onPremisesSecurityIdentifier,onPremisesSyncEnabled,preferredDataLocation,preferredLanguage,proxyAddresses,renewedDateTime,resourceBehaviorOptions,resourceProvisioningOptions,securityEnabled,securityIdentifier,serviceProvisioningErrors,theme,visibility
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RESET_SYNC_TOKEN
+                http_codes:
+                  - 410
+                error_message: Microsoft Graph asked for a full resync (410 Gone); restarting the delta query.
+              - type: HttpResponseFilter
+                action: RESET_SYNC_TOKEN
+                predicate: "{{ response.get('error', {}).get('code') in ['syncStateNotFound', 'syncStateInvalid', 'resyncRequired'] }}"
+                error_message: The stored Microsoft Graph delta link expired or is invalid; restarting the delta query.
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - value
+          record_filter:
+            type: RecordFilter
+            condition: "{{ '@removed' not in record or stream_slice.cursor_slice.get('token') }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: $skiptoken
+            type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get("@odata.nextLink") |
-              regex_search('\$skiptoken=([^&]+)') }}
-            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+            cursor_value: "{{ response.get('@odata.nextLink') }}"
+            stop_condition: "{{ not response.get('@odata.nextLink') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -496,6 +530,15 @@ schemas:
           - "null"
       id:
         type: string
+      "@removed":
+        type:
+          - object
+          - "null"
+        properties:
+          reason:
+            type:
+              - string
+              - "null"
       preferredLanguage:
         type:
           - string
@@ -537,6 +580,15 @@ schemas:
           - "null"
       id:
         type: string
+      "@removed":
+        type:
+          - object
+          - "null"
+        properties:
+          reason:
+            type:
+              - string
+              - "null"
       mailEnabled:
         type:
           - boolean
