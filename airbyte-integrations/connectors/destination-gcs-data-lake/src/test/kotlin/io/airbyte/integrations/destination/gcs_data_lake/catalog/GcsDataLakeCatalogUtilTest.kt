@@ -123,7 +123,7 @@ internal class GcsDataLakeCatalogUtilTest {
 
         try {
             val credentials = fileIO.client().options.credentials
-            assertEquals(ServiceAccountCredentials::class.java, credentials.javaClass)
+            assertIs<ServiceAccountCredentials>(credentials)
         } finally {
             fileIO.close()
         }
