@@ -6,7 +6,12 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import requests
+from source_webflow.auth import WebflowTokenAuthenticator
 from source_webflow.source import CollectionContents, SourceWebflow, WebflowStream
+from source_webflow.webflow_to_airbyte_mapping import WebflowToAirbyteMapping
+
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 @pytest.fixture
@@ -55,24 +60,58 @@ def test_http_method(patch_base_class):
     assert stream.http_method == expected_method
 
 
+def test_get_json_schema_uses_stream_authenticator(requests_mock):
+    authenticator = WebflowTokenAuthenticator(token="test-token", accept_version="1.0.0")
+    stream = CollectionContents(
+        authenticator=authenticator,
+        site_id="s",
+        collection_id="c1",
+        collection_name="Blog Posts",
+    )
+    requests_mock.get(
+        "https://api.webflow.com/collections/c1",
+        json={"fields": [{"slug": "name", "type": "PlainText"}, {"slug": "views", "type": "Number"}]},
+    )
+
+    schema = stream.get_json_schema()
+
+    assert schema["properties"]["name"] == WebflowToAirbyteMapping.webflow_to_airbyte_mapping["PlainText"]
+    assert schema["properties"]["views"] == WebflowToAirbyteMapping.webflow_to_airbyte_mapping["Number"]
+    assert {"_id", "_cid", "_locale"}.issubset(schema["properties"])
+    assert requests_mock.last_request.headers["Authorization"] == "Bearer test-token"
+    assert requests_mock.last_request.headers["accept-version"] == "1.0.0"
+
+
+def test_authenticator_property_returns_webflow_authenticator():
+    authenticator = WebflowTokenAuthenticator(token="test-token", accept_version="1.0.0")
+    stream = CollectionContents(
+        authenticator=authenticator,
+        site_id="s",
+        collection_id="c1",
+        collection_name="Blog Posts",
+    )
+
+    assert stream.authenticator is authenticator
+
+
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "response_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
+def test_default_error_handler_action(patch_base_class, http_status, response_action):
+    response = requests.Response()
+    response.status_code = http_status
     stream = WebflowStream()
-    assert stream.should_retry(response_mock) == should_retry
+    resolution = stream._http_client._error_handler.interpret_response(response)
+    assert resolution.response_action == response_action
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+def test_default_backoff_strategy(patch_base_class):
     stream = WebflowStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    strategy = stream._http_client._backoff_strategies[0]
+    assert strategy.backoff_time(None, attempt_count=1) is None
