@@ -8,9 +8,8 @@ This page contains the setup guide and reference information for the [Amazon Ads
 
 ## Prerequisites
 
-- Client ID
-- Client Secret
-- Refresh Token
+- An Amazon Ads account with at least one seller or vendor profile
+- For Airbyte Open Source only: the Client ID, Client Secret, and Refresh Token of your Amazon Ads API application. Airbyte Cloud authenticates with OAuth instead.
 - Region
 - Start Date (Optional)
 - Profile IDs (Optional)
@@ -77,7 +76,13 @@ Both **view** and **edit** access levels are supported. Accounts with view-only 
 :::
 
 :::important
-Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent, and using or refreshing the token does not extend that date. Tokens issued before July 30, 2026 do not expire unless access is revoked. When a refresh token expires, syncs fail with a configuration error asking you to re-authenticate. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent. Using or refreshing the token doesn't extend that date. Tokens issued before July 30, 2026 don't have this limit, but any refresh token stops working if access is revoked. When Amazon rejects the refresh token, syncs fail with a configuration error asking you to re-authenticate.
+
+To get a new refresh token:
+
+- **Airbyte Cloud:** Open the source's settings, click **Re-authenticate**, sign in to Amazon, and save the source.
+- **Airbyte Open Source:** Generate a new refresh token for your Amazon Ads API application, as described in Amazon's [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview), then replace the **Refresh Token** value in the source's settings and save the source.
+
 :::
 
 ## Supported sync modes
@@ -144,9 +149,18 @@ Each report stream is available in two variants:
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::note
-Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
-:::
+### Duplicate report requests
+
+Amazon rejects a report request with HTTP 425 when it considers the request a duplicate of a report it's still generating. This usually happens when a sync attempt is retried after an earlier attempt already requested the same report.
+
+The connector handles this response in two ways:
+
+- If Amazon names the existing report and that report matches the request (same dates, report type, time unit, columns, grouping, and filters), the connector syncs that report instead of requesting a new one.
+- Otherwise, the connector waits 60 seconds and requests the report again, up to four requests in all. If every request is rejected, the report job fails and the connector starts it again, up to three attempts per report, so a single report can wait about nine minutes in total.
+
+Amazon can also treat requests from different streams as duplicates of each other. This has been observed between `sponsored_products_keywords_report_stream` and `sponsored_products_targets_report_stream`, which request the same `spTargeting` report type, and between the summary and daily variants of a report. Syncing both streams in such a pair works, but can add several minutes per report.
+
+If the duplicate persists through every retry, the stream fails with a transient error that begins `Amazon rejected the report request as a duplicate of a report that is still being generated, and that report could not be reused.` The duplicate clears once Amazon finishes the earlier report, so a later sync attempt should succeed.
 
 ### Sponsored Brands report types
 
@@ -232,7 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
+| 9.2.11 | 2026-10-22 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
 | 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
 | 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
 | 9.2.8 | 2026-10-13 | [88523](https://github.com/airbytehq/airbyte/pull/88523) | Update dependencies |
