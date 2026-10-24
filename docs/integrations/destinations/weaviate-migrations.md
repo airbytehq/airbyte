@@ -1,5 +1,13 @@
 # Weaviate Migration Guide
 
+## Upgrading to 0.3.0
+
+This version moves the connector from version 3 to version 4 of the Weaviate Python client. Version 4 writes and deletes objects over gRPC, so Airbyte now needs to reach the cluster's gRPC port in addition to its HTTP endpoint.
+
+- **Weaviate Cloud**: no action needed. The connector derives the gRPC endpoint (`grpc-<cluster host>:443`).
+- **Self-hosted Weaviate**: make sure the gRPC port (`50051` by default) is reachable from Airbyte. If it is exposed on another host or port, for example behind an ingress, set **Connection Options > gRPC Endpoint** to its `host:port`, and **gRPC TLS** if its TLS setting differs from the public endpoint.
+- The minimum supported Weaviate version is now 1.27.0.
+
 ## Upgrading to 0.2.0
 
 This version adds several new features like flexible embedding options, overwrite and append+dedup sync modes. When upgrading from prior versions on this connector, a one-time migration of existing connections is required. This is done to align the behavior of vector database destinations in Airbyte. The following changes are included:
