@@ -412,7 +412,9 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          # Google does not support byProperty for discover or googleNews search types:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
@@ -1093,7 +1095,9 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters.get('dimensions') }}"
           type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          # Google does not support byProperty for discover or googleNews search types:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('parent_slice', {}).get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
           # The Google Search Console API spec requires `filters` to be an array of filter
           # objects. The single-dict form was silently tolerated by the API, but the array
