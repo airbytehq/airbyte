@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.load.message.Meta
 import java.math.BigInteger
 import java.nio.ByteBuffer
 import org.apache.iceberg.DataFile
@@ -27,6 +28,7 @@ import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.Comparators
 import org.apache.iceberg.types.Conversions
 import org.apache.iceberg.types.TypeUtil
+import org.apache.iceberg.types.Types
 import org.apache.iceberg.util.ContentFileUtil
 
 /** Physical locations of every committed row whose identifier appears in [keys]. */
@@ -39,10 +41,37 @@ class SupersededRowFinder(
     private val maxSubRanges: Int = MAX_SUB_RANGES,
     private val allowWholeFileSupersession: Boolean = false,
     private val suppressDeletedPositions: Boolean = true,
+    private val currentGenerationId: Long? = null,
 ) {
+    private val committedSchema = table.schema()
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
-    private val leadingField = identifierFields.first()
+    private val presentIdentifierFieldIndexes =
+        identifierFields.indices.filter {
+            committedSchema.findField(identifierFields[it].name()) != null
+        }
+    private val missingIdentifierFieldNames =
+        identifierFields
+            .map { it.name() }
+            .filterNot { committedSchema.findField(it) != null }
+            .toSet()
+    private val generationIdField =
+        if (missingIdentifierFieldNames.isEmpty()) {
+            null
+        } else {
+            committedSchema.findField(Meta.COLUMN_NAME_AB_GENERATION_ID)
+        }
+    private val projectedIdentifierFields = identifierFields.map { field ->
+        if (field.name() in missingIdentifierFieldNames) {
+            Types.NestedField.optional(field.fieldId(), field.name(), field.type())
+        } else {
+            field
+        }
+    }
+    private val projectedSchema =
+        Schema(
+            (projectedIdentifierFields + MetadataColumns.ROW_POSITION).distinctBy { it.name() },
+        )
     private val keyWrapper = InternalRecordWrapper(identifierSchema.asStruct())
 
     val dataFilesOpened: Int
@@ -64,13 +93,23 @@ class SupersededRowFinder(
         // A flush whose keys were all resolved by same-flush supersession has nothing to find
         // in committed files.
         if (touched.isEmpty()) return emptySequence()
-        val expression = rowGroupExpression(touched)
+        val expression = rowGroupExpression(touched, 0)
+        val scanExpressions =
+            presentIdentifierFieldIndexes.map { rowGroupExpression(touched, it) } +
+                listOfNotNull(
+                    generationIdField
+                        ?.takeIf { currentGenerationId != null }
+                        ?.let { Expressions.equal(it.name(), currentGenerationId) },
+                )
+        val scanExpression =
+            scanExpressions.reduceOrNull { left, right -> Expressions.and(left, right) }
+                ?: Expressions.alwaysTrue()
         val bounds = touchedBounds(touched)
         val plannedFiles =
             table
                 .newScan()
                 .let { if (snapshotId != null) it.useSnapshot(snapshotId) else it.useRef(ref) }
-                .filter(expression)
+                .filter(scanExpression)
                 .planFiles()
                 .use { tasks ->
                     tasks
@@ -123,7 +162,6 @@ class SupersededRowFinder(
     ): Sequence<PositionalDeleteResolver.RowLocation> = sequence {
         val positionIndex = mergedPositionDeleteIndex(planned)
         val priorDeletedPositions = positionIndex?.cardinality() ?: 0
-        val projectedSchema = Schema(identifierFields + MetadataColumns.ROW_POSITION)
         val inputFile = table.io().newInputFile(planned.file.location())
         val locations =
             if (allowWholeFileSupersession) {
@@ -141,6 +179,7 @@ class SupersededRowFinder(
             .use { records ->
                 for (record in records) {
                     state.rowsScanned.incrementAndGet()
+                    if (missingIdentifierFieldNames.any { record.getField(it) == null }) continue
                     val position =
                         (record.getField(MetadataColumns.ROW_POSITION.name()) as Number).toLong()
                     if (
@@ -240,23 +279,24 @@ class SupersededRowFinder(
             }
     }
 
-    private fun rowGroupExpression(touched: Set<StructLike>): Expression {
-        val values = touched.mapNotNull { it.get(0, Any::class.java) }.distinct()
-        val comparator: Comparator<Any> = Comparators.forType(leadingField.type().asPrimitiveType())
+    private fun rowGroupExpression(touched: Set<StructLike>, fieldIndex: Int): Expression {
+        val field = identifierFields[fieldIndex]
+        val values = touched.mapNotNull { it.get(fieldIndex, Any::class.java) }.distinct()
+        val comparator: Comparator<Any> = Comparators.forType(field.type().asPrimitiveType())
         require(values.isNotEmpty()) {
-            "Touched identifier field ${leadingField.name()} has no non-null values"
+            "Touched identifier field ${field.name()} has no non-null values"
         }
         val rangeExpression =
             disjointRanges(values, comparator)
                 .map { (min, max) ->
                     Expressions.and(
-                        Expressions.greaterThanOrEqual(leadingField.name(), min),
-                        Expressions.lessThanOrEqual(leadingField.name(), max),
+                        Expressions.greaterThanOrEqual(field.name(), min),
+                        Expressions.lessThanOrEqual(field.name(), max),
                     )
                 }
                 .reduce { left, right -> Expressions.or(left, right) }
         if (values.size <= maxInValues) {
-            return Expressions.and(rangeExpression, Expressions.`in`(leadingField.name(), values))
+            return Expressions.and(rangeExpression, Expressions.`in`(field.name(), values))
         }
         return rangeExpression
     }

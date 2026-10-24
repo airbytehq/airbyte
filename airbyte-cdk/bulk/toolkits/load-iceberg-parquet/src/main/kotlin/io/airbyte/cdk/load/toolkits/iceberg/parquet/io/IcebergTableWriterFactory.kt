@@ -33,15 +33,13 @@ import org.apache.iceberg.util.PropertyUtil
 class IcebergTableWriterFactory {
     class InvalidGenerationIdException(message: String) : Exception(message)
 
-    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
+    private val generationIdRegex = Regex("""ab-generation-id-(\d+)-e""")
 
-    private fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
-        if (!generationIdRegex.matches(generationId)) {
-            throw InvalidGenerationIdException(
+    private fun parseGenerationIdSuffix(generationId: String): Long =
+        generationIdRegex.matchEntire(generationId)?.groupValues?.get(1)?.toLongOrNull()
+            ?: throw InvalidGenerationIdException(
                 "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
             )
-        }
-    }
 
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
@@ -62,7 +60,7 @@ class IcebergTableWriterFactory {
         suppressDeletedPositions: Boolean = true,
         deleteMode: IcebergDeleteMode = IcebergDeleteMode.EQUALITY,
     ): BaseTaskWriter<Record> {
-        assertGenerationIdSuffixIsOfValidFormat(generationId)
+        val currentGenerationId = parseGenerationIdSuffix(generationId)
         if (importType is Dedupe) {
             validateDeleteMode(table, deleteMode)
         }
@@ -109,6 +107,7 @@ class IcebergTableWriterFactory {
                     allowWholeFileSupersession = allowWholeFileSupersession,
                     suppressDeletedPositions = suppressDeletedPositions,
                     writeDeletionVectors = deleteMode == IcebergDeleteMode.DELETION_VECTOR,
+                    currentGenerationId = currentGenerationId,
                     deletionVectorOutputFileFactory =
                         if (deleteMode == IcebergDeleteMode.DELETION_VECTOR) {
                             createOutputFileFactory(
