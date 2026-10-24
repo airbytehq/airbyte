@@ -137,6 +137,8 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
 
+The `max_concurrent_detail_requests` setting controls the number of NetSuite record-detail requests made concurrently. It defaults to `8` and can be lowered to between `1` and `32` to match the concurrency limit of your NetSuite integration. The connector automatically scales down after repeated detail-request errors.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -148,6 +150,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.2.0 | 2026-09-15 | [86414](https://github.com/airbytehq/airbyte/pull/86414) | Improve discovery and detail extraction latency with schema reuse, bounded concurrent requests, and adaptive scale-down |
 | 0.1.29 | 2026-09-15 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Emit warning and fail sync when >50% of records are silently skipped due to NetSuite workflow locks (USER_ERROR) |
 | 0.1.28 | 2026-08-17 | [79654](https://github.com/airbytehq/airbyte/pull/79654) | Fix incremental sync permanently dropping records modified between the sync time and account-local midnight; retry a rejected date format on the same slice instead of skipping it |
 | 0.1.27 | 2025-10-14 | [67787](https://github.com/airbytehq/airbyte/pull/67787) | Update dependencies |

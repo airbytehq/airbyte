@@ -4,6 +4,8 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
+from threading import Barrier, Lock
+from time import sleep
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -40,7 +42,11 @@ CURSORS_ACROSS_THE_DAY = [
 ]
 
 
-def _make_stream(start_datetime: str = "2026-01-01T00:00:00Z", window_in_days: int = 1) -> IncrementalNetsuiteStream:
+def _make_stream(
+    start_datetime: str = "2026-01-01T00:00:00Z",
+    window_in_days: int = 1,
+    max_concurrent_detail_requests: int = 8,
+) -> IncrementalNetsuiteStream:
     auth = MagicMock(spec=OAuth1)
     return IncrementalNetsuiteStream(
         auth=auth,
@@ -48,6 +54,7 @@ def _make_stream(start_datetime: str = "2026-01-01T00:00:00Z", window_in_days: i
         base_url="https://1234.suitetalk.api.netsuite.com",
         start_datetime=start_datetime,
         window_in_days=window_in_days,
+        max_concurrent_detail_requests=max_concurrent_detail_requests,
     )
 
 
@@ -288,6 +295,11 @@ def _make_base_stream(object_name: str = "journalentry") -> NetsuiteStream:
     stream.schemas = {}
     stream._records_attempted = 0
     stream._user_error_skipped = 0
+    stream._detail_concurrency = 8
+    stream._detail_error_count = 0
+    stream._detail_state_lock = Lock()
+    stream._detail_thread_state = MagicMock(active=False, error_recorded=False)
+    stream._session_prepare_lock = Lock()
     stream.index_datetime_format = 0
     stream.raise_on_http_errors = True
     stream._session = MagicMock()
@@ -372,10 +384,9 @@ def test_fetch_record_yields_on_200():
     ok_resp = _make_response(200, {"id": "42", "type": "journalentry"})
     stream._send_request = MagicMock(return_value=ok_resp)
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/42"}]}, {}))
+    result = stream.fetch_record({"links": [{"href": "https://test/record/42"}]}, {})
 
-    assert len(results) == 1
-    assert results[0]["id"] == "42"
+    assert result["id"] == "42"
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 0
 
@@ -385,21 +396,20 @@ def test_fetch_record_skips_and_tracks_user_error():
     err_resp = _make_response(400, _USER_ERROR_JSON)
     stream._send_request = MagicMock(return_value=err_resp)
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/99"}]}, {}))
+    result = stream.fetch_record({"links": [{"href": "https://test/record/99"}]}, {})
 
-    assert results == []
+    assert result is None
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 1
 
 
-def test_fetch_record_does_not_track_non_400():
+def test_fetch_record_fails_on_non_400_error():
     stream = _make_base_stream()
     resp_500 = _make_response(500, {})
     stream._send_request = MagicMock(return_value=resp_500)
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/1"}]}, {}))
-
-    assert results == []
+    with pytest.raises(requests.HTTPError, match="returned HTTP 500"):
+        stream.fetch_record({"links": [{"href": "https://test/record/1"}]}, {})
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 0
 
@@ -489,8 +499,154 @@ def test_fetch_record_accumulation_mixed_responses():
 
     all_results = []
     for i in range(6):
-        all_results.extend(stream.fetch_record({"links": [{"href": f"https://test/record/{i}"}]}, {}))
+        result = stream.fetch_record({"links": [{"href": f"https://test/record/{i}"}]}, {})
+        if result is not None:
+            all_results.append(result)
 
     assert stream._records_attempted == 6
     assert stream._user_error_skipped == 3
     assert len(all_results) == 3
+
+
+def _collection_response(records):
+    response = MagicMock()
+    response.json.return_value = {"items": records}
+    return response
+
+
+def _collection_record(record_id):
+    return {"id": record_id, "links": [{"href": f"https://example.test/invoice/{record_id}"}]}
+
+
+def test_detail_records_are_emitted_in_collection_order():
+    stream = _make_stream()
+    records = [_collection_record(str(index)) for index in range(4)]
+
+    def fetch(record, _request_kwargs):
+        # Make later records finish first. Output must still follow collection order.
+        sleep((4 - int(record["id"])) * 0.01)
+        return {"id": record["id"]}
+
+    with patch.object(stream, "fetch_record", side_effect=fetch):
+        emitted = list(stream.parse_response(_collection_response(records), {}, None, None))
+
+    assert emitted == [{"id": str(index)} for index in range(4)]
+
+
+def test_detail_requests_are_bounded_to_eight_workers():
+    stream = _make_stream()
+    records = [_collection_record(str(index)) for index in range(16)]
+    active = 0
+    maximum = 0
+    lock = Lock()
+    started = Barrier(8)
+
+    def fetch(record, _request_kwargs):
+        nonlocal active, maximum
+        with lock:
+            active += 1
+            maximum = max(maximum, active)
+        started.wait()
+        with lock:
+            active -= 1
+        return {"id": record["id"]}
+
+    with patch.object(stream, "fetch_record", side_effect=fetch):
+        emitted = list(stream.parse_response(_collection_response(records), {}, None, None))
+
+    assert len(emitted) == len(records)
+    assert maximum == 8
+
+
+@pytest.mark.parametrize("concurrency", (1, 3, 8))
+def test_detail_requests_respect_configured_concurrency(concurrency):
+    stream = _make_stream(max_concurrent_detail_requests=concurrency)
+    records = [_collection_record(str(index)) for index in range(concurrency * 2)]
+    active = 0
+    maximum = 0
+    lock = Lock()
+
+    def fetch(record, _request_kwargs):
+        nonlocal active, maximum
+        with lock:
+            active += 1
+            maximum = max(maximum, active)
+        sleep(0.01)
+        with lock:
+            active -= 1
+        return {"id": record["id"]}
+
+    with patch.object(stream, "fetch_record", side_effect=fetch):
+        emitted = list(stream.parse_response(_collection_response(records), {}, None, None))
+
+    assert len(emitted) == len(records)
+    assert maximum <= concurrency
+
+
+def test_detail_failure_is_not_silently_skipped():
+    stream = _make_stream()
+    records = [_collection_record(str(index)) for index in range(3)]
+
+    def fetch(record, _request_kwargs):
+        if record["id"] == "1":
+            raise RuntimeError("detail request failed")
+        return {"id": record["id"]}
+
+    with patch.object(stream, "fetch_record", side_effect=fetch):
+        with pytest.raises(RuntimeError, match="detail request failed"):
+            list(stream.parse_response(_collection_response(records), {}, None, None))
+
+
+def test_detail_retryable_response_scales_down_without_changing_date_format():
+    stream = _make_stream()
+    response = MagicMock(status_code=429, text="rate limited")
+    stream._detail_thread_state.active = True
+    stream._detail_thread_state.error_recorded = False
+
+    with patch.object(HttpStream, "should_retry", return_value=True):
+        assert stream.should_retry(response) is True
+
+    assert stream._current_detail_concurrency() == 8
+    assert stream.index_datetime_format == 0
+    assert stream._detail_thread_state.error_recorded is True
+
+
+def test_detail_non_retryable_responses_are_fatal_and_scale_down():
+    stream = _make_stream()
+    response = MagicMock(status_code=422, text="bad detail request")
+    with patch.object(stream, "_send_request", return_value=response):
+        for record_id in ("1", "2"):
+            with pytest.raises(Exception, match="returned HTTP 422"):
+                stream.fetch_record(_collection_record(record_id), {})
+
+    assert stream._current_detail_concurrency() == 7
+    assert stream.index_datetime_format == 0
+
+
+def test_repeated_detail_errors_reduce_future_concurrency():
+    stream = _make_stream()
+    assert stream._current_detail_concurrency() == 8
+
+    stream._mark_detail_error()
+    assert stream._current_detail_concurrency() == 8
+    stream._mark_detail_error()
+    assert stream._current_detail_concurrency() == 7
+
+    stream._mark_detail_error()
+    stream._mark_detail_error()
+    assert stream._current_detail_concurrency() == 6
+
+    for _ in range(20):
+        stream._mark_detail_error()
+    assert stream._current_detail_concurrency() == 1
+
+
+@pytest.mark.parametrize("value", (0, 33, True, "8"))
+def test_invalid_detail_concurrency_is_rejected(value):
+    with pytest.raises(ValueError, match="max_concurrent_detail_requests"):
+        _make_stream(max_concurrent_detail_requests=value)
+
+
+def test_custom_detail_concurrency_is_used_as_initial_window():
+    stream = _make_stream(max_concurrent_detail_requests=3)
+    assert stream._current_detail_concurrency() == 3
