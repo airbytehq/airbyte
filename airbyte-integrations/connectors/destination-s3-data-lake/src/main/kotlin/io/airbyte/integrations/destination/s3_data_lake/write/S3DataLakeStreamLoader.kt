@@ -5,17 +5,26 @@
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableUpgrader
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.enableIdentifierBloomFilters
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.tableFormatVersion
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.schema.S3DataLakeTableSchemaMapper
+import io.airbyte.integrations.destination.s3_data_lake.spec.AllowNonReversibleUpgrades
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -31,6 +40,7 @@ class S3DataLakeStreamLoader(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
+    private val tableIdGenerator: TableIdGenerator,
     private val stagingBranchName: String,
     private val mainBranchName: String,
     private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
@@ -100,13 +110,46 @@ class S3DataLakeStreamLoader(
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         s3DataLakeUtil.createNamespaceWithGlueHandling(stream.mappedDescriptor, catalog)
-        table =
+        val targetFormatVersion = icebergConfiguration.tableFormatVersion.formatVersion
+        val tableExisted =
+            catalog.tableExists(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
+        val createdTable =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
+                formatVersion = targetFormatVersion,
             )
-        failOnNormalizationRenames(table.schema())
+        table = createdTable
+        // Validate the configured delete mode against the version the table will have
+        // after reconciliation, so an invalid combination fails before the upgrade runs.
+        val actualVersion = tableFormatVersion(createdTable)
+        val plannedVersion =
+            if (
+                tableExisted &&
+                    actualVersion == 2 &&
+                    targetFormatVersion == 3 &&
+                    icebergConfiguration.allowNonReversibleUpgrades != AllowNonReversibleUpgrades.NO
+            ) {
+                3
+            } else if (tableExisted) {
+                actualVersion
+            } else {
+                targetFormatVersion
+            }
+        val deleteMode = resolveDeleteMode(createdTable, plannedVersion)
+        val effectiveFormatVersion =
+            reconcileFormatVersion(
+                table = createdTable,
+                tableExisted = tableExisted,
+                targetFormatVersion = targetFormatVersion,
+                catalog = catalog,
+            )
+        check(effectiveFormatVersion == plannedVersion) {
+            "Planned format v$plannedVersion but reconciliation produced " +
+                "v$effectiveFormatVersion for ${createdTable.name()}."
+        }
+        failOnNormalizationRenames(createdTable.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.
@@ -123,7 +166,7 @@ class S3DataLakeStreamLoader(
             "Creating staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
         }
         try {
-            table.manageSnapshots().createBranch(stagingBranchName).commit()
+            createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
         } catch (_: IllegalArgumentException) {
             logger.info {
                 "Staging branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}; reusing it for recovery."
@@ -131,13 +174,121 @@ class S3DataLakeStreamLoader(
         }
         stagingBranchCreated = true
 
+        val resolvedDeletesEnabled =
+            stream.tableSchema.importType is Dedupe && deleteMode != IcebergDeleteMode.EQUALITY
+        val identifierFieldIds =
+            if (resolvedDeletesEnabled) {
+                targetSchema.identifierFieldIds()
+            } else {
+                emptySet()
+            }
+        val optimizePriorIcebergDeleteFiles = icebergConfiguration.optimizePriorIcebergDeleteFiles
+        val positionalDeleteState =
+            if (resolvedDeletesEnabled) {
+                enableIdentifierBloomFilters(createdTable, targetSchema, identifierFieldIds)
+                PositionalDeleteResolutionState()
+            } else {
+                null
+            }
+
         val state =
             S3DataLakeStreamState(
-                table = table,
+                table = createdTable,
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
+                positionalDeleteState = positionalDeleteState,
+                optimizePriorIcebergDeleteFiles = optimizePriorIcebergDeleteFiles,
+                deleteMode = deleteMode,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
+    }
+
+    /**
+     * Reconciles the table's actual format version with the configured target, upgrading an
+     * existing v2 table to v3 in place when the configuration allows it. Applies to every stream
+     * regardless of import type. Returns the table's effective format version.
+     */
+    private fun reconcileFormatVersion(
+        table: Table,
+        tableExisted: Boolean,
+        targetFormatVersion: Int,
+        catalog: org.apache.iceberg.catalog.Catalog,
+    ): Int {
+        var effectiveVersion = tableFormatVersion(table)
+        if (tableExisted && effectiveVersion != targetFormatVersion) {
+            if (effectiveVersion == 2 && targetFormatVersion == 3) {
+                when (icebergConfiguration.allowNonReversibleUpgrades) {
+                    AllowNonReversibleUpgrades.NO -> {
+                        logger.warn {
+                            "Table ${table.name()} exists at Iceberg format v2 while " +
+                                "table_format_version targets v3. Leaving the table at v2; " +
+                                "set allow_non_reversible_upgrades to upgrade it in place " +
+                                "(one-way)."
+                        }
+                    }
+                    AllowNonReversibleUpgrades.YES,
+                    AllowNonReversibleUpgrades.WITH_TABLE_BACKUP -> {
+                        val backup =
+                            icebergConfiguration.allowNonReversibleUpgrades ==
+                                AllowNonReversibleUpgrades.WITH_TABLE_BACKUP
+                        IcebergTableUpgrader.upgradeToV3(
+                            catalog,
+                            tableIdGenerator.toTableIdentifier(stream.mappedDescriptor),
+                            backup = backup,
+                        )
+                        table.refresh()
+                        effectiveVersion = 3
+                    }
+                }
+            } else {
+                logger.warn {
+                    "Table ${table.name()} exists at Iceberg format v$effectiveVersion while " +
+                        "table_format_version targets v$targetFormatVersion. Format versions " +
+                        "cannot be lowered; the table stays at v$effectiveVersion."
+                }
+            }
+        }
+        return effectiveVersion
+    }
+
+    /** Resolves the delete-file encoding for this stream from the table's format version. */
+    private fun resolveDeleteMode(table: Table, effectiveVersion: Int): IcebergDeleteMode {
+        if (stream.tableSchema.importType !is Dedupe) {
+            return IcebergDeleteMode.EQUALITY
+        }
+        return when (icebergConfiguration.icebergDeleteFileType) {
+            IcebergDeleteFileType.AUTOMATIC ->
+                if (effectiveVersion >= 3) IcebergDeleteMode.DELETION_VECTOR
+                else IcebergDeleteMode.EQUALITY
+            IcebergDeleteFileType.EQUALITY -> {
+                if (effectiveVersion >= 3) {
+                    throw ConfigErrorException(
+                        "iceberg_delete_file_type EQUALITY requires an Iceberg format v2 " +
+                            "table, but ${table.name()} is at format v$effectiveVersion.",
+                    )
+                }
+                IcebergDeleteMode.EQUALITY
+            }
+            IcebergDeleteFileType.POSITIONAL -> {
+                if (effectiveVersion >= 3) {
+                    throw ConfigErrorException(
+                        "iceberg_delete_file_type POSITIONAL requires an Iceberg format v2 " +
+                            "table, but ${table.name()} is at format v$effectiveVersion.",
+                    )
+                }
+                IcebergDeleteMode.POSITIONAL
+            }
+            IcebergDeleteFileType.DELETION_VECTOR -> {
+                if (effectiveVersion < 3) {
+                    throw ConfigErrorException(
+                        "iceberg_delete_file_type DELETION_VECTOR requires an Iceberg format v3 " +
+                            "table, but ${table.name()} is at format v$effectiveVersion and " +
+                            "allow_non_reversible_upgrades did not upgrade it.",
+                    )
+                }
+                IcebergDeleteMode.DELETION_VECTOR
+            }
+        }
     }
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
