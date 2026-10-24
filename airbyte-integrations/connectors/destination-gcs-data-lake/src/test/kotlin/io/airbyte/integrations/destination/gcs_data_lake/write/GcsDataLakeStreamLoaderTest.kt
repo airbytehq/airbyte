@@ -42,6 +42,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.DataFiles
@@ -121,15 +122,18 @@ internal class GcsDataLakeStreamLoaderTest {
             icebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
         )
 
-    private fun makeTableSchema(): Schema =
+    private fun makeTableSchema(
+        primaryKeys: List<List<String>> = listOf(listOf("id")),
+        idFieldType: FieldType = FieldType(IntegerType, nullable = true),
+    ): Schema =
         ObjectType(
                 linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
+                    "id" to idFieldType,
                     "name" to FieldType(StringType, nullable = true),
                 ),
             )
             .withAirbyteMeta(true)
-            .toIcebergSchema(listOf(listOf("id")))
+            .toIcebergSchema(primaryKeys)
 
     private fun createTable(schema: Schema): Table {
         (catalog as SupportsNamespaces).createNamespace(tableIdentifier.namespace())
@@ -144,6 +148,7 @@ internal class GcsDataLakeStreamLoaderTest {
         stream: DestinationStream,
         table: Table,
         mainBranchName: String = "main",
+        incomingSchema: Schema = table.schema(),
     ): GcsDataLakeStreamLoader {
         val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil = mockk {
             every { createNamespace(any(), any()) } just runs
@@ -152,7 +157,7 @@ internal class GcsDataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns table.schema()
+            every { toIcebergSchema(any()) } returns incomingSchema
         }
         return GcsDataLakeStreamLoader(
             makeConfiguration(mainBranchName),
@@ -228,6 +233,30 @@ internal class GcsDataLakeStreamLoaderTest {
             IcebergDeleteMode.POSITIONAL,
             state.deleteMode,
         )
+    }
+
+    @Test
+    fun `optional primary key is required before setting identifier fields`() {
+        val table =
+            createTable(
+                makeTableSchema(
+                    primaryKeys = emptyList(),
+                    idFieldType = FieldType(StringType, nullable = true),
+                ),
+            )
+        assertTrue(table.schema().findField("id").isOptional)
+        assertEquals(emptySet<Int>(), table.schema().identifierFieldIds())
+
+        val stream = makeStream(Dedupe(listOf(listOf("id")), listOf("id")))
+        val incomingSchema = makeTableSchema(idFieldType = FieldType(StringType, nullable = true))
+        runBlocking {
+            makeLoader(stream, table, incomingSchema = incomingSchema).start()
+        }
+
+        table.refresh()
+        val idField = assertNotNull(table.schema().findField("id"))
+        assertTrue(idField.isRequired)
+        assertEquals(setOf(idField.fieldId()), table.schema().identifierFieldIds())
     }
 
     @Test

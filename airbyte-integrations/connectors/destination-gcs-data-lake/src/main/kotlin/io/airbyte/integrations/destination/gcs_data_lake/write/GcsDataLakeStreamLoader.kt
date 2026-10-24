@@ -148,9 +148,25 @@ class GcsDataLakeStreamLoader(
                 createdTable.history().isEmpty() ||
                     createdTable.schema().identifierFieldIds().isEmpty()
             ) {
-                table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
-                // Refresh to get the updated schema with identifier fields
-                table.refresh()
+                val missingPrimaryKeyNames = primaryKeyNames.filter {
+                    createdTable.schema().findField(it) == null
+                }
+                if (missingPrimaryKeyNames.isEmpty()) {
+                    val update = table.updateSchema().allowIncompatibleChanges()
+                    primaryKeyNames.forEach { name ->
+                        if (createdTable.schema().findField(name)?.isOptional == true) {
+                            update.requireColumn(name)
+                        }
+                    }
+                    update.setIdentifierFields(primaryKeyNames).commit()
+                    // Refresh to get the updated schema with identifier fields
+                    table.refresh()
+                } else {
+                    logger.info {
+                        "Skipping identifier field update until missing primary-key columns are " +
+                            "added by the schema synchronizer: $missingPrimaryKeyNames"
+                    }
+                }
             } else {
                 logger.info {
                     "Table already has identifier fields. Will let schema synchronizer handle PK changes."
