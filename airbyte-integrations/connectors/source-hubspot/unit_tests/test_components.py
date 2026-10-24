@@ -729,6 +729,49 @@ def test_crm_search_pagination_strategy(
     assert actual_next_page_token == expected_next_page_token
 
 
+@pytest.mark.parametrize(
+    "json_response,last_page_token_value,expected_next_page_token",
+    [
+        pytest.param(
+            {"results": [{"id": str(i)} for i in range(200)], "paging": {"next": {"after": 1200}}},
+            {"after": 1000},
+            {"after": 1200},
+            id="test_next_page_counts_raw_results",
+        ),
+        pytest.param(
+            {"results": [{"id": str(25000 + i)} for i in range(200)], "paging": {"next": {"after": 10000}}},
+            {"after": 9800},
+            {"after": 0, "id": 25200},
+            id="test_reset_page_from_last_raw_result_id",
+        ),
+        pytest.param(
+            {"results": [{"id": "1"}], "paging": {"next": {"after": 1200}}},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_raw_page_is_less_than_page_size",
+        ),
+        pytest.param({"results": []}, {"after": 1000}, None, id="test_stop_paging_when_no_raw_results"),
+    ],
+)
+def test_crm_search_filtered_pagination_strategy_ignores_filtered_page_size(
+    components_module, json_response, last_page_token_value, expected_next_page_token
+):
+    pagination_strategy = components_module.HubspotCRMSearchFilteredPaginationStrategy(page_size=200)
+
+    response = Mock()
+    response.json.return_value = json_response
+
+    # The record filter kept a single record from the page: the strategy must not use it.
+    actual_next_page_token = pagination_strategy.next_page_token(
+        response=response,
+        last_page_size=1,
+        last_record={"id": "1"},
+        last_page_token_value=last_page_token_value,
+    )
+
+    assert actual_next_page_token == expected_next_page_token
+
+
 def test_build_associations_retriever_uses_rate_limited_for_429():
     """Verify that the associations retriever maps HTTP 429 to RATE_LIMITED, not RETRY."""
     components_module = __import__("components")

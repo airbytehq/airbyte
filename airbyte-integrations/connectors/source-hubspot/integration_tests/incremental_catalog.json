@@ -194,6 +194,30 @@
     },
     {
       "stream": {
+        "name": "call_recordings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["hs_lastmodifieddate"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["hs_lastmodifieddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "meeting_recordings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["hs_lastmodifieddate"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["hs_lastmodifieddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "forms",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
