@@ -778,6 +778,97 @@ jobs:
             exit 1
           fi
 
+  # Non-blocking: this job is not evaluated by 'connector-ci-checks-summary' and only
+  # emits warning annotations. Registry version pins override 'data.dockerImageTag'
+  # for the Cloud or OSS registry. Warn when a new connector version is held back by
+  # a different pin, or when a pin changes without a version bump and therefore will
+  # not take effect until a later publish. Moving a pin in lockstep with a version
+  # bump is intentional and is not warned about.
+  registry-pin-check:
+    needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.connectors-found == 'true'
+    continue-on-error: true
+    name: Registry Pin Check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 1
+
+      - name: Fetch Master
+        id: fetch-base
+        env:
+          HEAD_REPO: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [[ -z "${HEAD_REPO}" || "${HEAD_REPO}" == airbytehq/* ]]; then
+            remote=origin
+          else
+            remote=https://github.com/airbytehq/airbyte.git
+          fi
+          git fetch --quiet --depth=1 --no-tags "${remote}" master:refs/remotes/base/master
+          echo "base-ref=refs/remotes/base/master" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate Registry Version Pins
+        id: evaluate-registry-pins
+        env:
+          CONNECTORS_MATRIX: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+          BASE_REF: ${{ steps.fetch-base.outputs.base-ref }}
+        run: |
+          while IFS= read -r connector; do
+            [[ -z "${connector}" ]] && continue
+            metadata="airbyte-integrations/connectors/${connector}/metadata.yaml"
+            if [[ ! -f "${metadata}" ]]; then
+              echo "Skipping ${connector}: ${metadata} is missing."
+              continue
+            fi
+
+            head_version=$(yq -r '.data.dockerImageTag // ""' "${metadata}")
+            base_metadata=$(git show "${BASE_REF}:${metadata}" 2>/dev/null || true)
+            base_version=""
+            if [[ -n "${base_metadata}" ]]; then
+              base_version=$(yq -r '.data.dockerImageTag // ""' <<<"${base_metadata}")
+            fi
+
+            for registry in cloud oss; do
+              if [[ "${registry}" == "cloud" ]]; then
+                label=Cloud
+              else
+                label=OSS
+              fi
+
+              head_pin=$(yq -r ".data.registryOverrides.${registry}.dockerImageTag // \"\"" "${metadata}")
+              base_pin=""
+              if [[ -n "${base_metadata}" ]]; then
+                base_pin=$(yq -r ".data.registryOverrides.${registry}.dockerImageTag // \"\"" <<<"${base_metadata}")
+              fi
+
+              line=$(yq -r ".data.registryOverrides.${registry}.dockerImageTag | line" "${metadata}")
+              if [[ -z "${head_pin}" ]]; then
+                line=$(yq -r '.data.dockerImageTag | line' "${metadata}")
+              fi
+              annotation="file=${metadata},line=${line},title=Registry version pin (${label})"
+
+              if [[ "${head_version}" != "${base_version}" && -n "${head_pin}" && "${head_pin}" != "${head_version}" ]]; then
+                echo "::warning ${annotation}::${connector} ${head_version} will not reach the ${label} registry: registryOverrides.${registry}.dockerImageTag pins it to ${head_pin}. Merging this PR publishes ${head_version}, but ${label} keeps serving ${head_pin} until the pin is moved or removed. Removing a pin releases every version it held back, so do it in its own change with an owner and a progressive rollout."
+              elif [[ "${head_version}" == "${base_version}" && "${head_pin}" != "${base_pin}" ]]; then
+                if [[ -z "${base_pin}" ]]; then
+                  change="adds a pin to ${head_pin}"
+                elif [[ -z "${head_pin}" ]]; then
+                  change="removes the pin to ${base_pin}"
+                else
+                  change="changes the pin from ${base_pin} to ${head_pin}"
+                fi
+                echo "::warning ${annotation}::${connector}: this PR ${change} on the ${label} registry (registryOverrides.${registry}.dockerImageTag) without bumping dockerImageTag (${head_version}). Metadata-only changes do not publish, so merging this PR does not apply it: it takes effect at the next publish of ${connector}, from whichever PR bumps its version next. Changing or removing a pin releases the versions it held back, so give it an owner and a progressive rollout, and bump the version in this PR or run the publish workflow with 'Registry Refresh Only' right after merging so it takes effect when you expect."
+              else
+                echo "${connector} ${label}: no registry pin warning (version ${head_version}, pin ${head_pin:-none})."
+              fi
+            done
+          done < <(jq -r '.connector[] | select(. != "")' <<<"${CONNECTORS_MATRIX}")
+
   # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
   # Runs alongside the connector QA checks to validate the new ops CLI path.
   # continue-on-error: true ensures this does not block the CI pipeline.
@@ -896,6 +987,7 @@ jobs:
       # | connector-qa-checks        | yes               | failure                  |
       # | cdk-prerelease-check       | yes (**)          | failure                  |
       # | build-and-verify-artifacts | no                | not evaluated            |
+      # | registry-pin-check         | no                | not evaluated            |
       #
       # (*) The result of 'connectors-lint' is evaluated here, as it was before
       # this change, but its lint step runs with 'continue-on-error: true', so
