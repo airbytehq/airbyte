@@ -5,4 +5,5 @@
 
 from .destination import DestinationSftpJson
 
+
 __all__ = ["DestinationSftpJson"]

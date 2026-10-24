@@ -31,6 +31,31 @@ The `destination_path` can refer to any path that the associated account has wri
 
 The `filename` **should not** have an extension in the configuration, as `.jsonl` will be added on by the connector.
 
+### Authentication
+
+The connector supports two authentication methods:
+
+- **Password authentication** (`SSH_PASSWORD_AUTH`): Connect with a username and password.
+- **SSH key authentication** (`SSH_KEY_AUTH`): Connect with a username and an SSH private key (RSA, Ed25519, or ECDSA in PEM/OpenSSH format).
+
+### Host Key Checking
+
+By default, the connector uses `auto_add` mode, which loads the system's known hosts file (`~/.ssh/known_hosts`) and **rejects** connections to any host whose key is not already present. This provides security against man-in-the-middle attacks but requires that the host key is pre-registered.
+
+To register a host key for the first time:
+
+```bash
+ssh-keyscan -t ed25519 your-sftp-host.example.com >> ~/.ssh/known_hosts
+```
+
+For environments where managing `known_hosts` is impractical, use `strict` mode and supply the server's expected host key directly in the connector configuration. You can obtain the host key by running:
+
+```bash
+ssh-keyscan -t ed25519 your-sftp-host.example.com
+```
+
+Then configure `host_key_checking` with `mode: strict`, the `host_key_type` (e.g., `ssh-ed25519`), and the base64-encoded `host_key`.
+
 ### Example:
 
 If `destination_path` is set to `/myfolder/files` and `filename` is set to `mydata`, the resulting file will be `/myfolder/files/mydata.jsonl`.
@@ -48,6 +73,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
+| 1.0.0 | 2026-08-20 | [79620](https://github.com/airbytehq/airbyte/pull/79620) | Add SSH key authentication, host key checking, and migrate to paramiko (breaking: `password` replaced by `credentials` block). See [migration guide](sftp-json-migrations.md). |
 | 0.2.16 | 2026-05-15 | [78111](https://github.com/airbytehq/airbyte/pull/78111) | Fixed SFTP connection checks for passwords with URI-reserved characters. |
 | 0.2.15 | 2025-05-27 | [60870](https://github.com/airbytehq/airbyte/pull/60870) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59809](https://github.com/airbytehq/airbyte/pull/59809) | Update dependencies |
