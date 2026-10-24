@@ -64,6 +64,8 @@ def _matches_type(value: Any, type_declaration: Any) -> bool:
         return type(value) in (int, float)
     if "boolean" in allowed:
         return isinstance(value, bool)
+    if "object" in allowed:
+        return isinstance(value, dict)
     return False
 
 

@@ -35,6 +35,14 @@ def test_enforce_declared_schema_drops_undeclared_fields_and_normalizes_arrays()
         schema={
             "properties": {
                 "tags": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
+                "steps": {
+                    "type": ["null", "array"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {"name": {"type": ["null", "string"]}},
+                    },
+                },
                 "ids": {"type": "array", "items": {"type": "integer"}},
                 "nullable": {"type": ["null", "array"], "items": {"type": "integer"}},
                 "value": {"type": "string"},
@@ -44,6 +52,7 @@ def test_enforce_declared_schema_drops_undeclared_fields_and_normalizes_arrays()
     )
     record = {
         "tags": "github",
+        "steps": [{"name": "Checkout", "extra": 1}],
         "ids": [1, 2],
         "nullable": None,
         "value": {"not": "coerced"},
@@ -55,6 +64,7 @@ def test_enforce_declared_schema_drops_undeclared_fields_and_normalizes_arrays()
 
     assert record == {
         "tags": ["github"],
+        "steps": [{"name": "Checkout"}],
         "ids": [1, 2],
         "nullable": None,
         "value": {"not": "coerced"},

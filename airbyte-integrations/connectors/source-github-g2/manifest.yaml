@@ -8591,7 +8591,7 @@ definitions:
     retriever:
       $ref: '#/definitions/repository_scoped_retriever'
       requester:
-        $ref: '#/definitions/contributor_activity_cached_requester'
+        $ref: '#/definitions/repository_scoped_requester'
         path: repos/{{ stream_partition.repository }}/stats/contributors
         request_headers:
           User-Agent: PostmanRuntime/7.28.0
@@ -8617,7 +8617,6 @@ definitions:
     - type: RemoveFields
       field_pointers:
       - - author
-      - - weeks
       - - id
       - - login
       - - type
@@ -8641,6 +8640,30 @@ definitions:
             type:
             - 'null'
             - string
+          weeks:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                w:
+                  type:
+                  - 'null'
+                  - integer
+                a:
+                  type:
+                  - 'null'
+                  - integer
+                d:
+                  type:
+                  - 'null'
+                  - integer
+                c:
+                  type:
+                  - 'null'
+                  - integer
           total:
             type:
             - 'null'
@@ -8666,6 +8689,30 @@ definitions:
             type:
             - 'null'
             - string
+          weeks:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                w:
+                  type:
+                  - 'null'
+                  - integer
+                a:
+                  type:
+                  - 'null'
+                  - integer
+                d:
+                  type:
+                  - 'null'
+                  - integer
+                c:
+                  type:
+                  - 'null'
+                  - integer
           total:
             type:
             - 'null'
@@ -9168,7 +9215,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: '#/definitions/workflow_jobs_cached_requester'
+        $ref: '#/definitions/repository_scoped_requester'
         path: repos/{{ stream_partition.parent_slice.repository }}/actions/runs/{{ stream_partition.run_id }}/jobs
         request_parameters:
           per_page: '100'
@@ -9284,6 +9331,40 @@ definitions:
               type: &id949
               - 'null'
               - string
+          steps:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                number:
+                  type:
+                  - 'null'
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+                status:
+                  type:
+                  - 'null'
+                  - string
+                conclusion:
+                  type:
+                  - 'null'
+                  - string
+                started_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                completed_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
           runner_id:
             type: &id950
             - integer
@@ -9372,6 +9453,40 @@ definitions:
             type: *id948
             items:
               type: *id949
+          steps:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                number:
+                  type:
+                  - 'null'
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+                status:
+                  type:
+                  - 'null'
+                  - string
+                conclusion:
+                  type:
+                  - 'null'
+                  - string
+                started_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                completed_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
           runner_id:
             description: Identifier of the runner
             type: *id950
@@ -9473,19 +9588,67 @@ definitions:
       page_size_reduction:
         $ref: '#/definitions/graphql_page_size_reduction'
       requester:
-        $ref: '#/definitions/releases_cached_requester'
+        $ref: '#/definitions/graphql_requester'
         request_body:
           type: RequestBodyJsonObject
           value:
-            query: "query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {\n  repository(owner: $owner, name: $name)\
-              \ {\n    releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {\n      nodes {\n        node_id:\
-              \ id\n        id: databaseId\n        name\n        tag_name: tagName\n        created_at: createdAt\n        published_at: publishedAt\n\
-              \        updated_at: updatedAt\n        draft: isDraft\n        prerelease: isPrerelease\n        body: description\n        body_html:\
-              \ descriptionHTML\n        html_url: url\n        tagCommit { target_commitish: oid }\n        author {\n          __typename\n\
-              \          ... on User {\n            node_id: id\n            id: databaseId\n            login\n            avatar_url: avatarUrl\n\
-              \            html_url: url\n            site_admin: isSiteAdmin\n          }\n        }\n        reaction_groups: reactionGroups {\n    \
-              \      content\n          reactors { totalCount }\n        }\n        mentions_connection: mentions(first: 0) { totalCount }\n \
-              \     }\n      pageInfo { hasNextPage endCursor }\n    }\n  }\n}\n"
+            query: |
+              query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
+                repository(owner: $owner, name: $name) {
+                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
+                    nodes {
+                      node_id: id
+                      id: databaseId
+                      name
+                      tag_name: tagName
+                      created_at: createdAt
+                      published_at: publishedAt
+                      updated_at: updatedAt
+                      draft: isDraft
+                      prerelease: isPrerelease
+                      body: description
+                      body_html: descriptionHTML
+                      html_url: url
+                      tagCommit { target_commitish: oid }
+                      author {
+                        __typename
+                        ... on User {
+                          node_id: id
+                          id: databaseId
+                          login
+                          avatar_url: avatarUrl
+                          html_url: url
+                          site_admin: isSiteAdmin
+                        }
+                      }
+                      assets: releaseAssets(first: 100) {
+                        nodes {
+                          node_id: id
+                          name
+                          content_type: contentType
+                          size
+                          download_count: downloadCount
+                          created_at: createdAt
+                          updated_at: updatedAt
+                          browser_download_url: downloadUrl
+                          url
+                          uploader: uploadedBy {
+                            __typename
+                            ... on User { id: databaseId login }
+                          }
+                        }
+                        pageInfo { hasNextPage }
+                      }
+                      reaction_groups: reactionGroups {
+                        content
+                        reactors { totalCount }
+                      }
+                      mentions_connection: mentions(first: 0) { totalCount }
+                    }
+                    pageInfo { hasNextPage endCursor }
+                  }
+                }
+              }
             variables:
               owner: '{{ stream_partition.repository.split(''/'')[0] }}'
               name: '{{ stream_partition.repository.split(''/'')[1] }}'
@@ -9615,6 +9778,68 @@ definitions:
             type: &id975
             - 'null'
             - string
+          assets:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - integer
+                node_id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                content_type:
+                  type:
+                  - 'null'
+                  - string
+                size:
+                  type:
+                  - 'null'
+                  - integer
+                download_count:
+                  type:
+                  - 'null'
+                  - integer
+                created_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                updated_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                browser_download_url:
+                  type:
+                  - 'null'
+                  - string
+                url:
+                  type:
+                  - 'null'
+                  - string
+                uploader_id:
+                  type:
+                  - 'null'
+                  - integer
+                uploader_login:
+                  type:
+                  - 'null'
+                  - string
+                uploader_type:
+                  type:
+                  - 'null'
+                  - string
           body_html:
             type: &id976
             - 'null'
@@ -9744,6 +9969,68 @@ definitions:
             type: *id974
           author_type:
             type: *id975
+          assets:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - integer
+                node_id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                content_type:
+                  type:
+                  - 'null'
+                  - string
+                size:
+                  type:
+                  - 'null'
+                  - integer
+                download_count:
+                  type:
+                  - 'null'
+                  - integer
+                created_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                updated_at:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                browser_download_url:
+                  type:
+                  - 'null'
+                  - string
+                url:
+                  type:
+                  - 'null'
+                  - string
+                uploader_id:
+                  type:
+                  - 'null'
+                  - integer
+                uploader_login:
+                  type:
+                  - 'null'
+                  - string
+                uploader_type:
+                  type:
+                  - 'null'
+                  - string
           body_html:
             description: The HTML body of the release.
             type: *id976
@@ -10906,520 +11193,6 @@ definitions:
             description: The ID of the pull request comment to which the reaction belongs.
             type: *id1058
         additionalProperties: false
-  workflow_jobs_cached_requester:
-    $ref: '#/definitions/repository_scoped_requester'
-    use_cache: true
-  contributor_activity_cached_requester:
-    $ref: '#/definitions/repository_scoped_requester'
-    use_cache: true
-  releases_cached_requester:
-    $ref: '#/definitions/graphql_requester'
-    use_cache: true
-  workflow_job_steps_stream:
-    type: DeclarativeStream
-    name: workflow_job_steps
-    primary_key:
-    - job_id
-    - number
-    retriever:
-      type: SimpleRetriever
-      requester:
-        $ref: '#/definitions/workflow_jobs_cached_requester'
-        path: repos/{{ stream_partition.parent_slice.repository }}/actions/runs/{{ stream_partition.run_id }}/jobs
-        request_parameters:
-          per_page: '100'
-          filter: all
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - jobs
-          record_expander:
-            type: RecordExpander
-            expand_records_from_field:
-            - steps
-            parent_fields:
-            - type: ParentFieldPath
-              parent_path:
-              - id
-              record_path:
-              - job_id
-            - type: ParentFieldPath
-              parent_path:
-              - completed_at
-              record_path:
-              - job_completed_at
-        record_filter:
-          type: RecordFilter
-          condition: '{{ record.get(''job_completed_at'') is not none }}'
-      paginator:
-        $ref: '#/definitions/page_link_paginator'
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-        - type: ParentStreamConfig
-          stream:
-            $ref: '#/definitions/workflow_runs_stream'
-          parent_key: id
-          partition_field: run_id
-          incremental_dependency: true
-    transformations:
-    - type: AddFields
-      fields:
-      - path:
-        - repository
-        value: '{{ stream_partition.parent_slice.repository }}'
-      - path:
-        - run_id
-        value: '{{ stream_partition.run_id }}'
-    - type: CustomTransformation
-      class_name: source_declarative_manifest.components.EnforceDeclaredSchema
-      schema:
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          run_id:
-            type:
-            - 'null'
-            - integer
-          job_id:
-            type:
-            - 'null'
-            - integer
-          number:
-            type:
-            - 'null'
-            - integer
-          name:
-            type:
-            - 'null'
-            - string
-          status:
-            type:
-            - 'null'
-            - string
-          conclusion:
-            type:
-            - 'null'
-            - string
-          started_at:
-            type:
-            - 'null'
-            - string
-          completed_at:
-            type:
-            - 'null'
-            - string
-          job_completed_at:
-            type:
-            - 'null'
-            - string
-    incremental_sync:
-      $ref: '#/definitions/client_side_filtered_cursor'
-      cursor_field: job_completed_at
-      global_substream_cursor: true
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          run_id:
-            type:
-            - 'null'
-            - integer
-          job_id:
-            type:
-            - 'null'
-            - integer
-          number:
-            type:
-            - 'null'
-            - integer
-          name:
-            type:
-            - 'null'
-            - string
-          status:
-            type:
-            - 'null'
-            - string
-          conclusion:
-            type:
-            - 'null'
-            - string
-          started_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          completed_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          job_completed_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-        additionalProperties: false
-  release_assets_stream:
-    type: DeclarativeStream
-    name: release_assets
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        $ref: '#/definitions/repository_scoped_requester'
-        path: repos/{{ stream_partition.parent_slice.repository }}/releases/{{ stream_partition.release_id }}/assets
-        request_parameters:
-          per_page: '100'
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        $ref: '#/definitions/page_link_paginator'
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-        - type: ParentStreamConfig
-          stream:
-            $ref: '#/definitions/releases_stream'
-          parent_key: id
-          partition_field: release_id
-          extra_fields:
-          - - repository
-          - - created_at
-          incremental_dependency: true
-    transformations:
-    - type: AddFields
-      fields:
-      - path:
-        - repository
-        value: '{{ stream_slice.extra_fields[''repository''] }}'
-      - path:
-        - release_id
-        value: '{{ stream_partition.release_id }}'
-      - path:
-        - release_created_at
-        value: '{{ stream_slice.extra_fields[''created_at''] }}'
-    - type: CustomTransformation
-      class_name: source_declarative_manifest.components.ReleaseAssetRecordTransformation
-    - type: CustomTransformation
-      class_name: source_declarative_manifest.components.EnforceDeclaredSchema
-      schema:
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          release_id:
-            type:
-            - 'null'
-            - integer
-          release_created_at:
-            type:
-            - 'null'
-            - string
-          id:
-            type:
-            - 'null'
-            - integer
-          node_id:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-          content_type:
-            type:
-            - 'null'
-            - string
-          size:
-            type:
-            - 'null'
-            - integer
-          download_count:
-            type:
-            - 'null'
-            - integer
-          created_at:
-            type:
-            - 'null'
-            - string
-          updated_at:
-            type:
-            - 'null'
-            - string
-          browser_download_url:
-            type:
-            - 'null'
-            - string
-          url:
-            type:
-            - 'null'
-            - string
-          label:
-            type:
-            - 'null'
-            - string
-          state:
-            type:
-            - 'null'
-            - string
-          digest:
-            type:
-            - 'null'
-            - string
-          uploader_id:
-            type:
-            - 'null'
-            - integer
-          uploader_login:
-            type:
-            - 'null'
-            - string
-          uploader_type:
-            type:
-            - 'null'
-            - string
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: release_created_at
-      cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      is_data_feed: true
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          release_id:
-            type:
-            - 'null'
-            - integer
-          release_created_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          id:
-            type:
-            - 'null'
-            - integer
-          node_id:
-            type:
-            - 'null'
-            - string
-          name:
-            type:
-            - 'null'
-            - string
-          content_type:
-            type:
-            - 'null'
-            - string
-          size:
-            type:
-            - 'null'
-            - integer
-          download_count:
-            type:
-            - 'null'
-            - integer
-          created_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          updated_at:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          browser_download_url:
-            type:
-            - 'null'
-            - string
-          url:
-            type:
-            - 'null'
-            - string
-          label:
-            type:
-            - 'null'
-            - string
-          state:
-            type:
-            - 'null'
-            - string
-          digest:
-            type:
-            - 'null'
-            - string
-          uploader_id:
-            type:
-            - 'null'
-            - integer
-          uploader_login:
-            type:
-            - 'null'
-            - string
-          uploader_type:
-            type:
-            - 'null'
-            - string
-        additionalProperties: false
-  contributor_activity_weeks_stream:
-    type: DeclarativeStream
-    name: contributor_activity_weeks
-    primary_key:
-    - repository
-    - author_id
-    - w
-    retriever:
-      $ref: '#/definitions/repository_scoped_retriever'
-      requester:
-        $ref: '#/definitions/contributor_activity_cached_requester'
-        path: repos/{{ stream_partition.repository }}/stats/contributors
-        request_headers:
-          User-Agent: PostmanRuntime/7.28.0
-          Accept: application/vnd.github+json
-          X-GitHub-Api-Version: '2022-11-28'
-        error_handler:
-          $ref: '#/definitions/contributor_activity_error_handler'
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-          record_expander:
-            type: RecordExpander
-            expand_records_from_field:
-            - weeks
-            parent_fields:
-            - type: ParentFieldPath
-              parent_path:
-              - author
-              - id
-              record_path:
-              - author_id
-            - type: ParentFieldPath
-              parent_path:
-              - author
-              - login
-              record_path:
-              - author_login
-            - type: ParentFieldPath
-              parent_path:
-              - author
-              - type
-              record_path:
-              - author_type
-      partition_router:
-        $ref: '#/definitions/repository_partition_router'
-    transformations:
-    - type: AddFields
-      fields:
-      - path:
-        - repository
-        value: '{{ stream_partition.repository }}'
-    - type: CustomTransformation
-      class_name: source_declarative_manifest.components.EnforceDeclaredSchema
-      schema:
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          author_id:
-            type:
-            - 'null'
-            - integer
-          author_login:
-            type:
-            - 'null'
-            - string
-          author_type:
-            type:
-            - 'null'
-            - string
-          w:
-            type:
-            - 'null'
-            - integer
-          a:
-            type:
-            - 'null'
-            - integer
-          d:
-            type:
-            - 'null'
-            - integer
-          c:
-            type:
-            - 'null'
-            - integer
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        properties:
-          repository:
-            type:
-            - 'null'
-            - string
-          author_id:
-            type:
-            - 'null'
-            - integer
-          author_login:
-            type:
-            - 'null'
-            - string
-          author_type:
-            type:
-            - 'null'
-            - string
-          w:
-            type:
-            - 'null'
-            - integer
-          a:
-            type:
-            - 'null'
-            - integer
-          d:
-            type:
-            - 'null'
-            - integer
-          c:
-            type:
-            - 'null'
-            - integer
-        additionalProperties: false
-api_budget:
-  type: HTTPAPIBudget
   policies:
   - type: MovingWindowCallRatePolicy
     rates:
@@ -11462,12 +11235,9 @@ streams:
 - $ref: '#/definitions/issue_comment_reactions_stream'
 - $ref: '#/definitions/commits_stream'
 - $ref: '#/definitions/contributor_activity_stream'
-- $ref: '#/definitions/contributor_activity_weeks_stream'
 - $ref: '#/definitions/workflow_runs_stream'
 - $ref: '#/definitions/workflow_jobs_stream'
-- $ref: '#/definitions/workflow_job_steps_stream'
 - $ref: '#/definitions/releases_stream'
-- $ref: '#/definitions/release_assets_stream'
 - $ref: '#/definitions/projects_v2_stream'
 - $ref: '#/definitions/pull_request_stats_stream'
 - $ref: '#/definitions/reviews_stream'

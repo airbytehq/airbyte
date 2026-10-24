@@ -9,9 +9,9 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 ## GitHub (Experimental, Gen 2) flat contract
 
 Forked from `source-github` 2.7.9 on 2026-10-20. Every stream has a deterministic flat schema:
-root `additionalProperties: false`; scalar fields and arrays of scalars only; nested value
-objects use prefixed columns; embedded entities expose identity columns; multi-field arrays use
-child streams. Keep `EnforceDeclaredSchema` last in every stream's transformations.
+root `additionalProperties: false`; scalar fields, arrays of scalars, and arrays of flat objects;
+nested value objects use prefixed columns; embedded entities expose identity columns. Keep
+`EnforceDeclaredSchema` last in every stream's transformations.
 
 The contract test in `unit_tests/test_flat_schema_contract.py` must remain green. Its
 `FLATTEN_EXEMPTIONS` map contains only the AJ-approved opaque JSON fields `events.payload` and
@@ -25,6 +25,17 @@ Every field is strongly typed; a value with no stable shape is declared as opaqu
 `additionalProperties: false`; if a known use case needs fields beyond the declared columns,
 they belong in one dedicated opaque JSON column kept separate from those columns, never at the
 root. Opaque fields require human approval and are listed in `FLATTEN_EXEMPTIONS`.
+
+### Arrays and child streams
+
+Arrays stay on the parent record: arrays of scalars or one-level arrays of flat objects whose
+properties are scalars and whose `additionalProperties` is `false`. A child stream is warranted
+only when its members need a separate API call, such as their own endpoint or pagination.
+Splitting an array out of the parent's response with `RecordExpander` is not a reason, and neither
+is a destination limitation: Iceberg currently stores `list<struct>` as `list<string>`. Fix that
+in the destination with native struct support ([PR 89660](https://github.com/airbytehq/airbyte/pull/89660)),
+not by exploding source rows. Do not add a separate API call when the parent query can return its
+members inline, as the `releases` GraphQL query does for assets.
 
 `unit_tests/` is a self-contained Poetry project (`unit_tests/pyproject.toml`,
 `package-mode = false`). Run the suite as CI does:

@@ -119,8 +119,8 @@ class ReleasesRecordTransformation(RecordTransformation):
     Ported verbatim from the legacy `streams.Releases.parse_response`. Five separate
     concerns, none of them expressible as AddFields/RemoveFields:
 
-    - `assets`: unwrap the connection, flatten `uploader` to `uploader_id`, and recover each
-      asset's numeric `id` from its node ID.
+    - `assets`: unwrap the connection, flatten uploader identity, and recover each asset's
+      numeric `id` from its node ID.
     - `reactions`: collapse `reactionGroups` into the REST reaction-count object, including
       the zero entries for reactions nobody used and the `total_count` sum.
     - `mentions_count`: unwrap a `totalCount`-only connection.
@@ -179,6 +179,8 @@ class ReleasesRecordTransformation(RecordTransformation):
         for asset in assets:
             uploader = asset.pop("uploader", None)
             asset["uploader_id"] = uploader.get("id") if uploader else None
+            asset["uploader_login"] = uploader.get("login") if uploader else None
+            asset["uploader_type"] = uploader.get("__typename") if uploader else None
             asset["id"] = _extract_database_id_from_node_id(asset.get("node_id"))
         return assets
 
@@ -207,36 +209,6 @@ class ReleasesRecordTransformation(RecordTransformation):
             "tarball_url": f"{api_url}/repos/{repository}/tarball/{tag_name}" if tag_name else None,
             "zipball_url": f"{api_url}/repos/{repository}/zipball/{tag_name}" if tag_name else None,
         }
-
-
-@dataclass
-class ReleaseAssetRecordTransformation(RecordTransformation):
-    """Normalize release asset records to the stream's flat output fields."""
-
-    def transform(
-        self,
-        record: MutableMapping[str, Any],
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> None:
-        node_id = record.get("node_id") or record.get("id")
-        record["node_id"] = node_id
-        record["id"] = _extract_database_id_from_node_id(node_id)
-
-        for source, target in (
-            ("downloadUrl", "browser_download_url"),
-            ("contentType", "content_type"),
-            ("downloadCount", "download_count"),
-            ("createdAt", "created_at"),
-            ("updatedAt", "updated_at"),
-        ):
-            if source in record:
-                record[target] = record.pop(source)
-        uploader = record.pop("uploader", None) or {}
-        record["uploader_id"] = uploader.get("id")
-        record["uploader_login"] = uploader.get("login")
-        record["uploader_type"] = uploader.get("__typename") or uploader.get("type")
 
 
 @dataclass
@@ -538,10 +510,19 @@ class EnforceDeclaredSchema(RecordTransformation):
                 del record[field_name]
 
         for field_name, value in list(record.items()):
-            field_type = properties[field_name].get("type")
+            field_schema = properties[field_name]
+            field_type = field_schema.get("type")
             field_types = field_type if isinstance(field_type, list) else [field_type]
             if "array" in field_types and value is not None and not isinstance(value, list) and isinstance(value, (str, int, float, bool)):
                 record[field_name] = [value]
+                value = record[field_name]
+            item_properties = (field_schema.get("items") or {}).get("properties")
+            if isinstance(value, list) and isinstance(item_properties, Mapping):
+                for item in value:
+                    if isinstance(item, MutableMapping):
+                        for item_field in list(item):
+                            if item_field not in item_properties:
+                                del item[item_field]
 
 
 @dataclass

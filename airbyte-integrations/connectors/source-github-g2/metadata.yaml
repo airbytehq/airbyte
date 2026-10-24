@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1b271d53-df7e-4d37-9951-974a3b4c8981
-  dockerImageTag: 0.1.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-github-g2
   documentationUrl: https://docs.airbyte.com/integrations/sources/github-g2
   githubIssueLabel: source-github-g2
@@ -30,6 +30,19 @@ data:
       enabled: false
   releaseStage: alpha
   releases:
+    breakingChanges:
+      1.0.0:
+        message: "The workflow_job_steps, contributor_activity_weeks, and release_assets child streams were removed. Their data is now available in the steps, weeks, and assets array columns on workflow_jobs, contributor_activity, and releases. Refresh the source schema and clear the affected streams."
+        upgradeDeadline: "2026-11-07"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - workflow_jobs
+              - contributor_activity
+              - releases
+              - workflow_job_steps
+              - contributor_activity_weeks
+              - release_assets
     rolloutConfiguration:
       enableProgressiveRollout: false
       defaultRolloutMode: autopilot

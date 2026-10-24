@@ -315,8 +315,22 @@ def test_contributor_activity_flattens_the_author(rate_limit_mock_response, requ
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert records == [
-        {"total": 3, "repository": _REPO, "author_id": 7, "author_login": "octo", "author_type": None},
-        {"total": 0, "repository": _REPO, "author_id": None, "author_login": None, "author_type": None},
+        {
+            "total": 3,
+            "weeks": [{"w": 1713052800, "a": 1, "d": 0, "c": 1}],
+            "repository": _REPO,
+            "author_id": 7,
+            "author_login": "octo",
+            "author_type": None,
+        },
+        {
+            "total": 0,
+            "weeks": [{"w": 1713052800, "a": 0, "d": 0, "c": 0}],
+            "repository": _REPO,
+            "author_id": None,
+            "author_login": None,
+            "author_type": None,
+        },
     ]
     (request,) = [request for request in requests_mock.request_history if "/stats/" in request.path]
     assert request.headers["Accept"] == "application/vnd.github+json"
@@ -340,16 +354,16 @@ def test_contributor_activity_reads_the_response_fixture(rate_limit_mock_respons
     assert records[0]["repository"] == "airbytehq/airbyte" and "author" not in records[0] and "author_login" in records[0]
 
 
-def test_contributor_activity_weeks_expand_into_child_records(rate_limit_mock_response, requests_mock):
+def test_contributor_activity_keeps_weeks_as_flat_array_objects(rate_limit_mock_response, requests_mock):
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
-    week = {"w": 1713052800, "a": 1, "d": 0, "c": 1}
+    week = {"w": 1713052800, "a": 1, "d": 0, "c": 1, "extra": 1}
     requests_mock.get(
         f"{_API}/repos/{_REPO}/stats/contributors",
         json=[{"author": {"login": "octo", "id": 7, "type": "User"}, "total": 3, "weeks": [week]}],
     )
 
-    records, _, _, error = _read(config, "contributor_activity_weeks")
+    records, _, _, error = _read(config, "contributor_activity")
 
     assert error is None
     assert records == [
@@ -358,7 +372,8 @@ def test_contributor_activity_weeks_expand_into_child_records(rate_limit_mock_re
             "author_id": 7,
             "author_login": "octo",
             "author_type": "User",
-            **week,
+            "total": 3,
+            "weeks": [{"w": 1713052800, "a": 1, "d": 0, "c": 1}],
         }
     ]
 
@@ -651,7 +666,7 @@ def test_workflow_jobs_emit_label_names_as_strings(rate_limit_mock_response, req
     assert "label_ids" not in records[0]
 
 
-def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, requests_mock):
+def test_workflow_jobs_keeps_steps_as_flat_array_objects(rate_limit_mock_response, requests_mock):
     config = _config("org/repo", start_date="2022-09-02T09:05:00Z")
     _mock_repository_resolution(requests_mock, "org/repo")
     runs_url = f"{_API}/repos/org/repo/actions/runs"
@@ -672,6 +687,7 @@ def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, 
                             "conclusion": "success",
                             "started_at": _AFTER_START,
                             "completed_at": completed_at,
+                            "extra": 1,
                         }
                     ],
                 }
@@ -679,21 +695,18 @@ def test_workflow_job_steps_expand_into_child_records(rate_limit_mock_response, 
         },
     )
 
-    records, _, _, error = _read(config, "workflow_job_steps")
+    records, _, _, error = _read(config, "workflow_jobs")
 
     assert error is None
-    assert records == [
+    assert len(records) == 1
+    assert records[0]["steps"] == [
         {
-            "repository": "org/repo",
-            "run_id": 23,
-            "job_id": 7,
             "number": 1,
             "name": "Checkout",
             "status": "completed",
             "conclusion": "success",
             "started_at": _AFTER_START,
             "completed_at": completed_at,
-            "job_completed_at": completed_at,
         }
     ]
     assert _requested(requests_mock, "/actions/runs/23/jobs") == [f"/repos/org/repo/actions/runs/23/jobs?per_page=100&filter=all"]
