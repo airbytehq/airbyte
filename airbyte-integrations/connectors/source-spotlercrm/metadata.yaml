@@ -34,6 +34,9 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Spotler CRM API
-      url: https://api.spotler.com/
+    - title: Spotler CRM API v4 Documentation
+      url: https://support.reallysimplesystems.com/api-v4/
       type: api_reference
+    - title: Spotler CRM API for Developers
+      url: https://www.spotlercrm.com/crm-api
+      type: other
