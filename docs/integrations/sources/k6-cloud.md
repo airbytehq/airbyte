@@ -50,6 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.28 | 2026-10-20 | [78765](https://github.com/airbytehq/airbyte/pull/78765) | Update dependencies |
 | 0.2.27 | 2026-10-07 | [88222](https://github.com/airbytehq/airbyte/pull/88222) | Archive connector: the legacy k6 Cloud (app.k6.io) API it targets was sunset by Grafana Labs in September 2024 |
 | 0.2.26 | 2025-05-24 | [60713](https://github.com/airbytehq/airbyte/pull/60713) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [59830](https://github.com/airbytehq/airbyte/pull/59830) | Update dependencies |
