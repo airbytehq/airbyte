@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "announcements" },
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "currency": "USD", "indicator": "gov_bond_10y" },
+            "cursor": { "date": "2026-09-01" }
+          }
+        ]
+      }
+    }
+  }
+]
