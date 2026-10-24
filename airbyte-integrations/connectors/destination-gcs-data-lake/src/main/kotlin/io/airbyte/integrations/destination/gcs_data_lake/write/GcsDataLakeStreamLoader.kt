@@ -187,7 +187,15 @@ class GcsDataLakeStreamLoader(
             logger.info {
                 "maybe creating branch $stagingBranchName for stream ${stream.mappedDescriptor}"
             }
-            createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
+            val mainSnapshotId = createdTable.refs()[mainBranchName]?.snapshotId()
+            if (mainSnapshotId == null) {
+                createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
+            } else {
+                createdTable
+                    .manageSnapshots()
+                    .createBranch(stagingBranchName, mainSnapshotId)
+                    .commit()
+            }
         } catch (e: IllegalArgumentException) {
             logger.info {
                 "branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}"

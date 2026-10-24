@@ -43,6 +43,8 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
+import org.apache.iceberg.DataFiles
+import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -95,7 +97,7 @@ internal class GcsDataLakeStreamLoaderTest {
         )
     }
 
-    private fun makeConfiguration() =
+    private fun makeConfiguration(mainBranchName: String = "main") =
         GcsDataLakeConfiguration(
             gcsBucketName = "bucket",
             serviceAccountJson = "{}",
@@ -106,7 +108,7 @@ internal class GcsDataLakeStreamLoaderTest {
             gcsCatalogConfiguration =
                 GcsCatalogConfiguration(
                     warehouseLocation = "gs://bucket/",
-                    mainBranchName = "main",
+                    mainBranchName = mainBranchName,
                     catalogConfiguration =
                         PolarisCatalogConfiguration(
                             serverUri = "http://localhost:8080/api/catalog",
@@ -137,7 +139,11 @@ internal class GcsDataLakeStreamLoaderTest {
             .create()
     }
 
-    private fun makeLoader(stream: DestinationStream, table: Table): GcsDataLakeStreamLoader {
+    private fun makeLoader(
+        stream: DestinationStream,
+        table: Table,
+        mainBranchName: String = "main",
+    ): GcsDataLakeStreamLoader {
         val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil = mockk {
             every { createNamespace(any(), any()) } just runs
             every { toCatalogProperties(any()) } returns emptyMap()
@@ -148,7 +154,7 @@ internal class GcsDataLakeStreamLoaderTest {
             every { toIcebergSchema(any()) } returns table.schema()
         }
         return GcsDataLakeStreamLoader(
-            makeConfiguration(),
+            makeConfiguration(mainBranchName),
             stream,
             IcebergTableSynchronizer(
                 IcebergTypesComparator(),
@@ -160,9 +166,27 @@ internal class GcsDataLakeStreamLoaderTest {
                 every { toTableIdentifier(any()) } returns tableIdentifier
             },
             stagingBranchName = "airbyte_staging_test",
-            mainBranchName = "main",
+            mainBranchName = mainBranchName,
             streamStateStore = streamStateStore,
         )
+    }
+
+    private fun appendSnapshot(
+        table: Table,
+        branchName: String? = null,
+    ) {
+        val dataFile =
+            DataFiles.builder(table.spec())
+                .withPath(warehouseDir.resolve("data-${System.nanoTime()}.parquet").toString())
+                .withFormat(FileFormat.PARQUET)
+                .withFileSizeInBytes(1)
+                .withRecordCount(1)
+                .build()
+        val append = table.newAppend()
+        if (branchName != null) {
+            append.toBranch(branchName)
+        }
+        append.appendFile(dataFile).commit()
     }
 
     private fun startAndCaptureState(loader: GcsDataLakeStreamLoader): GcsDataLakeStreamState {
@@ -214,5 +238,27 @@ internal class GcsDataLakeStreamLoaderTest {
             startAndCaptureState(makeLoader(makeStream(importType, syncId = 2), table))
 
         assertNotSame(firstState.positionalDeleteState, secondState.positionalDeleteState)
+    }
+
+    @Test
+    fun `second sync seeds staging from the configured main branch snapshot`() {
+        val table = createTable(makeTableSchema())
+        appendSnapshot(table)
+        table.manageSnapshots().createBranch("prod").commit()
+
+        val firstLoader = makeLoader(makeStream(Append), table, mainBranchName = "prod")
+        runBlocking { firstLoader.start() }
+        appendSnapshot(table, "airbyte_staging_test")
+        runBlocking { firstLoader.teardown(completedSuccessfully = true) }
+
+        val publishedSnapshotId = table.refs()["prod"]!!.snapshotId()
+        val secondLoader =
+            makeLoader(makeStream(Append, syncId = 2), table, mainBranchName = "prod")
+        runBlocking { secondLoader.start() }
+
+        assertEquals(
+            publishedSnapshotId,
+            table.refs()["airbyte_staging_test"]!!.snapshotId(),
+        )
     }
 }
