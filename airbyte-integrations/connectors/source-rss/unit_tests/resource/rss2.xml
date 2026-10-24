@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example News</title>
+    <link>https://example.com</link>
+    <description>Example news feed</description>
+    <pubDate>Wed, 04 Jan 2023 12:00:00 GMT</pubDate>
+    <item>
+      <title>Older Than Channel</title>
+      <link>https://example.com/older</link>
+      <description>Old item</description>
+      <pubDate>Sun, 01 Jan 2023 12:00:00 +0000</pubDate>
+      <guid>https://example.com/older</guid>
+    </item>
+    <item>
+      <title>No PubDate Item</title>
+      <link>https://example.com/nodate</link>
+      <description>Item without a pubDate</description>
+      <author>jane@example.com (Jane Doe)</author>
+      <guid isPermaLink="false">nodate-123</guid>
+    </item>
+    <item>
+      <title>Full Featured Item</title>
+      <link>https://example.com/full</link>
+      <description><![CDATA[<p>HTML <b>description</b> with CDATA</p>]]></description>
+      <author>john@example.com (John Doe)</author>
+      <category>Tech</category>
+      <category>News</category>
+      <comments>https://example.com/full#comments</comments>
+      <enclosure url="https://example.com/audio.mp3" length="12345" type="audio/mpeg"/>
+      <guid isPermaLink="false">full-456</guid>
+      <pubDate>Tue, 03 Jan 2023 18:30:00 EST</pubDate>
+    </item>
+  </channel>
+</rss>
