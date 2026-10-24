@@ -14,19 +14,27 @@ import json
 import logging
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    StreamDescriptor,
     SyncMode,
     Type,
 )
 
+from .utils import make_source
+
 
 GRAPHQL_URL = "https://api.github.com/graphql"
+# `graphql_page_size_reduction.minimum_page_size`.
+_MINIMUM_GRAPHQL_PAGE_SIZE = 1
 REPOSITORY = "airbytehq/airbyte"
 
 _TOKEN_CONFIG = {"credentials": {"personal_access_token": "token"}}
@@ -89,20 +97,20 @@ def _mock_repository_resolution(requests_mock):
     )
 
 
-def _read_messages(config, stream_name):
+def _read_messages(config, stream_name, state=None):
     catalog = _catalog(stream_name)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=state or [])
     messages, error = [], None
     try:
-        for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []):
+        for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
             messages.append(message)
     except Exception as exc:  # noqa: BLE001 - assertions inspect the failure
         error = exc
     return messages, error
 
 
-def _read(config, stream_name):
-    messages, error = _read_messages(config, stream_name)
+def _read(config, stream_name, state=None):
+    messages, error = _read_messages(config, stream_name, state=state)
     return _records(messages), error
 
 
@@ -125,12 +133,13 @@ def _variables(request):
     return json.loads(request.body)["variables"]
 
 
-def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None):
+def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None, repository=REPOSITORY):
+    owner, name = repository.split("/")
     return {
         "data": {
             "repository": {
-                "name": REPOSITORY.split("/")[1],
-                "owner": {"login": REPOSITORY.split("/")[0]},
+                "name": name,
+                "owner": {"login": owner},
                 connection: {
                     "nodes": nodes,
                     "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
@@ -140,13 +149,13 @@ def _repository_envelope(connection, nodes, has_next_page=False, end_cursor=None
     }
 
 
-def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0"):
+def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0", created_at="2022-01-01T00:00:00Z"):
     return {
         "node_id": node_id,
         "id": database_id,
         "name": "release one",
         "tag_name": tag,
-        "created_at": "2022-01-01T00:00:00Z",
+        "created_at": created_at,
         "published_at": "2022-01-01T00:00:00Z",
         "updated_at": "2022-01-02T00:00:00Z",
         "draft": False,
@@ -171,6 +180,18 @@ def _release_node(node_id="RE_1", database_id=11, tag="v1.0.0"):
 
 
 # --- Releases ---------------------------------------------------------------------------
+
+
+def _legacy_releases_state(**per_repository_cursor):
+    return [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="releases"),
+                stream_state=AirbyteStateBlob({repository: {"created_at": cursor} for repository, cursor in per_repository_cursor.items()}),
+            ),
+        )
+    ]
 
 
 def test_releases_record_keeps_the_rest_compatible_shape(rate_limit_mock_response, requests_mock):
@@ -245,6 +266,151 @@ def test_releases_paginates_on_end_cursor(rate_limit_mock_response, requests_moc
     requests = _graphql_requests(requests_mock)
     assert "after" not in _variables(requests[0])
     assert _variables(requests[1])["after"] == "CURSOR"
+
+
+def test_releases_query_orders_newest_first_by_creation_time(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=_repository_envelope("releases", [_release_node()]))
+
+    _read(_config(), "releases")
+
+    request = _graphql_requests(requests_mock)[0]
+    assert "orderBy: {field: CREATED_AT, direction: DESC}" in json.loads(request.body)["query"]
+
+
+def test_releases_stop_paginating_after_a_page_ending_below_the_state_cursor(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_3", 13, created_at="2022-09-01T00:00:00Z"),
+                        _release_node("RE_2", 12, created_at="2022-07-01T00:00:00Z"),
+                        _release_node("RE_1", 11, created_at="2022-03-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="CURSOR",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [_release_node("RE_0", 10, created_at="2021-01-01T00:00:00Z")],
+                )
+            },
+        ],
+    )
+
+    messages, error = _read_messages(
+        _config(),
+        "releases",
+        state=_legacy_releases_state(**{REPOSITORY: "2022-06-01T00:00:00Z"}),
+    )
+
+    assert error is None
+    assert len(_graphql_requests(requests_mock)) == 1
+    assert [record["id"] for record in _records(messages)] == [13, 12]
+
+
+def test_releases_first_sync_stops_at_the_page_reaching_start_date(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_3", 13, created_at="2022-09-01T00:00:00Z"),
+                        _release_node("RE_2", 12, created_at="2022-08-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="C1",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [
+                        _release_node("RE_1", 11, created_at="2022-07-01T00:00:00Z"),
+                        _release_node("RE_0", 10, created_at="2022-05-01T00:00:00Z"),
+                    ],
+                    has_next_page=True,
+                    end_cursor="C2",
+                )
+            },
+            {
+                "json": _repository_envelope(
+                    "releases",
+                    [_release_node("RE_old", 9, created_at="2021-01-01T00:00:00Z")],
+                )
+            },
+        ],
+    )
+
+    records, error = _read(_config(start_date="2022-06-01T00:00:00Z"), "releases")
+
+    assert error is None
+    requests = _graphql_requests(requests_mock)
+    assert len(requests) == 2
+    assert _variables(requests[1])["after"] == "C1"
+    assert [record["id"] for record in records] == [13, 12, 11]
+
+
+def test_releases_incremental_sync_without_new_releases_makes_one_request_per_repository(rate_limit_mock_response, requests_mock):
+    repositories = [REPOSITORY, "airbytehq/other"]
+    cursor = "2022-09-01T00:00:00Z"
+    for index, repository in enumerate(repositories, start=1):
+        requests_mock.get(
+            f"https://api.github.com/repos/{repository}",
+            json={"id": index, "full_name": repository, "organization": {"login": repository.split("/")[0]}},
+        )
+
+    release_ids = {"airbyte": (13, 12), "other": (23, 22)}
+
+    def releases_page(request, context):
+        variables = _variables(request)
+        repository = f"{variables['owner']}/{variables['name']}"
+        if variables.get("after"):
+            return _repository_envelope("releases", [], repository=repository)
+        boundary_id, older_id = release_ids[variables["name"]]
+        return _repository_envelope(
+            "releases",
+            [
+                _release_node(f"RE_{boundary_id}", boundary_id, created_at=cursor),
+                _release_node(f"RE_{older_id}", older_id, created_at="2022-08-01T00:00:00Z"),
+            ],
+            has_next_page=True,
+            end_cursor="CURSOR",
+            repository=repository,
+        )
+
+    requests_mock.post(GRAPHQL_URL, json=releases_page)
+
+    messages, error = _read_messages(
+        _config(repositories=repositories),
+        "releases",
+        state=_legacy_releases_state(**{repository: cursor for repository in repositories}),
+    )
+
+    assert error is None
+    requests_by_repository = {}
+    for request in _graphql_requests(requests_mock):
+        name = _variables(request)["name"]
+        requests_by_repository[name] = requests_by_repository.get(name, 0) + 1
+    assert requests_by_repository == {"airbyte": 1, "other": 1}
+
+    records_by_repository = {}
+    for record in _records(messages):
+        records_by_repository.setdefault(record["repository"], []).append(record)
+    for repository, (boundary_id, older_id) in zip(repositories, release_ids.values()):
+        repository_records = records_by_repository[repository]
+        assert [record["id"] for record in repository_records] == [boundary_id]
+        assert [record["created_at"] for record in repository_records] == [cursor]
+        assert older_id not in [record["id"] for record in repository_records]
 
 
 def test_releases_draft_with_null_tag_has_no_tarball_urls(rate_limit_mock_response, requests_mock):
@@ -415,34 +581,37 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(page_siz
     assert page_size_reduction_waits == [10, 20, 30, 10, 20, 30]
     assert _trace_error_messages(messages) == [
         "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
-        'request (1 records per page). The page size the connector starts from is "Page size for large streams" '
-        "(page_size_for_large_streams) in the source configuration; a lower value makes each GraphQL query cheaper, "
-        "if it is not already at its minimum of 1."
+        "request (1 records per page). GitHub kept rejecting this query at every page size the connector asked "
+        "for, so a smaller page is not what it is waiting for. This is usually a transient condition on GitHub's "
+        "side and the next sync succeeds; if one repository fails this way on every attempt, removing it from the "
+        "source configuration lets the others sync."
     ]
 
 
-def test_a_source_configured_with_a_page_size_of_one_still_retries_a_gateway_timeout(
+def test_a_stream_starting_at_a_hundred_exhausts_max_attempts_before_reaching_the_floor(
     page_size_reduction_waits, rate_limit_mock_response, requests_mock
 ):
-    """There is nothing to halve at a page size of 1, so `retries_at_minimum_page_size` is the
-    whole budget. Without it such a source failed on the first 502 - fewer attempts than every
-    other stream of this connector gets, and these are exactly the users the legacy timeout
-    message pushed toward a page size of 1."""
+    """The other end of the reduction ladder, and the reason no message here may claim the
+    floor was reached.
+
+    `releases` starts at 10 and walks down to `minimum_page_size`, so its retries at the floor
+    are what end the read. A stream starting at 100 never gets there: `max_attempts: 5` is
+    spent one reduction earlier, so the smallest page it ever asks for is 3 and
+    `retries_at_minimum_page_size` never applies. Raising the budget to 6 would close the gap;
+    until something does, this is the behaviour, and the failure message is worded for both."""
     _mock_repository_resolution(requests_mock)
-    requests_mock.post(
-        GRAPHQL_URL,
-        [
-            {"status_code": 502, "json": {"message": "Bad Gateway"}},
-            {"json": _repository_envelope("releases", [_release_node()])},
-        ],
-    )
+    requests_mock.post(GRAPHQL_URL, status_code=504, json={"message": "Gateway Timeout"})
 
-    records, error = _read(_config(page_size_for_large_streams=1), "releases")
+    messages, error = _read_messages(_config(), "reviews")
 
-    assert error is None
-    assert len(records) == 1
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [1, 1]
-    assert page_size_reduction_waits == [10]
+    assert error is not None
+    assert _records(messages) == []
+    sizes = [_variables(request)["first"] for request in _graphql_requests(requests_mock)]
+    assert sizes == [100, 50, 25, 12, 6, 3]
+    # No repeat of the smallest size: the budget runs out on the reduction that would have
+    # produced 1, so the floor retries never happen.
+    assert sizes[-1] != _MINIMUM_GRAPHQL_PAGE_SIZE
+    assert page_size_reduction_waits == [10, 20, 30, 40, 50]
 
 
 def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_limit_mock_response, requests_mock):
@@ -485,8 +654,14 @@ def test_persistent_graphql_body_errors_fail_the_stream(rate_limit_mock_response
     assert any("GitHub GraphQL returned errors in the response body" in message for message in _trace_error_messages(messages))
 
 
-def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_response, requests_mock):
-    """The deprecated knob keeps working; reduction starts from whatever it set."""
+def test_page_size_for_large_streams_config_is_inert(rate_limit_mock_response, requests_mock):
+    """The deprecated knob no longer changes the page size, and reduction starts from the
+    connector's own value rather than from whatever the config carried.
+
+    `page_size_for_large_streams` left the spec in 1.0.1, so a config still setting it was
+    built through the API or Terraform. Honoring it meant one key steering both the REST
+    streams and these two, in opposite directions: raising it for REST throughput pushed
+    `releases` back into the resolver timeouts this reduction ladder exists to survive."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(
         GRAPHQL_URL,
@@ -498,7 +673,7 @@ def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_res
 
     _read(_config(page_size_for_large_streams=40), "releases")
 
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [40, 20]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
 
 
 # --- ProjectsV2 --------------------------------------------------------------------------
@@ -532,7 +707,7 @@ def test_projects_v2_uses_the_default_page_size(rate_limit_mock_response, reques
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json=_repository_envelope("projectsV2", []))
 
-    _read(_config(page_size_for_large_streams=10), "projects_v2")
+    _read(_config(), "projects_v2")
 
     assert _variables(_graphql_requests(requests_mock)[0])["first"] == 100
 
@@ -755,6 +930,11 @@ def test_reviews_drills_into_a_pull_request_with_more_reviews(rate_limit_mock_re
 
     assert error is None
     assert sorted(record["id"] for record in records) == [101, 102]
+    # The drill-down record is stamped from the single pull request it was rooted at.
+    drilled = next(record for record in records if record["id"] == 102)
+    assert drilled["pull_request_url"] == f"https://github.com/{REPOSITORY}/pull/4"
+    assert drilled["repository"] == REPOSITORY
+    assert "original_record" not in drilled
     requests = _graphql_requests(requests_mock)
     assert len(requests) == 2
     # The second request roots at the single pull request and carries the review cursor.
@@ -808,7 +988,7 @@ def test_reviews_reduces_the_page_size_on_gateway_timeout(rate_limit_mock_respon
 
     assert error is None
     assert len(records) == 1
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 50]
 
 
 # --- IssueReactions (two-level traversal) ---------------------------------------------------
@@ -876,6 +1056,8 @@ def test_issue_reactions_drills_into_an_issue_with_more_reactions(rate_limit_moc
 
     assert error is None
     assert sorted(record["id"] for record in records) == [201, 202]
+    assert {record["issue_number"] for record in records} == {12}
+    assert all("original_record" not in record for record in records)
     second = json.loads(_graphql_requests(requests_mock)[1].body)
     assert "issue(number: 12)" in second["query"]
     assert second["variables"]["after"] == "REACT_CUR"
@@ -1022,6 +1204,71 @@ def test_pull_request_comment_reactions_drills_deepest_first(rate_limit_mock_res
     assert cursors == [None, "REACT_CUR", "COMMENT_CUR", "REVIEW_CUR", "LIST_CUR"]
 
 
+def _deep_node(typename, node):
+    repository = {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}}
+    return {"data": {"node": {**node, "__typename": typename, "repository": repository}}}
+
+
+@pytest.mark.parametrize(
+    ("listing_pull_request", "drilldown"),
+    [
+        pytest.param(
+            _pr_with_reviews("PR_1", [], has_next=True, cursor="REVIEW_CUR"),
+            _deep_node(
+                "PullRequest",
+                _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])])]),
+            ),
+            id="pull_request",
+        ),
+        pytest.param(
+            _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [], has_next=True, cursor="COMMENT_CUR")]),
+            _deep_node("PullRequestReview", _pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])])),
+            id="review",
+        ),
+        pytest.param(
+            _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [], has_next=True, cursor="REACT_CUR")])]),
+            _deep_node("PullRequestReviewComment", _pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])),
+            id="comment",
+        ),
+    ],
+)
+def test_pull_request_comment_reactions_reads_every_drilldown_root(
+    listing_pull_request, drilldown, rate_limit_mock_response, requests_mock
+):
+    """Each root the traversal re-roots at nests the comments at a different depth."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, [{"json": _deep_listing([listing_pull_request])}, {"json": drilldown}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert len(records) == 1
+    record = records[0]
+    assert record["id"] == 302
+    assert record["comment_id"] == 21
+    assert record["repository"] == REPOSITORY
+    assert "original_record" not in record
+
+
+def test_pull_request_comment_reactions_sets_the_user_type_when_there_is_a_user(rate_limit_mock_response, requests_mock):
+    """The legacy record carried `user.type`, which the `user` field of these documents does not return."""
+    _mock_repository_resolution(requests_mock)
+    with_user = {**_reaction_node("REA_1", 301), "user": {"node_id": "U_1", "id": 7, "login": "octocat"}}
+    without_user = {**_reaction_node("REA_2", 302), "user": None}
+    requests_mock.post(
+        GRAPHQL_URL,
+        json=_deep_listing([_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [with_user, without_user])])])]),
+    )
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert {record["id"]: record["user"] for record in records} == {
+        301: {"node_id": "U_1", "id": 7, "login": "octocat", "type": "User"},
+        302: None,
+    }
+
+
 def test_pull_request_comment_reactions_omits_owner_and_name_on_drilldowns(rate_limit_mock_response, requests_mock):
     """The drill-down documents root at `node(id:)` and declare no `$owner`/`$name`. GraphQL
     rejects a document sent variables it does not declare, so they must not be sent."""
@@ -1078,7 +1325,7 @@ def test_pull_request_comment_reactions_keeps_owner_and_name_on_the_listing_cont
         "owner": REPOSITORY.split("/")[0],
         "name": REPOSITORY.split("/")[1],
         "after": "LIST_CUR",
-        "first": 10,
+        "first": 100,
     }
 
 
@@ -1096,4 +1343,28 @@ def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout
 
     assert error is None
     assert records == []
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 50]
+
+
+# --- Default page size ------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "stream_name, envelope",
+    [
+        pytest.param("reviews", lambda: _reviews_listing([]), id="reviews"),
+        pytest.param("issue_reactions", lambda: _issues_listing([]), id="issue_reactions"),
+        pytest.param("pull_request_comment_reactions", lambda: _deep_listing([]), id="pull_request_comment_reactions"),
+    ],
+)
+def test_non_large_graphql_streams_use_the_default_page_size(stream_name, envelope, rate_limit_mock_response, requests_mock):
+    """Only `releases` and `pull_request_stats` were `large_stream = True` in the legacy code.
+    Every other GraphQL stream ran at constants.DEFAULT_PAGE_SIZE, so migrating them at 10 was
+    a 10x increase in GraphQL requests -- against the same resolver deadline that makes those
+    requests fail."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=envelope())
+
+    _read(_config(), stream_name)
+
+    assert _variables(_graphql_requests(requests_mock)[0])["first"] == 100

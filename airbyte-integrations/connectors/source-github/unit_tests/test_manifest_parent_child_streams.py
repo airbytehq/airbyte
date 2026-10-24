@@ -20,7 +20,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -36,7 +35,7 @@ from airbyte_cdk.models import (
     Type,
 )
 
-from .utils import ProjectsResponsesAPI
+from .utils import ProjectsResponsesAPI, make_source
 
 
 MIGRATED_STREAMS = [
@@ -88,7 +87,7 @@ def _read_messages(config, *stream_names, state=None):
     # Parents cache their listings (`use_cache: true`); a second sync in the same test must hit the mocks again.
     shutil.rmtree(os.environ["REQUEST_CACHE_PATH"], ignore_errors=True)
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
@@ -258,12 +257,10 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/branches", json=[{"name": "master"}])
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
-    python_names = {stream.name for stream in source.streams(dict(config))}
     discovered = source.discover(logging.getLogger("airbyte"), dict(config)).streams
 
-    assert not python_names & set(MIGRATED_STREAMS)
     assert set(MIGRATED_STREAMS) <= {stream.name for stream in discovered}
     assert len(discovered) == len({stream.name for stream in discovered})
     by_name = {stream.name: stream for stream in discovered}

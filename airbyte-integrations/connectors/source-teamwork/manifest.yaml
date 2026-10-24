@@ -15,6 +15,21 @@ check:
   stream_names:
     - latestactivity
 
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_reset_header: X-Rate-Limit-Reset
+  ratelimit_remaining_header: X-Rate-Limit-Remaining
+  status_codes_for_ratelimit_hit:
+    - 429
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 150
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/projects/api/v3/
+
 definitions:
   streams:
     latestactivity:
@@ -44,13 +59,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,9 +86,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dateTime
@@ -116,13 +135,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -140,9 +162,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -188,13 +211,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -212,9 +238,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -249,13 +276,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -273,9 +303,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,13 +338,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -331,9 +365,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -379,13 +414,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -403,9 +441,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -451,13 +490,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -475,9 +517,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -521,13 +564,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -544,9 +590,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -578,13 +625,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -602,9 +652,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -650,13 +701,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -674,9 +728,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -722,13 +777,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -746,9 +804,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdOn
@@ -795,13 +854,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -819,9 +881,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -853,13 +916,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -877,9 +943,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -925,13 +992,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -949,9 +1019,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -983,13 +1054,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1007,9 +1081,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1063,13 +1138,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1087,9 +1165,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1121,13 +1200,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1145,9 +1227,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -1193,13 +1276,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1217,9 +1303,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -1265,13 +1352,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1289,9 +1379,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1324,13 +1415,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1348,9 +1442,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1383,13 +1478,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: X-Rate-Limit-Reset
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     error_message: Rate limit hit
-                    error_message_contains: "429"
+                    http_codes:
+                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1407,9 +1505,10 @@ definitions:
             field_name: pageSize
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ ((response.get('meta') or {}).get('page') or {}).get('pageOffset', 0) + 2 }}"
+            stop_condition: "{{ not ((response.get('meta') or {}).get('page') or {}).get('hasMore', false) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:

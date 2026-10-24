@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-flexmail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: 82a2d4b1-9fe3-408a-84b4-bd690426fc15
-  dockerImageTag: 0.0.62
+  dockerImageTag: 0.0.67
   dockerRepository: airbyte/source-flexmail
   githubIssueLabel: source-flexmail
   icon: icon.svg

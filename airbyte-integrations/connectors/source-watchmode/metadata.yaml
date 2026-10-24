@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-watchmode
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: c10bae9d-398b-480a-a49b-5ae69cdc0759
-  dockerImageTag: 0.0.49
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-watchmode
   githubIssueLabel: source-watchmode
   icon: icon.svg

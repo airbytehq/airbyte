@@ -19,10 +19,14 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: "interview_stages"
-            bypass_reason: "Sandbox account cannot seed this stream"
           - name: "offers"
             bypass_reason: "Sandbox account cannot seed this stream"
+          - name: "job_templates"
+            bypass_reason: "Sandbox account has no job templates/approvals; covered by mock-server tests"
+          - name: "approvals"
+            bypass_reason: "Sandbox account has no job templates/approvals; covered by mock-server tests"
+          - name: "source_tracking_links"
+            bypass_reason: "Sandbox account has no source tracking links; covered by mock-server tests"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -18,23 +18,23 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 interface AWSAccessKeySpecification {
     @get:JsonSchemaTitle("Access Key ID")
     @get:JsonPropertyDescription(
-        "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>."
+        "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
     )
     @get:JsonProperty("access_key_id")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true}""",
     )
     val accessKeyId: String?
 
     @get:JsonSchemaTitle("Secret Access Key")
     @get:JsonPropertyDescription(
-        "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>"
+        "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
     )
     @get:JsonProperty("secret_access_key")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}""",
     )
     val secretAccessKey: String?
 
