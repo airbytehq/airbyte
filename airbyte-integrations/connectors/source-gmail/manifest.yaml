@@ -53,6 +53,8 @@ definitions:
     profile:
       type: DeclarativeStream
       name: profile
+      primary_key:
+        - emailAddress
       retriever:
         type: SimpleRetriever
         requester:
@@ -710,12 +712,14 @@ schemas:
           - "null"
       messagesTotal:
         type:
-          - number
+          - integer
           - "null"
       threadsTotal:
         type:
-          - number
+          - integer
           - "null"
+    required:
+      - emailAddress
   drafts:
     type: object
     $schema: http://json-schema.org/schema#
@@ -810,11 +814,11 @@ schemas:
           - "null"
       messagesTotal:
         type:
-          - number
+          - integer
           - "null"
       messagesUnread:
         type:
-          - number
+          - integer
           - "null"
       name:
         type:
@@ -822,11 +826,11 @@ schemas:
           - "null"
       threadsTotal:
         type:
-          - number
+          - integer
           - "null"
       threadsUnread:
         type:
-          - number
+          - integer
           - "null"
     required:
       - id
@@ -916,7 +920,7 @@ schemas:
                   - "null"
               size:
                 type:
-                  - number
+                  - integer
                   - "null"
           filename:
             type:
@@ -971,7 +975,7 @@ schemas:
                         - "null"
                     size:
                       type:
-                        - number
+                        - integer
                         - "null"
                 filename:
                   type:
@@ -1026,7 +1030,7 @@ schemas:
                               - "null"
                           size:
                             type:
-                              - number
+                              - integer
                               - "null"
                       filename:
                         type:
@@ -1081,7 +1085,7 @@ schemas:
                                     - "null"
                                 size:
                                   type:
-                                    - number
+                                    - integer
                                     - "null"
                             filename:
                               type:
@@ -1122,7 +1126,7 @@ schemas:
                                   - "null"
       sizeEstimate:
         type:
-          - number
+          - integer
           - "null"
       snippet:
         type:
@@ -1241,7 +1245,7 @@ schemas:
                         - "null"
                     size:
                       type:
-                        - number
+                        - integer
                         - "null"
                 filename:
                   type:
@@ -1296,7 +1300,7 @@ schemas:
                               - "null"
                           size:
                             type:
-                              - number
+                              - integer
                               - "null"
                       filename:
                         type:
@@ -1351,7 +1355,7 @@ schemas:
                                     - "null"
                                 size:
                                   type:
-                                    - number
+                                    - integer
                                     - "null"
                             filename:
                               type:
@@ -1406,7 +1410,7 @@ schemas:
                                           - "null"
                                       size:
                                         type:
-                                          - number
+                                          - integer
                                           - "null"
                                   filename:
                                     type:
@@ -1447,7 +1451,7 @@ schemas:
                                         - "null"
             sizeEstimate:
               type:
-                - number
+                - integer
                 - "null"
             snippet:
               type:
