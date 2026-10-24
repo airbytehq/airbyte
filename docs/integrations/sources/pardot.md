@@ -105,6 +105,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.61 | 2026-10-23 | [88466](https://github.com/airbytehq/airbyte/pull/88466) | Classify expired or revoked Salesforce refresh tokens as a configuration error with a clear message, and retry concurrent token refresh rejections |
 | 1.0.60 | 2026-10-20 | [89350](https://github.com/airbytehq/airbyte/pull/89350) | Update dependencies |
 | 1.0.59 | 2026-10-13 | [88747](https://github.com/airbytehq/airbyte/pull/88747) | Update dependencies |
 | 1.0.58 | 2026-10-06 | [87980](https://github.com/airbytehq/airbyte/pull/87980) | Update dependencies |
