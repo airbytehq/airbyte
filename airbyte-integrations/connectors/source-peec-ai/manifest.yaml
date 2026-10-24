@@ -1,0 +1,709 @@
+version: 6.60.9
+
+type: DeclarativeSource
+
+description: >-
+  Peec AI (https://peec.ai) is a GEO / LLM-visibility analytics tool: it runs a
+  project's prompts against AI assistants and measures how often the tracked
+  brands are mentioned and which sources the models retrieve.
+
+  This connector reads the Peec AI Customer API (https://api.peec.ai/customer/v1)
+  and exposes the two metrics the Marketing dashboard needs - brand Visibility %
+  and source Retrievals - bucketed by month and by AI model channel, plus the
+  brand and model-channel lookups needed to read those reports.
+
+  One connection covers one Peec project: a project-scoped key resolves its own
+  project, and a company-scoped key needs `project_id` set in the config.
+
+check:
+  type: CheckStream
+  stream_names:
+    - brands
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.peec.ai/customer/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      # Peec allows 200 req/min per project and returns the seconds left in the
+      # window in X-RateLimit-Reset, so wait exactly that long on a 429.
+      # Measured against the live API: `x-ratelimit-limit: 200`,
+      # `x-ratelimit-reset: 60` -- seconds remaining, not a Unix epoch, so the
+      # value can never exceed 60. No max_waiting_time_in_seconds on purpose:
+      # WaitTimeFromHeaderBackoffStrategy does not clamp the wait when the bound
+      # is exceeded, it raises AirbyteTracedException and stops the stream. A
+      # bound above 60 is unreachable dead code; one below it would turn an
+      # ordinary rate-limit pause into a hard sync failure, defeating max_retries.
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: X-RateLimit-Reset
+
+  # Lookup endpoints are GETs, so limit/offset are query parameters.
+  lookup_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 1000
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+
+  # The report endpoints are POSTs, so limit/offset go in the JSON body.
+  # The response envelope is a bare {"data": [...]} with no total count, so we
+  # page until a short page comes back (OffsetIncrement's default stop rule).
+  #
+  # page_size is the API maximum: limit=10000 is accepted, limit=15000 answers
+  # 400. A month does NOT fit in one page -- urls_report is ~37.8k rows for
+  # 2026-08, i.e. 4 pages -- so offset paging is load-bearing here.
+  #
+  # Peec exposes no total order, and offset paging over an unordered result set
+  # can in principle repeat a row across a page boundary or skip one. `order_by`
+  # accepts only metric columns (never brand/domain/url), so we cannot pin the
+  # order ourselves. This was measured rather than assumed, on 2026-08:
+  #
+  #   * the order really is not deterministic -- two consecutive walks at the
+  #     same page size return the same rows in a different sequence, so row
+  #     position carries no meaning;
+  #   * but the SET of rows is invariant. Walked at page_size 10000, 7000 and
+  #     5000 (which put the boundaries in different places) and twice more at
+  #     10000: every walk returned exactly the same 37,844 rows and 203,774
+  #     retrievals, with 0 rows lost and 0 repeated.
+  #
+  # So paging is safe here empirically, not by construction. Nothing stops Peec
+  # from changing that, which is why the invariant is pinned by a test rather
+  # than trusted: integration_tests/check_paging_stability.py re-walks a month
+  # at several page sizes and fails if the multiset ever differs. Run it after
+  # any change to these endpoints.
+  report_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 10000
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: body_json
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: body_json
+
+  # One request per calendar month. `start_date` is snapped to the first of its
+  # month so a slice never straddles two month buckets, which would return the
+  # same bucket twice, each time only partially filled.
+  # Peec restates recent months as chats keep landing, so re-read the previous
+  # month on every sync.
+  monthly_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: month
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'][:7] ~ '-01' }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    step: P1M
+    cursor_granularity: P1D
+    lookback_window: P1M
+    start_time_option:
+      type: RequestOption
+      field_name: start_date
+      inject_into: body_json
+    end_time_option:
+      type: RequestOption
+      field_name: end_date
+      inject_into: body_json
+
+  # Every request carries project_id as "{{ config.get('project_id', '') }}".
+  # When the config leaves it unset this interpolates to empty and the CDK drops
+  # the field from the request entirely -- which is what we want, because the API
+  # rejects an explicit null with 400 ("expected string, received null"), while
+  # omitting it lets a project-scoped key resolve its own project. A
+  # company-scoped key has no project to infer, so it must set the config value.
+  # Pinned by test_manifest.py.
+
+  streams:
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /brands
+          http_method: GET
+          request_parameters:
+            project_id: "{{ config.get('project_id', '') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/lookup_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+
+    model_channels:
+      type: DeclarativeStream
+      name: model_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /model-channels
+          http_method: GET
+          request_parameters:
+            project_id: "{{ config.get('project_id', '') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/lookup_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/model_channels"
+
+    brands_report:
+      type: DeclarativeStream
+      name: brands_report
+      primary_key:
+        - month
+        - brand_id
+        - model_channel_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/brands
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            project_id: "{{ config.get('project_id', '') }}"
+            dimensions:
+              - month
+              - model_channel_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/report_paginator"
+      incremental_sync:
+        $ref: "#/definitions/monthly_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - brand_id
+              value: "{{ (record.get('brand') or {}).get('id') }}"
+            - path:
+                - brand_name
+              value: "{{ (record.get('brand') or {}).get('name') }}"
+            - path:
+                - model_channel_id
+              value: "{{ (record.get('model_channel') or {}).get('id') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands_report"
+
+    domains_report:
+      type: DeclarativeStream
+      name: domains_report
+      primary_key:
+        - month
+        - domain
+        - model_channel_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/domains
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            project_id: "{{ config.get('project_id', '') }}"
+            dimensions:
+              - month
+              - model_channel_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/report_paginator"
+      incremental_sync:
+        $ref: "#/definitions/monthly_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - model_channel_id
+              value: "{{ (record.get('model_channel') or {}).get('id') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domains_report"
+
+    urls_report:
+      type: DeclarativeStream
+      name: urls_report
+      # No primary key on purpose. Peec can return two rows for the same
+      # (month, url, model_channel_id). Measured on 2026-08: 4 such pairs in
+      # 37,844 rows, carrying 16 of 203,774 retrievals.
+      #
+      # Three of the four pairs are identical on every exposed dimension and
+      # differ only in metrics (retrievals, usage_count, citation_*). The
+      # fourth (cegid.com/fr/solutions/erp) also differs in `classification`.
+      # So no subset of the returned fields separates all four: adding
+      # `classification` to a key would split that one pair and still collapse
+      # the other three.
+      #
+      # These are NOT a paging artifact. The month was re-walked at page_size
+      # 10000, 7000 and 5000 -- which moves every page boundary -- and all
+      # three returned an identical set of rows, duplicates included. A row
+      # served twice by a boundary would appear at one page size and not
+      # another; these appear in every walk. See the report_paginator note.
+      # They are the API's real grain. Declaring a key would invite a dedup
+      # that silently drops the second row; group and SUM instead. See the
+      # README.
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/urls
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            project_id: "{{ config.get('project_id', '') }}"
+            dimensions:
+              - month
+              - model_channel_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/report_paginator"
+      incremental_sync:
+        $ref: "#/definitions/monthly_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - model_channel_id
+              value: "{{ (record.get('model_channel') or {}).get('id') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/urls_report"
+
+streams:
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/model_channels"
+  - $ref: "#/definitions/streams/brands_report"
+  - $ref: "#/definitions/streams/domains_report"
+  - $ref: "#/definitions/streams/urls_report"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Peec AI API key, created at https://app.peec.ai/api-keys. Sent as the
+          `x-api-key` header. A project-scoped key (the usual case) resolves its
+          own project; a company-scoped key also needs Project ID below.
+        order: 0
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Earliest month to sync, as YYYY-MM-DD. The day is ignored - the sync
+          always starts on the first day of that month. Set it 12 months back to
+          load the one year of history the dashboard expects.
+        order: 1
+        format: date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2025-09-01"
+      project_id:
+        type: string
+        title: Project ID
+        description: >-
+          Only for a company-scoped API key, which has no project to infer.
+          Leave empty for a project-scoped key, which ignores this value.
+          One connection covers one Peec project either way.
+        order: 2
+        examples:
+          - "or_f45b94ba-5e35-4982-93ed-285e72ee14eb"
+    additionalProperties: true
+
+schemas:
+  brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      aliases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      regex:
+        type:
+          - string
+          - "null"
+      # Marks the project's own brand among the tracked competitors.
+      # This is how a downstream model tells "our visibility" from "theirs".
+      is_own:
+        type:
+          - boolean
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+
+  model_channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      description:
+        type:
+          - string
+          - "null"
+      current_model:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      unsupported_country_codes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+
+  brands_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      month:
+        type: string
+      brand_id:
+        type: string
+      brand_name:
+        type:
+          - string
+          - "null"
+      model_channel_id:
+        type: string
+      brand:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      model_channel:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      # Ratio in [0, 1] = visibility_count / visibility_total. The dashboard's
+      # "Visibility %" is this * 100. Re-aggregate across rows with
+      # sum(visibility_count) / sum(visibility_total), never by averaging.
+      visibility:
+        type:
+          - number
+          - "null"
+      visibility_count:
+        type:
+          - number
+          - "null"
+      visibility_total:
+        type:
+          - number
+          - "null"
+      share_of_voice:
+        type:
+          - number
+          - "null"
+      mention_count:
+        type:
+          - number
+          - "null"
+      sentiment:
+        type:
+          - number
+          - "null"
+      sentiment_sum:
+        type:
+          - number
+          - "null"
+      sentiment_count:
+        type:
+          - number
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      position_sum:
+        type:
+          - number
+          - "null"
+      position_count:
+        type:
+          - number
+          - "null"
+    required:
+      - month
+      - brand_id
+      - model_channel_id
+
+  domains_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      month:
+        type: string
+      domain:
+        type: string
+      model_channel_id:
+        type: string
+      model_channel:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      # Source retrievals: distinct URL retrievals from this domain across chats.
+      retrieval_count:
+        type:
+          - number
+          - "null"
+      retrieval_rate:
+        type:
+          - number
+          - "null"
+      retrieved_percentage:
+        type:
+          - number
+          - "null"
+      retrieved_chat_count:
+        type:
+          - number
+          - "null"
+      total_chat_count:
+        type:
+          - number
+          - "null"
+      citation_count:
+        type:
+          - number
+          - "null"
+      citation_rate:
+        type:
+          - number
+          - "null"
+      mentioned_brands:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    required:
+      - month
+      - domain
+      - model_channel_id
+
+  urls_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      month:
+        type: string
+      url:
+        type: string
+      model_channel_id:
+        type: string
+      model_channel:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      channel_title:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      # Source retrievals: distinct chats that retrieved this URL.
+      retrieval_count:
+        type:
+          - number
+          - "null"
+      citation_count:
+        type:
+          - number
+          - "null"
+      citation_rate:
+        type:
+          - number
+          - "null"
+      mentioned_brands:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    required:
+      - month
+      - url
+      - model_channel_id
