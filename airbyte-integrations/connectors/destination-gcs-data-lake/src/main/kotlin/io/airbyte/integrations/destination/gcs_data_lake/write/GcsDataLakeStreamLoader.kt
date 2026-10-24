@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.AllowNonReversibleUpgrades
+import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -187,13 +188,32 @@ class GcsDataLakeStreamLoader(
             logger.info {
                 "maybe creating branch $stagingBranchName for stream ${stream.mappedDescriptor}"
             }
-            val mainSnapshotId = createdTable.refs()[mainBranchName]?.snapshotId()
-            if (mainSnapshotId == null) {
-                createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
-            } else {
+            val refs = createdTable.refs()
+            val legacyStagingRef = refs[DEFAULT_STAGING_BRANCH]
+            val mainBranchRef = refs[mainBranchName]
+            if (stagingBranchName in refs) {
+                logger.info {
+                    "branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}"
+                }
+            } else if (legacyStagingRef != null) {
+                logger.info {
+                    "Seeding staging branch $stagingBranchName from legacy branch " +
+                        "$DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
+                }
                 createdTable
                     .manageSnapshots()
-                    .createBranch(stagingBranchName, mainSnapshotId)
+                    .createBranch(stagingBranchName, legacyStagingRef.snapshotId())
+                    .commit()
+            } else if (mainBranchRef == null) {
+                createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
+            } else {
+                logger.info {
+                    "Seeding staging branch $stagingBranchName from configured main branch " +
+                        "$mainBranchName for stream ${stream.mappedDescriptor}"
+                }
+                createdTable
+                    .manageSnapshots()
+                    .createBranch(stagingBranchName, mainBranchRef.snapshotId())
                     .commit()
             }
         } catch (e: IllegalArgumentException) {
@@ -366,6 +386,7 @@ class GcsDataLakeStreamLoader(
         }
 
         removeStagingBranch()
+        removeLegacyStagingBranch()
     }
 
     private fun removeStagingBranch() {
@@ -381,6 +402,25 @@ class GcsDataLakeStreamLoader(
         } catch (e: Exception) {
             logger.warn(e) {
                 "Failed to remove staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
+            }
+        }
+    }
+
+    private fun removeLegacyStagingBranch() {
+        if (!this::table.isInitialized || mainBranchName == DEFAULT_STAGING_BRANCH) {
+            return
+        }
+        if (table.refs()[DEFAULT_STAGING_BRANCH] == null) {
+            return
+        }
+        try {
+            logger.info {
+                "Removing legacy staging branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
+            }
+            table.manageSnapshots().removeBranch(DEFAULT_STAGING_BRANCH).commit()
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to remove legacy staging branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
             }
         }
     }

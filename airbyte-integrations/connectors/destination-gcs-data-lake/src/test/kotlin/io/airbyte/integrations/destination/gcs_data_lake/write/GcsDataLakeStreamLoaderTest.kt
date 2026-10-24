@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
@@ -260,5 +261,27 @@ internal class GcsDataLakeStreamLoaderTest {
             publishedSnapshotId,
             table.refs()["airbyte_staging_test"]!!.snapshotId(),
         )
+    }
+
+    @Test
+    fun `legacy staging branch seeds generated staging branch and is removed after publish`() {
+        val table = createTable(makeTableSchema())
+        appendSnapshot(table)
+        table.manageSnapshots().createBranch("prod").commit()
+        table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
+        appendSnapshot(table, DEFAULT_STAGING_BRANCH)
+        val legacySnapshotId = table.refs()[DEFAULT_STAGING_BRANCH]!!.snapshotId()
+
+        val loader = makeLoader(makeStream(Append), table, mainBranchName = "prod")
+        runBlocking { loader.start() }
+
+        assertEquals(
+            legacySnapshotId,
+            table.refs()["airbyte_staging_test"]!!.snapshotId(),
+        )
+        runBlocking { loader.teardown(completedSuccessfully = true) }
+
+        assertNull(table.refs()[DEFAULT_STAGING_BRANCH])
+        assertEquals(legacySnapshotId, table.refs()["prod"]!!.snapshotId())
     }
 }
