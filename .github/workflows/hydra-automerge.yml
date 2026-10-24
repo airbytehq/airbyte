@@ -66,11 +66,16 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ── Pre-checks ─────────────────────────────────────────────────
+      # A PR that is not eligible (wrong base, playbook-eval PR, not open) is
+      # an expected outcome, not a workflow failure: the step succeeds and
+      # sets `ineligible_reason`, and `Early exit -- PR not eligible` reports
+      # it on the PR. Only API errors fail the step.
       - name: Check PR is still open
         id: pre-check
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
+          set -euo pipefail
           pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
@@ -82,8 +87,9 @@ jobs:
           # identifiable by their non-master base.
           base=$(echo "$pr_json" | jq -r '.baseRefName')
           if [[ "$base" != "master" ]]; then
-            echo "::error::PR #$PR_NUMBER targets base '$base', not master. Auto-merge is blocked."
-            exit 1
+            echo "::notice::PR #$PR_NUMBER targets base '$base', not master. Auto-merge is skipped."
+            echo "ineligible_reason=PR targets base '$base', not master" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           # Never auto-merge PRs created by the airbytehq/ai-skills eval harness,
@@ -91,16 +97,36 @@ jobs:
           head=$(echo "$pr_json" | jq -r '.headRefName')
           labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
           if [[ "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
-            echo "::error::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is blocked."
-            exit 1
+            echo "::notice::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is skipped."
+            echo "ineligible_reason=playbook-eval PR" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
+          # Every later step is gated on state == 'OPEN', so the early exits
+          # above must stay ahead of this output.
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
           echo "title=$title" | tee -a "$GITHUB_OUTPUT"
           if [[ "$state" != "OPEN" ]]; then
-            echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
+            echo "::notice::PR #$PR_NUMBER is no longer open (state=$state). Auto-merge is skipped."
+            echo "ineligible_reason=PR is not open (state=$state)" >> "$GITHUB_OUTPUT"
           fi
+
+      # The status comment below is only created for open, eligible PRs, so
+      # this posts the single status comment for a blocked run.
+      - name: Early exit -- PR not eligible
+        if: steps.pre-check.outputs.ineligible_reason != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **Auto-merge evaluation: SKIPPED**
+            >
+            > Not eligible: ${{ steps.pre-check.outputs.ineligible_reason }}.
+            > Hydra only auto-merges open PRs that target `master` and are not playbook-eval PRs.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Post status comment
         if: steps.pre-check.outputs.state == 'OPEN'
@@ -458,6 +484,9 @@ jobs:
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
 
+      # A missing structured output is a real failure, so fail the job after
+      # recording `success=false`; `Update status comment on Devin error`
+      # still runs and reports it on the PR.
       - name: Check for structured output
         if: steps.devin.outputs.session-id
         id: check-output
@@ -469,6 +498,7 @@ jobs:
           else
             echo "::error::Devin session completed but did not produce structured output."
             echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
 
       # ── Evaluate structured output ─────────────────────────────────
