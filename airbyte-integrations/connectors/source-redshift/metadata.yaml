@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
-  dockerImageTag: 0.5.5
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-redshift
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   githubIssueLabel: source-redshift
@@ -28,6 +28,20 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Redshift `date`, `timestamp`, and `timestamptz` columns are now discovered as Airbyte date,
+          timestamp without time zone, and timestamp with time zone types instead of unformatted
+          strings, so typed destinations can create native temporal columns. This affects only streams
+          that contain at least one of these column types; `time` and `timetz` columns are unchanged.
+          Destinations that can't change an existing string column to a date or timestamp column may
+          fail with a schema evolution error. If that happens, refresh the source schema and clear the
+          affected streams. For details, see the migration guide:
+          https://docs.airbyte.com/integrations/sources/redshift-migrations#upgrading-to-100
+        upgradeDeadline: "2026-11-07"
+        deadlineAction: "auto_upgrade"
   releaseStage: alpha
   supportLevel: community
   tags:
