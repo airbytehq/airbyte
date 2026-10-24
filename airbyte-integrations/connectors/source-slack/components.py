@@ -4,8 +4,9 @@ import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 from functools import partial
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Union
 
 import requests
 
@@ -294,4 +295,42 @@ class MessagesAndThreadsHttpRequester(HttpRequester):
             backoff_strategy=backoff_strategies,
             disable_retries=self.disable_retries,
             message_repository=self.message_repository,
+        )
+
+
+@dataclass
+class ThreadRepliesHttpRequester(MessagesAndThreadsHttpRequester):
+    """Avoid a replies request when the parent proves its replies precede the requested window."""
+
+    def send_request(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        if stream_slice is not None and request_params and not next_page_token:
+            try:
+                latest_reply = Decimal(str(stream_slice.extra_fields.get("latest_reply")))
+                oldest = Decimal(str(request_params.get("oldest")))
+            except InvalidOperation:
+                pass
+            else:
+                if latest_reply.is_finite() and oldest.is_finite() and 0 < latest_reply < oldest:
+                    return None
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
         )

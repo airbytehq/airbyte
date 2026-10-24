@@ -399,12 +399,13 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         type: CustomRequester
-        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
+        class_name: "source_declarative_manifest.components.ThreadRepliesHttpRequester"
         url_match: "https://slack.com/api/conversations.replies?.+"
         url_base: https://slack.com/api/
         path: "{{ parameters['path'] }}"
         http_method: GET
         request_parameters:
+          inclusive: "True"
           channel: "{{ stream_partition['parent_slice']['channel'] }}"
         request_headers: {}
         authenticator:
@@ -434,6 +435,8 @@ definitions:
             # incremental_dependency set to true to read parent state incrementally with custom substream partition router
             incremental_dependency: true
             parent_key: ts
+            extra_fields:
+              - [latest_reply]
             partition_field: float_ts
             request_option:
               type: RequestOption
@@ -447,6 +450,14 @@ definitions:
         - "%s"
         - "%s_as_float"
       datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: oldest
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: latest
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -604,7 +615,7 @@ spec:
         order: 8
         default: 100
         minimum: 1
-        maximum: 100
+        maximum: 365
         title: Channel messages date window size (in days)
         description: The size (in days) of the date window that will be used while syncing data from the channel messages stream. A smaller window will allow for greater parallelization when syncing records, but can lead to rate limiting errors.
         examples:

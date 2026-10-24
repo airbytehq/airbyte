@@ -142,7 +142,8 @@ def test_threads_request_params(authenticator, token_config):
     stream = get_stream_by_name("threads", token_config)
     threads_slice = {"parent_slice": {"channel": "airbyte-for-beginners"}}
     assert get_retriever(stream).requester.get_request_params(stream_slice=threads_slice, next_page_token={}) == {
-        "channel": "airbyte-for-beginners"
+        "channel": "airbyte-for-beginners",
+        "inclusive": "True",
     }
 
 
