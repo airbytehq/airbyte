@@ -42,7 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.1.0 | 2026-09-25 | [87009](https://github.com/airbytehq/airbyte/pull/87009) | Migrate to manifest-only on the latest CDK; the feed URL is now requested exactly as configured (a trailing `/` is no longer appended to URLs with query strings or file extensions) |
+| 1.1.0 | 2026-09-25 | [87009](https://github.com/airbytehq/airbyte/pull/87009) | Migrate to manifest-only on the latest CDK; the feed URL is now requested exactly as configured (a trailing `/` is no longer appended to URLs with query strings or file extensions). Feeds are now parsed as strict XML, so a feed that is not well-formed XML fails the sync with an error instead of silently returning zero records |
 | 1.0.31 | 2025-02-01 | [51897](https://github.com/airbytehq/airbyte/pull/51897) | Update dependencies |
 | 1.0.30 | 2025-01-11 | [51334](https://github.com/airbytehq/airbyte/pull/51334) | Update dependencies |
 | 1.0.29 | 2025-01-04 | [50935](https://github.com/airbytehq/airbyte/pull/50935) | Update dependencies |
