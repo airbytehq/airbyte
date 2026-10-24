@@ -240,3 +240,4 @@ def test_schemas_include_additive_campaign_and_adgroup_fields(manifest):
         },
     ]
     assert adgroups["automatedKeywordsRequired"]["type"] == ["boolean", "null"]
+    assert adgroups["biddingStrategy"]["type"] == ["string", "null"]
