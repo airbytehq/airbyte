@@ -5,7 +5,7 @@
 import json
 import logging
 from datetime import date, datetime
-from decimal import Decimal, getcontext
+from decimal import Decimal, InvalidOperation, getcontext
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -133,7 +133,13 @@ class StreamWriter:
 
         elif typ == "number":
             if self._config.glue_catalog_float_as_decimal:
-                return Decimal(str(value)) if value else Decimal("0")
+                if not value:
+                    return Decimal("0")
+                try:
+                    return Decimal(str(value))
+                except (InvalidOperation, ValueError, TypeError):
+                    logger.warning(f"Could not convert value to Decimal, returning None: {value!r}")
+                    return None
             return pd.to_numeric(value, errors="coerce")
 
         elif typ == "boolean":
