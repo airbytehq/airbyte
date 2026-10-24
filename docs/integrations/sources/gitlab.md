@@ -130,13 +130,21 @@ Incremental streams request data in 180-day windows, so a first sync of a long-l
 `jobs`, `pipelines_extended`, and `pipeline_trigger_jobs` make one request per pipeline. In Incremental mode, a sync only makes these requests for the pipelines returned by the incremental `pipelines` query, which are the pipelines whose `updated_at` is at or after the previous sync's cursor. All three streams use `pipeline_updated_at`, the pipeline's `updated_at` as returned by `pipelines`, as their cursor. Keep the following in mind:
 
 - Changes that don't update the parent pipeline's `updated_at`, such as erasing a job or job artifacts expiring, aren't picked up. Use Full Refresh for these streams if you need those changes.
-- When a job is retried, GitLab creates a new attempt under a new job `id`. The `jobs` stream returns every attempt, including earlier attempts of retried jobs, so a pipeline can have several rows with the same `name`. To get only the latest attempt of each job, keep the highest `id` per `pipeline_id` and `name`. Deleted pipelines and their jobs are not removed from the destination.
+- When a job is retried, GitLab creates a new attempt under a new job `id`. The `jobs` stream returns every attempt, including earlier attempts of retried jobs, so a pipeline can have several rows with the same `name`. To get only the latest attempt of each job, keep the highest `id` per `pipeline_id` and `name`. `pipeline_trigger_jobs` returns only the latest attempt of a retried trigger job. In Incremental mode, the row for an earlier attempt of a trigger job keeps the status it had when it was last synced. Deleted pipelines and their jobs are not removed from the destination.
 - In `pipeline_trigger_jobs`, the `downstream_pipeline` fields, such as `status`, reflect the downstream pipeline when the upstream pipeline last changed. A trigger job without `strategy: depend` finishes as soon as the downstream pipeline is created, so later status changes in the downstream pipeline don't update the upstream pipeline, and the row isn't read again. To get the downstream pipeline's current status, join `downstream_pipeline_id` to the `pipelines` stream, or use Full Refresh for `pipeline_trigger_jobs`.
 - The cursor has one-second precision and GitLab's `updated_after` filter includes the boundary. On every sync, the most recently updated regular pipeline and the most recently updated child pipeline in each project are requested again, so up to two pipelines per project. Use **Incremental | Append + Deduped** to avoid duplicate rows.
 - A project that first appears after the first incremental sync starts from the latest `pipelines` cursor minus the duration of the previous sync, not from **Start date**. This applies to projects added to the connector configuration and to projects created in or moved into a configured group. Older pipelines in that project aren't read. Refresh these streams to backfill them.
 - Changing a stream's sync mode clears its saved state. The first Incremental sync after switching from Full Refresh reads every pipeline from **Start date**. With **Incremental | Append**, rows written by earlier Full Refresh syncs stay in the destination; use **Append + Deduped** or clear the stream when you switch.
 - In Full Refresh mode, a failed attempt can resume instead of reading every pipeline again when the destination supports refreshes and the schema has been refreshed after upgrading to 4.5.0. This also applies to existing Full Refresh connections that never switch to Incremental. An attempt resumes from the last completed 180-day `pipelines` window in each project, so some pipelines are read twice; use **Full Refresh | Overwrite + Deduped** to avoid duplicate rows. Each new Full Refresh sync still starts from **Start date**.
 - Pipelines are paginated by page number. If a pipeline is updated while a sync is paging through results, another pipeline can shift to an earlier page and not be returned. That pipeline's child records are skipped until it's updated again.
+
+### Epics
+
+The `epics` and `epic_issues` streams read GitLab's [Epics REST API](https://docs.gitlab.com/api/epics/), which requires GitLab Premium or Ultimate. GitLab deprecated this API in GitLab 17.0 in favor of the Work Items GraphQL API and plans to remove it in v5 of the REST API. The connector still uses the Epics REST API. Keep the following in mind:
+
+- GitLab returns `start_date_is_fixed`, `start_date_fixed`, `start_date_from_inherited_source`, `due_date_is_fixed`, `due_date_fixed`, and `due_date_from_inherited_source` only when the authenticated user has permission to edit the epic. For other users, these columns are empty.
+- GitLab deprecated `end_date` in favor of `due_date`, `start_date_from_milestones` in favor of `start_date_from_inherited_source`, and `due_date_from_milestones` in favor of `due_date_from_inherited_source`. The deprecated fields are still synced.
+- Since version 4.5.5, `start_date_from_milestones` and `due_date_from_milestones` are emitted as `YYYY-MM-DD` dates. `start_date_from_inherited_source` and `due_date_from_inherited_source` are synced as strings exactly as GitLab returns them, which can include a time component.
 
 ### Child pipelines on very large instances
 
@@ -158,9 +166,14 @@ The connector respects per-endpoint rate limits based on [GitLab.com's documente
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Starting October 19, 2026, GitLab.com also applies rate limits by subscription tier: Free namespaces get 5,000 requests per hour and 100 requests per minute per user, and Premium and Ultimate follow in January 2027. See [rate limits on GitLab.com](https://docs.gitlab.com/user/gitlab_com/rate_limits/). Under these limits, syncs can pause for long periods while the connector waits for the limit to reset.
+Starting October 19, 2026, GitLab.com also applies rate limits based on your subscription plan, enforced for each user and for each top-level group. On the Free plan, authenticated traffic is limited to 5,000 requests per hour and 100 requests per minute for each user, and to 5,000 requests per hour and 400 requests per minute for each top-level group. Premium and Ultimate limits take effect in January 2027. See [GitLab.com rate limits](https://docs.gitlab.com/user/gitlab_com/rate_limits/) for each plan's limits. The per-user limit counts every request made as your GitLab user, so other tools that use the same account share the quota. Under these limits, syncs can pause for long periods while the connector waits for the limit to reset.
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers. When GitLab returns HTTP 429, the connector waits for the time in the `Retry-After` header, up to about one hour, and then retries. If the header is missing, it retries with exponential backoff. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers. When GitLab returns HTTP 429, the connector waits for the number of seconds in the `Retry-After` header and then retries. If the header is missing, it retries with exponential backoff. The affected stream fails in these cases:
+
+- `Retry-After` asks for a wait of 3,660 seconds (61 minutes) or longer. The error is `The rate limit wait time is longer than the connector is allowed to wait.`
+- GitLab keeps returning HTTP 429 after the connector retries. The error is `GitLab API rate limit exceeded. If syncs keep failing, lower the Number of Concurrent Threads setting or sync less frequently.`
+
+If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
@@ -188,10 +201,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.5 | 2026-10-22 | [88981](https://github.com/airbytehq/airbyte/pull/88981) | Normalize epics due_date_from_milestones and start_date_from_milestones from datetime strings to YYYY-MM-DD dates (typed date columns are unchanged; raw JSON values change); add work_item_id, imported and imported_from to the epics schema |
-| 4.5.4 | 2026-10-20 | [89088](https://github.com/airbytehq/airbyte/pull/89088) | Include earlier attempts of retried jobs in the `jobs` stream |
+| 4.5.5 | 2026-10-22 | [88981](https://github.com/airbytehq/airbyte/pull/88981) | Emit `due_date_from_milestones` and `start_date_from_milestones` in the `epics` stream as `YYYY-MM-DD` dates instead of datetime strings (typed date columns are unchanged; raw JSON values change); add `work_item_id`, `imported`, and `imported_from` to the `epics` schema |
+| 4.5.4 | 2026-10-21 | [89088](https://github.com/airbytehq/airbyte/pull/89088) | Include earlier attempts of retried jobs in the `jobs` stream |
 | 4.5.3 | 2026-10-20 | [89217](https://github.com/airbytehq/airbyte/pull/89217) | Update dependencies |
-| 4.5.2 | 2026-10-13 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
+| 4.5.2 | 2026-10-16 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
 | 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |
