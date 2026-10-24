@@ -11,6 +11,9 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.TouchedKeys
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -22,12 +25,18 @@ class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    fun aggregatePublishingConfig(): AggregatePublishingConfig {
-        log.info { "NOOP code change for CI to pick up" }
-
+    fun aggregatePublishingConfig(config: GcsDataLakeConfiguration): AggregatePublishingConfig {
+        val configuredMaxRecords = config.resolvedMaxRecordsPerFlush
+        val maxRecords =
+            if (config.icebergDeleteFileType == IcebergDeleteFileType.EQUALITY) {
+                configuredMaxRecords
+            } else {
+                minOf(configuredMaxRecords, TouchedKeys.MAX_CURRENT_WRITES.toLong())
+            }
+        log.info { "Using max records per aggregate: $maxRecords" }
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = 150_000_000L,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
