@@ -7,6 +7,12 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType as AirbyteStringType
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
+import io.airbyte.cdk.load.data.withAirbyteMeta
+import io.airbyte.cdk.load.message.Meta
 import java.nio.file.Files
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.DeleteFile
@@ -25,6 +31,8 @@ import org.apache.iceberg.util.ContentFileUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class DeletionVectorEndToEndTest {
 
@@ -99,6 +107,114 @@ class DeletionVectorEndToEndTest {
             setField("id", id)
             setField("name", name)
         }
+
+    private fun recordWithMetadata(
+        schema: Schema,
+        id: String,
+        name: String,
+        generationId: Long,
+        newPk: String? = null,
+    ): GenericRecord =
+        GenericRecord.create(schema).apply {
+            setField("id", id)
+            setField("name", name)
+            setField(Meta.COLUMN_NAME_AB_RAW_ID, "raw-$id-$generationId")
+            setField(Meta.COLUMN_NAME_AB_EXTRACTED_AT, 1L)
+            setField(
+                Meta.COLUMN_NAME_AB_META,
+                GenericRecord.create(
+                        schema.findField(Meta.COLUMN_NAME_AB_META).type().asStructType(),
+                    )
+                    .apply {
+                        setField("sync_id", 1L)
+                        setField("changes", emptyList<Any>())
+                    },
+            )
+            setField(Meta.COLUMN_NAME_AB_GENERATION_ID, generationId)
+            if (schema.findField("new_pk") != null) setField("new_pk", newPk)
+        }
+
+    @ParameterizedTest
+    @EnumSource(
+        value = IcebergDeleteMode::class,
+        names = ["POSITIONAL", "DELETION_VECTOR"],
+    )
+    fun `truncate refresh resolves duplicates when the pending identifier is absent`(
+        deleteMode: IcebergDeleteMode,
+    ) {
+        val (catalog, warehouse) = catalog()
+        val tableId = TableIdentifier.of("db", "pending_identifier")
+        catalog.createNamespace(tableId.namespace())
+        val oldSchema =
+            ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(AirbyteStringType, nullable = false),
+                        "name" to FieldType(AirbyteStringType, nullable = true),
+                    ),
+                )
+                .withAirbyteMeta(true)
+                .toIcebergSchema(listOf(listOf("id")))
+        val newIdentifier =
+            Types.NestedField.required(
+                oldSchema.highestFieldId() + 1,
+                "new_pk",
+                Types.StringType.get(),
+            )
+        val pendingSchema =
+            Schema(oldSchema.columns() + newIdentifier, setOf(newIdentifier.fieldId()))
+        val table =
+            catalog
+                .buildTable(tableId, oldSchema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase(),
+                )
+                .withProperty(
+                    TableProperties.FORMAT_VERSION,
+                    if (deleteMode == IcebergDeleteMode.DELETION_VECTOR) "3" else "2",
+                )
+                .withProperty("write.metadata.metrics.default", "none")
+                .create()
+        val writerFactory = IcebergTableWriterFactory()
+        val oldWriter = writerFactory.create(table, "ab-generation-id-1-e", Append, oldSchema)
+        oldWriter.write(recordWithMetadata(oldSchema, "old-id", "old-row", generationId = 1L))
+        val oldResult = oldWriter.complete()
+        val oldDataFile = oldResult.dataFiles().single().location()
+        table.newAppend().apply { oldResult.dataFiles().forEach(::appendFile) }.commit()
+
+        val state = PositionalDeleteResolutionState()
+        val writer =
+            writerFactory.create(
+                table,
+                "ab-generation-id-2-e",
+                Dedupe(listOf(listOf("new_pk")), emptyList()),
+                pendingSchema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = state,
+                deleteMode = deleteMode,
+            ) as BasePositionDeltaTaskWriter
+        writer.write(
+            RecordWrapper(
+                recordWithMetadata(pendingSchema, "new-1", "current-first", 2L, "same-key"),
+                Operation.UPDATE,
+            ),
+        )
+        writer.write(
+            RecordWrapper(
+                recordWithMetadata(pendingSchema, "new-2", "current-second", 2L, "same-key"),
+                Operation.UPDATE,
+            ),
+        )
+
+        val result = writer.complete()
+        val currentDataFiles = result.dataFiles().map { it.location() }.toSet()
+        val deletedDataFiles = result.deleteFiles().mapNotNull { it.referencedDataFile() }.toSet()
+        assertThat(state.dataFilesOpened.get()).isEqualTo(1)
+        assertThat(result.deleteFiles()).isNotEmpty
+        assertThat(deletedDataFiles).containsAnyElementsOf(currentDataFiles)
+        assertThat(deletedDataFiles).doesNotContain(oldDataFile)
+        warehouse.toFile().deleteRecursively()
+    }
 
     @Test
     fun `v3 dedupe writes deletion vectors across repeated syncs`() {

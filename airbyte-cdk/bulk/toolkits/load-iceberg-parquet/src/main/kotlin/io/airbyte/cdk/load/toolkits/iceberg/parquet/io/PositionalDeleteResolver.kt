@@ -33,6 +33,7 @@ class PositionalDeleteResolver(
     suppressDeletedPositions: Boolean = true,
     writeDeletionVectors: Boolean = false,
     deletionVectorOutputFileFactory: OutputFileFactory? = null,
+    currentGenerationId: Long? = null,
 ) {
     private val finder =
         SupersededRowFinder(
@@ -42,6 +43,7 @@ class PositionalDeleteResolver(
             state,
             allowWholeFileSupersession = allowWholeFileSupersession,
             suppressDeletedPositions = suppressDeletedPositions,
+            currentGenerationId = currentGenerationId,
         )
     private val deleteFiles: ResolvedDeleteFiles =
         if (writeDeletionVectors) {
