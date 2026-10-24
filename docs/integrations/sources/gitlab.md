@@ -188,6 +188,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.5.6 | 2026-10-23 | [88993](https://github.com/airbytehq/airbyte/pull/88993) | Refresh the OAuth access token and retry when GitLab rejects it as expired mid-sync, report other 401 errors with an accurate message, and keep the scheme of `api_url` for the OAuth token endpoint |
 | 4.5.5 | 2026-10-22 | [88981](https://github.com/airbytehq/airbyte/pull/88981) | Normalize epics due_date_from_milestones and start_date_from_milestones from datetime strings to YYYY-MM-DD dates (typed date columns are unchanged; raw JSON values change); add work_item_id, imported and imported_from to the epics schema |
 | 4.5.4 | 2026-10-20 | [89088](https://github.com/airbytehq/airbyte/pull/89088) | Include earlier attempts of retried jobs in the `jobs` stream |
 | 4.5.3 | 2026-10-20 | [89217](https://github.com/airbytehq/airbyte/pull/89217) | Update dependencies |
