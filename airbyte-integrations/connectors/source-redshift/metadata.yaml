@@ -40,7 +40,7 @@ data:
           fail with a schema evolution error. If that happens, refresh the source schema and clear the
           affected streams. For details, see the migration guide:
           https://docs.airbyte.com/integrations/sources/redshift-migrations#upgrading-to-100
-        upgradeDeadline: "2026-10-27"
+        upgradeDeadline: "2026-11-07"
         deadlineAction: "auto_upgrade"
   releaseStage: alpha
   supportLevel: community
