@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1b271d53-df7e-4d37-9951-974a3b4c8981
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-github-g2
   documentationUrl: https://docs.airbyte.com/integrations/sources/github-g2
   githubIssueLabel: source-github-g2
