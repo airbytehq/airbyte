@@ -11,6 +11,14 @@ RUN set -o xtrace && \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
+# Distrust the roots that chain to the compromised eMudhra intermediates (CVE-2026-91403).
+# Remove once Amazon Linux 2023 ships a ca-certificates update that distrusts them.
+RUN d=/etc/pki/ca-trust/source/blocklist && \
+    { [ -d $d ] || d=/etc/pki/ca-trust/source/blacklist; } && \
+    trust extract --overwrite --format=pem-bundle --filter='pkcs11:object=emSign%20ECC%20Root%20CA%20-%20G3;type=cert' $d/emSign_ECC_Root_CA_-_G3.pem && \
+    trust extract --overwrite --format=pem-bundle --filter='pkcs11:object=Comodo%20AAA%20Services%20root;type=cert' $d/Comodo_AAA_Services_root.pem && \
+    update-ca-trust
+
 # Set-up groups, users, and directories
 #
 # Normally the connector runs as the airbyte user (UID 1000), which owns these directories.
