@@ -50,8 +50,8 @@ class TestEventsStream(TestCase):
             .with_query_params(
                 {
                     "full": "true",  # From manifest request_parameters
-                    "start": "1900-01-01T00:00:00.000000Z",  # Default start for full_refresh
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),  # Current time (frozen)
+                    "start": "1900-01-01T00:00:00Z",  # Default start for full_refresh
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Current time (frozen)
                 }
             )
             .build(),
@@ -79,7 +79,7 @@ class TestEventsStream(TestCase):
         # ARRANGE: Mock page 1 (no cursor)
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-            .with_query_params({"full": "true", "start": "1900-01-01T00:00:00.000000Z", "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+            .with_query_params({"full": "true", "start": "1900-01-01T00:00:00Z", "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")})
             .build(),
             create_response("events", has_next=True, cursor="page2"),
         )
@@ -91,8 +91,8 @@ class TestEventsStream(TestCase):
                 {
                     "full": "true",
                     "cursor": "page2",  # Second request includes cursor!
-                    "start": "1900-01-01T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "start": "1900-01-01T00:00:00Z",
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             )
             .build(),
@@ -130,8 +130,8 @@ class TestEventsStream(TestCase):
             .with_query_params(
                 {
                     "full": "true",
-                    "start": "1900-01-01T00:00:00.000000Z",  # Default start for first incremental sync
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "start": "1900-01-01T00:00:00Z",  # Default start for first incremental sync
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             )
             .build(),
@@ -176,7 +176,7 @@ class TestEventsStream(TestCase):
         - New state message is emitted with latest record's dateCreated
         """
         # ARRANGE - Previous state from last sync (2024-01-15)
-        previous_state_date = "2024-01-15T10:00:00.000000Z"
+        previous_state_date = "2024-01-15T10:00:00Z"
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"dateCreated": previous_state_date}).build()
 
         # Mock API call - EXPLICITLY validate that start param uses state date!
@@ -187,7 +187,7 @@ class TestEventsStream(TestCase):
                 {
                     "full": "true",
                     "start": previous_state_date,  # ← VERIFY state is used as start param!
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             )
             .build(),
@@ -216,3 +216,35 @@ class TestEventsStream(TestCase):
         assert new_state["dateCreated"].startswith(
             "2024-01-16T12:30:00"
         ), f"Expected state to advance to latest record date, got {new_state}"
+
+    @HttpMocker()
+    def test_incremental_sync_uses_config_start_date(self, http_mocker: HttpMocker):
+        """Start date connection setting maps to Sentry events `start` query parameter."""
+        config_start = "2024-06-01T00:00:00Z"
+        config = (
+            ConfigBuilder()
+            .with_organization(_ORGANIZATION)
+            .with_project(_PROJECT)
+            .with_auth_token(_AUTH_TOKEN)
+            .with_start_date(config_start)
+            .build()
+        )
+
+        http_mocker.get(
+            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params(
+                {
+                    "full": "true",
+                    "start": "2024-06-01T00:00:00Z",
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
+            )
+            .build(),
+            create_response("events", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2
