@@ -4,17 +4,24 @@ This page contains the setup guide and reference information for the QuickBooks 
 
 ## Prerequisites
 
-- [Intuit QuickBooks account](https://quickbooks.intuit.com/global/)
-- For the own-app option: an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started) with an app created
-- **Client ID** and **Client Secret**: for the own-app option, these identify your Intuit app. Obtain them from the Keys tab on the app profile under My Apps on the developer site. There are separate development and production versions.
-- **Refresh Token**: for the own-app option, this is the OAuth 2.0 token the connector exchanges for access tokens. The easiest way to get one is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). Select the `com.intuit.quickbooks.accounting` scope when you authorize; the connector can't read data without it. **Access Token** and **Token Expiry Date** are optional: the connector obtains and maintains them from the refresh token.
-- **Realm ID**: for the own-app option, the labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate data for.
+- An [Intuit QuickBooks Online account](https://quickbooks.intuit.com/global/) with access to the company you want to replicate.
 - **Start Date**: the earliest date-time to replicate data from, as a UTC timestamp in the form `YYYY-MM-DDTHH:MM:SSZ`, such as `2021-03-20T00:00:00Z`. Offsets and fractional seconds aren't accepted. Airbyte doesn't replicate data from before this date.
-- **Sandbox** (own-app option only): whether to replicate data from Intuit's sandbox environment instead of production.
+
+The connector offers two authentication options:
+
+- **Use the Airbyte OAuth App** (Airbyte Cloud): you sign in to QuickBooks and authorize Airbyte's app. Airbyte supplies the app credentials and captures the refresh token and Realm ID for you. Airbyte's app only has production keys, so this option can't reach sandbox companies.
+- **Use your own Intuit app**: you supply credentials from an app you create on the Intuit developer site. Use this option on Airbyte Open Source, and to replicate a sandbox company. It requires:
+  - An [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started) with an app created.
+  - **Client ID** and **Client Secret**: the credentials that identify your app. Obtain them from the **Keys** tab on the app profile under **My Apps** on the developer site. There are separate development and production versions of these keys.
+  - **Refresh Token**: the OAuth 2.0 token the connector exchanges for access tokens. The easiest way to get one is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). Select the `com.intuit.quickbooks.accounting` scope when you authorize; the connector can't read data without it. **Access Token** and **Token Expiry Date** are optional: the connector obtains and maintains them from the refresh token.
+  - **Realm ID**: the labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate. The OAuth 2.0 playground shows it after you authorize, and QuickBooks shows it under **Settings** > **Additional Information**.
+  - **Sandbox** (optional): turn this on to replicate a sandbox company with your app's development keys.
 
 ## Setup guide
 
 ### Step 1: Set up QuickBooks for your own Intuit app
+
+Skip this step if you use **Use the Airbyte OAuth App** on Airbyte Cloud.
 
 1. Create an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
 2. Create an application
@@ -35,7 +42,7 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
 4. Under **Authentication**, choose one of the options:
    - **Use the Airbyte OAuth App** — click **Authenticate your QuickBooks account** (production companies only).
-   - **Use your own Intuit app** — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your app.
+   - **Use your own Intuit app** — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your app. Turn on **Sandbox** if the Realm ID belongs to a sandbox company.
 5. **Start date** - The date starting from which you'd like to replicate data.
 6. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
 7. Click **Set up source**.
@@ -50,17 +57,20 @@ To sync a sandbox company, choose **Use your own Intuit app**, enter your app's 
 
 **For Airbyte Open Source:**
 
-Under **Authentication**, choose **Use your own Intuit app**.
+Under **Authentication**, choose **Use your own Intuit app**, then enter:
 
-1. **Client ID** - The OAuth2.0 application ID
-2. **Client Secret** - The OAuth2.0 application secret
-3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
-4. **Access Token** (optional) - Access token to perform authenticated API calls with. The connector obtains one from the refresh token, so leave it empty unless you have a valid token to seed.
-5. **Token Expiry Date** (optional) - DateTime when the access token becomes invalid. The connector maintains this value after each refresh.
-6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
-7. **Start date** - The date starting from which you'd like to replicate data.
-8. **Sandbox** - Turn on to use Intuit's sandbox environment with your app's development keys.
-9. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
+1. **Realm ID** - The labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate.
+2. **Client ID** - Your Intuit app's client ID.
+3. **Client Secret** - Your Intuit app's client secret.
+4. **Refresh Token** - The refresh token the connector exchanges for access tokens.
+5. **Sandbox** (optional) - Turn on to use Intuit's sandbox environment with your app's development keys.
+6. **Access Token** (optional) - The connector obtains one from the refresh token, so leave it empty unless you have a valid token to seed.
+7. **Token Expiry Date** (optional) - When the access token expires. The connector maintains this value after each refresh.
+
+Then fill in the remaining fields:
+
+1. **Start date** - The date starting from which you'd like to replicate data.
+2. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -128,11 +138,11 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | What you see | What it means | What to do |
 | :----------- | :------------ | :--------- |
-| `Refresh token was rejected by the OAuth provider...` or `The QuickBooks OAuth grant is expired or revoked...` | Intuit invalidated the refresh token. The first message comes from Intuit's token endpoint (`invalid_grant`), the second from an API call answered with HTTP 401. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | Obtain a new refresh token and update the source. |
-| `QuickBooks rejected the app credentials...` (fault code `3200`) | Wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | Re-copy both keys from the matching environment on the app's **Keys** tab. |
+| `Refresh token was rejected by the OAuth provider...` or `The QuickBooks OAuth grant is expired or revoked...` | Intuit invalidated the refresh token. The first message comes from Intuit's token endpoint (`invalid_grant`), the second from an API call answered with HTTP 401. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | With **Use the Airbyte OAuth App**, edit the source and click **Authenticate your QuickBooks account** again. With **Use your own Intuit app**, obtain a new refresh token and update the source. |
+| `QuickBooks rejected the app credentials...` (fault code `3200`) | With **Use your own Intuit app**: wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | Re-copy both keys from the matching environment on the app's **Keys** tab, and make sure **Sandbox** matches the keys. |
 | `The QuickBooks user has not authorized this app for the configured company.` (fault code `3201`) | The company was never authorized for this app, or authorization was revoked. | Re-run the authorization flow for that company. |
 | `The QuickBooks OAuth grant lacks the accounting scope...` (HTTP 403) | The grant is missing `com.intuit.quickbooks.accounting`. | Re-authorize with the accounting scope selected. |
-| `QuickBooks does not recognize the configured Realm ID.` (HTTP 404) | The **Realm ID** does not exist in the environment being called — most often a sandbox realm with **Sandbox** turned off. | Correct the **Realm ID**, or toggle **Sandbox** to match it. |
+| `QuickBooks does not recognize the configured Realm ID.` (HTTP 404) | The **Realm ID** does not exist in the environment being called — most often a sandbox realm with **Sandbox** turned off, or a sandbox realm authorized through **Use the Airbyte OAuth App**, which only calls production. | Correct the **Realm ID**. For a sandbox company, choose **Use your own Intuit app** with your app's development keys and turn on **Sandbox**. |
 | Sync retries then fails with a throttling error | Intuit throttles at 500 requests per minute per realm. | Reduce concurrent syncs against the same company; the connector already retries with exponential backoff. |
 
 Deleted records: QuickBooks soft deletes by setting `Active` to `false`, and those updates do sync — the `Active IN (true, false)` clause in each incremental stream's query is what makes the flag arrive. Streams whose entities have no `Active` field (CompanyInfo, Preferences, ExchangeRate, ReimburseCharge, Attachable, CreditCardPaymentTxn) omit the clause and carry no soft-delete signal. Records that are permanently deleted in QuickBooks are only reported by Intuit's change-data-capture endpoint, which this connector does not read, so they remain in the destination.
@@ -143,14 +153,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Changelog
 
-> **Note:** Connector version 4.0.0 moved the credential fields (`client_id`, `client_secret`, `refresh_token`, `realm_id`, `access_token`, `token_expiry_date`) out of a nested `credentials` object to the root of the configuration. As of version 4.2.0, sources still using the nested shape are migrated automatically at the start of each sync — no manual repopulation is needed.
+> **Note:** Version 5.0.0 moved the authentication fields into the **Authentication** (`credentials`) section and removed the automatic config migration added in 4.2.0. Existing sources fail until you reconfigure them. See the [QuickBooks migration guide](/integrations/sources/quickbooks-migrations#upgrading-to-500).
 
 <details>
   <summary>Expand to review</summary>
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5.0.0 | 2026-10-13 | [88914](https://github.com/airbytehq/airbyte/pull/88914) | Breaking: authentication fields moved under `credentials`; existing sources fail until reconfigured — choose **Use the Airbyte OAuth App** and click Authenticate (production only), or **Use your own Intuit app** and re-enter credentials (required for sandbox) |
+| 5.0.0 | 2026-10-14 | [88914](https://github.com/airbytehq/airbyte/pull/88914) | Breaking: authentication fields moved under `credentials`; existing sources fail until reconfigured — choose **Use the Airbyte OAuth App** and click Authenticate (production only), or **Use your own Intuit app** and re-enter credentials (required for sandbox) |
 | 4.2.2 | 2026-10-13 | [88915](https://github.com/airbytehq/airbyte/pull/88915) | Pin Airbyte Cloud to 4.0.4 and disable progressive rollout while the 4.2.x OAuth credential override is fixed |
 | 4.2.1 | 2026-10-13 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
 | 4.2.0 | 2026-09-24 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh) |
