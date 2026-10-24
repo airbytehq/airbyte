@@ -42,6 +42,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  channels:join
  channels:read
  files:read
+ groups:history
  groups:read
  links:read
  reactions:read
@@ -51,6 +52,10 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  users:read
  users.profile:read
 ```
+
+:::tip
+The minimum scopes required by the connector are `channels:history`, `channels:join`, `channels:read`, `groups:read`, `groups:history`, and `users:read`. The additional scopes listed above provide richer data within message records. If you enable **Include private channels**, `groups:read` and `groups:history` are required.
+:::
 
 6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
 7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
@@ -130,7 +135,7 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 - [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 - [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history): Replicates messages from non-archived, public and private channels that the Slack App is a member of.
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history): Replicates messages from public and private channels that the Slack App is a member of. By default, archived channels are excluded. Enable **Include archived channels** to include them.
 - [Users](https://api.slack.com/methods/users.list)
 - [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
@@ -164,7 +169,7 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
-###### Rate Limits for Channel Messages and Threads streams: 
+##### Rate limits for Channel Messages and Threads streams
 
 **OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
@@ -178,7 +183,15 @@ Because this throttle can slow down a sync that includes other streams, consider
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Slack source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+#### Missing OAuth scope error
+
+If the **Join all channels** toggle is enabled but your token is missing the `channels:join` scope, the connector raises a config error:
+
+> OAuth scope 'channels:join' is required but not granted.
+
+To fix this, add the `channels:join` scope to your Slack App under **OAuth & Permissions > Bot Token Scopes**, then reinstall the app to your workspace.
 
 #### Threads stream performance
 
