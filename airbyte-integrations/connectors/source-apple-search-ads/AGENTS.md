@@ -141,9 +141,20 @@ with a suggested ceiling (2 → 4 → 8 → 16 seconds). It publishes no request
 requests-per-window, and no quota headers for this API version, so there is no published limit for
 an `api_budget` to match.
 
-Instead, every stream uses a `CompositeErrorHandler` with an `ExponentialBackoffStrategy` (report
-streams take the multiplier from the optional `backoff_factor` config field) and retries `429` and
-`500`; `401` maps to `REFRESH_TOKEN_THEN_RETRY`. That mirrors Apple's own prescription.
+Each stream resolves to one `DefaultErrorHandler` through shared definitions: campaigns, adgroups,
+keywords, and ads use `error_handler`; campaigns_report_daily, adgroups_report_daily, and
+ads_report_daily use `report_error_handler`; keywords_report_daily uses
+`keywords_report_error_handler`, which first ignores Apple's
+`CAMPAIGN DOES NOT CONTAIN KEYWORD` response. Shared filters map `400`, `401`, `403`, and `404` to
+configuration errors with Apple's first error message, refresh the OAuth access token before
+surfacing `401`, rate-limit `429`, and retry `500`, `502`, `503`, and `504`. Entity handlers use an
+exponential backoff strategy without a configured factor; report handlers allow 10 retries and take
+their factor from `backoff_factor` (default 5).
+
+Apple sunsets Campaign Management API v5 on 2027-01-26 (see the [API v5
+changelog](https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5)).
+The connector must migrate to the Apple Ads Platform API at `https://api.ads.apple.com/v1/` before
+then.
 
 There is one forward-looking caveat. Apple's newer **Apple Ads Platform API** (a different API from
 the Campaign Management API v5 this connector calls) _does_ return
