@@ -6,6 +6,8 @@ Report streams use the `AsyncRetriever` pattern instead of standard REST paginat
 
 The connector enforces a configurable `max_concurrent_async_job_count` (default 10) to limit how many reports are being generated simultaneously across all streams.
 
+V3 report dates are clamped to Amazon's rolling 60-day retention floor both when slices are generated and when reports are requested, so crossing UTC midnight cannot send dates that have just expired. See `AGENTS.md` for the request-body and cursor wiring requirements.
+
 **Why this matters:** Report streams cannot be treated like standard paginated streams. They require polling intervals, have separate error handlers for creation vs. polling phases, and can take minutes to complete per slice. If you add a new report stream, you must configure all three phases (creation requester, polling requester, download requester) and their respective error handlers independently.
 
 ## 2. HTTP 425 (Too Early) for Duplicate Report Requests
