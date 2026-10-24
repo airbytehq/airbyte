@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.27 | 2026-10-20 | [78971](https://github.com/airbytehq/airbyte/pull/78971) | Update dependencies |
 | 0.2.26 | 2026-10-07 | [88258](https://github.com/airbytehq/airbyte/pull/88258) | Fix pagination: request 100 records per page instead of 1 for `teams`, `channels` and `users`; update base image |
 | 0.2.25 | 2025-05-10 | [60126](https://github.com/airbytehq/airbyte/pull/60126) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59590](https://github.com/airbytehq/airbyte/pull/59590) | Update dependencies |
