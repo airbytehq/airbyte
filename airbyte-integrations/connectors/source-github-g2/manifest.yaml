@@ -8795,7 +8795,7 @@ definitions:
             items:
               type: &id894
               - 'null'
-              - string
+              - integer
           pull_request_numbers:
             type: &id895
             - 'null'
@@ -8803,7 +8803,7 @@ definitions:
             items:
               type: &id896
               - 'null'
-              - string
+              - integer
           created_at:
             description: The timestamp when the workflow run was created.
             type: &id897

@@ -453,6 +453,26 @@ def test_workflow_runs_filter_on_updated_at(rate_limit_mock_response, requests_m
     assert _partition_cursors(states[-1]) == {'{"repository": "docker/compose"}': _LATER}
 
 
+def test_workflow_runs_pull_request_identity_arrays_are_integers(rate_limit_mock_response, requests_mock):
+    """GitHub returns integer `pull_requests[].id` and `.number`; the declared item type must match
+    or typed destinations (Iceberg `list<string>`) fail to write the record."""
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    run = {**_run(3, _LATER, _LATER), "pull_requests": [{"id": 2104416451, "number": 158}, {"id": 2104416452, "number": 159}]}
+    requests_mock.get(f"{_API}/repos/{_REPO}/actions/runs", json={"total_count": 1, "workflow_runs": [run]})
+    source = make_source(config=dict(config), catalog=None, state=None)
+    discovered = {stream.name: stream for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams}
+    properties = discovered["workflow_runs"].json_schema["properties"]
+
+    records, _, _, error = _read(config, "workflow_runs")
+
+    assert error is None
+    assert properties["pull_request_ids"]["items"]["type"] == ["null", "integer"]
+    assert properties["pull_request_numbers"]["items"]["type"] == ["null", "integer"]
+    assert records[0]["pull_request_ids"] == [2104416451, 2104416452]
+    assert records[0]["pull_request_numbers"] == [158, 159]
+
+
 def test_workflow_runs_state_becomes_the_window_start(rate_limit_mock_response, requests_mock):
     """The run on the first page was created 45 days before the cursor, so it sets the window start."""
     config = _config(_REPO)
