@@ -63,7 +63,15 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
 
 :::note
-Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
+Report streams use `date` as the cursor field and declare a primary key that includes the report's
+entity id, `date`, and `countryorregion`:
+
+- `campaigns_report_daily`: `(campaignId, date, countryorregion)`
+- `adgroups_report_daily`: `(adGroupId, date, countryorregion)`
+- `keywords_report_daily`: `(keywordId, date, countryorregion)`
+- `ads_report_daily`: `(adId, date, countryorregion)`
+
+These keys support **Incremental - Append + Deduped** for the daily report streams.
 :::
 
 ## Performance considerations
@@ -103,6 +111,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 2.0.0 | 2026-10-23 | [89709](https://github.com/airbytehq/airbyte/pull/89709) | Type date and timestamp fields and declare primary keys on the daily report streams |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |

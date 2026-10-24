@@ -7,6 +7,7 @@ Validates the declarative manifest structure to catch copy-paste errors
 and typos in stream definitions.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -144,3 +145,93 @@ def test_num_workers_spec_field(manifest):
     assert num_workers["default"] == 2
     assert num_workers.get("minimum", 0) >= 1
     assert num_workers.get("maximum", 999) <= 20
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "expected_primary_key"),
+    [
+        pytest.param("campaigns_report_daily", ["campaignId", "date", "countryorregion"], id="campaigns_report_daily"),
+        pytest.param("adgroups_report_daily", ["adGroupId", "date", "countryorregion"], id="adgroups_report_daily"),
+        pytest.param("keywords_report_daily", ["keywordId", "date", "countryorregion"], id="keywords_report_daily"),
+        pytest.param("ads_report_daily", ["adId", "date", "countryorregion"], id="ads_report_daily"),
+    ],
+)
+def test_report_stream_primary_key(manifest, stream_name, expected_primary_key):
+    stream = manifest["definitions"]["streams"][stream_name]
+    schema_properties = manifest["schemas"][stream_name]["properties"]
+
+    assert stream["primary_key"] == expected_primary_key
+    assert all(field in schema_properties for field in expected_primary_key)
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("campaigns", id="campaigns"),
+        pytest.param("adgroups", id="adgroups"),
+        pytest.param("keywords", id="keywords"),
+        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
+        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
+        pytest.param("keywords_report_daily", id="keywords_report_daily"),
+        pytest.param("ads", id="ads"),
+        pytest.param("ads_report_daily", id="ads_report_daily"),
+    ],
+)
+def test_date_like_fields_are_typed(manifest, stream_name):
+    date_time_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    found_fields = []
+
+    def walk(schema):
+        if not isinstance(schema, dict):
+            return
+        properties = schema.get("properties", {})
+        for name, field_schema in properties.items():
+            if name == "date":
+                found_fields.append(name)
+                assert field_schema["format"] == "date"
+                types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
+                assert "string" in types
+                assert "null" in types
+            elif name in date_time_fields:
+                found_fields.append(name)
+                assert field_schema["format"] == "date-time"
+                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
+                types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
+                assert "string" in types
+                assert "null" in types
+            walk(field_schema)
+        if "items" in schema:
+            walk(schema["items"])
+        for branch in schema.get("anyOf", []):
+            walk(branch)
+
+    walk(manifest["schemas"][stream_name])
+    assert found_fields, f"{stream_name} must have at least one date-like field"
+
+
+def test_timestamp_fields_declared_without_timezone_match_observed_values(manifest):
+    observed_value = "2026-09-29T09:36:45.541"
+    assert datetime.fromisoformat(observed_value).tzinfo is None
+
+    timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    found_fields = 0
+
+    def walk(schema):
+        nonlocal found_fields
+        if not isinstance(schema, dict):
+            return
+        for name, field_schema in schema.get("properties", {}).items():
+            if name in timestamp_fields:
+                found_fields += 1
+                assert field_schema["format"] == "date-time"
+                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
+            walk(field_schema)
+        if "items" in schema:
+            walk(schema["items"])
+        for branch in schema.get("anyOf", []):
+            walk(branch)
+
+    for schema in manifest["schemas"].values():
+        walk(schema)
+
+    assert found_fields > 0

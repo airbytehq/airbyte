@@ -10,7 +10,8 @@ calls.
 
 Streams: `campaigns`, `adgroups`, `keywords`, `ads` (entity streams, `primary_key: [id]`,
 full refresh) and `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`,
-`ads_report_daily` (report streams, incremental on `date`).
+`ads_report_daily` (incremental report streams on `date`, keyed by the deterministic composite
+`(<entity>Id, date, countryorregion)`).
 
 ## 1. Authentication is two-legged only; there is no user-consent OAuth flow
 
@@ -39,35 +40,29 @@ user-consent flow at all, so the `client_id` / `client_secret` pair is the only 
 shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
 connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
 
-## 2. The four `*_report_daily` streams are genuinely keyless
+## 2. The four `*_report_daily` streams use deterministic composite primary keys
 
 `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, and `ads_report_daily`
-declare no `primary_key`. They are aggregate reporting streams: the request is a `POST` to
+are aggregate reporting streams: the request is a `POST` to
 `/reports/campaigns[/{campaignId}/{adgroups|keywords|ads}]` with `granularity: DAILY`,
 `groupBy: ['countryOrRegion']`, and a `startTime`/`endTime` window; the API returns
 `data.reportingDataResponse.row[]` where each row is a metric aggregation, not a stored object. No
 row carries an API-assigned record identifier.
 
-What actually identifies a row is a composite of fields the connector assembles itself with
-`AddFields` transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or
-`adId`, lifted out of the nested `record.metadata`), the `date` copied from
-`stream_slice.start_time`, and `countryorregion` lifted from `record.metadata.countryOrRegion`
-(the single `groupBy` dimension). Metrics are nested under the `granularity` array; entity
-attributes stay under `metadata`.
+Each row is identified by a deterministic composite the connector assembles with `AddFields`
+transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or `adId`, lifted
+out of nested `record.metadata`), the `date` copied from `stream_slice.start_time`, and
+`countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
+The manifest declares this composite as the primary key for each report stream. Metrics are nested
+under the `granularity` array; entity attributes stay under `metadata`.
 
-That composite is not declared as a primary key because it is only unique as long as the request
-shape stays exactly as it is today: the tuple is a function of the hard-coded `granularity: DAILY`
-and `groupBy: ['countryOrRegion']` in the manifest, plus `step: P1D` on the cursor. Declaring it as
-a PK would make any future change to `groupBy` (adding a dimension) or `granularity` (HOURLY,
-WEEKLY, MONTHLY) a silently key-violating change rather than an additive one, and changing a
-declared PK afterwards is a breaking change for every existing connection. Keyless append is the
-honest description of what the API returns.
+Row identity depends on the request shape: `granularity: DAILY`, `groupBy: ['countryOrRegion']`,
+and `step: P1D` on the cursor. A future change to `groupBy`, `granularity`, or `step` can change
+row identity and is itself a breaking change that requires a major version bump.
 
-**Why this matters:** S-1 requires either a real primary key on every stream or a named exception
-per stream with the reason. These four streams are the exception, and the reason is not "we did not
-get around to it": the identifying tuple is derived from the connector's own request parameters
-rather than from the API, so it is not a stable record identity. Users who need deduplicated
-reporting rows should dedupe on `(<entity>Id, date, countryorregion)` in the destination.
+**Why this matters:** S-1 requires a real primary key on every stream. These four keys are derived
+from fields supplied by the connector's request and transformations, rather than an API-assigned
+identifier, so keep their derivation aligned with the report request and cursor.
 
 ## 3. Deletions are replicated as a `deleted` flag on the entity streams
 

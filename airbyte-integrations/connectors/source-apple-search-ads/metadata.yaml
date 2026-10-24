@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 1.1.21
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -27,6 +27,21 @@ data:
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      2.0.0:
+        message: "Date and timestamp fields are now typed (`date` as date; `creationTime`, `modificationTime`, `startTime`, `endTime` as timestamp without timezone) on all streams, and the four daily report streams now declare a primary key of (<entity>Id, date, countryorregion). Refresh the affected streams (Refresh → Clear data) so destinations re-create the tables with the new types and keys."
+        upgradeDeadline: "2026-12-22"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "campaigns"
+              - "adgroups"
+              - "keywords"
+              - "ads"
+              - "campaigns_report_daily"
+              - "adgroups_report_daily"
+              - "keywords_report_daily"
+              - "ads_report_daily"
       1.0.0:
         message: This release introduces changes to incremental sync of `adgroups_daily_reports` and `keywords_daily_reports` streams, changing stream's state from per-partition state to usage of a global state cursor. This will decrease the time of read for the streams. To migrate the Source Apple Ads to the new version, users will need to clear the affected streams. For more info please follow the process in migration guide.
         upgradeDeadline: "2025-11-04"
