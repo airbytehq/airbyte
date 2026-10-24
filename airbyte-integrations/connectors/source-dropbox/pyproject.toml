@@ -1,0 +1,33 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-dropbox"
+description = "Airbyte source connector for Dropbox."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/dropbox"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [{ include = "source_dropbox" }]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.14"
+airbyte-cdk = "^7.0.0"
+dropbox = ">=12.0.2,<13.0.0"
+
+[tool.poetry.scripts]
+source-dropbox = "source_dropbox.run:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.11.0"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
