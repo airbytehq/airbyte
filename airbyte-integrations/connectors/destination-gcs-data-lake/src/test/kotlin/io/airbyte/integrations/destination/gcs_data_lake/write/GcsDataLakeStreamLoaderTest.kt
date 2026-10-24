@@ -28,8 +28,8 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
-import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
