@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+from datetime import date
 from unittest import TestCase
 
 import freezegun
@@ -25,14 +26,15 @@ from .zoom_mocks import (
 
 _STREAM = "report_user_meetings"
 _WINDOWS = [
-    ("2026-04-21", "2026-05-20"),
-    ("2026-05-21", "2026-06-19"),
-    ("2026-06-20", "2026-07-19"),
-    ("2026-07-20", "2026-08-18"),
-    ("2026-08-19", "2026-09-17"),
-    ("2026-09-18", "2026-10-17"),
-    ("2026-10-18", "2026-10-20"),
+    ("2026-04-21", "2026-05-18"),
+    ("2026-05-19", "2026-06-15"),
+    ("2026-06-16", "2026-07-13"),
+    ("2026-07-14", "2026-08-10"),
+    ("2026-08-11", "2026-09-07"),
+    ("2026-09-08", "2026-10-05"),
+    ("2026-10-06", "2026-10-20"),
 ]
+_FULL_28_DAY_WINDOWS = [("2026-08-26", "2026-09-22"), ("2026-09-23", "2026-10-20")]
 _USER_ID = "u1"
 
 
@@ -52,9 +54,9 @@ def _mock_parents(http_mocker: HttpMocker) -> None:
     mock_users(http_mocker)
 
 
-def _mock_windows(http_mocker: HttpMocker, failed_window=None) -> list:
+def _mock_windows(http_mocker: HttpMocker, failed_window=None, windows=_WINDOWS) -> list:
     requests = []
-    for start, end in _WINDOWS:
+    for start, end in windows:
         current = _report_request(start, end)
         requests.append(current)
         if (start, end) == failed_window:
@@ -69,14 +71,19 @@ def _mock_windows(http_mocker: HttpMocker, failed_window=None) -> list:
 @freezegun.freeze_time("2026-10-20T12:00:00Z")
 class TestReportUserMeetings(TestCase):
     @HttpMocker()
-    def test_initial_sync_uses_exact_30_day_windows_and_emits_state(self, http_mocker: HttpMocker):
+    def test_initial_sync_uses_exact_28_day_windows_and_emits_state(self, http_mocker: HttpMocker):
         _mock_parents(http_mocker)
-        requests = _mock_windows(http_mocker)
+        requests = _mock_windows(http_mocker, windows=_FULL_28_DAY_WINDOWS)
 
-        output = read_stream(_STREAM, sync_mode=SyncMode.incremental)
+        output = read_stream(
+            _STREAM,
+            config={**CONFIG, "start_date": "2026-08-26T00:00:00Z"},
+            sync_mode=SyncMode.incremental,
+        )
 
         assert_completed_without_errors(output, _STREAM)
         assert records_data(output) == [{**_meeting("2026-10-19T12:00:00Z"), "user_id": _USER_ID}]
+        assert all((date.fromisoformat(end) - date.fromisoformat(start)).days == 27 for start, end in _FULL_28_DAY_WINDOWS)
         assert output.most_recent_state.stream_state.__dict__["states"] == [
             {
                 "partition": {"parent_id": _USER_ID, "parent_slice": {}},
@@ -90,8 +97,8 @@ class TestReportUserMeetings(TestCase):
     def test_start_date_sets_the_initial_window(self, http_mocker: HttpMocker):
         _mock_parents(http_mocker)
         requests = [
-            _report_request("2026-09-01", "2026-09-30"),
-            _report_request("2026-10-01", "2026-10-20"),
+            _report_request("2026-09-01", "2026-09-28"),
+            _report_request("2026-09-29", "2026-10-20"),
         ]
         for current in requests:
             http_mocker.get(current, json_response({"meetings": []}))
