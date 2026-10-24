@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.TouchedKeys
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -26,11 +28,14 @@ class S3DataLakeBeanFactory {
     @Singleton
     fun aggregatePublishingConfig(config: S3DataLakeConfiguration): AggregatePublishingConfig {
         val batchSize = config.resolvedFlushBatchSizeBytes
-        val maxRecords = config.resolvedMaxRecordsPerFlush
-        log.info {
-            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB), " +
-                "max records per flush: $maxRecords"
-        }
+        val configuredMaxRecords = config.resolvedMaxRecordsPerFlush
+        val maxRecords =
+            if (config.icebergDeleteFileType == IcebergDeleteFileType.EQUALITY) {
+                configuredMaxRecords
+            } else {
+                minOf(configuredMaxRecords, TouchedKeys.MAX_CURRENT_WRITES.toLong())
+            }
+        log.info { "Using max records per aggregate: $maxRecords" }
         return AggregatePublishingConfig(
             maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = batchSize,
