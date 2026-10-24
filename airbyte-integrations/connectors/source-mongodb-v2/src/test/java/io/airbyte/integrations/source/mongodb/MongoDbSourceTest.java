@@ -14,20 +14,29 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCredential;
+import com.mongodb.MongoQueryException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -271,6 +280,54 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testReadClassifiesUnsupportedAllowDiskUseAsConfigError() {
+    final MongoQueryException mongoException = mongoQueryException(303, "Field 'allowDiskUse' is currently not supported");
+    final FailedRecordIteratorException iteratorException = new FailedRecordIteratorException(mongoException);
+    final AutoCloseableIterator<AirbyteMessage> cdcIterator = mock(AutoCloseableIterator.class);
+    when(cdcIterator.hasNext()).thenThrow(iteratorException);
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(List.of(cdcIterator));
+
+    final AutoCloseableIterator<AirbyteMessage> returnedIterator = source.read(airbyteSourceConfig, incrementalCatalog(), null);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, returnedIterator::hasNext);
+    assertEquals(ALLOW_DISK_USE_NOT_SUPPORTED_ERROR_MESSAGE, thrown.getDisplayMessage());
+    assertSame(mongoException, thrown.getCause().getCause());
+  }
+
+  @Test
+  void testReadDoesNotClassifyUnauthorizedAsConfigError() {
+    final MongoQueryException mongoException = mongoQueryException(13, "Unauthorized");
+    final FailedRecordIteratorException iteratorException = new FailedRecordIteratorException(mongoException);
+    final AutoCloseableIterator<AirbyteMessage> cdcIterator = mock(AutoCloseableIterator.class);
+    when(cdcIterator.hasNext()).thenThrow(iteratorException);
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(List.of(cdcIterator));
+
+    final AutoCloseableIterator<AirbyteMessage> returnedIterator = source.read(airbyteSourceConfig, incrementalCatalog(), null);
+
+    final RuntimeException thrown = assertThrows(RuntimeException.class, returnedIterator::hasNext);
+    assertFalse(thrown instanceof ConfigErrorException);
+    assertSame(iteratorException, thrown);
+  }
+
+  private static MongoQueryException mongoQueryException(final int code, final String errorMessage) {
+    final BsonDocument response = BsonDocument.parse(
+        "{\"ok\": 0.0, \"code\": " + code + ", \"errmsg\": \"" + errorMessage + "\"}");
+    return new MongoQueryException(response, new ServerAddress());
+  }
+
+  private ConfiguredAirbyteCatalog incrementalCatalog() {
+    final AirbyteStream stream = new AirbyteStream()
+        .withName("testCollection")
+        .withNamespace(DB_NAME)
+        .withJsonSchema(Jsons.jsonNode(Map.of("type", "object", "properties", Map.of("_id", Map.of("type", "string")))));
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND);
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream));
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
