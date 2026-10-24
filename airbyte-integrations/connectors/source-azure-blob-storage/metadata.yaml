@@ -31,6 +31,9 @@ data:
     - title: Legacy Blob Storage account retirement
       url: https://learn.microsoft.com/en-us/azure/storage/common/legacy-blob-storage-account-migration-overview
       type: api_deprecations
+    - title: AzureDnsZone endpoints retirement FAQ
+      url: https://learn.microsoft.com/en-us/azure/storage/common/azurednszone-endpoints-retirement-faq
+      type: api_deprecations
     - title: Microsoft identity platform breaking changes
       url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
       type: api_deprecations
