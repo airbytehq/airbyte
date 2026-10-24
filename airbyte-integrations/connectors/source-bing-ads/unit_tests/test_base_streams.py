@@ -12,6 +12,9 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
+ALL_CAMPAIGN_TYPES = "App,Audience,DynamicSearchAds,Hotel,ObjectiveBased,PerformanceMax,Search,Shopping"
+
+
 @pytest.mark.parametrize(
     "record, expected",
     [
@@ -93,11 +96,41 @@ def test_campaigns_request_params(config):
     request_params = campaigns.retriever.requester.get_request_body_json(stream_slice=stream_slice)
     assert request_params
     assert request_params["AccountId"] == "account_id"
-    assert request_params["CampaignType"] == "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
+    assert request_params["CampaignType"] == ALL_CAMPAIGN_TYPES
     assert (
         request_params["ReturnAdditionalFields"]
         == "AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting"
     )
+
+
+@pytest.mark.parametrize("campaign_type", ALL_CAMPAIGN_TYPES.split(","))
+def test_campaigns_read_returns_every_documented_campaign_type(campaign_type, mock_auth_token, mock_user_query, requests_mock, config):
+    """The API only returns the campaign types listed in the CampaignType request filter."""
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
+        status_code=200,
+        json={"Accounts": [{"Id": 1, "ParentCustomerId": 10, "LastModifiedTime": "2022-02-02T22:22:22"}]},
+    )
+
+    def campaigns_matching_request_filter(request, context):
+        requested_types = request.json()["CampaignType"].split(",")
+        return {
+            "Campaigns": [{"Id": "607593993", "Name": f"{campaign_type} campaign", "CampaignType": campaign_type}]
+            if campaign_type in requested_types
+            else []
+        }
+
+    requests_mock.post(
+        "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
+        status_code=200,
+        json=campaigns_matching_request_filter,
+    )
+
+    state = StateBuilder().build()
+    catalog = CatalogBuilder().with_stream("campaigns", SyncMode.full_refresh).build()
+    output = read(get_source(config, state), config, catalog, state)
+
+    assert [(record.record.data["Id"], record.record.data["CampaignType"]) for record in output.records] == [(607593993, campaign_type)]
 
 
 def test_campaigns_stream_slices(config, logger_mock, mock_auth_token, mock_user_query, mock_account_query):
