@@ -303,7 +303,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0 | 2026-10-24 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fold workflow_job_steps, contributor_activity_weeks and release_assets into their parents as array columns |
+| 1.0.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Fold workflow_job_steps, contributor_activity_weeks and release_assets into their parents as array columns |
 | 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |
 | 0.1.0 | 2026-10-20 | - | Initial release, forked from source-github 2.7.9 |
 
