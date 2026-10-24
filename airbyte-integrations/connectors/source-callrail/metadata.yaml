@@ -49,4 +49,7 @@ data:
     - title: CallRail API rate limits
       url: https://apidocs.callrail.com/#rate-limiting
       type: rate_limits
+    - title: CallRail API changelog
+      url: https://apidocs.callrail.com/#changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"
