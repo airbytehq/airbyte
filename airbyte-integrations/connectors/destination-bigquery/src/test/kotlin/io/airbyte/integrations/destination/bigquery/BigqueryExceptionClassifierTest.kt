@@ -27,9 +27,9 @@ class BigqueryExceptionClassifierTest {
 
         assertEquals(
             TransientError(
-                "BigQuery returned a temporary server error, which usually resolves on retry: Backend unavailable"
+                "BigQuery returned a temporary server error, which usually resolves on retry: Backend unavailable",
             ),
-            classifier.classify(exception)
+            classifier.classify(exception),
         )
     }
 
@@ -39,9 +39,9 @@ class BigqueryExceptionClassifierTest {
 
         assertEquals(
             TransientError(
-                "BigQuery returned a temporary server error, which usually resolves on retry: Backend unavailable"
+                "BigQuery returned a temporary server error, which usually resolves on retry: Backend unavailable",
             ),
-            classifier.classify(RuntimeException("Failed to load CSV...", exception))
+            classifier.classify(RuntimeException("Failed to load CSV...", exception)),
         )
     }
 
@@ -74,7 +74,7 @@ class BigqueryExceptionClassifierTest {
         assertEquals(
             ConfigError("billing"),
             ExceptionHandler(listOf(DefaultExceptionClassifier(1), BigqueryExceptionClassifier()))
-                .classify(exception)
+                .classify(exception),
         )
     }
 

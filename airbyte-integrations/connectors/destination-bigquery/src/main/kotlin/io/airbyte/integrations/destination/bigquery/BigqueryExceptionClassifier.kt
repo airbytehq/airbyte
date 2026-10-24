@@ -24,7 +24,7 @@ class BigqueryExceptionClassifier : ExceptionClassifier {
             return null
         }
         return TransientError(
-            "BigQuery returned a temporary server error, which usually resolves on retry: ${match.message}"
+            "BigQuery returned a temporary server error, which usually resolves on retry: ${match.message}",
         )
     }
 

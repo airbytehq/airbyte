@@ -34,7 +34,7 @@ class BigqueryClientRetryTest {
         val transport =
             ScriptedHttpTransport(
                 List(failedAttempts) { backendErrorResponse(statusCode) } +
-                    response(200, jobJson("test-project", TEST_JOB_ID))
+                    response(200, jobJson("test-project", TEST_JOB_ID)),
             )
         val bigquery = bigqueryClient(transport)
 
@@ -52,9 +52,9 @@ class BigqueryClientRetryTest {
                 listOf(
                     response(
                         400,
-                        """{"error":{"code":400,"errors":[{"domain":"global","message":"Invalid request","reason":"invalid"}],"message":"Invalid request","status":"INVALID_ARGUMENT"}}"""
-                    )
-                )
+                        """{"error":{"code":400,"errors":[{"domain":"global","message":"Invalid request","reason":"invalid"}],"message":"Invalid request","status":"INVALID_ARGUMENT"}}""",
+                    ),
+                ),
             )
         val bigquery = bigqueryClient(transport)
 
@@ -70,16 +70,16 @@ class BigqueryClientRetryTest {
             ScriptedHttpTransport(
                 listOf(
                     backendErrorResponse(503),
-                    response(200, jobJson("test-project", "fixed-job-id"))
-                )
+                    response(200, jobJson("test-project", "fixed-job-id")),
+                ),
             )
         val bigquery = bigqueryClient(transport)
 
         bigquery.create(
             JobInfo.of(
                 JobId.newBuilder().setJob("fixed-job-id").setLocation("US").build(),
-                QueryJobConfiguration.of("SELECT 1")
-            )
+                QueryJobConfiguration.of("SELECT 1"),
+            ),
         )
 
         assertEquals(2, transport.requests.size)
@@ -93,8 +93,8 @@ class BigqueryClientRetryTest {
             ScriptedHttpTransport(
                 listOf(
                     backendErrorResponse(503),
-                    response(200, jobJson("other-project", TEST_JOB_ID))
-                )
+                    response(200, jobJson("other-project", TEST_JOB_ID)),
+                ),
             )
         val mainClient = bigqueryClient(transport)
         val config: BigqueryConfiguration = mockk {
@@ -115,7 +115,7 @@ class BigqueryClientRetryTest {
     private fun bigqueryClient(transport: ScriptedHttpTransport): BigQuery =
         bigqueryOptionsBuilder("test-project", NoCredentials.getInstance())
             .setTransportOptions(
-                HttpTransportOptions.newBuilder().setHttpTransportFactory { transport }.build()
+                HttpTransportOptions.newBuilder().setHttpTransportFactory { transport }.build(),
             )
             .build()
             .service
@@ -123,7 +123,7 @@ class BigqueryClientRetryTest {
     private fun backendErrorResponse(statusCode: Int): ScriptedResponse =
         response(
             statusCode,
-            """{"error":{"code":$statusCode,"errors":[{"domain":"global","message":"Error encountered during execution. Retrying may solve the problem.","reason":"backendError"}],"message":"Error encountered during execution. Retrying may solve the problem.","status":"UNAVAILABLE"}}"""
+            """{"error":{"code":$statusCode,"errors":[{"domain":"global","message":"Error encountered during execution. Retrying may solve the problem.","reason":"backendError"}],"message":"Error encountered during execution. Retrying may solve the problem.","status":"UNAVAILABLE"}}""",
         )
 
     private fun response(statusCode: Int, body: String) = ScriptedResponse(statusCode, body)
