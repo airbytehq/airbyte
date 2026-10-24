@@ -10,9 +10,11 @@ import pytest
 import requests_mock
 import yaml
 from components import _DUPLICATE_REPORT_MAX_ATTEMPTS, _DUPLICATE_REPORT_RETRY_WAIT_SECONDS
+from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -162,6 +164,40 @@ def _existing_report(
 
 
 class TestDisplayReportStreams:
+    @pytest.mark.parametrize("stream_name", [name for name, _, _ in _report_stream_configurations()])
+    @pytest.mark.parametrize("events_time_step", [90, 1])
+    def test_report_creation_clamps_dates_after_midnight(
+        self, requests_mock, config, mock_oauth, mock_profiles, stream_name, events_time_step
+    ):
+        config = {**config, "start_date": "2026-01-01", "events_time_step": events_time_step}
+        download_url = "https://example.com/report.gz"
+        requests_mock.post(_REPORTS_URL, json={"reportId": "midnight-report", "status": "PENDING"}, status_code=202)
+        requests_mock.get(f"{_REPORTS_URL}/midnight-report", json={"status": "COMPLETED", "url": download_url})
+        requests_mock.get(download_url, content=gzip.compress(b"[]"))
+        send_request = HttpRequester.send_request
+        intervals = []
+
+        with freeze_time("2026-10-23 23:59:00") as clock:
+
+            def send_after_midnight(requester, *args, **kwargs):
+                if requester.get_path(stream_slice=kwargs.get("stream_slice")).strip("/") == "reporting/reports":
+                    intervals.append(kwargs["stream_slice"].cursor_slice)
+                    clock.move_to("2026-10-24 00:01:00")
+                return send_request(requester, *args, **kwargs)
+
+            with patch.object(HttpRequester, "send_request", send_after_midnight), patch("time.sleep", return_value=None):
+                output = self._read(config, stream_name, SyncMode.incremental)
+
+        bodies = [json.loads(request.body) for request in _creation_calls(requests_mock)]
+        assert intervals[0]["start_time"] == "2026-08-24"
+        assert bodies[0]["startDate"] == "2026-08-25"
+        assert len(bodies) == len(intervals)
+        assert len(bodies) > 1 if events_time_step == 1 else len(bodies) == 1
+        for body, interval in zip(bodies, intervals):
+            assert body["startDate"] == max(interval["start_time"], "2026-08-25")
+            assert body["endDate"] == max(interval["end_time"], "2026-08-25")
+        assert not output.records
+
     @staticmethod
     def _read(config: Mapping[str, Any], stream_name: str, sync_mode: SyncMode = SyncMode.full_refresh) -> EntrypointOutput:
         catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()

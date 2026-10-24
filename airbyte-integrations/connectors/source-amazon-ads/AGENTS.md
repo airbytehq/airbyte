@@ -8,6 +8,8 @@ Report streams use the `AsyncRetriever` pattern instead of standard REST paginat
 
 The connector enforces a configurable `max_concurrent_async_job_count` (default 10) to limit how many reports are being generated simultaneously across all streams.
 
+V3 reports have a rolling 60-day retention floor. The cursor clamps slice generation with `min_datetime`, and the shared `report_request_start_date` and `report_request_end_date` expressions clamp both creation-body dates again at request time. This second clamp handles UTC midnight passing after slices were generated, including one-day slices whose end date is now too old. Every consumer of `incremental_sync_report_datetime_cursor` and its daily variant sets both dates explicitly in the creation body; keep cursor request-option injection disabled to avoid conflicting date values.
+
 **Why this matters:** Report streams cannot be treated like standard paginated streams. They require polling intervals, have separate error handlers for creation vs. polling phases, and can take minutes to complete per slice. If you add a new report stream, you must configure all three phases (creation requester, polling requester, download requester) and their respective error handlers independently.
 
 ## 2. HTTP 425 (Too Early) for Duplicate Report Requests
