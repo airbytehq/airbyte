@@ -2,6 +2,7 @@
 
 import base64
 import re
+from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlsplit
 
 from source_commercetools.components import CommerceToolsOauth2Authenticator
@@ -9,6 +10,7 @@ from source_commercetools.source import SourceCommercetools
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 CONFIG = {
@@ -83,3 +85,43 @@ def test_read_customers_uses_bearer_token(requests_mock):
     assert query.get("offset", ["0"]) == ["0"]
     assert query["var.date"] == ["2024-01-01T00:00:00.000000+0000"]
     assert api_request.headers["Authorization"] == "Bearer tok"
+
+
+def test_incremental_read_honors_legacy_state_and_emits_same_shape(requests_mock):
+    requests_mock.post(AUTH_URL, json={"access_token": "tok", "expires_in": 3600})
+    requests_mock.get(
+        re.compile(rf"^{re.escape(API_URL)}(?:\?.*)?$"),
+        json={
+            "results": [{"id": "customer-1", "lastModifiedAt": "2024-06-02T00:00:00.000Z"}],
+            "total": 1,
+            "offset": 0,
+            "limit": 500,
+        },
+    )
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="customers",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+                cursor_field=["lastModifiedAt"],
+            )
+        ]
+    )
+    state = StateBuilder().with_stream_state("customers", {"lastModifiedAt": "2024-06-01T00:00:00.000000+0000"}).build()
+
+    source = SourceCommercetools(catalog=catalog, config=CONFIG, state=state)
+    output = read(source, config=CONFIG, catalog=catalog, state=state)
+
+    assert len(output.records) == 1
+    api_request = next(request for request in requests_mock.request_history if request.url.startswith(API_URL))
+    query = parse_qs(urlsplit(api_request.url).query)
+    assert query["var.date"] == ["2024-06-01T00:00:00.000000+0000"]
+
+    emitted_state = output.most_recent_state.stream_state.__dict__
+    assert set(emitted_state) == {"lastModifiedAt"}, emitted_state
+    assert datetime.fromisoformat(emitted_state["lastModifiedAt"].replace("Z", "+00:00")) == datetime(2024, 6, 2, tzinfo=timezone.utc)
