@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import csv
 import io
 import logging
@@ -62,8 +63,8 @@ class YandexMetricaStream(HttpStream, ABC):
     def get_json_schema(
         self,
     ) -> Mapping[str, any]:
-        schema = super().get_json_schema()
-        schema["properties"] = {re.sub(r"(ym:s:|ym:pv:)", "", key): schema["properties"].pop(key) for key in schema["properties"].copy()}
+        schema = copy.deepcopy(super().get_json_schema())
+        schema["properties"] = {re.sub(r"(ym:s:|ym:pv:)", "", key): value for key, value in schema["properties"].items()}
         return schema
 
     def path(
