@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.util.serializeToString
 import java.time.ZoneOffset
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
@@ -28,6 +29,8 @@ class AirbyteValueToIcebergRecord {
                 val recordSchema =
                     if (type.isStructType) {
                         type.asStructType().asSchema()
+                    } else if (type.typeId() == Type.TypeID.STRING) {
+                        return airbyteValue.serializeToString()
                     } else {
                         throw IllegalArgumentException("ObjectValue should be mapped to StructType")
                     }

@@ -60,6 +60,16 @@ class AirbyteValueToIcebergRecordTest {
     }
 
     @Test
+    fun `convert serializes ObjectValue mapped to StringType`() {
+        val objectValue = ObjectValue(linkedMapOf("id" to IntegerValue(42L)))
+
+        assertEquals(
+            """{"id":42}""",
+            converter.convert(objectValue, Types.StringType.get()),
+        )
+    }
+
+    @Test
     fun `convert handles ArrayValue`() {
         val arrayType = Types.ListType.ofRequired(1, Types.LongType.get())
         val arrayValue = ArrayValue(listOf(IntegerValue(1L), IntegerValue(2L), IntegerValue(3L)))
