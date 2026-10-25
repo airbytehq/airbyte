@@ -41,7 +41,7 @@ def test_requests_use_linkedin_api_version(stream_name: str, method: str, path: 
         assert len(mocker.request_history) >= 1
         api_requests = [request for request in mocker.request_history if request.hostname == "api.linkedin.com"]
         assert api_requests
-        assert all(request.headers["Linkedin-Version"] == "202608" for request in api_requests)
+        assert all(request.headers["Linkedin-Version"] == "202610" for request in api_requests)
 
 
 def _linkedin_version_values(value: Any):
@@ -56,10 +56,10 @@ def _linkedin_version_values(value: Any):
             yield from _linkedin_version_values(nested_value)
 
 
-def test_manifest_uses_only_linkedin_api_version_202608() -> None:
+def test_manifest_uses_only_linkedin_api_version_202610() -> None:
     with MANIFEST_PATH.open() as manifest_file:
         manifest = yaml.safe_load(manifest_file)
 
     versions = list(_linkedin_version_values(manifest))
     assert versions
-    assert all(version == "202608" for version in versions)
+    assert all(version == "202610" for version in versions)
