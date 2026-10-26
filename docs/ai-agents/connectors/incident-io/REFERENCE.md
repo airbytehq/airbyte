@@ -3347,7 +3347,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `registry_type` | `string` | Registry type if synced from an integration |
 | `required_integrations` | `array` | Integrations required for this type |
 | `schema` | `object` | Schema definition for the catalog type |
-| `semantic_type` | `string` | Semantic type for special behavior |
 | `type_name` | `string` | Programmatic type name |
 | `updated_at` | `string` | When the catalog type was last updated |
 
@@ -3375,7 +3374,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].registry_type` | `string` | Registry type if synced from an integration |
 | `data[].required_integrations` | `array` | Integrations required for this type |
 | `data[].schema` | `object` | Schema definition for the catalog type |
-| `data[].semantic_type` | `string` | Semantic type for special behavior |
 | `data[].type_name` | `string` | Programmatic type name |
 | `data[].updated_at` | `string` | When the catalog type was last updated |
 

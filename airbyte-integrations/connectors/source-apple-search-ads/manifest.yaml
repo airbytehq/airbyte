@@ -25,6 +25,120 @@ concurrency_level:
   max_concurrency: 20
 
 definitions:
+  response_filters:
+    token_expired:
+      type: HttpResponseFilter
+      action: REFRESH_TOKEN_THEN_RETRY
+      http_codes:
+        - 401
+      error_message: >-
+        Apple Ads rejected the credentials (401) even after refreshing the
+        access token. The client secret JWT may have expired (Apple caps it at
+        180 days) or the API user lost access; generate a new client secret and
+        update the source.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    invalid_request:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 400
+      failure_type: system_error
+      error_message: >-
+        Apple Ads rejected the request as invalid (400).
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    invalid_report_request:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 400
+      failure_type: config_error
+      error_message: >-
+        Apple Ads rejected the report request (400). Apple serves daily reports
+        for the last 90 days only: set the Start Date within that window, or
+        refresh the stream if it has not synced for a long time.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 403
+      failure_type: config_error
+      error_message: >-
+        Apple Ads denied access (403) for org {{ config.get('org_id') }}.
+        Check that the API user has an API role (for example API Account
+        Manager or API Account Read Only) on this organization.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    not_found:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 404
+      failure_type: system_error
+      error_message: >-
+        Apple Ads returned 404 for {{ request_url }}. A campaign or ad group may
+        have been deleted while the sync was running.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    keyword_missing:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string else '' -%}
+        {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in apple_message }}
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  keywords_report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/keyword_missing"
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
   streams:
     campaigns:
       type: DeclarativeStream
@@ -44,23 +158,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -104,23 +202,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,23 +256,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -247,29 +313,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -302,7 +350,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -362,29 +410,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -425,7 +455,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -486,32 +516,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/keywords_report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -552,7 +561,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -606,23 +615,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -673,27 +666,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -734,7 +711,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -781,6 +758,17 @@ definitions:
       grant_type: client_credentials
       client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_client
+        - invalid_grant
+        - invalid_request
+        - unauthorized_client
+        - unsupported_grant_type
+        - invalid_scope
       refresh_request_body: {}
 
 streams:
@@ -803,8 +791,6 @@ spec:
       - client_id
       - start_date
       - client_secret
-      - timezone
-      - token_refresh_endpoint
     properties:
       org_id:
         type: integer
@@ -824,14 +810,19 @@ spec:
       client_id:
         type: string
         description: >-
-          A user identifier for the token request. See <a
-          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+          The client ID of your Apple Ads API user. Apple shows it in Account
+          Settings > API after you upload the user's public key. See <a
+          href="https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api">Implementing
+          OAuth for the Apple Ads API</a>.
         order: 2
         title: Client Id
         airbyte_secret: true
       start_date:
         type: string
-        description: Start getting data from that date.
+        description: >-
+          Start getting data from that date. Apple serves daily reports for the
+          last 90 days only, so report streams need a Start Date within that
+          window.
         order: 3
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
@@ -840,8 +831,11 @@ spec:
       client_secret:
         type: string
         description: >-
-          A string that authenticates the user’s setup request. See <a
-          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+          A client secret JWT that you sign with the API user's private key
+          (ES256). Apple accepts a client secret for at most 180 days, so
+          generate a new one and update this field before it expires. See <a
+          href="https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api">Implementing
+          OAuth for the Apple Ads API</a>.
         order: 4
         title: Client Secret
         airbyte_secret: true
@@ -860,10 +854,11 @@ spec:
       backoff_factor:
         type: integer
         description: >-
-          This factor factor determines the delay increase factor between
-          retryable failures. Valid values are integers between 1 and 20.
+          Multiplier for the delay between retries of temporary Apple Ads API
+          errors on the report streams. Valid values are integers between 1 and 20.
         order: 6
         title: Exponential Backoff Factor
+        airbyte_hidden: true
         default: 5
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
@@ -882,9 +877,10 @@ spec:
       token_refresh_endpoint:
         type: string
         description: >-
-          Token Refresh Endpoint. You should override the default value in scenarios 
-          where it's required to proxy requests to Apple's token endpoint
+          Apple's OAuth token endpoint. Change it only when requests to Apple's
+          token endpoint must go through a proxy.
         title: Token Refresh Endpoint
+        airbyte_hidden: true
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
         order: 8
@@ -996,6 +992,10 @@ schemas:
         type: integer
       billingEvent:
         type: string
+      biddingStrategy:
+        type:
+          - string
+          - "null"
       budgetAmount:
         anyOf:
           - type: "null"
@@ -1069,6 +1069,15 @@ schemas:
         type: array
         items:
           type: string
+      targetCpa:
+        anyOf:
+          - type: "null"
+          - type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
   adgroups:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1076,6 +1085,14 @@ schemas:
     properties:
       automatedKeywordsOptIn:
         type: boolean
+      automatedKeywordsRequired:
+        type:
+          - boolean
+          - "null"
+      biddingStrategy:
+        type:
+          - string
+          - "null"
       campaignId:
         type: integer
       cpaGoal:

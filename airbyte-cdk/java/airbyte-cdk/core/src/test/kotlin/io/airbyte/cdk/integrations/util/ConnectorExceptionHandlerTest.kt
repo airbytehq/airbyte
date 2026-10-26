@@ -40,9 +40,9 @@ internal class ConnectorExceptionHandlerTest {
                 CONNECTION_ERROR_MESSAGE_TEMPLATE,
                 testCode,
                 errorCode,
-                CONFIG_EXCEPTION_MESSAGE
+                CONFIG_EXCEPTION_MESSAGE,
             ),
-            actualDisplayMessage
+            actualDisplayMessage,
         )
     }
 

@@ -93,8 +93,8 @@ The following streams have known failures when running against test/sandbox cred
 ### Invalid Input
 
 | Stream | Failure Reason |
-|--------|---------------|
-| GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
+| --- | --- |
+| GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
 
 ## 7. Report Streams Must Declare Their Own `dataStartTime`/`dataEndTime`
 
@@ -203,65 +203,110 @@ case - no document, a fetch failure, an unrecognised payload - must leave the re
 retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
 accepted into a failure.
 
+## 11. Settlement Reports Use `AsyncRetriever` Without Creating Anything
+
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` is the one report stream Amazon generates on its own —
+`createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
+`creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
+that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
+there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
+downloads it in the same call.
+
+Five constraints that are easy to break:
+
+- **Do not move the document lookup into a parent stream.** Amazon signs the URL with
+  `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
+  partition generation and consumed it during partition read, which blew the five-minute window on
+  any sizeable backfill (`getReportDocument` is budgeted at 1 request/minute, so 100 reports is ~100
+  minutes) and replayed the same dead URL on every retry.
+- **`getReports` pagination must send `nextToken` alone.** Reports 2021-06-30 returns `400
+  InvalidInput` if `nextToken` arrives with `reportTypes`, `pageSize`, `createdSince` or
+  `createdUntil` — unlike Orders v0, which ignores them. Suppressing all four takes two mechanisms:
+  `ignore_stream_slicer_parameters_on_paginated_requests` on the **SimpleRetriever** (the CDK ignores
+  it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
+  `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
+  `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
+  `DefaultPaginator` injects it on paginated requests too. The response field is also `nextToken`
+  (lower camel case); `NextToken` is the Orders/Finances v0 spelling and resolves to an empty string
+  here, which silently stops pagination after the first page.
+- **The download requester must ignore 403.** If the URL expires anyway, S3 returns `403 Request has
+  expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
+  calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
+  download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+- **Each report must be downloaded exactly once.** A report is one immutable document and the stream
+  has no primary key, so anything that runs a report twice duplicates its rows in the destination. The
+  listing checkpoint (`listedUntil`) is the end of the previous listing to the second, and the listing
+  has no `lookback_window`, so a report is never listed twice. The child stream's `step` is `P10Y`, so
+  `period_in_days` cannot split one report into several jobs. The checkpoint was named `dataEndTime`
+  up to 6.1.0, which listed reports without downloading them; the new name is what makes that state
+  list the full window again, so do not rename it back.
+- **Only `CANCELLED` and `FATAL` reports are filtered out of the listing.** The listing checkpoint
+  moves past every report it lists, so dropping one that is still `IN_QUEUE` or `IN_PROGRESS` loses it
+  for good. The async retriever polls those until `DONE` instead.
+
+**Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
+with a successful sync, stops after one page of reports, fails on large backfills with expired URLs,
+emits the same settlement rows more than once, or silently skips reports.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
-| get_afn_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_afn_inventory_data_by_country | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_amazon_fulfilled_shipments_data_general | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| get_afn_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_afn_inventory_data_by_country | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_amazon_fulfilled_shipments_data_general | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
 | get_brand_analytics_alternate_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
 | get_brand_analytics_item_comparison_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
 | get_brand_analytics_market_basket_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
 | get_brand_analytics_repeat_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
 | get_brand_analytics_search_terms_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
-| get_fba_estimated_fba_fees_txt_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_fulfillment_customer_returns_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_fulfillment_customer_shipment_promotion_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_fulfillment_customer_shipment_replacement_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_fulfillment_removal_order_detail_data | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
-| get_fba_fulfillment_removal_shipment_detail_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_inventory_planning_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_myi_unsuppressed_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_reimbursements_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_fba_storage_fee_charges_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_flat_file_actionable_order_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_flat_file_all_orders_data_by_last_update_general | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
-| get_flat_file_all_orders_data_by_order_date_general | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
-| get_flat_file_archived_orders_data_by_order_date | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
-| get_flat_file_open_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_flat_file_returns_data_by_return_date | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_ledger_detail_view_data | medium | top-level parent | Date | Date | incremental |  |
-| get_ledger_summary_view_data | medium | top-level parent | Date | Date | incremental |  |
-| get_merchant_cancelled_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_merchant_listings_all_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_merchant_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_merchant_listings_data_back_compat | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_merchant_listings_inactive_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_merchants_listings_fyp_report | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_order_report_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_restock_inventory_recommendations_report | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| get_sales_and_traffic_report | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
-| get_sales_and_traffic_report_by_date | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
-| get_sales_and_traffic_report_by_month | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
-| get_seller_feedback_data | medium | top-level parent | date | date | incremental |  |
-| get_stranded_inventory_ui_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_estimated_fba_fees_txt_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_fulfillment_customer_returns_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_fulfillment_customer_shipment_promotion_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_fulfillment_customer_shipment_replacement_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_fulfillment_removal_order_detail_data | medium | top-level parent | last-updated-date | last-updated-date | incremental | |
+| get_fba_fulfillment_removal_shipment_detail_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_inventory_planning_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_myi_unsuppressed_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_reimbursements_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_fba_storage_fee_charges_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_flat_file_actionable_order_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_flat_file_all_orders_data_by_last_update_general | medium | top-level parent | last-updated-date | last-updated-date | incremental | |
+| get_flat_file_all_orders_data_by_order_date_general | medium | top-level parent | last-updated-date | last-updated-date | incremental | |
+| get_flat_file_archived_orders_data_by_order_date | medium | top-level parent | last-updated-date | last-updated-date | incremental | |
+| get_flat_file_open_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_flat_file_returns_data_by_return_date | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_ledger_detail_view_data | medium | top-level parent | Date | Date | incremental | |
+| get_ledger_summary_view_data | medium | top-level parent | Date | Date | incremental | |
+| get_merchant_cancelled_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_merchant_listings_all_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_merchant_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_merchant_listings_data_back_compat | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_merchant_listings_inactive_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_merchants_listings_fyp_report | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_order_report_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_restock_inventory_recommendations_report | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| get_sales_and_traffic_report | medium | top-level parent | queryEndDate | queryEndDate | incremental | |
+| get_sales_and_traffic_report_by_date | medium | top-level parent | queryEndDate | queryEndDate | incremental | |
+| get_sales_and_traffic_report_by_month | medium | top-level parent | queryEndDate | queryEndDate | incremental | |
+| get_seller_feedback_data | medium | top-level parent | date | date | incremental | |
+| get_stranded_inventory_ui_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
 | get_vendor_forecasting_fresh_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
 | get_vendor_forecasting_retail_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
 | get_vendor_inventory_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Daily window |
-| get_vendor_sales_report | medium | top-level parent | endDate | endDate | incremental |  |
-| get_xml_all_orders_data_by_order_date_general | medium | top-level parent | LastUpdatedDate | LastUpdatedDate | incremental |  |
-| get_xml_browse_tree_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
-| list_financial_event_groups | medium | top-level parent | FinancialEventGroupStart | FinancialEventGroupStart | incremental |  |
-| list_financial_events | medium | top-level parent | PostedBefore | PostedBefore | incremental |  |
-| orders | medium | top-level parent | LastUpdateDate | LastUpdateDate | incremental |  |
-| vendor_direct_fulfillment_shipping | medium | top-level parent | createdBefore | createdBefore | incremental |  |
-| vendor_orders | medium | top-level parent | changedBefore | changedBefore | incremental |  |
-| vendor_orders_status | medium | top-level parent | createdBefore | createdBefore | incremental |  |
-| get_v2_settlement_report_data_flat_file | medium | child | dataEndTime | dataEndTime | incremental |  |
-| order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental |  |
+| get_vendor_sales_report | medium | top-level parent | endDate | endDate | incremental | |
+| get_xml_all_orders_data_by_order_date_general | medium | top-level parent | LastUpdatedDate | LastUpdatedDate | incremental | |
+| get_xml_browse_tree_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
+| list_financial_event_groups | medium | top-level parent | FinancialEventGroupStart | FinancialEventGroupStart | incremental | |
+| list_financial_events | medium | top-level parent | PostedBefore | PostedBefore | incremental | |
+| orders | medium | top-level parent | LastUpdateDate | LastUpdateDate | incremental | |
+| vendor_direct_fulfillment_shipping | medium | top-level parent | createdBefore | createdBefore | incremental | |
+| vendor_orders | medium | top-level parent | changedBefore | changedBefore | incremental | |
+| vendor_orders_status | medium | top-level parent | createdBefore | createdBefore | incremental | |
+| get_v2_settlement_report_data_flat_file_v2 | medium | child | dataEndTime | dataEndTime | incremental | |
+| order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental | |
 
 ### Future incremental stream candidates
 

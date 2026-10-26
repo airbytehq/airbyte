@@ -37,6 +37,13 @@ definitions:
                     error_message: >-
                       Got permission error when accessing URL. Skipping
                       {{self.name}} stream.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      {% if config.get('organization_ids') %}Snapchat could not find one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% else %}Snapchat could not find the organizations for the authenticated user. Verify that the authenticated user has access to at least one Snapchat organization.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -109,6 +116,13 @@ definitions:
                     error_message: >-
                       Got permission error when accessing URL. Skipping
                       {{self.name}} stream.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      {% if config.get('ad_account_ids') %}Snapchat could not find one or more of the configured ad accounts ({{ config['ad_account_ids'] | join(', ') }}). Verify the values in the Ad Account IDs field and that the authenticated user has access to these ad accounts.{% else %}Snapchat could not find the ad accounts for one of the organizations. Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:

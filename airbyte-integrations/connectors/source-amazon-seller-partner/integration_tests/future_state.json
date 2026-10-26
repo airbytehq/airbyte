@@ -391,7 +391,7 @@
         "dataEndTime": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
-        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
       }
     }
   },

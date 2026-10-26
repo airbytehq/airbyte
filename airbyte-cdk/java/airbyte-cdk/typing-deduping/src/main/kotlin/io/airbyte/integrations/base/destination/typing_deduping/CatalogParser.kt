@@ -28,7 +28,7 @@ constructor(
     fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
         if (originalCatalog.streams.isEmpty()) {
             throw ConfigErrorException(
-                "The catalog contained no streams. This likely indicates a platform/configuration error."
+                "The catalog contained no streams. This likely indicates a platform/configuration error.",
             )
         }
 
@@ -73,7 +73,7 @@ constructor(
                 // We're taking a hash of the quoted namespace and the unquoted stream name
                 val hash =
                     DigestUtils.sha1Hex(
-                            "${originalStreamConfig.id.finalNamespace}&airbyte&$originalName"
+                            "${originalStreamConfig.id.finalNamespace}&airbyte&$originalName",
                         )
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
@@ -112,7 +112,7 @@ constructor(
                 Consumer { columnId: ColumnId ->
                     addStringForDeinterpolation(columnId.name)
                     addStringForDeinterpolation(columnId.originalName)
-                }
+                },
             )
             // It's (unfortunately) possible for a cursor/PK to be declared that don't actually
             // exist in the
@@ -126,7 +126,7 @@ constructor(
                 Consumer { pk: ColumnId ->
                     addStringForDeinterpolation(pk.name)
                     addStringForDeinterpolation(pk.originalName)
-                }
+                },
             )
         }
         LOGGER.info { "Running sync with stream configs: $streamConfigs" }
@@ -137,7 +137,7 @@ constructor(
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
         if (stream.generationId == null || stream.minimumGenerationId == null) {
             throw ConfigErrorException(
-                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7",
             )
         }
         if (
@@ -196,7 +196,7 @@ constructor(
      */
     private fun resolveColumnCollisions(
         airbyteColumns: LinkedHashMap<String, AirbyteType>,
-        stream: ConfiguredAirbyteStream
+        stream: ConfiguredAirbyteStream,
     ): LinkedHashMap<ColumnId, AirbyteType> {
         val columns = LinkedHashMap<ColumnId, AirbyteType>()
         for ((key, value) in airbyteColumns) {
@@ -231,7 +231,7 @@ constructor(
                             superResolveColumnCollisions(
                                 originalColumnId,
                                 columns,
-                                originalColumnId.name.length
+                                originalColumnId.name.length,
                             )
                         break
                     }
@@ -268,7 +268,7 @@ constructor(
     private fun superResolveColumnCollisions(
         columnId: ColumnId,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        maximumColumnNameLength: Int
+        maximumColumnNameLength: Int,
     ): ColumnId {
         val originalColumnName = columnId.originalName
 
@@ -282,14 +282,14 @@ constructor(
         // 6-character column name, which is just silly.
         if (affixLength <= 0) {
             throw IllegalArgumentException(
-                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing.",
             )
         }
         val prefix = originalColumnName.substring(0, affixLength)
         val suffix =
             originalColumnName.substring(
                 originalColumnName.length - affixLength,
-                originalColumnName.length
+                originalColumnName.length,
             )
         val length = originalColumnName.length - 2 * affixLength
         newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")
@@ -297,7 +297,7 @@ constructor(
         // we could try to be more clever, but this is already a pretty rare case.
         if (columns.keys.any { c: ColumnId -> c.canonicalName == newColumnId.canonicalName }) {
             throw IllegalArgumentException(
-                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing.",
             )
         }
         return newColumnId
