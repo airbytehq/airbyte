@@ -184,7 +184,9 @@ jobs:
           # Vercel) can finish last with no Actions event and would strand the
           # push; the playbook re-reads CI anyway.
           if [[ -z "$SKIP" && "$EVENT_NAME" == "workflow_run" ]]; then
-            FAILING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
+            # `Hydra / ai-ready` reports the /ai-ready outcome, not CI, so it
+            # never counts as a failing check here.
+            FAILING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!="Hydra / ai-ready" and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .context!="Hydra / ai-ready" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
             [[ "$FAILING" != "0" ]] && SKIP="CI failing"
           fi
 
