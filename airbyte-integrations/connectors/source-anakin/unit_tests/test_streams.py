@@ -3,6 +3,8 @@
 from pathlib import Path
 
 import pytest
+from requests_mock import ANY, Mocker
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import (
     YamlDeclarativeSource,
@@ -10,7 +12,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import (
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
-from requests_mock import ANY, Mocker
+
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 _URL = "https://api.anakin.io/v1"
@@ -22,9 +24,7 @@ _UNEXPECTED_REQUEST = {
 
 
 @pytest.fixture(autouse=True)
-def isolated_http(
-    requests_mock: Mocker, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def isolated_http(requests_mock: Mocker, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # The CDK caches parent-stream responses in a SQLite file. Keep that file out of `unit_tests/` and out of other tests.
     monkeypatch.setenv("REQUEST_CACHE_PATH", str(tmp_path))
     # Registered first, so the mocks of each test take precedence.
@@ -43,9 +43,7 @@ def _read(
         config=config,
         state=state or StateBuilder().build(),
     )
-    return read(
-        source, config, CatalogBuilder().with_stream(stream, sync_mode).build(), state
-    )
+    return read(source, config, CatalogBuilder().with_stream(stream, sync_mode).build(), state)
 
 
 def _records(output: EntrypointOutput) -> list:
@@ -66,9 +64,7 @@ def test_monitors(requests_mock: Mocker) -> None:
 
 
 def test_invalid_api_key_is_a_config_error(requests_mock: Mocker) -> None:
-    requests_mock.get(
-        f"{_URL}/monitors", status_code=401, json={"error": "unauthorized"}
-    )
+    requests_mock.get(f"{_URL}/monitors", status_code=401, json={"error": "unauthorized"})
 
     output = _read("monitors", _CONFIG)
 
@@ -77,9 +73,7 @@ def test_invalid_api_key_is_a_config_error(requests_mock: Mocker) -> None:
 
 
 def test_monitor_changes_incremental(requests_mock: Mocker) -> None:
-    requests_mock.get(
-        f"{_URL}/monitors", json={"monitors": [{"id": "m1"}, {"id": "m2"}]}
-    )
+    requests_mock.get(f"{_URL}/monitors", json={"monitors": [{"id": "m1"}, {"id": "m2"}]})
     requests_mock.get(
         f"{_URL}/monitors/m1/changes",
         json={
@@ -95,13 +89,7 @@ def test_monitor_changes_incremental(requests_mock: Mocker) -> None:
     assert first.errors == []
     assert sorted(r["id"] for r in _records(first)) == ["c1", "c2"]
 
-    state = (
-        StateBuilder()
-        .with_stream_state(
-            "monitor_changes", first.most_recent_state.stream_state.__dict__
-        )
-        .build()
-    )
+    state = StateBuilder().with_stream_state("monitor_changes", first.most_recent_state.stream_state.__dict__).build()
     second = _read("monitor_changes", _CONFIG, SyncMode.incremental, state)
     assert second.errors == []
     # Changes older than the saved cursor are filtered out.
@@ -113,10 +101,7 @@ def test_search_results_one_request_per_query(requests_mock: Mocker) -> None:
         body = request.json()
         return {
             "id": "s1",
-            "results": [
-                {"url": f"https://r{i}.example", "title": body["prompt"]}
-                for i in range(body["limit"])
-            ],
+            "results": [{"url": f"https://r{i}.example", "title": body["prompt"]} for i in range(body["limit"])],
         }
 
     requests_mock.post(f"{_URL}/search", json=respond)
@@ -133,9 +118,7 @@ def test_search_results_one_request_per_query(requests_mock: Mocker) -> None:
     assert len(records) == 4
     assert {r["query"] for r in records} == {"first query", "second query"}
     assert all(r["synced_at"] for r in records)
-    assert [
-        h.json() for h in requests_mock.request_history if h.path == "/v1/search"
-    ] == [
+    assert [h.json() for h in requests_mock.request_history if h.path == "/v1/search"] == [
         {"prompt": "first query", "limit": 2},
         {"prompt": "second query", "limit": 2},
     ]
@@ -196,9 +179,7 @@ def test_scraped_pages_keeps_html_when_requested(requests_mock: Mocker) -> None:
     assert record["cleanedHtml"] == "<div></div>"
 
 
-def test_scraped_pages_retries_unfinished_scrape(
-    requests_mock: Mocker, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_scraped_pages_retries_unfinished_scrape(requests_mock: Mocker, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("time.sleep", lambda _: None)
     requests_mock.post(
         f"{_URL}/url-scraper/scrape",
