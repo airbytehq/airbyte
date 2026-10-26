@@ -1,4 +1,4 @@
-# Gemini
+# Gemini for Google Workspace
 This directory contains the manifest-only connector for `source-gemini`.
 
 Google Gemini for Workspace source connector. Syncs Gemini in Google Workspace activity from the Google Workspace Admin SDK Reports API (gemini_in_workspace_apps application, feature_utilization events). Admins can use it to track Gemini feature adoption and usage across Workspace apps such as Gmail, Docs, Sheets, Slides and Meet, and to support auditing and governance.

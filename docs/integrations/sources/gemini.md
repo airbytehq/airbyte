@@ -1,4 +1,4 @@
-# Gemini
+# Gemini for Google Workspace
 
 This source syncs Gemini for Google Workspace activity from the [Google Workspace Admin SDK Reports API](https://developers.google.com/workspace/admin/reports/v1/get-start/overview).
 It reads `feature_utilization` events of the `gemini_in_workspace_apps` application, so admins can track Gemini adoption and usage across Workspace apps such as Gmail, Docs, Sheets, Slides, and Meet, and support auditing and governance.
@@ -45,7 +45,7 @@ Use the **Internal** user type to avoid this.
 
 ### Step 4: Set up the connector in Airbyte
 
-1. In Airbyte, go to **Sources** and select **Gemini**.
+1. In Airbyte, go to **Sources** and select **Gemini for Google Workspace**.
 2. Enter the **Client ID**, **Client secret**, and **Refresh token**.
 3. Optionally, set **Start Time** and **End Time** in RFC 3339 format, for example `2026-01-01T00:00:00.000Z`.
 4. Click **Set up source**.
