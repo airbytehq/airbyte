@@ -15,7 +15,7 @@ def test_organization_lookup_schema_covers_documented_locale_and_staff_range():
     assert localized["additionalProperties"] == {"type": ["string", "null"]}
 
 
-def test_spec_and_concurrency_are_certification_ready():
+def test_spec_fields_and_concurrency():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
     spec = manifest["spec"]["connection_specification"]
     properties = spec["properties"]

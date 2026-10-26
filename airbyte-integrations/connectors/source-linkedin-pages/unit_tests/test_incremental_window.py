@@ -45,11 +45,11 @@ def _query_params(request):
     return {key: values[0] for key, values in parse_qs(urlsplit(request.url).query).items()}
 
 
-def _expected_query(stream_name, start_ms, end_ms):
+def _expected_query(stream_name, start_ms, end_ms, granularity="DAY"):
     return {
         "q": "organizationalEntity",
         "organizationalEntity": "urn:li:organization:12345678",
-        "timeIntervals.timeGranularityType": "DAY",
+        "timeIntervals.timeGranularityType": granularity,
         "timeIntervals.timeRange.start": str(start_ms),
         "timeIntervals.timeRange.end": str(end_ms),
     }
@@ -140,13 +140,76 @@ def test_two_pass_reads_keep_second_window_midnight_aligned(stream_name):
         state = StateBuilder().with_stream_state(stream_name, first_output.most_recent_state.stream_state).build()
         second_output, second_endpoint = _read(stream_name, _CONFIG, {"elements": []}, state)
 
+    # The cursor already equals today - 2 days at midnight: a shorter window would be rejected with 400.
     assert not second_output.errors
-    if second_endpoint.call_count:
-        params = _query_params(second_endpoint.last_request)
-        assert params == _expected_query(stream_name, end_ms, _milliseconds("2026-10-21T00:00:00Z"))
-        start = int(params["timeIntervals.timeRange.start"])
-        end = int(params["timeIntervals.timeRange.end"])
-        assert start < end
-        assert (end - start) % _DAY_MS == 0
-    else:
-        assert second_endpoint.call_count == 0
+    assert second_endpoint.call_count == 0
+    assert second_output.most_recent_state.stream_state == first_output.most_recent_state.stream_state
+
+
+_MONTH_CONFIG = {**_CONFIG, "time_granularity_type": "MONTH"}
+
+
+@pytest.mark.parametrize("stream_name", list(_STREAMS))
+@freeze_time("2026-10-23T14:37:12Z")
+def test_month_first_sync_requests_complete_months_only(stream_name):
+    output, endpoint = _read(stream_name, _MONTH_CONFIG, {"elements": []})
+
+    assert not output.errors
+    assert endpoint.call_count == 1
+    assert _query_params(endpoint.last_request) == _expected_query(
+        stream_name,
+        _milliseconds("2025-10-23T00:00:00Z"),
+        _milliseconds("2026-10-01T00:00:00Z"),
+        "MONTH",
+    )
+
+
+@pytest.mark.parametrize("stream_name", list(_STREAMS))
+@freeze_time("2026-10-23T14:37:12Z")
+def test_month_sync_inside_the_current_month_requests_nothing(stream_name):
+    state = StateBuilder().with_stream_state(stream_name, {"timeRangeEnd": _milliseconds("2026-10-01T00:00:00Z")}).build()
+    output, endpoint = _read(stream_name, _MONTH_CONFIG, {"elements": []}, state)
+
+    assert not output.errors
+    assert endpoint.call_count == 0
+
+
+@pytest.mark.parametrize("stream_name", list(_STREAMS))
+@freeze_time("2026-11-02T23:00:00Z")
+def test_month_sync_waits_until_two_days_after_the_month_ends(stream_name):
+    state = StateBuilder().with_stream_state(stream_name, {"timeRangeEnd": _milliseconds("2026-10-01T00:00:00Z")}).build()
+    output, endpoint = _read(stream_name, _MONTH_CONFIG, {"elements": []}, state)
+
+    assert not output.errors
+    assert endpoint.call_count == 0
+
+
+@pytest.mark.parametrize(
+    "now",
+    [
+        "2026-11-03T00:00:00Z",
+        "2026-11-10T05:00:00Z",
+    ],
+)
+@pytest.mark.parametrize(
+    "cursor",
+    [
+        "2026-10-01T00:00:00Z",
+        # A state written before 1.2.0, when the MONTH window ended in the middle of a month.
+        "2026-10-21T00:00:00Z",
+    ],
+)
+@pytest.mark.parametrize("stream_name", list(_STREAMS))
+def test_month_sync_after_the_month_closes_ends_on_the_month_boundary(stream_name, cursor, now):
+    state = StateBuilder().with_stream_state(stream_name, {"timeRangeEnd": _milliseconds(cursor)}).build()
+    with freeze_time(now):
+        output, endpoint = _read(stream_name, _MONTH_CONFIG, {"elements": []}, state)
+
+    assert not output.errors
+    assert endpoint.call_count == 1
+    assert _query_params(endpoint.last_request) == _expected_query(
+        stream_name,
+        _milliseconds(cursor),
+        _milliseconds("2026-11-01T00:00:00Z"),
+        "MONTH",
+    )

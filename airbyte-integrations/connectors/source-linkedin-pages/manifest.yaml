@@ -33,26 +33,45 @@ definitions:
     error_message: >-
       LinkedIn rejected the credentials (401). The access token has expired or
       was revoked; re-authenticate the source. LinkedIn said:
-      {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
   forbidden_filter:
     type: HttpResponseFilter
     action: FAIL
     failure_type: config_error
     http_codes: [403]
     error_message: >-
-      LinkedIn denied the request (403). The token needs the r_organization_social
-      and rw_organization_admin scopes and the user must be an ADMIN of
-      organization {{ config['org_id'] }}. LinkedIn said:
-      {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+      LinkedIn denied the request (403). The token needs the rw_organization_admin
+      scope and the LinkedIn member who authorized it must have the ADMINISTRATOR
+      role on organization {{ config['org_id'] }}. LinkedIn said:
+      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
   rate_limit_filter:
     type: HttpResponseFilter
     action: RATE_LIMITED
     http_codes: [429]
-    error_message: "LinkedIn daily API quota reached (429); retrying with backoff. Quotas reset at midnight UTC."
+    error_message: "LinkedIn rate limit reached (429); retrying with backoff. Daily quotas reset at midnight UTC."
   server_error_filter:
     type: HttpResponseFilter
     action: RETRY
     http_codes: [500, 502, 503, 504]
+  not_found_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes: [404]
+    error_message: >-
+      LinkedIn returned 404 for organization {{ config['org_id'] }}. The page may
+      be deactivated, the Organization ID may be wrong, or the app may lack access
+      to this API. LinkedIn said:
+      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
+  version_sunset_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: system_error
+    http_codes: [426]
+    error_message: >-
+      LinkedIn no longer accepts the API version this connector version sends (426).
+      Upgrade the source to the latest version. LinkedIn said:
+      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
   base_error_handler:
     type: DefaultErrorHandler
     max_retries: 5
@@ -64,8 +83,10 @@ definitions:
     response_filters:
       - $ref: "#/definitions/unauthorized_filter"
       - $ref: "#/definitions/forbidden_filter"
+      - $ref: "#/definitions/not_found_filter"
       - $ref: "#/definitions/rate_limit_filter"
       - $ref: "#/definitions/server_error_filter"
+      - $ref: "#/definitions/version_sunset_filter"
   time_bound_error_handler:
     type: DefaultErrorHandler
     max_retries: 5
@@ -75,20 +96,20 @@ definitions:
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
+      # The window is clamped to what LinkedIn serves, so this 400 means a connector bug, not a config problem.
       - type: HttpResponseFilter
         action: FAIL
-        failure_type: config_error
-        http_codes: [400]
+        failure_type: system_error
         error_message_contains: Invalid timeIntervals parameter
         error_message: >-
-          LinkedIn rejected the statistics time window (400). Statistics are
-          only available from 12 months before to 2 days before today (UTC);
-          check the Start Date. LinkedIn said:
-          {{ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response')[:300] }}
+          LinkedIn rejected the statistics time window (400). LinkedIn said:
+          {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
       - $ref: "#/definitions/unauthorized_filter"
       - $ref: "#/definitions/forbidden_filter"
+      - $ref: "#/definitions/not_found_filter"
       - $ref: "#/definitions/rate_limit_filter"
       - $ref: "#/definitions/server_error_filter"
+      - $ref: "#/definitions/version_sunset_filter"
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
@@ -643,7 +664,8 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
+        datetime: >-
+          {{ day_delta(-2, format='%Y-%m') + '-01T00:00:00Z' if config.get('time_granularity_type') == 'MONTH' else day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: share_statistics_time_bound
@@ -788,7 +810,8 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
+        datetime: >-
+          {{ day_delta(-2, format='%Y-%m') + '-01T00:00:00Z' if config.get('time_granularity_type') == 'MONTH' else day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 spec:
   connection_specification:
@@ -889,6 +912,47 @@ spec:
           Number of concurrent requests. LinkedIn enforces a per-application
           daily quota, so increase this only if you understand your quota.
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Version 1.0.0 changed org_id from an integer to a string.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('org_id') is number }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - org_id
+                value: "{{ config.get('org_id') }}"
+                value_type: string
+      - type: ConfigMigration
+        description: >-
+          The Python connector read a top-level access_token whenever
+          credentials.auth_method was missing. Move that token into credentials.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('access_token') is string and (config.get('credentials') is none or (config.get('credentials') is mapping and not config['credentials'].get('auth_method'))) }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - access_token
+                value: "{{ config.get('access_token') }}"
+                value_type: string
+          - type: ConfigAddFields
+            condition: "{{ config.get('access_token') is string and config.get('credentials') is mapping and not config['credentials'].get('auth_method') and config['credentials'].get('access_token') == config.get('access_token') }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_method
+                value: access_token
+                value_type: string
+          - type: ConfigRemoveFields
+            condition: "{{ config.get('access_token') is string and config.get('credentials') is mapping and config['credentials'].get('auth_method') == 'access_token' and config['credentials'].get('access_token') == config.get('access_token') }}"
+            field_pointers:
+              - - access_token
   type: Spec
 metadata:
   autoImportSchema:
