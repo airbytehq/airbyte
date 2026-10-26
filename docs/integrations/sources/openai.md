@@ -45,7 +45,7 @@ If you only need organization admin data, you can leave the compliance token and
 
 ### `conversation_messages_log`
 
-Each JSONL line is flattened for analytics: message text is available as `message_content_value` (non-text content is JSON-encoded), conversation metadata includes `conversation_title`, and `message.author` is split into `author_type`, `author_client_type`, `author_skills_used`, and `author_tools_used` (skills and tools are JSON-encoded when the API returns arrays or structured values). The raw nested `message` and `conversation` objects are not emitted.
+Each JSONL line is flattened for analytics: `actor` and `principal` become `actor_*` and `principal_*` columns, message text is in `message_content_value`, conversation metadata includes `conversation_title`, and `message.author` is split into `author_type`, `author_client_type`, `author_skills_used`, and `author_tools_used` (skills, tools, and non-text content are stringified so nested or tuple-shaped API values type cleanly). The raw nested `message`, `conversation`, `actor`, and `principal` objects are not emitted.
 
 ## Changelog
 

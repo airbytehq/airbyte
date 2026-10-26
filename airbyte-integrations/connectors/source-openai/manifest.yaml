@@ -310,38 +310,28 @@ streams:
             type:
               - string
               - "null"
-          actor:
+          actor_type:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              user_id:
-                type:
-                  - string
-                  - "null"
-              user_email:
-                type:
-                  - string
-                  - "null"
+          actor_user_id:
+            type:
+              - string
+              - "null"
+          actor_user_email:
+            type:
+              - string
+              - "null"
           event_id:
             type: string
-          principal:
+          principal_type:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
+          principal_id:
+            type:
+              - string
+              - "null"
           timestamp:
             type:
               - string
@@ -408,10 +398,30 @@ streams:
             type:
               - boolean
               - "null"
-        additionalProperties: true
+        additionalProperties: false
     transformations:
       - type: AddFields
         fields:
+          - type: AddedFieldDefinition
+            path:
+              - actor_type
+            value: "{{ record.get('actor', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_id
+            value: "{{ record.get('actor', {}).get('user_id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_email
+            value: "{{ record.get('actor', {}).get('user_email') }}"
+          - type: AddedFieldDefinition
+            path:
+              - principal_type
+            value: "{{ record.get('principal', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - principal_id
+            value: "{{ record.get('principal', {}).get('id') }}"
           - type: AddedFieldDefinition
             path:
               - log_file_id
@@ -438,25 +448,23 @@ streams:
             path:
               - author_skills_used
             value: >-
-              {% set skills_used =
-              record.get('message', {}).get('author', {}).get('skills_used') %}{{
-              skills_used | tojson if skills_used is not none else none }}
+              {{ record.get('message', {}).get('author', {}).get('skills_used')
+              | string if record.get('message', {}).get('author',
+              {}).get('skills_used') is not none else none }}
           - type: AddedFieldDefinition
             path:
               - author_tools_used
             value: >-
-              {% set tools_used =
-              record.get('message', {}).get('author', {}).get('tools_used') %}{{
-              tools_used | tojson if tools_used is not none else none }}
+              {{ record.get('message', {}).get('author', {}).get('tools_used') |
+              string if record.get('message', {}).get('author',
+              {}).get('tools_used') is not none else none }}
           - type: AddedFieldDefinition
             path:
               - message_content_value
             value: >-
-              {% set content_value =
-              record.get('message', {}).get('content', {}).get('value') %}{% if
-              content_value is string %}{{ content_value }}{% elif content_value
-              is none %}{{ none }}{% else %}{{ content_value | tojson }}{% endif
-              %}
+              {{ record.get('message', {}).get('content', {}).get('value') |
+              string if record.get('message', {}).get('content', {}).get('value')
+              is not none else none }}
           - type: AddedFieldDefinition
             path:
               - conversation_id
@@ -490,6 +498,8 @@ streams:
         field_pointers:
           - - message
           - - conversation
+          - - actor
+          - - principal
     incremental_sync:
       type: DatetimeBasedCursor
       global_substream_cursor: true
