@@ -87,7 +87,7 @@ class MySQLDestinationTest {
             MySQLDestination()
                 .getDefaultConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl())
         Assertions.assertEquals(MySQLDestination.DEFAULT_JDBC_PARAMETERS, defaultProperties)
-        Assertions.assertEquals("SERVER", defaultProperties["connectionTimeZone"])
+        Assertions.assertEquals("LOCAL", defaultProperties["connectionTimeZone"])
     }
 
     @Test
@@ -95,7 +95,7 @@ class MySQLDestinationTest {
         val defaultProperties =
             MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters())
         Assertions.assertEquals(MySQLDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties)
-        Assertions.assertEquals("SERVER", defaultProperties["connectionTimeZone"])
+        Assertions.assertEquals("LOCAL", defaultProperties["connectionTimeZone"])
     }
 
     companion object {

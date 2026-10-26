@@ -191,8 +191,13 @@ class MySQLDestination :
                     "convertToNull",
                     "allowLoadLocalInfile",
                     "true",
+                    // _airbyte_extracted_at is written as a JVM-local wall-clock string (LOAD DATA)
+                    // and read back through getTimestamp(); both sides must use the JVM zone or the
+                    // typing watermark shifts by the server's UTC offset. LOCAL also skips server
+                    // time-zone detection, which fails on zone names the driver cannot map (MSK,
+                    // CEST, IST).
                     "connectionTimeZone",
-                    "SERVER",
+                    "LOCAL",
                 )
 
         @JvmField
