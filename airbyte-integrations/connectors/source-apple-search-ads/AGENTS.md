@@ -258,8 +258,9 @@ It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULT
 on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
 campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
 with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
-slice start), so a row's `date` always matches its metrics; the newest day arrives on the next sync
-through the lookback. The first window starts at most 89 days back, because Apple serves `DAILY`
+slice start), so a row's `date` always matches its metrics. The CDK folds the last day into the
+final slice, so the cursor ends one day after the End Date (or today) to give that day its own
+request. The first window starts at most 89 days back, because Apple serves `DAILY`
 reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
 zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
 handler reports it as a system error.
