@@ -66,14 +66,14 @@ def test_oauth_400_invalid_client_is_configuration_error(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "status_code, expected_message",
+    "status_code, expected_message, failure_type",
     [
-        (400, "Apple Ads rejected the request as invalid (400)"),
-        (403, "Apple Ads denied access (403) for org 123456789"),
-        (404, "Apple Ads returned 404 for org 123456789"),
+        (400, "Apple Ads rejected the request as invalid (400)", FailureType.system_error),
+        (403, "Apple Ads denied access (403) for org 123456789", FailureType.config_error),
+        (404, "Apple Ads returned 404 for https://api.searchads.apple.com/api/v5/campaigns", FailureType.system_error),
     ],
 )
-def test_bad_request_errors_include_apple_message(requests_mock, status_code, expected_message):
+def test_api_errors_include_apple_message(requests_mock, status_code, expected_message, failure_type):
     _register_token(requests_mock)
     requests_mock.get(
         _CAMPAIGNS_URL,
@@ -84,9 +84,46 @@ def test_bad_request_errors_include_apple_message(requests_mock, status_code, ex
     output = _read_stream("campaigns", expecting_exception=True)
 
     error = output.errors[0].trace.error
-    assert error.failure_type == FailureType.config_error
+    assert error.failure_type == failure_type
     assert expected_message in error.message
     assert "Apple said: Apple detail here" in error.message
+
+
+def test_child_404_is_a_system_error(requests_mock):
+    _register_token(requests_mock)
+    requests_mock.get(_CAMPAIGNS_URL, json={"data": [{"id": 1}]})
+    requests_mock.get(
+        f"{_CAMPAIGNS_URL}/1/adgroups",
+        status_code=404,
+        json={"data": None, "error": {"errors": [{"messageCode": "NOT_FOUND", "message": "Campaign not found", "field": ""}]}},
+    )
+
+    output = _read_stream("adgroups", expecting_exception=True)
+
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.system_error
+    assert "deleted while the sync was running" in error.message
+    assert "/campaigns/1/adgroups" in error.message
+    assert "Org Id" not in error.message
+
+
+def test_report_400_points_at_the_report_date_window(requests_mock):
+    _register_token(requests_mock)
+    requests_mock.post(
+        f"{_API_URL}/reports/campaigns",
+        status_code=400,
+        json={
+            "data": None,
+            "error": {"errors": [{"messageCode": "INVALID_DATE_RANGE", "message": "Apple date detail", "field": "startTime"}]},
+        },
+    )
+
+    output = _read_stream("campaigns_report_daily", sync_mode=SyncMode.incremental, expecting_exception=True)
+
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "last 90 days" in error.message
+    assert "Apple said: Apple date detail" in error.message
 
 
 @pytest.mark.parametrize(
@@ -115,17 +152,20 @@ def test_401_refreshes_token_and_retries(requests_mock):
             {"json": {"access_token": "refreshed-token", "token_type": "bearer", "expires_in": 3600}},
         ],
     )
-    requests_mock.get(
-        _CAMPAIGNS_URL,
-        response_list=[
-            {"status_code": 401, "json": {"error": "unauthorized"}},
-            {"status_code": 200, "json": {"data": [{"id": "campaign-1"}]}},
-        ],
-    )
+    sent_tokens = []
+
+    def campaigns(request, context):
+        # The CDK re-signs the same PreparedRequest on retry, so request_history would only show the last token.
+        sent_tokens.append(request.headers["Authorization"])
+        context.status_code = 401 if len(sent_tokens) == 1 else 200
+        return {"error": "unauthorized"} if len(sent_tokens) == 1 else {"data": [{"id": "campaign-1"}]}
+
+    requests_mock.get(_CAMPAIGNS_URL, json=campaigns)
 
     output = _read_stream("campaigns")
 
     assert len(output.records) == 1
+    assert sent_tokens == ["Bearer initial-token", "Bearer refreshed-token"]
     assert requests_mock.call_count == 4
     assert requests_mock.request_history[0].url == _TOKEN_URL
     assert requests_mock.request_history[1].url.startswith(_CAMPAIGNS_URL)

@@ -58,7 +58,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.0@sha256:7a57d6d6c8feb7862f8619b7c9020fc0b39db97ed9e7325374683bf0212e23c4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   suggestedStreams:
     streams:
       - campaigns_report_daily

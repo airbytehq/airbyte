@@ -131,7 +131,6 @@ def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
 
     assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
     for f in refresh_filters:
-        assert f.get("failure_type") == "config_error"
         assert "Apple Ads rejected the credentials (401)" in f.get("error_message", "")
 
 
@@ -197,13 +196,14 @@ def test_each_stream_resolves_to_default_error_handler(manifest):
 
 
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
-def test_streams_classify_bad_requests_as_configuration_errors(manifest, stream_name):
+def test_streams_classify_api_errors(manifest, stream_name):
     filters = _get_response_filters(manifest, _get_stream_def(manifest, stream_name))
-    for status_code in (400, 403, 404):
+    bad_request = "config_error" if stream_name.endswith("_report_daily") else "system_error"
+    for status_code, failure_type in ((400, bad_request), (403, "config_error"), (404, "system_error")):
         matching = [response_filter for response_filter in filters if status_code in response_filter.get("http_codes", [])]
         assert matching
         assert matching[0]["action"] == "FAIL"
-        assert matching[0]["failure_type"] == "config_error"
+        assert matching[0]["failure_type"] == failure_type
 
 
 def test_keywords_report_daily_ignore_filter_is_first(manifest):

@@ -52,6 +52,9 @@ _TOKEN_REQUEST = HttpRequest(
 )
 _TOKEN_RESPONSE = HttpResponse(body=json.dumps({"access_token": "an-access-token", "token_type": "Bearer", "expires_in": 3600}))
 
+# Apple requires the org context header on every Campaign Management API call.
+_API_HEADERS = {"X-AP-Context": f"orgId={_CONFIG['org_id']}", "Authorization": "Bearer an-access-token"}
+
 _REPORT_PATHS = {
     "campaigns_report_daily": "/reports/campaigns",
     "adgroups_report_daily": f"/reports/campaigns/{_CAMPAIGN_ID}/adgroups",
@@ -68,7 +71,7 @@ def _list_request(path: str, offset: int | None = None) -> HttpRequest:
     query_params = {"limit": str(_PAGE_SIZE)}
     if offset is not None:
         query_params["offset"] = str(offset)
-    return HttpRequest(url=f"{_BASE_URL}{path}", query_params=query_params)
+    return HttpRequest(url=f"{_BASE_URL}{path}", query_params=query_params, headers=_API_HEADERS)
 
 
 def _list_response(records: list[dict[str, Any]]) -> HttpResponse:
@@ -81,6 +84,7 @@ def _report_request(stream: str, start_time: str, end_time: str, offset: int | N
         pagination["offset"] = offset
     return HttpRequest(
         url=f"{_BASE_URL}{_REPORT_PATHS[stream]}",
+        headers=_API_HEADERS,
         body={
             "startTime": start_time,
             "endTime": end_time,
@@ -105,7 +109,8 @@ def _report_row(country: str = "US") -> dict[str, Any]:
             "adId": _AD_ID,
             "countryOrRegion": country,
         },
-        "total": {"impressions": 5},
+        # Apple returns one entry per day under granularity for DAILY reports.
+        "granularity": [{"date": "2024-01-01", "impressions": 5}],
     }
 
 
@@ -152,27 +157,6 @@ def test_campaigns_extract_records_from_data_field() -> None:
         http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 1)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
-    assert not output.errors
-
-
-def test_expired_access_token_refreshes_and_retries() -> None:
-    with HttpMocker() as http_mocker:
-        campaigns_request = _list_request("/campaigns")
-        http_mocker.get(
-            campaigns_request,
-            [
-                HttpResponse(body=json.dumps({"error": {"errors": [{"messageCode": "UNAUTHORIZED"}]}}), status_code=401),
-                _list_response([{"id": _CAMPAIGN_ID, "name": "campaign"}]),
-            ],
-        )
-        _mock_token(http_mocker, number_of_calls=2)
-
-        output = _read("campaigns")
-
-        http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
-        http_mocker.assert_number_of_calls(campaigns_request, 2)
-
-    assert len(output.records) == 1
     assert not output.errors
 
 
@@ -271,7 +255,7 @@ def test_report_records_add_id_date_and_country(stream: str, id_field: str, id_v
     assert record[id_field] == id_value
     assert record["date"] == "2024-01-01"
     assert record["countryorregion"] == "FR"
-    assert record["total"] == {"impressions": 5}
+    assert record["granularity"] == [{"date": "2024-01-01", "impressions": 5}]
 
 
 def test_full_report_page_paginates_with_offset_in_selector() -> None:
@@ -354,3 +338,20 @@ def test_report_request_defaults_timezone_and_optional_config_values() -> None:
             http_mocker.assert_number_of_calls(request, 1)
 
     assert output.errors == []
+
+
+def test_report_retry_uses_the_default_backoff_factor(sleeps) -> None:
+    config = {key: value for key, value in _CONFIG.items() if key != "backoff_factor"}
+    report_request = _report_request("campaigns_report_daily", *_FIRST_DAY)
+    with HttpMocker() as http_mocker:
+        http_mocker.post(report_request, [HttpResponse(body="{}", status_code=500), _report_response([_report_row()])])
+        http_mocker.post(_report_request("campaigns_report_daily", *_SECOND_DAY), _report_response([]))
+        _mock_token(http_mocker)
+
+        catalog = CatalogBuilder().with_stream("campaigns_report_daily", SyncMode.incremental).build()
+        output = read(get_source(config, catalog=catalog), config, catalog)
+
+    assert len(output.records) == 1
+    assert not output.errors
+    # ExponentialBackoffStrategy with the default factor 5: 5 * 2**1 seconds, plus the CDK's extra second.
+    assert [seconds for seconds in sleeps if seconds] == [11]
