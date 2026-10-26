@@ -2,14 +2,21 @@
 
 This connector is manifest-only (`language:manifest-only`, `cdk:low-code`); all behavior described
 below lives in `manifest.yaml`. It targets the Apple Ads (formerly Apple Search Ads) Campaign
-Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request carries an
-`X-AP-Context: orgId={{ config.org_id }}` header, which the API requires on all campaign-management
-calls.
+Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request except
+`organization`'s `GET /acls` carries an `X-AP-Context: orgId={{ config.org_id }}` header, which the
+API requires on campaign-management calls.
 
-Streams: `campaigns`, `adgroups`, `keywords`, `ads` (entity streams, `primary_key: [id]`,
-full refresh) and `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`,
-`ads_report_daily` (incremental report streams on `date`, keyed by the deterministic composite
-`(<entity>Id, date, countryorregion)`).
+Streams: `campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, `product_pages` (entity streams, `primary_key: [id]`, full refresh),
+`organization` (`GET /acls`, `primary_key: [orgId]`, full refresh, no `X-AP-Context` header because
+the ACL call lists every organization the API user can access) and `campaigns_report_daily`,
+`adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily` (report streams, incremental on
+`date`, keyed by `(<entity>Id, date, countryorregion)`) and `search_terms_report_daily` (incremental
+on `date`, keyless; see section 2).
+
+`product_pages` is partitioned by the app (`adamId`) of each campaign through a deduplicating
+`GroupingPartitionRouter` (`group_size: 1`), so an app advertised by several campaigns is requested
+once.
 
 ## 1. Authentication is two-legged only; there is no user-consent OAuth flow
 
@@ -45,11 +52,11 @@ user-consent flow at all, so the `client_id` / `client_secret` pair is the only 
 shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
 connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
 
-## 2. The four `*_report_daily` streams use deterministic composite primary keys
+## 2. The daily report streams use deterministic composite primary keys
 
-`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, and `ads_report_daily`
-are aggregate reporting streams: the request is a `POST` to
-`/reports/campaigns[/{campaignId}/{adgroups|keywords|ads}]` with `granularity: DAILY`,
+`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily` and
+`search_terms_report_daily` are aggregate reporting streams: the request is a `POST` to
+`/reports/campaigns[/{campaignId}/{adgroups|keywords|ads|searchterms}]` with `granularity: DAILY`,
 `groupBy: ['countryOrRegion']`, and a `startTime`/`endTime` window; the API returns
 `data.reportingDataResponse.row[]` where each row is a metric aggregation, not a stored object. No
 row carries an API-assigned record identifier.
@@ -58,23 +65,33 @@ Each row is identified by a deterministic composite the connector assembles with
 transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or `adId`, lifted
 out of nested `record.metadata`), the `date` copied from `stream_slice.start_time`, and
 `countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
-The manifest declares this composite as the primary key for each report stream. Metrics are nested
-under the `granularity` array; entity attributes stay under `metadata`.
+Every request covers one day (`endTime` equals the slice start), so `date` is also the day of the
+row's metrics. The manifest declares this composite as the primary key of the four entity report
+streams. Metrics are nested under the `granularity` array; entity attributes stay under `metadata`.
+
+`search_terms_report_daily` declares no key. Its rows add `adGroupId`, `keywordId` and
+`searchTermText`, and Apple folds terms under its 10-impression limit into rows with `other: true`
+and a null `searchTermText`, so no non-null composite identifies every row. Users who need
+deduplication use `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and
+`countryorregion` in the destination.
 
 Row identity depends on the request shape: `granularity: DAILY`, `groupBy: ['countryOrRegion']`,
 and `step: P1D` on the cursor. A future change to `groupBy`, `granularity`, or `step` can change
 row identity and is itself a breaking change that requires a major version bump.
 
-**Why this matters:** S-1 requires a real primary key on every stream. These four keys are derived
-from fields supplied by the connector's request and transformations, rather than an API-assigned
-identifier, so keep their derivation aligned with the report request and cursor.
+**Why this matters:** S-1 requires a real primary key on every stream or a named exception. The four
+keys are derived from fields supplied by the connector's request and transformations, rather than an
+API-assigned identifier, so keep their derivation aligned with the report request and cursor: a
+change to `groupBy`, `granularity`, the one-day request window or the cursor `step` changes row
+identity and needs a major version. `search_terms_report_daily` is the named exception above.
 
 ## 3. Deletions are replicated as a `deleted` flag on the entity streams
 
 The canonical deletion pattern for this connector is **a deletion flag field on the primary
 streams**, not dedicated `deleted_*` streams. Apple soft-deletes campaign-management objects and
-returns `deleted: true|false` on `Campaign`, `AdGroup`, `Keyword`, and `Ad`; the schemas of
-`campaigns`, `adgroups`, `keywords`, and `ads` all include that boolean, so whatever Apple returns
+returns `deleted: true|false` on `Campaign`, `AdGroup`, `Keyword`, `Ad` and `NegativeKeyword`; the
+schemas of `campaigns`, `adgroups`, `keywords`, `ads`, `campaign_negative_keywords` and
+`adgroup_negative_keywords` all include that boolean, so whatever Apple returns
 is passed through to the destination unchanged. There are no `deleted_*` streams and none should be
 added.
 
@@ -106,10 +123,15 @@ endpoints are needed.
 
 ## 4. Entity streams are full refresh even though records carry `modificationTime`
 
-Only the four report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
-`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The four entity streams
-(`campaigns`, `adgroups`, `keywords`, `ads`) are full refresh on purpose, even though their records
-carry `modificationTime`:
+Only the five report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
+`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The entity streams
+(`campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, `product_pages`, `organization`) are full refresh on purpose, even
+though most of their records carry `modificationTime`:
+
+- The newer entity streams read `GET` endpoints with no modification-time filter (only the separate Find Creatives endpoint filters on it): Get All Creatives
+  and both negative keyword endpoints take only `limit` and `offset`, Get Product Pages takes only
+  `name` and `states`, and Get User ACL takes no parameters.
 
 - `modificationTime` does not move when the serving state changes. Apple documents it as "the date
   and time of the most recent modification of the object", while `servingStatus`,
@@ -145,8 +167,9 @@ requests-per-window, and no quota headers for this API version, so there is no p
 an `api_budget` to match.
 
 Each stream resolves to one `DefaultErrorHandler` through shared definitions: campaigns, adgroups,
-keywords, and ads use `error_handler`; campaigns_report_daily, adgroups_report_daily, and
-ads_report_daily use `report_error_handler`; keywords_report_daily uses
+keywords, ads, organization, creatives, campaign_negative_keywords, adgroup_negative_keywords and
+product_pages use `error_handler`; campaigns_report_daily, adgroups_report_daily, ads_report_daily
+and search_terms_report_daily use `report_error_handler`; keywords_report_daily uses
 `keywords_report_error_handler`, which first ignores Apple's `CAMPAIGN DOES NOT CONTAIN KEYWORD`
 response. The filters follow the status tables on each endpoint page (for example
 [Get All Ad Groups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) and
@@ -208,8 +231,8 @@ deprecated and folded into it) and the
 | `ad_group_report`    | covered | `adgroups_report_daily`                                                                                                                                                                                                                              |
 | `keyword_report`     | covered | `keywords_report_daily`                                                                                                                                                                                                                              |
 | `ad_report`          | covered | `ads_report_daily`                                                                                                                                                                                                                                   |
-| `organization`       | missing | Apple exposes [`GET /acls`](https://developer.apple.com/documentation/apple_ads/get-user-acl) (org id, name, currency, timezone, payment model) and `GET /me`; neither is implemented as a stream.                                                   |
-| `search_term_report` | missing | Apple exposes `POST /reports/campaigns/{campaignId}/searchterms` and the [ad-group-scoped variant](https://developer.apple.com/documentation/apple_ads/get-search-term-level-within-ad-group-reports); no `search_terms_report_daily` stream exists. |
+| `organization`       | covered | `organization` ([`GET /acls`](https://developer.apple.com/documentation/apple_ads/get-user-acl))                                                                                                                                                     |
+| `search_term_report` | covered | `search_terms_report_daily` (campaign-scoped `POST /reports/campaigns/{campaignId}/searchterms`)                                                                                                                                                     |
 
 Two notes on the `covered` verdicts, so they are not read as more than they are. First, Fivetran's
 `*_history` tables are versioned snapshots produced by Fivetran's history mode; the matching Airbyte
@@ -218,15 +241,34 @@ Fivetran flattens report metrics into columns (`impressions`, `taps`, `local_spe
 these streams keep Apple's nested response shape — metrics live in the `granularity` array and
 entity attributes in `metadata`, so the data is present but not column-per-metric.
 
-The two `missing` rows are real and are **not** justified here as out of scope: both endpoints exist
-and both are ordinary reporting/reference resources. Implementing them belongs in its own sub-issue
-of the certification epic (V-1 asks for a single sub-issue listing all missing streams), not in a
-documentation change. Separately, Apple's v5 API also exposes resources neither Fivetran nor this
-connector covers — impression-share reports, product pages, and app locale resources among them;
-they are outside the V-1 comparison because V-1 is scored against competitor coverage, but they are
-worth knowing about when scoping that sub-issue.
+Beyond the Fivetran tables, the connector also syncs `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, and `product_pages`. Apple's impression-share reports are not covered:
+they use the asynchronous custom-report flow (create a report, poll until it completes, then
+download it), which has not been verified against a live account.
 
 **Why this matters:** V-1 asks whether stream coverage matches the market, and passes only when
-there are no `missing` rows or each is justified. This connector has two genuine gaps, so the table
-is the record of that — deliberately not inflated to a clean sheet. Anyone adding streams here
+there are no `missing` rows or each is justified. Every Fivetran table now has a matching stream. Anyone adding streams here
 should update this table in the same change.
+
+## 7. `search_terms_report_daily` always uses ORTZ and only Search Results campaigns
+
+The stream sends `timeZone: ORTZ` whatever `timezone` says, because Apple states "Search term-level
+reports only support a `timeZone` value of `ORTZ`"
+([Get Search Term-Level Reports](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports)),
+and it sends `returnRowTotals: false` and `returnGrandTotals: false`, which Apple requires when a
+request sets `granularity` ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)).
+It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULTS` (a `RecordFilter`
+on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
+campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
+with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
+slice start), so a row's `date` always matches its metrics; the newest day arrives on the next sync
+through the lookback. The first window starts at most 89 days back, because Apple serves `DAILY`
+reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
+zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
+handler reports it as a system error.
+
+**Why this matters:** with `timezone: UTC`, this stream's `date` is an organization-time-zone day
+while the other report streams use UTC days, so joins by `date` can shift by one day. Do not make it
+follow the `timezone` setting, and keep the 89-day floor: search terms are sparse, a sync without
+rows does not move the cursor, and without the floor such a stream would restart from an old Start
+Date that Apple rejects.

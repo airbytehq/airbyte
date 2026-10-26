@@ -91,8 +91,8 @@ definitions:
         - 404
       failure_type: system_error
       error_message: >-
-        Apple Ads returned 404 for {{ request_url }}. A campaign or ad group may
-        have been deleted while the sync was running.
+        Apple Ads returned 404 for {{ request_url }}. A campaign, ad group or app
+        may have been deleted while the sync was running.
         {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
         {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
         {%- set first_error = apple_errors[0] if apple_errors else {} -%}
@@ -125,6 +125,17 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/token_expired"
       - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  search_terms_report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
   keywords_report_error_handler:
@@ -765,6 +776,344 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ads_report_daily"
+    organization:
+      type: DeclarativeStream
+      name: organization
+      primary_key:
+        - orgId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /acls
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          # Get User ACL returns every organization the API user can access; keep the configured one.
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.orgId == config.org_id }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization"
+    creatives:
+      type: DeclarativeStream
+      name: creatives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /creatives
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/creatives"
+    campaign_negative_keywords:
+      type: DeclarativeStream
+      name: campaign_negative_keywords
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns/{{ stream_slice.campaign_id }}/negativekeywords
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/negative_keywords"
+    adgroup_negative_keywords:
+      type: DeclarativeStream
+      name: adgroup_negative_keywords
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{
+            stream_slice.adgroup_id }}/negativekeywords
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: adgroup_id
+              stream:
+                $ref: "#/definitions/streams/adgroups"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/negative_keywords"
+    product_pages:
+      type: DeclarativeStream
+      name: product_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /apps/{{ stream_slice.adam_id[0] }}/product-pages
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: adamId
+                partition_field: adam_id
+                stream:
+                  $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_pages"
+    search_terms_report_daily:
+      type: DeclarativeStream
+      name: search_terms_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns/{{ stream_slice.campaign_id }}/searchterms
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            # One day per request, so every row's date matches its metrics; the newest day arrives on the next sync.
+            endTime: "{{ stream_slice.start_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "impressions", "sortOrder":
+              "DESCENDING" } ] }
+            # Apple serves search term reports in the organization's time zone only.
+            timeZone: ORTZ
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+            returnRowTotals: false
+            returnGrandTotals: false
+          error_handler:
+            $ref: "#/definitions/search_terms_report_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+                retriever:
+                  $ref: "#/definitions/streams/campaigns/retriever"
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                    record_filter:
+                      type: RecordFilter
+                      condition: >-
+                        {{ 'APPSTORE_SEARCH_RESULTS' in
+                        (record.get('supplySources') or ['APPSTORE_SEARCH_RESULTS']) }}
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past; 89 leaves room for ORTZ.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - campaignId
+              value: "{{ stream_slice.campaign_id }}"
+            - type: AddedFieldDefinition
+              path:
+                - adGroupId
+              value: "{{ record.metadata.adGroupId }}"
+            - type: AddedFieldDefinition
+              path:
+                - keywordId
+              value: "{{ record.metadata.keywordId }}"
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+        - type: AddFields
+          condition: "{{ record.metadata.searchTermText is not none }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - searchTermText
+              # tojson stops literal_eval from rewriting terms such as "vpn" or 2048.
+              value: "{{ record.metadata.searchTermText | tojson }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_terms_report_daily"
   base_requester:
     type: HttpRequester
     url_base: https://api.searchads.apple.com/api/v5
@@ -796,6 +1145,12 @@ streams:
   - $ref: "#/definitions/streams/keywords_report_daily"
   - $ref: "#/definitions/streams/ads"
   - $ref: "#/definitions/streams/ads_report_daily"
+  - $ref: "#/definitions/streams/organization"
+  - $ref: "#/definitions/streams/creatives"
+  - $ref: "#/definitions/streams/campaign_negative_keywords"
+  - $ref: "#/definitions/streams/adgroup_negative_keywords"
+  - $ref: "#/definitions/streams/product_pages"
+  - $ref: "#/definitions/streams/search_terms_report_daily"
 
 spec:
   type: Spec
@@ -884,7 +1239,8 @@ spec:
         default: UTC
         description: >-
           The timezone for the reporting data. Use 'ORTZ' for Organization Time
-          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC. Search term
+          reports always use ORTZ, the only time zone Apple serves them in.
         enum:
           - ORTZ
           - UTC
@@ -925,6 +1281,12 @@ metadata:
     keywords_report_daily: false
     ads: false
     ads_report_daily: false
+    organization: false
+    creatives: false
+    campaign_negative_keywords: false
+    adgroup_negative_keywords: false
+    product_pages: false
+    search_terms_report_daily: false
   yamlComponents:
     streams:
       campaigns_report_daily:
@@ -934,6 +1296,8 @@ metadata:
       keywords_report_daily:
         - errorHandler
       ads_report_daily:
+        - errorHandler
+      search_terms_report_daily:
         - errorHandler
     global:
       - authenticator
@@ -1977,5 +2341,315 @@ schemas:
         type:
           - boolean
           - "null"
+    required:
+      - date
+  organization:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      orgId:
+        type: integer
+      orgName:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      paymentModel:
+        type:
+          - string
+          - "null"
+      parentOrgId:
+        type:
+          - integer
+          - "null"
+      roleNames:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      displayName:
+        type:
+          - string
+          - "null"
+    required:
+      - orgId
+  creatives:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      orgId:
+        type:
+          - integer
+          - "null"
+      adamId:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stateReasons:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      productPageId:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+      modificationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+    required:
+      - id
+  negative_keywords:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      campaignId:
+        type:
+          - integer
+          - "null"
+      adGroupId:
+        type:
+          - integer
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      matchType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+      modificationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+    required:
+      - id
+  product_pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      adamId:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      deepLink:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+      modificationTime:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+    required:
+      - id
+  search_terms_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+        format: date
+      campaignId:
+        type:
+          - integer
+          - "null"
+      adGroupId:
+        type:
+          - integer
+          - "null"
+      keywordId:
+        type:
+          - integer
+          - "null"
+      searchTermText:
+        type:
+          - string
+          - "null"
+      countryorregion:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          adGroupId:
+            type:
+              - integer
+              - "null"
+          adGroupName:
+            type:
+              - string
+              - "null"
+          adGroupDeleted:
+            type:
+              - boolean
+              - "null"
+          bidAmount:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          countryOrRegion:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          keyword:
+            type:
+              - string
+              - "null"
+          keywordDisplayStatus:
+            type:
+              - string
+              - "null"
+          keywordId:
+            type:
+              - integer
+              - "null"
+          matchType:
+            type:
+              - string
+              - "null"
+          searchTermSource:
+            type:
+              - string
+              - "null"
+          searchTermText:
+            type:
+              - string
+              - "null"
+          campaignId:
+            type:
+              - integer
+              - "null"
+          keywordStatus:
+            type:
+              - string
+              - "null"
+          modificationTime:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          orgId:
+            type:
+              - integer
+              - "null"
+      granularity:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+                - "null"
+              format: date
+      total:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      other:
+        type:
+          - boolean
+          - "null"
+      insights:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
     required:
       - date
