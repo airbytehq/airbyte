@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.33.0"
+version = "7.38.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = "<3.14,>=3.10"
+python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.33.0-py3-none-any.whl", hash = "sha256:0d372e3882c5027e93d4f61b3a2b1a482aec1d28c37c25c4524f3e3e77929595"},
-    {file = "airbyte_cdk-7.33.0.tar.gz", hash = "sha256:2d3bf2c7caf33a7eabf34c345e064f1819c0c233dc1926ab0635aa48b7e445c5"},
+    {file = "airbyte_cdk-7.38.0-py3-none-any.whl", hash = "sha256:c918b059004c05b6be93f410a4ca813e71a7834903f293c7a46f032d470d509d"},
+    {file = "airbyte_cdk-7.38.0.tar.gz", hash = "sha256:9eb33f1f7060442b87ab920e6ed1b492b4b676dc46d2c411768505566e3059a3"},
 ]
 
 [package.dependencies]
@@ -33,8 +33,8 @@ jsonschema = ">=4.17.3,<5.0"
 nltk = "3.9.4"
 orjson = ">=3.10.7,<4.0.0"
 packaging = "*"
-pandas = "2.2.3"
-pydantic = ">=2.7,<3.0"
+pandas = ">=2.2.3,<3.0"
+pydantic = ">=2.13,<3.0"
 pyjwt = ">=2.8.0,<3.0.0"
 pyrate-limiter = ">=3.1.0,<3.2.0"
 python-dateutil = ">=2.9.0,<3.0.0"
@@ -51,16 +51,17 @@ serpyco-rs = ">=1.10.2,<2.0.0"
 setuptools = ">=80.9.0"
 typing-extensions = "*"
 unidecode = ">=1.3.8,<2.0.0"
+urllib3 = "*"
 wcmatch = "10.0"
 whenever = ">=0.7.3,<0.9.0"
 xmltodict = ">=0.13,<0.15"
 
 [package.extras]
 dev = ["pytest (>=7,<8)"]
-file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<20.0.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<24.0.0)", "pytesseract (==0.3.10)", "python-calamine (>=0.2.3,<0.9.0)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
-vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
+vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (>=0.8.0,<0.15.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -673,6 +674,21 @@ typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "freezegun"
+version = "1.5.5"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "freezegun-1.5.5-py3-none-any.whl", hash = "sha256:cd557f4a75cf074e84bc374249b9dd491eaeacd61376b9eb3c423282211619d2"},
+    {file = "freezegun-1.5.5.tar.gz", hash = "sha256:ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
 
 [[package]]
 name = "genson"
@@ -3313,4 +3329,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "f1f861c4c30b7cc155f82920a73ee83ec1560236d4fafb96b31f367b772c5d27"
+content-hash = "5bc8619b92d2ebe5bcc54bc278491e483774ac334e9e99761686975e02501e45"
