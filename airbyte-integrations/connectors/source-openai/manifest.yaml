@@ -366,16 +366,12 @@ streams:
               - "null"
           author_skills_used:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type: string
           author_tools_used:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type: string
           message_content_value:
             type:
               - string
@@ -442,18 +438,25 @@ streams:
             path:
               - author_skills_used
             value: >-
-              {{ record.get('message', {}).get('author', {}).get('skills_used')
-              }}
+              {% set skills_used =
+              record.get('message', {}).get('author', {}).get('skills_used') %}{{
+              skills_used | tojson if skills_used is not none else none }}
           - type: AddedFieldDefinition
             path:
               - author_tools_used
             value: >-
-              {{ record.get('message', {}).get('author', {}).get('tools_used')
-              }}
+              {% set tools_used =
+              record.get('message', {}).get('author', {}).get('tools_used') %}{{
+              tools_used | tojson if tools_used is not none else none }}
           - type: AddedFieldDefinition
             path:
               - message_content_value
-            value: "{{ record.get('message', {}).get('content', {}).get('value') }}"
+            value: >-
+              {% set content_value =
+              record.get('message', {}).get('content', {}).get('value') %}{% if
+              content_value is string %}{{ content_value }}{% elif content_value
+              is none %}{{ none }}{% else %}{{ content_value | tojson }}{% endif
+              %}
           - type: AddedFieldDefinition
             path:
               - conversation_id
