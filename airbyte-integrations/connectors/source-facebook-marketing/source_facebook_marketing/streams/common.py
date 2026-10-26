@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import Any
 
 import backoff
+import requests
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -37,6 +38,14 @@ FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
 DEFAULT_SLEEP_INTERVAL = timedelta(minutes=1)
+# Transport-level failures raised by `requests` inside the facebook_business SDK session
+# (dropped keep-alive connections, truncated chunked responses, read timeouts). The SDK bypasses
+# the CDK HttpClient, so these mirror the CDK's own transient exceptions.
+TRANSIENT_NETWORK_EXCEPTIONS = (
+    requests.exceptions.ConnectionError,
+    requests.exceptions.ChunkedEncodingError,
+    requests.exceptions.ReadTimeout,
+)
 
 logger = logging.getLogger("airbyte")
 
@@ -57,6 +66,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
+        # Only attempt limit reduction for FacebookRequestError, not for
+        # network-level exceptions like ConnectionError which lack http_status().
+        if not isinstance(exc, FacebookRequestError):
+            return
         # the list of error patterns to track,
         # in order to reduce the request page size and retry
         error_patterns = [
@@ -88,8 +101,16 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         details.get("args")[0].request_record_limit_is_reduced = False
 
     def give_up(details):
-        if isinstance(details["exception"], FacebookRequestError):
-            raise traced_exception(details["exception"])
+        exc = details["exception"]
+        if isinstance(exc, FacebookRequestError):
+            raise traced_exception(exc)
+        if isinstance(exc, TRANSIENT_NETWORK_EXCEPTIONS):
+            raise AirbyteTracedException(
+                message="Network connection to the Facebook Marketing API was interrupted.",
+                internal_message=f"{type(exc).__name__} persisted after {details['tries']} attempts: {exc}",
+                failure_type=FailureType.transient_error,
+                exception=exc,
+            )
 
     def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
@@ -231,6 +252,11 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type = FailureType.system_error
         error_code = fb_exception.api_error_code() if fb_exception.api_error_code() else fb_exception.http_status()
         friendly_msg = f"Error code {error_code}: {msg}."
+        user_facing_details = _get_user_facing_error_details(fb_exception)
+        if user_facing_details:
+            error_subcode = fb_exception.api_error_subcode()
+            subcode_part = f" (subcode {error_subcode})" if error_subcode else ""
+            friendly_msg = f"Error code {error_code}{subcode_part}: {msg}. Facebook details: {user_facing_details}"
 
     return AirbyteTracedException(
         message=friendly_msg or msg,
@@ -238,3 +264,16 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type=failure_type,
         exception=fb_exception,
     )
+
+
+def _get_user_facing_error_details(fb_exception: FacebookRequestError) -> str:
+    """Return Meta's localized `error_user_title` / `error_user_msg` text, if the Graph API error includes it."""
+    error = fb_exception._error if isinstance(fb_exception._error, dict) else {}
+    parts = []
+    for key in ("error_user_title", "error_user_msg"):
+        value = error.get(key)
+        if isinstance(value, str) and value.strip():
+            text = value.strip().rstrip(".")
+            if text not in parts:
+                parts.append(text)
+    return f"{'. '.join(parts)}." if parts else ""

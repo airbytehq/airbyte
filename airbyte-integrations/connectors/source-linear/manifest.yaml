@@ -2037,13 +2037,13 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "API Key"
-            condition: "{{ not config.get('credentials') and config.get('api_key') }}"
+            condition: "{{ config.get('api_key', False) and not config.get('credentials', False) }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_key"]
                 value: "{{ config['api_key'] }}"
-            condition: "{{ not config.get('credentials', {}).get('api_key') and config.get('api_key') }}"
+            condition: "{{ config.get('api_key', False) and not config.get('credentials', {}).get('api_key', False) }}"
 
 
 metadata:

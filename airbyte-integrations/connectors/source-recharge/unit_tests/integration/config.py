@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import datetime as dt
 from typing import Any, MutableMapping
 
 import pendulum
@@ -25,7 +24,11 @@ class ConfigBuilder:
         }
 
     def with_start_date(self, start_date: str) -> ConfigBuilder:
-        self._config["start_date"] = dt.datetime.strptime(start_date, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
+        # Stored verbatim, not reformatted through DATE_TIME_FORMAT (%z): the
+        # connector's spec requires start_date as literal ...Z (see spec.json's
+        # pattern and START_DATE above), not a %z offset like +0000. Every
+        # stream's start_datetime.datetime_format expects that same ...Z shape.
+        self._config["start_date"] = start_date
         return self
 
     def with_access_token(self, access_token: str) -> ConfigBuilder:

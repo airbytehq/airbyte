@@ -19,7 +19,7 @@ object CompletableFutures {
      * @return a future that completes when all the input futures have completed
      */
     fun <Result> allOf(
-        futures: List<CompletionStage<Result>>
+        futures: List<CompletionStage<Result>>,
     ): CompletionStage<List<Either<out Exception, Result>>> {
         val futuresArray: Array<CompletableFuture<Result>> =
             futures.map { it.toCompletableFuture() }.toTypedArray()

@@ -1,40 +1,51 @@
 # Castor EDC
+
 This document provides the specifications of the [`source-castor-edc`](https://uk.castoredc.com/api#/), describing the currently available
-API endpoints and methods. 
+API endpoints and methods.
 
 Documentation: https://uk.castoredc.com/api#/
 
 ## Authentication
-Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your client id and secret
+
+Generate an API client ID and client secret in your Castor account settings on the server where your study is stored:
+
+| `url_region` | Server           | Account settings                            |
+| ------------ | ---------------- | ------------------------------------------- |
+| `nl`         | Netherlands (EU) | https://data.castoredc.com/account/settings |
+| `uk`         | United Kingdom   | https://uk.castoredc.com/account/settings   |
+| `us`         | United States    | https://us.castoredc.com/account/settings   |
+
+The `nl` setting uses `data.castoredc.com` for both API requests and OAuth authentication, as documented in [Castor's server guide](https://helpdesk.castoredc.com/2-introduction-and-getting-started/server-selecting-data-storage-location).
 
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `url_region` | `string` | URL Region. The url region given at time of registration | uk |
-| `client_id` | `string` | Client ID. Visit `https://YOUR_REGION.castoredc.com/account/settings` |  |
-| `client_secret` | `string` | Client secret. Visit `https://YOUR_REGION.castoredc.com/account/settings` |  |
-| `start_date` | `string` | Start date.  |  |
+| Input           | Type     | Description                                                                                            | Default Value |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------------ | ------------- |
+| `url_region`    | `string` | Region where your study is stored: `nl` (Netherlands), `uk` (United Kingdom), or `us` (United States). | uk            |
+| `client_id`     | `string` | Client ID from your regional account settings listed above.                                            |               |
+| `client_secret` | `string` | Client secret from your regional account settings listed above.                                        |               |
+| `start_date`    | `string` | Start date.                                                                                            |               |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| user | id | No pagination | ✅ |  ✅  |
-| study | crf_id | DefaultPaginator | ✅ |  ✅  |
-| audit_trial | uuid | DefaultPaginator | ✅ |  ✅  |
-| country | id | No pagination | ✅ |  ❌  |
-| study_survey | id | DefaultPaginator | ✅ |  ❌  |
-| study_survey_package | id | DefaultPaginator | ✅ |  ❌  |
-| study_site | id | DefaultPaginator | ✅ |  ❌  |
-| study_fields | id | DefaultPaginator | ✅ |  ❌  |
-| study_field_dependency | id | DefaultPaginator | ✅ |  ❌  |
-| study_field_validation | id | DefaultPaginator | ✅ |  ❌  |
-| study_form | id | DefaultPaginator | ✅ |  ❌  |
-| study_role | uuid | DefaultPaginator | ✅ |  ❌  |
-| study_fieldoption_groups | id | DefaultPaginator | ✅ |  ❌  |
-| study_statistics | study_id | DefaultPaginator | ✅ |  ❌  |
-| study_user | id | DefaultPaginator | ✅ |  ✅  |
-| study_visit | id | DefaultPaginator | ✅ |  ❌  |
+
+| Stream Name              | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+| ------------------------ | ----------- | ---------------- | ------------------ | -------------------- |
+| user                     | id          | No pagination    | ✅                 | ✅                   |
+| study                    | crf_id      | DefaultPaginator | ✅                 | ✅                   |
+| audit_trial              | uuid        | DefaultPaginator | ✅                 | ✅                   |
+| country                  | id          | No pagination    | ✅                 | ❌                   |
+| study_survey             | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_survey_package     | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_site               | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_fields             | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_field_dependency   | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_field_validation   | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_form               | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_role               | uuid        | DefaultPaginator | ✅                 | ❌                   |
+| study_fieldoption_groups | id          | DefaultPaginator | ✅                 | ❌                   |
+| study_statistics         | study_id    | DefaultPaginator | ✅                 | ❌                   |
+| study_user               | id          | DefaultPaginator | ✅                 | ✅                   |
+| study_visit              | id          | DefaultPaginator | ✅                 | ❌                   |
 
 ## IP allow list
 
@@ -45,8 +56,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.66 | 2026-10-20 | [89152](https://github.com/airbytehq/airbyte/pull/89152) | Update dependencies |
+| 0.0.65 | 2026-10-13 | [88561](https://github.com/airbytehq/airbyte/pull/88561) | Update dependencies |
+| 0.0.64 | 2026-10-07 | [88296](https://github.com/airbytehq/airbyte/pull/88296) | Fix Netherlands API and OAuth URLs and allowed hosts. |
+| 0.0.63 | 2026-10-06 | [87800](https://github.com/airbytehq/airbyte/pull/87800) | Update dependencies |
+| 0.0.62 | 2026-09-29 | [87125](https://github.com/airbytehq/airbyte/pull/87125) | Update dependencies |
+| 0.0.61 | 2026-09-22 | [86573](https://github.com/airbytehq/airbyte/pull/86573) | Update dependencies |
+| 0.0.60 | 2026-09-15 | [85988](https://github.com/airbytehq/airbyte/pull/85988) | Update dependencies |
+| 0.0.59 | 2026-09-08 | [85449](https://github.com/airbytehq/airbyte/pull/85449) | Update dependencies |
 | 0.0.58 | 2026-08-18 | [84522](https://github.com/airbytehq/airbyte/pull/84522) | Update dependencies |
 | 0.0.57 | 2026-08-11 | [83864](https://github.com/airbytehq/airbyte/pull/83864) | Update dependencies |
 | 0.0.56 | 2026-08-04 | [83385](https://github.com/airbytehq/airbyte/pull/83385) | Update dependencies |

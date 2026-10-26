@@ -74,7 +74,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Resolve Conflicts
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
@@ -87,3 +87,4 @@ jobs:
           tags: |
             ai-oncall
             conflict-resolution
+            ${{ inputs.pr && format('airbyte-pr-{0}', inputs.pr) || '' }}

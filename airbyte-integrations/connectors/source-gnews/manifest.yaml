@@ -8,21 +8,33 @@ definitions:
     url_base: "https://gnews.io/api/v4"
     http_method: "GET"
     error_handler:
-      type: "CompositeErrorHandler"
-      error_handlers:
-      - response_filters:
-        - http_codes:
-          - 429
-          action: RETRY
-        backoff_strategies:
-        - type: "ConstantBackoffStrategy"
-          backoff_time_in_seconds: 1.0
-      - response_filters:
-        - http_codes:
-          - 403
-          action: RETRY
-        backoff_strategies:
-        - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+      type: DefaultErrorHandler
+      response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+        - 429
+        action: RETRY
+      - type: HttpResponseFilter
+        http_codes:
+        - 400
+        action: FAIL
+        failure_type: config_error
+        error_message: "GNews rejected the request as malformed. Check the query syntax, date format and other parameters. Response: {{ response.get('errors') }}"
+      - type: HttpResponseFilter
+        http_codes:
+        - 401
+        action: FAIL
+        failure_type: config_error
+        error_message: "GNews rejected the API key. Please verify the API key in your GNews dashboard (https://gnews.io/dashboard)."
+      - type: HttpResponseFilter
+        http_codes:
+        - 403
+        action: FAIL
+        failure_type: transient_error
+        error_message: "GNews daily request quota has been exceeded (or the subscription has expired). The quota resets at 00:00 UTC; wait for the reset, reduce the sync frequency or upgrade your GNews plan (https://gnews.io/pricing)."
+      backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 1.0
   base_retriever:
     record_selector:
       extractor:
@@ -130,21 +142,33 @@ definitions:
         url_base: "https://gnews.io/api/v4"
         http_method: "GET"
         error_handler:
-          type: "CompositeErrorHandler"
-          error_handlers:
-          - response_filters:
-            - http_codes:
-              - 429
-              action: RETRY
-            backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 1.0
-          - response_filters:
-            - http_codes:
-              - 403
-              action: RETRY
-            backoff_strategies:
-            - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+          type: DefaultErrorHandler
+          response_filters:
+          - type: HttpResponseFilter
+            http_codes:
+            - 429
+            action: RETRY
+          - type: HttpResponseFilter
+            http_codes:
+            - 400
+            action: FAIL
+            failure_type: config_error
+            error_message: "GNews rejected the request as malformed. Check the query syntax, date format and other parameters. Response: {{ response.get('errors') }}"
+          - type: HttpResponseFilter
+            http_codes:
+            - 401
+            action: FAIL
+            failure_type: config_error
+            error_message: "GNews rejected the API key. Please verify the API key in your GNews dashboard (https://gnews.io/dashboard)."
+          - type: HttpResponseFilter
+            http_codes:
+            - 403
+            action: FAIL
+            failure_type: transient_error
+            error_message: "GNews daily request quota has been exceeded (or the subscription has expired). The quota resets at 00:00 UTC; wait for the reset, reduce the sync frequency or upgrade your GNews plan (https://gnews.io/pricing)."
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 1.0
         request_parameters:
           token: "{{ config['api_key'] }}"
           lang: "{{ config['language'] }}"
@@ -232,21 +256,33 @@ definitions:
         url_base: "https://gnews.io/api/v4"
         http_method: "GET"
         error_handler:
-          type: "CompositeErrorHandler"
-          error_handlers:
-          - response_filters:
-            - http_codes:
-              - 429
-              action: RETRY
-            backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 1.0
-          - response_filters:
-            - http_codes:
-              - 403
-              action: RETRY
-            backoff_strategies:
-            - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+          type: DefaultErrorHandler
+          response_filters:
+          - type: HttpResponseFilter
+            http_codes:
+            - 429
+            action: RETRY
+          - type: HttpResponseFilter
+            http_codes:
+            - 400
+            action: FAIL
+            failure_type: config_error
+            error_message: "GNews rejected the request as malformed. Check the query syntax, date format and other parameters. Response: {{ response.get('errors') }}"
+          - type: HttpResponseFilter
+            http_codes:
+            - 401
+            action: FAIL
+            failure_type: config_error
+            error_message: "GNews rejected the API key. Please verify the API key in your GNews dashboard (https://gnews.io/dashboard)."
+          - type: HttpResponseFilter
+            http_codes:
+            - 403
+            action: FAIL
+            failure_type: transient_error
+            error_message: "GNews daily request quota has been exceeded (or the subscription has expired). The quota resets at 00:00 UTC; wait for the reset, reduce the sync frequency or upgrade your GNews plan (https://gnews.io/pricing)."
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 1.0
         request_parameters:
           token: "{{ config['api_key'] }}"
           lang: "{{ config['language'] }}"
@@ -337,26 +373,33 @@ streams:
       url_base: "https://gnews.io/api/v4"
       http_method: "GET"
       error_handler:
-        type: "CompositeErrorHandler"
-        error_handlers:
-        - response_filters:
-          - http_codes:
-            - 429
-            action: RETRY
-            type: HttpResponseFilter
-          backoff_strategies:
-          - type: "ConstantBackoffStrategy"
-            backoff_time_in_seconds: 1.0
-          type: DefaultErrorHandler
-        - response_filters:
-          - http_codes:
-            - 403
-            action: RETRY
-            type: HttpResponseFilter
-          backoff_strategies:
-          - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
-            type: CustomBackoffStrategy
-          type: DefaultErrorHandler
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+          - 429
+          action: RETRY
+        - type: HttpResponseFilter
+          http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: "GNews rejected the request as malformed. Check the query syntax, date format and other parameters. Response: {{ response.get('errors') }}"
+        - type: HttpResponseFilter
+          http_codes:
+          - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: "GNews rejected the API key. Please verify the API key in your GNews dashboard (https://gnews.io/dashboard)."
+        - type: HttpResponseFilter
+          http_codes:
+          - 403
+          action: FAIL
+          failure_type: transient_error
+          error_message: "GNews daily request quota has been exceeded (or the subscription has expired). The quota resets at 00:00 UTC; wait for the reset, reduce the sync frequency or upgrade your GNews plan (https://gnews.io/pricing)."
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 1.0
       request_parameters:
         token: "{{ config['api_key'] }}"
         lang: "{{ config['language'] }}"
@@ -453,26 +496,33 @@ streams:
       url_base: "https://gnews.io/api/v4"
       http_method: "GET"
       error_handler:
-        type: "CompositeErrorHandler"
-        error_handlers:
-        - response_filters:
-          - http_codes:
-            - 429
-            action: RETRY
-            type: HttpResponseFilter
-          backoff_strategies:
-          - type: "ConstantBackoffStrategy"
-            backoff_time_in_seconds: 1.0
-          type: DefaultErrorHandler
-        - response_filters:
-          - http_codes:
-            - 403
-            action: RETRY
-            type: HttpResponseFilter
-          backoff_strategies:
-          - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
-            type: CustomBackoffStrategy
-          type: DefaultErrorHandler
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+          - 429
+          action: RETRY
+        - type: HttpResponseFilter
+          http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: "GNews rejected the request as malformed. Check the query syntax, date format and other parameters. Response: {{ response.get('errors') }}"
+        - type: HttpResponseFilter
+          http_codes:
+          - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: "GNews rejected the API key. Please verify the API key in your GNews dashboard (https://gnews.io/dashboard)."
+        - type: HttpResponseFilter
+          http_codes:
+          - 403
+          action: FAIL
+          failure_type: transient_error
+          error_message: "GNews daily request quota has been exceeded (or the subscription has expired). The quota resets at 00:00 UTC; wait for the reset, reduce the sync frequency or upgrade your GNews plan (https://gnews.io/pricing)."
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 1.0
       request_parameters:
         token: "{{ config['api_key'] }}"
         lang: "{{ config['language'] }}"

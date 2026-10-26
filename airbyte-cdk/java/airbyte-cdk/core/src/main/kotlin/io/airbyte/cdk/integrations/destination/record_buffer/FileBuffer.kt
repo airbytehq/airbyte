@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.destination.record_buffer
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.nio.file.Files
@@ -39,6 +40,10 @@ class FileBuffer : BufferStorage {
     }
 
     @Throws(IOException::class)
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     override fun getOutputStream(): OutputStream {
         if (outputStream == null || !::tempFile.isInitialized) {
             tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile()
