@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <title>arXiv Query: cat:cs.AI</title>
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>2</opensearch:startIndex>
+  <opensearch:itemsPerPage>2</opensearch:itemsPerPage>
+</feed>
