@@ -1,45 +1,84 @@
-# MeiliSearch
+# Meilisearch
 
 ## Overview
 
-The Airbyte MeilSearch destination allows you to sync data to MeiliSearch. MeiliSearch is a search
-engine that makes it easy for a non-developer to search through data. It does not require any SQL.
+The Airbyte Meilisearch destination allows you to sync data to [Meilisearch](https://www.meilisearch.com),
+a search engine that makes your data searchable without writing any SQL.
 
 ### Sync overview
 
 #### Output schema
 
-Each stream will be output into its own index in MeiliSearch. Each table will be named after the
-stream with all non-alpha numeric characters removed. Each table will contain one column per
-top-levelfield in a stream. In addition, it will contain a table called `_ab_pk`. This column is
-used internally by Airbyte to prevent records from getting overwritten and can be ignored.
+Each stream is written to its own index in Meilisearch, named `<namespace>_<stream>`, or `<stream>`
+for streams without a namespace. Characters other than letters, numbers, `-` and `_` are replaced
+by `_`. Each document has an attribute for every top-level field of a record, plus:
+
+- `_ab_pk`: the ID of the document, which is the primary key of the index. For streams synced with
+  deduplication, it is the record's primary key if that is a single integer, or a string made of
+  letters, numbers, `-` and `_`. Otherwise it is a hash of the primary key.
+- `_airbyte_generation_id`: the generation of the sync that wrote the document, used to remove the
+  documents of earlier generations after a refresh.
 
 #### Features
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
+| Feature                        | Supported?\(Yes/No\) | Notes                                                       |
+| :----------------------------- | :------------------- | :---------------------------------------------------------- |
+| Full Refresh Sync              | Yes                  |                                                             |
+| Incremental - Append Sync      | Yes                  |                                                             |
+| Incremental - Append + Deduped | Yes                  | Records with `_ab_cdc_deleted_at` set delete the document. |
+| Namespaces                     | Yes                  |                                                             |
+
+#### Performance and reliability
+
+Documents are sent in batches of up to `batch_size` documents (10,000 by default). Meilisearch
+indexes documents asynchronously, so the destination checkpoints the sync only once every batch
+before the checkpoint has been indexed successfully. To avoid waiting for small batches when a
+source checkpoints often, checkpoints are spaced out to one per batch of records, or one every 30
+seconds. If Meilisearch fails to index a batch, for example because a document is invalid, the
+sync fails with the error reported by Meilisearch. Requests that fail because of network issues or
+temporary server errors are retried.
+
+Append syncs deliver records at least once: when a sync is retried, records sent after its last
+checkpoint are added again. Syncs with deduplication replace documents by their primary key, so
+retried records don't create duplicates. A primary key of `1` and of `"1"` refer to the same
+document.
+
+When a stream is overwritten or refreshed, the existing index is kept along with its settings,
+and the documents of earlier syncs are deleted once the stream has been synced completely, which
+the destination learns from the stream statuses sent by Airbyte. A sync that fails part way
+through leaves the earlier documents in place. Deleting earlier documents makes the
+`_airbyte_generation_id` attribute filterable, which causes Meilisearch to re-index the documents
+of the index once. On Airbyte versions that don't provide generations, an overwrite deletes all
+documents of the index at the start of the sync instead.
+
+Two streams can't be written to the same index. Streams whose index names would be the same once
+their characters are replaced, such as `a.b` and `a_b`, make the sync fail.
 
 ## Getting started
 
 ### Requirements
 
-To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn
-about how to create one in the
-[MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
+To use the Meilisearch destination, you'll need a Meilisearch instance, version 1.6 or later. You
+can learn about how to create one in the
+[Meilisearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation), or use
+[Meilisearch Cloud](https://www.meilisearch.com/cloud).
 
 ### Setup guide
 
-The setup only requires two fields. First is the `host` which is the address at which MeiliSearch
-can be reached. If running on a localhost by default it will be on `http://localhost:7700`. Note
-that you must include the protocol. The second piece of information is the API key. If no API key is
-set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the
-value for your API by following these
-[instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
-the MeiliSearch docs.
+- **Host**: the URL at which Meilisearch can be reached, including the protocol. A local instance
+  is at `http://localhost:7700` by default. For Meilisearch Cloud, use the project URL.
+- **API Key**: an API key allowed the `indexes.*`, `documents.*`, `settings.*`, `tasks.get` and
+  `version` actions, such as the default admin API key. See
+  [securing your project](https://www.meilisearch.com/docs/learn/security/basic_security) in the
+  Meilisearch docs. Leave it blank only if your instance runs without a master key.
+- **Batch Size** (optional): the maximum number of documents sent in a single request.
+
+### Upgrading to 2.0.0
+
+Version 2.0.0 is a rewrite of the connector. Indexes of streams with a namespace are now named
+`<namespace>_<stream>`, and documents of streams synced with deduplication are identified by their
+primary key. Delete the indexes written by earlier versions and reset your connections after
+upgrading.
 
 ## Changelog
 
@@ -48,6 +87,7 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
+| 2.0.0 | 2026-10-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Rewrite the connector: deduplication and CDC deletes, namespaces, refreshes, waiting for indexing before checkpointing, and retries |
 | 1.0.25 | 2025-05-10 | [59837](https://github.com/airbytehq/airbyte/pull/59837) | Update dependencies |
 | 1.0.24 | 2025-05-03 | [59302](https://github.com/airbytehq/airbyte/pull/59302) | Update dependencies |
 | 1.0.23 | 2025-04-26 | [58742](https://github.com/airbytehq/airbyte/pull/58742) | Update dependencies |

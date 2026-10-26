@@ -1,0 +1,38 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/meilisearch",
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Meilisearch",
+    "type": "object",
+    "required": ["host"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "URL of the Meilisearch instance, including the protocol. For example http://localhost:7700, or the project URL of a Meilisearch Cloud project.",
+        "type": "string",
+        "pattern": "^https?://.+",
+        "examples": ["http://localhost:7700", "https://ms-abc123.meilisearch.io"],
+        "order": 0
+      },
+      "api_key": {
+        "title": "API Key",
+        "airbyte_secret": true,
+        "description": "Meilisearch API key. The key must be allowed the indexes.*, documents.*, settings.*, tasks.get and version actions. Leave blank only for instances that run without a master key. See the <a href=\"https://docs.airbyte.com/integrations/destinations/meilisearch\">docs</a> for more information.",
+        "type": "string",
+        "order": 1
+      },
+      "batch_size": {
+        "title": "Batch Size",
+        "description": "Maximum number of documents sent to Meilisearch in a single request.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000000,
+        "default": 10000,
+        "order": 2
+      }
+    }
+  }
+}
