@@ -38,7 +38,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Required scopes and plans
 
-`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
+`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
 
 ### Features
 
@@ -87,9 +87,7 @@ Existing Server-to-Server OAuth configurations are migrated automatically. If yo
 
 `user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
 
-`report:read:user:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
-
-Zoom lists only the classic `report:read:admin` scope for `GET /report/daily`, so the `report_daily` stream may need an app that uses classic scopes.
+`report:read:user:admin`, `report:read:daily_usage:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
 
 Apps that use Zoom's classic scopes need `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
 
