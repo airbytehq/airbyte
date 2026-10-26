@@ -161,7 +161,7 @@ class MongoDbCdcPartitionReader(
                     if (emit(event)) {
                         numRecords++
                         event.namespace?.let { changesByNamespace.merge(it, 1L, Long::plus) }
-                    } else discarded++
+                    } else discarded += 1L
                     resumeToken = event.resumeToken
                     val clusterTime: BsonTimestamp? = event.clusterTime
                     if (clusterTime != null && clusterTime > target) break
