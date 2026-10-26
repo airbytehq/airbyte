@@ -75,10 +75,8 @@ can learn about how to create one in the
 
 ### Upgrading to 2.0.0
 
-Version 2.0.0 is a rewrite of the connector. Indexes of streams with a namespace are now named
-`<namespace>_<stream>`, and documents of streams synced with deduplication are identified by their
-primary key. Delete the indexes written by earlier versions and reset your connections after
-upgrading.
+Version 2.0.0 is a rewrite of the connector, and changes the names of some indexes and the IDs of
+documents. See the [migration guide](./meilisearch-migrations.md) before upgrading.
 
 ## Changelog
 
@@ -87,7 +85,7 @@ upgrading.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
-| 2.0.0 | 2026-10-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Rewrite the connector: deduplication and CDC deletes, namespaces, refreshes, waiting for indexing before checkpointing, and retries |
+| 2.0.0 | 2026-10-26 | [89754](https://github.com/airbytehq/airbyte/pull/89754) | Rewrite the connector: deduplication and CDC deletes, namespaces, refreshes, waiting for indexing before checkpointing, and retries |
 | 1.0.25 | 2025-05-10 | [59837](https://github.com/airbytehq/airbyte/pull/59837) | Update dependencies |
 | 1.0.24 | 2025-05-03 | [59302](https://github.com/airbytehq/airbyte/pull/59302) | Update dependencies |
 | 1.0.23 | 2025-04-26 | [58742](https://github.com/airbytehq/airbyte/pull/58742) | Update dependencies |

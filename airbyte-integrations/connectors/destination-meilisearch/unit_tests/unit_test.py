@@ -8,6 +8,9 @@ from typing import Any, List
 from unittest.mock import MagicMock
 
 import pytest
+from destination_meilisearch.client import MAX_ATTEMPTS, MeiliClient, TaskFailedError, with_retry
+from destination_meilisearch.destination import DestinationMeilisearch, check_unique_indexes, stream_index, truncation_generation
+from destination_meilisearch.writer import PRIMARY_KEY, StreamWriter, document_id, extract_key, index_uid
 from meilisearch.errors import MeilisearchApiError, MeilisearchCommunicationError
 
 from airbyte_cdk.models import (
@@ -22,10 +25,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_meilisearch.client import MAX_ATTEMPTS, MeiliClient, TaskFailedError, with_retry
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from destination_meilisearch.destination import DestinationMeilisearch, check_unique_indexes, stream_index, truncation_generation
-from destination_meilisearch.writer import PRIMARY_KEY, StreamWriter, document_id, extract_key, index_uid
 
 
 def api_error(status: int, code: str = "internal") -> MeilisearchApiError:

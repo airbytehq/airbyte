@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping
 
 import pytest
+from destination_meilisearch import DestinationMeilisearch
+from destination_meilisearch.client import TaskFailedError
+from destination_meilisearch.writer import PRIMARY_KEY
 from meilisearch import Client
 
 from airbyte_cdk.models import (
@@ -30,9 +33,6 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from destination_meilisearch import DestinationMeilisearch
-from destination_meilisearch.client import TaskFailedError
-from destination_meilisearch.writer import PRIMARY_KEY
 
 
 @pytest.fixture(name="config")

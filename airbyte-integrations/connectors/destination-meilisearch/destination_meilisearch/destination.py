@@ -21,7 +21,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
 from destination_meilisearch.client import MeiliClient
 from destination_meilisearch.writer import GENERATION_ID, PRIMARY_KEY, StreamWriter, index_uid
 
@@ -232,12 +231,13 @@ class DestinationMeilisearch(Destination):
                 f"add a document to index '{uid}'",
                 lambda: client.client.index(uid).add_documents([{PRIMARY_KEY: "check"}], primary_key=PRIMARY_KEY),
             )
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            status = AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e}")
-        finally:
-            if created:
-                try:
-                    client.run(f"delete index '{uid}'", lambda: client.client.delete_index(uid))
-                except Exception as e:
-                    logger.warning(f"Failed to delete index '{uid}' created by the connection check: {e}")
+            status = AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e}")
+
+        if created:
+            try:
+                client.run(f"delete index '{uid}'", lambda: client.client.delete_index(uid))
+            except Exception as e:
+                logger.warning(f"Failed to delete index '{uid}' created by the connection check: {e}")
+        return status

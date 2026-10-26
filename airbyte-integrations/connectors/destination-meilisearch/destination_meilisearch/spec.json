@@ -14,7 +14,10 @@
         "description": "URL of the Meilisearch instance, including the protocol. For example http://localhost:7700, or the project URL of a Meilisearch Cloud project.",
         "type": "string",
         "pattern": "^https?://.+",
-        "examples": ["http://localhost:7700", "https://ms-abc123.meilisearch.io"],
+        "examples": [
+          "http://localhost:7700",
+          "https://ms-abc123.meilisearch.io"
+        ],
         "order": 0
       },
       "api_key": {
