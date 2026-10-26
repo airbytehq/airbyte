@@ -1,59 +1,120 @@
 # OpenAI
-OpenAI organization and ChatGPT Enterprise compliance source. Syncs organization members and pending invites from the OpenAI Admin API, daily completion usage aggregated by project, user, and model, and ChatGPT workspace user rosters (current and historical). For Enterprise workspaces, also syncs compliance conversation log metadata and message-level events from JSONL export files. Requires an OpenAI organization API key with admin access. ChatGPT Enterprise compliance streams additionally require a compliance API token and workspace ID. Supports incremental sync on usage and compliance log streams using a configurable start and end date (YYYY-MM-DD).
 
-The connection **check** only runs the `users` stream (OpenAI Admin API). A valid organization API key can pass the check even if the compliance token or workspace ID is missing or invalid; those errors appear when compliance-related streams run during a sync.
+This connector syncs administrative and compliance data from two OpenAI products:
 
-## Setup
+- **OpenAI API Platform**: organization members, pending invites, and daily completions usage from the [Admin API](https://developers.openai.com/api/docs/guides/admin-apis) at `api.openai.com`.
+- **ChatGPT Enterprise and Edu**: workspace user rosters and conversation message compliance logs from the [Compliance Platform](https://help.openai.com/en/articles/9261474-openai-compliance-platform-for-enterprise-and-edu-customers) at `api.chatgpt.com`.
 
-### API Platform (Admin API) — required for `users`, `invites`, and `completions`
+You can use the API Platform streams without a ChatGPT workspace. The ChatGPT streams need extra credentials.
 
-1. **Organization ID** — In [OpenAI Platform](https://platform.openai.com/) organization settings, copy your organization ID (for example `org-…`). Enter it as **OpenAI-Organization** (`openai_organization`).
-2. **Admin API key** — An organization owner creates an [Admin API key](https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform) under **Organization settings → Admin keys**. Use a key with the scopes needed for members, invites, and usage (see the [Admin APIs guide](https://developers.openai.com/api/docs/guides/admin-apis)). Enter the secret as **OpenAI-token** (`openai_token`).
+## Prerequisites
 
-These credentials call `api.openai.com` (organization users, invites, and completion usage). They are separate from ChatGPT workspace Admin keys.
+- An OpenAI API Platform organization, and the **Owner** role in that organization so you can create an Admin API key.
+- For the ChatGPT streams (`current_users`, `historical_users`, `conversation_messages`, and `conversation_messages_log`): a ChatGPT Enterprise or Edu workspace, and the **Owner** or **Admin** role in that workspace so you can create a workspace Admin key. Only workspace owners can grant the **Conversation messages** permission and broad compliance access.
 
-### ChatGPT Enterprise compliance — required for compliance streams only
+## Setup guide
 
-Compliance-related streams (`conversation_messages`, `conversation_messages_log`, `current_users`, `historical_users`) require a **[ChatGPT Enterprise or Edu](https://help.openai.com/en/articles/9261474-openai-compliance-platform-for-enterprise-and-edu-customers)** workspace. Standard API Platform access alone is not enough.
+### Step 1: Get your API Platform organization ID and Admin API key
 
-1. **Compliance API token** — In [Admin Console](https://chatgpt.com/admin), a workspace owner or admin creates a **workspace-scoped Admin key** with the compliance permissions your integration needs (for example conversation messages and workspace user read access). See [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console). Enter the key as **OpenAI-compliance-token** (`openai_compliance_token`). Only workspace owners can grant broad compliance or conversation-message access.
-2. **Workspace ID** — In Admin Console, open the target workspace and copy its workspace ID from the URL or workspace settings. Enter it as **Workspace ID** (`workspace_id`). Compliance API requests use `https://api.chatgpt.com/v1` with this ID in the path.
+1. In [OpenAI Platform](https://platform.openai.com/), open your organization settings and copy your organization ID. It starts with `org-`.
+2. As an organization owner, go to **Organization settings** > **Admin keys**, select **Create new admin key**, and choose the permissions the connector needs. The connector reads organization users, invites, and completions usage. See [Admin and Audit Logs API for the API Platform](https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform).
+3. Copy the key. You can't view it again after you close the dialog.
 
-If you only need organization admin data, you can leave the compliance token and workspace ID blank and disable the compliance streams in the connection schema.
+Admin API keys only work with administration endpoints. A standard project API key doesn't work.
 
-## Configuration
+### Step 2 (optional): Get a ChatGPT workspace Admin key and workspace ID
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `end_time` | `string` (date, `YYYY-MM-DD`) | End Time. The end time for querying the API in YYYY-MM-DD (defaults to today if omitted). Because the end date is treated as midnight UTC on that day, **today’s data is not included until a sync runs after that calendar day ends** (typically the next day). |  |
-| `start_time` | `string` (date, `YYYY-MM-DD`) | Start time. The start time for querying the API in YYYY-MM-DD |  |
-| `openai_token` | `string` | OpenAI-token. The API key token used for authorizing API requests |  |
-| `workspace_id` | `string` | Workspace ID. Required for compliance streams; not validated during connection check. |  |
-| `openai_organization` | `string` | OpenAI-Organization. The organization (organization_id) associated with the request |  |
-| `openai_compliance_token` | `string` | OpenAI-compliance-token. Required for compliance streams; not validated during connection check (only `users` is checked). |  |
+Skip this step if you only need the `users`, `invites`, and `completions` streams.
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| conversation_messages | id | DefaultPaginator | ✅ |  ✅  |
-| conversation_messages_log | event_id.snapshot_date | No pagination | ✅ |  ✅  |
-| invites | id | DefaultPaginator | ✅ |  ❌  |
-| completions | snapshot_date.project_id.user_id.model | DefaultPaginator | ✅ |  ✅  |
-| current_users | id | DefaultPaginator | ✅ |  ❌  |
-| historical_users | id | DefaultPaginator | ✅ |  ❌  |
+ChatGPT workspace Admin keys are separate from API Platform Admin keys. An API Platform key can't read ChatGPT workspace data, and a workspace key can't read API Platform data.
 
-### `conversation_messages_log`
+1. Sign in to [Admin Console](https://chatgpt.com/admin) and select the ChatGPT workspace you want to sync.
+2. Go to **Credentials** > **Admin keys** and select **Create new admin key**.
+3. Choose the permissions for the streams you plan to sync. For example, `current_users` needs read access to **Users**, and `conversation_messages` and `conversation_messages_log` need the **Conversation messages** compliance permission. For details, see [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console).
+4. Choose an expiration. When the key expires, the ChatGPT streams start failing until you create a new key and update the connector.
+5. Copy the key, and copy the workspace ID of the selected workspace.
 
-Each JSONL line is flattened for analytics: `actor` and `principal` become `actor_*` and `principal_*` columns, message text is in `message_content_value`, conversation metadata includes `conversation_title`, and `message.author` is split into `author_type`, `author_client_type`, `author_skills_used`, and `author_tools_used` (skills, tools, and non-text content are stringified so nested or tuple-shaped API values type cleanly). The raw nested `message`, `conversation`, `actor`, and `principal` objects are not emitted.
+### Step 3: Set up the connector in Airbyte
+
+1. In Airbyte, create a new OpenAI source.
+2. Enter the following values:
+   - **OpenAI-Organization**: your API Platform organization ID.
+   - **OpenAI-token**: your API Platform Admin API key.
+   - **Start time**: the first date to sync, in `YYYY-MM-DD` format.
+   - **End Time** (optional): the date to stop syncing, in `YYYY-MM-DD` format. If you leave it blank, the connector syncs up to the current date.
+   - **OpenAI-compliance-token** (optional): your ChatGPT workspace Admin key.
+   - **Workspace ID** (optional): your ChatGPT workspace ID.
+3. Select **Set up source**.
+
+The connection test only reads the `users` stream. It doesn't validate **OpenAI-compliance-token** or **Workspace ID**. If either value is missing or wrong, the ChatGPT streams fail during the sync instead. If you didn't provide these values, deselect the ChatGPT streams in your connection.
+
+## Supported sync modes
+
+| Stream | Full Refresh | Incremental |
+| --- | --- | --- |
+| `users` | Yes | No |
+| `invites` | Yes | No |
+| `completions` | Yes | Yes |
+| `current_users` | Yes | No |
+| `historical_users` | Yes | No |
+| `conversation_messages` | Yes | Yes |
+| `conversation_messages_log` | Yes | Yes |
+
+## Supported streams
+
+### API Platform streams
+
+These streams use **OpenAI-Organization** and **OpenAI-token**.
+
+| Stream | Primary key | Description |
+| --- | --- | --- |
+| `users` | `id` | Members of the API Platform organization, from [`GET /v1/organization/users`](https://developers.openai.com/api/reference/resources/organization/subresources/users/). |
+| `invites` | `id` | Invitations to the API Platform organization, from [`GET /v1/organization/invites`](https://developers.openai.com/api/reference/resources/organization/subresources/invites/). |
+| `completions` | `snapshot_date`, `project_id`, `user_id`, `model` | Daily completions usage, such as request counts and input and output token counts, grouped by project, user, and model. Data comes from [`GET /v1/organization/usage/completions`](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/completions/). The cursor is `start_time`, the start of each daily bucket. Days with no usage don't produce records. |
+
+### ChatGPT workspace streams
+
+These streams use **OpenAI-compliance-token** and **Workspace ID**.
+
+| Stream | Primary key | Description |
+| --- | --- | --- |
+| `current_users` | `id` | Current members of the ChatGPT workspace, including role and seat type, from `GET /v1/manage/workspaces/{workspace_id}/users`. |
+| `historical_users` | `id` | ChatGPT workspace users from the Compliance API endpoint `GET /v1/compliance/workspaces/{workspace_id}/users`, including each user's status and creation time. |
+| `conversation_messages` | `id` | Metadata for `CONVERSATION_MESSAGE` compliance log files, such as file name, size, and SHA-256 hash. It doesn't contain message content. The cursor is `snapshot_date`, the start of the one-day window in which the connector listed the file. |
+| `conversation_messages_log` | `event_id`, `snapshot_date` | One record per conversation message event, read from each log file listed by `conversation_messages`. |
+
+`conversation_messages_log` downloads each JSONL log file that `conversation_messages` lists, and flattens each event into top-level columns:
+
+- `actor` and `principal` become `actor_*` and `principal_*` columns.
+- Message text is in `message_content_value`.
+- Conversation metadata becomes `conversation_*` columns, such as `conversation_title` and `conversation_mode`.
+- `message.author` becomes `author_type`, `author_client_type`, `author_skills_used`, and `author_tools_used`.
+
+The connector converts skills, tools, and non-text message content to strings. It doesn't emit the original nested `message`, `conversation`, `actor`, and `principal` objects, or any field not listed in the stream schema.
+
+`conversation_messages_log` contains the text of user conversations. Restrict access to the destination tables that hold this data.
+
+## Date range behavior
+
+The `completions`, `conversation_messages`, and `conversation_messages_log` streams read data between **Start time** and **End Time**. The connector reads `completions` in 31-day windows and the compliance log files in one-day windows.
+
+**End Time** is exclusive and refers to midnight UTC at the start of that day. If you leave **End Time** blank, the connector uses midnight UTC at the start of the current day, so it doesn't sync the current day's data until a sync runs after that day ends in UTC. If you set **End Time** to a fixed date, incremental syncs stop picking up new data after that date.
+
+The `users`, `invites`, `current_users`, and `historical_users` streams always return the full current list and ignore the date range.
+
+## Limitations and troubleshooting
+
+- **Rate limits**: The connector retries requests that return HTTP 429, 500, 502, 503, or 504 up to five times with exponential backoff.
+- **ChatGPT streams fail but the connection test passes**: The connection test only checks the API Platform credentials. Check that **OpenAI-compliance-token** and **Workspace ID** are set, that the key hasn't expired or been revoked, and that it has the permissions the failing stream needs.
+- **Authentication errors on API Platform streams**: Make sure **OpenAI-token** is an API Platform organization Admin key, not a project API key or a ChatGPT workspace Admin key, and that **OpenAI-Organization** matches the organization that owns the key.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-08 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.0.1 | 2026-10-26 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
