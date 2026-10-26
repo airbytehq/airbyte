@@ -44,6 +44,34 @@ def _gmail_calls(requests_mock, url_prefix):
     return [r for r in requests_mock.request_history if r.url.startswith(url_prefix)]
 
 
+def _messages_list_requests(requests_mock):
+    messages_path = urlparse(_MESSAGES_LIST_URL).path
+    return [r for r in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(r.url).path == messages_path]
+
+
+def _message_detail_paths(requests_mock, requests_since=0):
+    messages_path = urlparse(_MESSAGES_LIST_URL).path
+    return {
+        urlparse(request.url).path
+        for request in requests_mock.request_history[requests_since:]
+        if urlparse(request.url).path.startswith(f"{messages_path}/")
+    }
+
+
+def _state_data(output):
+    return output.state_messages[-1].state.stream.stream_state.__dict__
+
+
+def _parent_listed_until(state):
+    parent_state = state.get("parent_state", {}).get("messages_for_details", {})
+    return parent_state.get("state", parent_state).get("_listed_until")
+
+
+def test_messages_for_details_is_internal(manifest):
+    assert "messages_for_details" in manifest["definitions"]["streams"]
+    assert all(stream.get("name") != "messages_for_details" for stream in manifest["streams"])
+
+
 def _retry_after_timestamp(seconds_from_now=120):
     return (datetime.now(timezone.utc) + timedelta(seconds=seconds_from_now)).isoformat().replace("+00:00", "Z")
 
@@ -526,8 +554,8 @@ def test_public_messages_injects_after_unix_seconds_when_start_date_set(config_w
 def test_messages_details_checkpoints_on_internal_date(base_config, requests_mock):
     """`messages_details` owns the cursor because `internalDate` is only
     returned by `users.messages.get`, not by `users.messages.list`. After a
-    successful sync the state must be the max `internalDate` (unix seconds)
-    across the detail responses.
+    successful sync its cursor is the max `internalDate` in milliseconds,
+    while the internal parent state tracks the list interval in Unix seconds.
     """
     # users.messages.list returns stubs only — this mirrors the real Gmail API.
     requests_mock.get(
@@ -549,28 +577,23 @@ def test_messages_details_checkpoints_on_internal_date(base_config, requests_moc
     assert output.records, "Expected at least one record from messages_details"
     states = output.state_messages
     assert states, "Expected at least one state message — messages_details must be incremental"
-    # The concurrent per-partition cursor stores the global max under
-    # `state.internalDate` once all partitions have emitted at least one value.
-    final_state = states[-1].state.stream.stream_state.__dict__
-    # datetime_format is "%s" so state is stored as unix seconds.
+    final_state = _state_data(output)
     global_state = final_state.get("state", {})
     cursor_value = global_state.get("internalDate")
-    assert cursor_value == "1700001000", f"Expected max internalDate (unix s) under state.state.internalDate; got {final_state!r}"
-    # Per-partition cursors must also each carry an `internalDate`.
+    assert cursor_value == "1700001000000", f"Expected max internalDate in milliseconds; got {final_state!r}"
+    assert len(cursor_value) == 13
     partitions = final_state.get("states", [])
     assert partitions, "Expected at least one per-partition cursor entry"
     for entry in partitions:
         assert entry["cursor"].get("internalDate"), f"Expected each partition cursor to carry internalDate; got {entry!r}"
+    parent_cursor = _parent_listed_until(final_state)
+    assert parent_cursor is not None and len(parent_cursor) == 10
+    assert int(parent_cursor) > 1080777600
 
 
-def test_messages_details_parent_omits_q_when_no_start_date(base_config, requests_mock):
-    """When `messages_details` runs with no configured `start_date`, the
-    parent `messages` list call must not inject any `q=after:` filter.
-    Pure declarative cannot bound the list call by the child's last-seen
-    cursor (parent records lack `internalDate`, and there's no declarative
-    state migration to copy the child cursor into a parent state), so we
-    deliberately do NOT claim list-call bounding here. The `q` parameter
-    must simply be absent (or empty) when no `start_date` is configured.
+def test_messages_details_parent_uses_default_start_date_when_none_configured(base_config, requests_mock):
+    """Without a configured `start_date`, the parent list query starts at
+    the connector's default date (2004-04-01T00:00:00Z).
     """
     requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
 
@@ -579,9 +602,7 @@ def test_messages_details_parent_omits_q_when_no_start_date(base_config, request
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert "q" not in qs or qs.get("q") == [
-        ""
-    ], f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
+    assert qs.get("q") == ["after:1080777600"]
 
 
 def test_messages_details_parent_injects_after_from_start_date(config_with_start_date, requests_mock):
@@ -604,18 +625,8 @@ def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_
     """Repeat-sync regression: when a prior state cursor exists, the second
     sync must (a) preserve the prior cursor as a floor and (b) advance to
     the latest observed `internalDate`. This is the core guarantee
-    incremental on `messages_details` provides — state continuity across
-    syncs.
-
-    What this test does NOT assert (and what we deliberately do not claim):
-    the parent list call is NOT bounded by the prior cursor. Pure
-    declarative cannot copy a child's cursor into a parent's state without
-    a custom Python state migration; parent records (list stubs) lack
-    `internalDate`, so the parent's own cursor cannot advance from
-    observation. The reviewer's `incremental_dependency` regression check
-    is therefore expressed here as a state-continuity assertion rather
-    than a list-call-bound assertion. See manifest comments on
-    `messages_details` for the full rationale.
+    incremental sync on `messages_details` provides — state continuity
+    across syncs.
     """
     # New messages observed on the second sync; both newer than prior cursor.
     requests_mock.get(
@@ -648,10 +659,135 @@ def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_
     assert states, "Expected the second sync to emit state"
     final_state = states[-1].state.stream.stream_state.__dict__
     global_cursor = final_state.get("state", {}).get("internalDate")
-    assert global_cursor == "1700002000", (
-        f"Expected state to advance to max observed internalDate=1700002000; got {global_cursor!r}. "
+    assert global_cursor == "1700002000000", (
+        f"Expected state to advance to max observed internalDate=1700002000000; got {global_cursor!r}. "
         "If this regresses, the cursor is being reset on repeat syncs and incremental is broken."
     )
+
+
+def test_messages_details_start_date_request_fetches_only_listed_ids(config_with_start_date, requests_mock):
+    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": [{"id": "m1", "threadId": "t1"}]})
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/m1",
+        json={"id": "m1", "threadId": "t1", "internalDate": "1704067201000"},
+    )
+
+    output = _read_stream("messages_details", SyncMode.incremental, config_with_start_date)
+
+    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[0].url).query)
+    assert query.get("q") == ["after:1704067200"]
+    assert query.get("includeSpamTrash") == ["False"]
+    assert len(output.records) == 1
+    assert _message_detail_paths(requests_mock) == {f"{urlparse(_MESSAGES_LIST_URL).path}/m1"}
+
+
+def test_messages_details_second_sync_uses_parent_state_and_round_trips_ms(base_config, requests_mock):
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        [
+            {"json": {"messages": [{"id": "m1", "threadId": "t1"}]}},
+            {"json": {"messages": [{"id": "m1", "threadId": "t1"}]}},
+        ],
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/m1",
+        [
+            {"json": {"id": "m1", "threadId": "t1", "internalDate": "1700001000000"}},
+            {"json": {"id": "m1", "threadId": "t1", "internalDate": "1700001000000"}},
+        ],
+    )
+
+    first = _read_stream("messages_details", SyncMode.incremental, base_config)
+    first_state = _state_data(first)
+    first_cursor = first_state["state"]["internalDate"]
+    previous_end = _parent_listed_until(first_state)
+    assert previous_end is not None and len(previous_end) == 10
+    previous_end = int(previous_end)
+    assert len(first_cursor) == 13
+    state = StateBuilder().with_stream_state("messages_details", first_state).build()
+
+    requests_before_second = len(requests_mock.request_history)
+    second = _read_stream("messages_details", SyncMode.incremental, base_config, state=state)
+    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[-1].url).query)
+    second_state = _state_data(second)
+
+    assert query.get("q") == [f"after:{previous_end - 86400}"]
+    assert second_state["state"]["internalDate"] == first_cursor
+    second_parent_end = _parent_listed_until(second_state)
+    assert second_parent_end is not None and len(second_parent_end) == 10
+    assert int(second_parent_end) >= previous_end
+    assert _message_detail_paths(requests_mock, requests_before_second) == {f"{urlparse(_MESSAGES_LIST_URL).path}/m1"}
+
+
+def test_messages_details_parent_state_does_not_advance_past_failed_child(base_config, requests_mock):
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        json={"messages": [{"id": "ok", "threadId": "t1"}, {"id": "fail", "threadId": "t2"}]},
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/ok",
+        json={"id": "ok", "threadId": "t1", "internalDate": "1700001000000"},
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/fail",
+        status_code=400,
+        json={"error": {"code": 400, "message": "Invalid request"}},
+    )
+    state = StateBuilder().build()
+    catalog = CatalogBuilder().with_stream("messages_details", SyncMode.incremental).build()
+
+    output = read(build_source(base_config, state), base_config, catalog, state, expecting_exception=True)
+
+    assert output.errors
+    assert {path.rsplit("/", 1)[-1] for path in _message_detail_paths(requests_mock)} == {"ok", "fail"}
+    emitted_states = [message.state.stream.stream_state.__dict__ for message in output.state_messages]
+    assert emitted_states, "Expected emitted state messages after the child request failure"
+    for emitted_state in emitted_states:
+        parent_cursor = _parent_listed_until(emitted_state)
+        assert parent_cursor is None or int(parent_cursor) <= 1080777600, (
+            f"Parent state advanced past the failed child partition: {parent_cursor!r}"
+        )
+
+
+def test_messages_details_full_refresh_reads_all_listed_ids(base_config, requests_mock):
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        json={"messages": [{"id": "m1", "threadId": "t1"}, {"id": "m2", "threadId": "t2"}]},
+    )
+    for message_id in ("m1", "m2"):
+        requests_mock.get(
+            f"{_MESSAGES_LIST_URL}/{message_id}",
+            json={"id": message_id, "threadId": "t1", "internalDate": "1700001000000"},
+        )
+
+    output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 2
+    assert _message_detail_paths(requests_mock) == {
+        f"{urlparse(_MESSAGES_LIST_URL).path}/m1",
+        f"{urlparse(_MESSAGES_LIST_URL).path}/m2",
+    }
+
+
+def test_messages_details_legacy_truncated_state_reads_from_start_date(config_with_start_date, requests_mock):
+    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": [{"id": "m1", "threadId": "t1"}]})
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/m1",
+        json={"id": "m1", "threadId": "t1", "internalDate": "1704067201000"},
+    )
+    legacy_state = {
+        "state": {"internalDate": "1792710"},
+        "parent_state": {},
+        "lookback_window": 1173,
+        "use_global_cursor": True,
+    }
+    state = StateBuilder().with_stream_state("messages_details", legacy_state).build()
+
+    output = _read_stream("messages_details", SyncMode.incremental, config_with_start_date, state=state)
+
+    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[0].url).query)
+    assert query.get("q") == ["after:1704067200"]
+    assert len(output.records) == 1
 
 
 def test_drafts_injects_after_unix_seconds_when_start_date_set(config_with_start_date, requests_mock):

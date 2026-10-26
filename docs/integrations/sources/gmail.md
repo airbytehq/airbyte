@@ -92,15 +92,15 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 | `labels`           | `id`        | Full Refresh                | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels.|
 | `labels_details`   | `id`        | Full Refresh                | Per-label metadata such as message and thread counts. Substream of `labels`.             |
 | `messages`         | `id`        | Full Refresh                | Stub records (`id`, `threadId`) returned by `users.messages.list`.                       |
-| `messages_details` | `id`        | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels. Substream of `messages`.          |
+| `messages_details` | `id`        | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels.                                   |
 | `threads`          | `id`        | Full Refresh                | Stub records (`id`, `historyId`) returned by `users.threads.list`.                       |
 | `threads_details`  | `id`        | Full Refresh                | Per-thread details and the messages in each thread. Substream of `threads`.              |
 
 The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. Other streams expose only `id` and `threadId` from the upstream `list` calls and have no record-level cursor field, so they run as full refresh.
 
-On incremental syncs of `messages_details`, the connector still lists every message in the parent `messages` stream, then drops the messages whose `internalDate` predates the stored cursor. Incremental sync reduces what lands in your destination, not the API quota the `list` calls consume. If you leave **Start date** blank, the cursor starts at 2004-04-01, the date Gmail launched.
+On incremental syncs, `messages_details` lists messages received since the previous sync, with a one-day lookback, and fetches details only for those returned IDs. Gmail's `after:` filter uses received time rather than modification time, so label or read-state changes on older messages are picked up only by a full refresh. If you leave **Start date** blank, the initial lower bound is 2004-04-01, the date Gmail launched.
 
-When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages`, `drafts`, and `threads` `list` requests so the API skips records older than that date.
+When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages` (including the internal list used by `messages_details`), `drafts`, and `threads` `list` requests so the API skips records older than that date.
 
 ## Performance considerations
 
@@ -157,6 +157,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-10-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Bound incremental `messages_details` reads to the previous sync with a one-day lookback |
 | 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
 | 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |

@@ -16,13 +16,15 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 | profile | small | top-level parent | none | none | deferred_no_api_support | Singleton user profile endpoint |
 | threads | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Same limitation as messages — q parameter filters by date received |
 | labels_details | medium | child | none | none | deferred_child |  |
-| messages_details | medium | child | none | none | deferred_child |  |
+| messages_details | medium | child | internalDate (ms) | created_at_only | incremental_lookback | Private `messages_for_details` parent filters by receipt date; state cursor is emitted in milliseconds |
 | threads_details | medium | child | none | none | deferred_child |  |
+
+`messages_details` uses an internal `messages_for_details` parent, which is not exposed as a top-level stream. The parent cursor stores `_listed_until` as Unix seconds and bounds Gmail's list request to the previous sync end minus one day; the child `internalDate` cursor is stored in milliseconds using `%ms`. Gmail's `after:` filter is based on receipt date, not modification time, so label or read-state changes on older messages require a full refresh.
 
 ### Future incremental stream candidates
 
 - **No API date filter (5 streams):** `drafts`, `labels`, `messages`, `profile`, `threads` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
-- **Child streams (3 streams):** `labels_details`, `messages_details`, `threads_details` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.
+- **Child streams (2 streams):** `labels_details`, `threads_details` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.
 
 ## Rate-limit backoff
 
