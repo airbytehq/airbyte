@@ -8,8 +8,9 @@ description: >-
   completion usage aggregated by project, user, and model, and ChatGPT workspace
   user rosters (current and historical). For Enterprise workspaces, also syncs
   compliance conversation log metadata and message-level events from JSONL
-  export files. Requires an OpenAI organization API key with admin access, a
-  ChatGPT compliance API token, and a workspace ID. Supports incremental sync on
+  export files. Requires an OpenAI organization API key with admin access.
+  ChatGPT Enterprise compliance streams also need a compliance API token and
+  workspace ID. Supports incremental sync on
   usage and compliance log streams using a configurable start and end date
   (YYYY-MM-DD).
 
@@ -260,109 +261,7 @@ streams:
               - number
               - "null"
         additionalProperties: true
-  - type: DeclarativeStream
-    name: conversation_messages
-    retriever:
-      type: SimpleRetriever
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.last_end_time }}"
-          stop_condition: "{{ response.has_more is false or not response.last_end_time }}"
-      requester:
-        type: HttpRequester
-        url: >-
-          https://api.chatgpt.com/v1/compliance/workspaces/{{
-          config['workspace_id'] }}/logs
-        http_method: GET
-        authenticator:
-          $ref: "#/definitions/linked/ComplianceAuthenticator"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        request_parameters:
-          after: >-
-            {{ next_page_token['next_page_token'] if next_page_token else
-            stream_interval['start_time'] }}
-          event_type: CONVERSATION_MESSAGE
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        required:
-          - id
-          - snapshot_date
-        properties:
-          id:
-            type: string
-          end_time:
-            type:
-              - string
-              - "null"
-          file_name:
-            type:
-              - string
-              - "null"
-          file_size:
-            type:
-              - number
-              - "null"
-          event_type:
-            type:
-              - string
-              - "null"
-          file_sha256:
-            type:
-              - string
-              - "null"
-          snapshot_date:
-            type: string
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - snapshot_date
-            value: "{{ stream_interval['start_time'] }}"
-            value_type: string
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P1D
-      cursor_field: snapshot_date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: >-
-          {{ format_datetime((config['end_time'] if config['end_time'] else
-          now_utc().strftime('%Y-%m-%d')), '%Y-%m-%dT%H:%M:%SZ') }}
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_time_option:
-        type: RequestOption
-        field_name: before
-        inject_into: request_parameter
-      cursor_granularity: PT1S
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - $ref: "#/definitions/streams/conversation_messages"
   - type: DeclarativeStream
     name: conversation_messages_log
     retriever:
@@ -457,7 +356,31 @@ streams:
               - "null"
           snapshot_date:
             type: string
-          message_author:
+          author_type:
+            type:
+              - string
+              - "null"
+          author_client_type:
+            type:
+              - string
+              - "null"
+          author_skills_used:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          author_tools_used:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          message_content_value:
+            type:
+              - string
+              - "null"
+          conversation_title:
             type:
               - string
               - "null"
@@ -497,70 +420,76 @@ streams:
             path:
               - log_file_id
             value: "{{ stream_partition.log_file_id }}"
-            value_type: string
           - type: AddedFieldDefinition
             path:
               - message_id
-            value: "{{ record.message.id if record.message is defined else none }}"
-            value_type: string
+            value: "{{ record.get('message', {}).get('id') }}"
           - type: AddedFieldDefinition
             path:
               - message_created_at
-            value: >-
-              {{ record.message.created_at if record.message is defined else
-              none }}
-            value_type: string
+            value: "{{ record.get('message', {}).get('created_at') }}"
           - type: AddedFieldDefinition
             path:
-              - message_author
-            value: "{{ record.message.author if record.message is defined else none }}"
-            value_type: string
+              - author_type
+            value: "{{ record.get('message', {}).get('author', {}).get('type') }}"
+          - type: AddedFieldDefinition
+            path:
+              - author_client_type
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('client_type')
+              }}
+          - type: AddedFieldDefinition
+            path:
+              - author_skills_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('skills_used')
+              }}
+          - type: AddedFieldDefinition
+            path:
+              - author_tools_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('tools_used')
+              }}
+          - type: AddedFieldDefinition
+            path:
+              - message_content_value
+            value: "{{ record.get('message', {}).get('content', {}).get('value') }}"
           - type: AddedFieldDefinition
             path:
               - conversation_id
-            value: >-
-              {{ record.conversation.id if record.conversation is defined else
-              none }}
-            value_type: string
+            value: "{{ record.get('conversation', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path:
+              - conversation_title
+            value: "{{ record.get('conversation', {}).get('title') }}"
           - type: AddedFieldDefinition
             path:
               - conversation_mode
-            value: >-
-              {{ record.conversation.mode if record.conversation is defined else
-              none }}
-            value_type: string
+            value: "{{ record.get('conversation', {}).get('mode') }}"
           - type: AddedFieldDefinition
             path:
               - conversation_created_at
-            value: >-
-              {{ record.conversation.created_at if record.conversation is
-              defined else none }}
-            value_type: string
+            value: "{{ record.get('conversation', {}).get('created_at') }}"
           - type: AddedFieldDefinition
             path:
               - conversation_is_pinned
-            value: >-
-              {{ record.conversation.is_pinned if record.conversation is defined
-              else none }}
-            value_type: boolean
+            value: "{{ record.get('conversation', {}).get('is_pinned') }}"
           - type: AddedFieldDefinition
             path:
               - conversation_is_temporary_chat
             value: >-
-              {{ record.conversation.is_temporary_chat if record.conversation is
-              defined else none }}
-            value_type: boolean
+              {{ record.get('conversation', {}).get('is_temporary_chat') }}
           - type: AddedFieldDefinition
             path:
               - snapshot_date
             value: "{{ stream_slice.extra_fields.snapshot_date }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - message
           - - conversation
     incremental_sync:
       type: DatetimeBasedCursor
+      global_substream_cursor: true
       cursor_field: snapshot_date
       end_datetime:
         type: MinMaxDatetime
@@ -669,7 +598,7 @@ streams:
             - data
           record_expander:
             type: RecordExpander
-            on_no_records: emit_parent
+            on_no_records: skip
             remain_original_record: true
             expand_records_from_field:
               - results
@@ -716,39 +645,36 @@ streams:
             path:
               - start_time
             value: >-
-              {{ record.start_time if record.start_time is defined else
-              record.original_record.start_time }}
-            value_type: string
+              {{ record.get('start_time') or (record.get('original_record') or
+              {}).get('start_time') }}
           - type: AddedFieldDefinition
             path:
               - end_time
             value: >-
-              {{ record.end_time if record.end_time is defined else
-              record.original_record.end_time }}
-            value_type: string
+              {{ record.get('end_time') or (record.get('original_record') or
+              {}).get('end_time') }}
           - type: AddedFieldDefinition
             path:
               - snapshot_date
             value: >-
-              {{ format_datetime((record.start_time if record.start_time is
-              defined else record.original_record.start_time) | int, '%Y-%m-%d')
-              }}
-            value_type: string
+              {{ format_datetime((record.get('start_time') or
+              (record.get('original_record') or {}).get('start_time')) | int,
+              '%Y-%m-%d') }}
           - type: AddedFieldDefinition
             path:
               - project_id
-            value: "{{ record.project_id if record.project_id is defined else none }}"
-            value_type: string
+            value: "{{ record.get('project_id') }}"
           - type: AddedFieldDefinition
             path:
               - model
-            value: "{{ record.model if record.model is defined else none }}"
-            value_type: string
+            value: "{{ record.get('model') }}"
           - type: AddedFieldDefinition
             path:
               - user_id
-            value: "{{ record.user_id if record.user_id is defined else none }}"
-            value_type: string
+            value: "{{ record.get('user_id') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - original_record
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1D
@@ -905,19 +831,22 @@ spec:
       - openai_organization
       - openai_token
       - start_time
-      - openai_compliance_token
-      - workspace_id
     properties:
       end_time:
         type: string
         description: >-
           The end time for querying the API in YYYY-MM-DD (defaults to today if
-          omitted)
+          omitted). The end date is exclusive at midnight UTC, so the current
+          calendar day is not included until the next sync after that day ends.
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         order: 3
         title: End Time
       start_time:
         type: string
         description: The start time for querying the API in YYYY-MM-DD
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         order: 2
         title: Start time
       openai_token:
@@ -928,7 +857,10 @@ spec:
         airbyte_secret: true
       workspace_id:
         type: string
-        description: The ID of the workspace.
+        description: >-
+          ChatGPT workspace ID. Required for compliance streams
+          (conversation_messages, conversation_messages_log, current_users,
+          historical_users). The connection check does not validate this field.
         order: 5
         title: Workspace ID
       openai_organization:
@@ -939,8 +871,11 @@ spec:
       openai_compliance_token:
         type: string
         description: >-
-          The API key token used for authorizing compliance API endpoint
-          requests
+          API token for ChatGPT compliance and workspace management endpoints.
+          Required for compliance streams (conversation_messages,
+          conversation_messages_log, current_users, historical_users). The
+          connection check only reads the users stream, so an invalid compliance
+          token is reported when those streams sync, not during setup test.
         order: 4
         title: OpenAI-compliance-token
         airbyte_secret: true
