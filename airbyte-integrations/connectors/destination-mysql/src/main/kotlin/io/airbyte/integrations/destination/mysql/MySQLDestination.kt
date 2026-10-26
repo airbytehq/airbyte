@@ -191,6 +191,8 @@ class MySQLDestination :
                     "convertToNull",
                     "allowLoadLocalInfile",
                     "true",
+                    "connectionTimeZone",
+                    "SERVER",
                 )
 
         @JvmField
