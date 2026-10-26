@@ -2,6 +2,80 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 26, 2026
+
+Connections
+
+- Source and destination setup forms are easier to scan. All of a connector's settings now appear together in a single card, and the collapsible section that holds optional settings is now called **Advanced** instead of **Optional fields**.
+
+Platform
+
+- If you belong to more than one organization, the **Members** page and the invite dialog now show the correct pending invitations right after you switch organizations or workspaces. Previously, they could briefly show pending invitations from the organization or workspace you just left.
+
+## October 23, 2026
+
+Connections
+
+- Saving a source no longer fails in some cases where Airbyte couldn't read a previously stored credential for that source.
+
+Connector Builder
+
+- The Connector Builder loads again for workspaces that have a custom connector forked from a connector without an icon. Previously, the Builder page could fail to load with an error.
+- When a test read fails because of a problem with your connector's configuration, such as an invalid date value, the Connector Builder now shows a clear message describing the problem instead of a generic error ID.
+
+Platform
+
+- Every Airbyte Cloud organization can now open the **Install MCP** page from the sidebar to connect AI tools to Airbyte through the Airbyte MCP server. Previously, this page was only available to organizations enrolled in or eligible for Airbyte Agents.
+- On Cloud Pro and Enterprise Flex plans, data worker usage charts now show the "DW" unit once as the y-axis title, and the y-axis values are plain numbers.
+
+## October 22, 2026
+
+Connections
+
+- When you set up a new source or destination, the setup form now shows the connector's icon and name at the top. From this header, you can invite teammates to your workspace if you can manage workspace access, and for sources, you can fork or edit the connector in the Connector Builder. The **Copy JSON** button no longer appears on source and destination forms.
+- The refresh dialog for connections and streams is simpler and easier to read. The two refresh options are now called **Backfill missing or updated records** and **Overwrite existing data**, and the dialog links to the refresh documentation so you can learn more before you start.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, when you turn on **Compare to previous period** on a data worker usage chart, the chart now shows a loading indicator until the comparison data finishes loading. Previously, the chart could show only the current period while the previous period was still loading.
+
+## October 21, 2026
+
+Platform
+
+- If your organization is on the Standard or Plus plan and you can manage billing, the **Set up billing alerts** link on the Usage and Notifications pages now takes you to the billing alerts section of your organization's Billing page, where you can manage your alerts. Previously, the link opened a separate external form.
+- Setting up single sign-on (SSO) for your organization for the first time works again. Previously, setup could fail with an error.
+
+## October 19, 2026
+
+Platform
+
+- If turning on **Agent access** for a source or destination fails, the status icon next to the toggle now shows a readable error message. Previously, it could show an internal message code instead.
+
+## October 16, 2026
+
+Platform
+
+- When an AI agent using the Airbyte MCP tries to read from a source or destination that doesn't have agent access turned on, the link it gives you now opens a page where you can confirm and turn on direct access for that connector. If your organization hasn't turned on the context layer yet, an organization admin can turn it on from the same page. Previously, the link opened the connector's settings page.
+- The **Agent access** descriptions on the **Context layer** page and on source and destination settings now correctly say that agents can only read from your sources and destinations. Previously, they said agents could also write to them.
+
+## October 14, 2026
+
+Platform
+
+- You can no longer delete the only workspace in your organization, because an organization must keep at least one workspace. On your last workspace, the **Delete your workspace** button is now disabled with an explanation, and deleting it through the API returns an error. To remove it, create another workspace first, or contact Airbyte support if your plan allows only one workspace.
+- If you no longer have access to any organization, for example because the only workspace you belonged to was deleted, Airbyte now shows a message asking you to get an invitation from an organization admin, and you can accept that invitation to join the organization. Previously, the app failed to load and you could get an error when accepting a new invitation.
+
+API
+
+- Error responses from the Airbyte API now include clearer, more actionable descriptions in the `detail` field that explain what went wrong and how to fix it, for example for authentication failures, missing permissions, sync schedules that run more often than your plan allows, and streams that conflict with another connection. Error types, titles, and HTTP status codes are unchanged. For some validation errors, the description now appears only in `detail` and is no longer repeated in `data.message`.
+
+## October 13, 2026
+
+Connections
+
+- If you try to create a connection with a source or destination that has been deleted, for example through the API or Terraform, Airbyte now rejects the request with an error explaining that the source or destination was deleted. Previously, the connection could be created anyway.
+
 ## October 9, 2026
 
 Connections

@@ -19,6 +19,7 @@ import java.util.*
 import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Collection of utilities that facilitate the generation of state objects. */
 object StateGeneratorUtils {
 
@@ -53,7 +54,7 @@ object StateGeneratorUtils {
             if (isValidStreamDescriptor(s.streamDescriptor))
                 AirbyteStreamNameNamespacePair(
                     s.streamDescriptor.name,
-                    s.streamDescriptor.namespace
+                    s.streamDescriptor.namespace,
                 )
             else null
         }
@@ -67,16 +68,16 @@ object StateGeneratorUtils {
      */
     fun generateStreamState(
         airbyteStreamNameNamespacePair: AirbyteStreamNameNamespacePair,
-        cursorInfo: CursorInfo
+        cursorInfo: CursorInfo,
     ): AirbyteStreamState {
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
                     .withName(airbyteStreamNameNamespacePair.name)
-                    .withNamespace(airbyteStreamNameNamespacePair.namespace)
+                    .withNamespace(airbyteStreamNameNamespacePair.namespace),
             )
             .withStreamState(
-                Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo))
+                Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)),
             )
     }
 
@@ -86,12 +87,12 @@ object StateGeneratorUtils {
      * [.isValidStreamDescriptor] for more details).
      *
      * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor
-     * information for that stream
+     *   information for that stream
      * @return The list of stream states derived from the state information extracted from the
-     * provided map.
+     *   provided map.
      */
     fun generateStreamStateList(
-        pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>
+        pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>,
     ): List<AirbyteStreamState> {
         return pairToCursorInfoMap.entries
             .sortedWith(java.util.Map.Entry.comparingByKey())
@@ -105,22 +106,22 @@ object StateGeneratorUtils {
      * Generates the legacy global state for backwards compatibility.
      *
      * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor
-     * information for that stream
+     *   information for that stream
      * @return The legacy [DbState].
      */
     fun generateDbState(
-        pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>
+        pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>,
     ): DbState {
         return DbState()
             .withCdc(false)
             .withStreams(
                 pairToCursorInfoMap.entries
                     .sortedWith(
-                        java.util.Map.Entry.comparingByKey()
+                        java.util.Map.Entry.comparingByKey(),
                     ) // sort by stream name then namespace for sanity.
                     .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
                         generateDbStreamState(e.key, e.value)
-                    }
+                    },
             )
     }
 
@@ -133,7 +134,7 @@ object StateGeneratorUtils {
      */
     fun generateDbStreamState(
         airbyteStreamNameNamespacePair: AirbyteStreamNameNamespacePair,
-        cursorInfo: CursorInfo
+        cursorInfo: CursorInfo,
     ): DbStreamState {
         val state =
             DbStreamState()
@@ -141,7 +142,7 @@ object StateGeneratorUtils {
                 .withStreamNamespace(airbyteStreamNameNamespacePair.namespace)
                 .withCursorField(
                     if (cursorInfo.cursorField == null) emptyList()
-                    else Lists.newArrayList(cursorInfo.cursorField)
+                    else Lists.newArrayList(cursorInfo.cursorField),
                 )
                 .withCursor(cursorInfo.cursor)
         if (cursorInfo.cursorRecordCount > 0L) {
@@ -155,7 +156,7 @@ object StateGeneratorUtils {
      *
      * @param state The [AirbyteStreamState] that contains the actual stream state as JSON.
      * @return An [Optional] possibly containing the deserialized representation of the stream state
-     * or an empty [Optional] if the state is not present or could not be deserialized.
+     *   or an empty [Optional] if the state is not present or could not be deserialized.
      */
     fun extractState(state: AirbyteStreamState): Optional<DbStreamState> {
         try {
@@ -193,7 +194,7 @@ object StateGeneratorUtils {
      */
     @JvmStatic
     fun convertLegacyStateToGlobalState(
-        airbyteStateMessage: AirbyteStateMessage
+        airbyteStateMessage: AirbyteStateMessage,
     ): AirbyteStateMessage {
         val dbState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!
         val globalState =
@@ -205,10 +206,10 @@ object StateGeneratorUtils {
                             .withStreamDescriptor(
                                 StreamDescriptor()
                                     .withName(s.streamName)
-                                    .withNamespace(s.streamNamespace)
+                                    .withNamespace(s.streamNamespace),
                             )
                             .withStreamState(Jsons.jsonNode(s))
-                    }
+                    },
                 )
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
@@ -223,7 +224,7 @@ object StateGeneratorUtils {
      * @return A list [AirbyteStateType.STREAM] state messages.
      */
     fun convertLegacyStateToStreamState(
-        airbyteStateMessage: AirbyteStateMessage
+        airbyteStateMessage: AirbyteStateMessage,
     ): List<AirbyteStateMessage> {
         return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!.streams.map {
             s: DbStreamState ->
@@ -234,15 +235,15 @@ object StateGeneratorUtils {
                         .withStreamDescriptor(
                             StreamDescriptor()
                                 .withNamespace(s.streamNamespace)
-                                .withName(s.streamName)
+                                .withName(s.streamName),
                         )
-                        .withStreamState(Jsons.jsonNode(s))
+                        .withStreamState(Jsons.jsonNode(s)),
                 )
         }
     }
 
     fun convertStateMessage(
-        state: io.airbyte.protocol.models.AirbyteStateMessage
+        state: io.airbyte.protocol.models.AirbyteStateMessage,
     ): AirbyteStateMessage {
         return Jsons.`object`(Jsons.jsonNode(state), AirbyteStateMessage::class.java)!!
     }
@@ -251,13 +252,13 @@ object StateGeneratorUtils {
      * Deserializes the state represented as JSON into an object representation.
      *
      * @param initialStateJson The state as JSON.
-     * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The deserialized object representation of the state.
+     * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      */
     @JvmStatic
     fun deserializeInitialState(
         initialStateJson: JsonNode?,
-        supportedStateType: AirbyteStateMessage.AirbyteStateType
+        supportedStateType: AirbyteStateMessage.AirbyteStateType,
     ): List<AirbyteStateMessage> {
         val typedState = StateMessageHelper.getTypedState(initialStateJson)
         return typedState
@@ -269,7 +270,7 @@ object StateGeneratorUtils {
                         java.util.List.of(
                             AirbyteStateMessage()
                                 .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                                .withData(state.legacyState)
+                                .withData(state.legacyState),
                         )
                 }
             }
@@ -279,18 +280,18 @@ object StateGeneratorUtils {
     /**
      * Generates an empty, initial state for use by the connector.
      *
-     * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The empty, initial state.
+     * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      */
     private fun generateEmptyInitialState(
-        supportedStateType: AirbyteStateMessage.AirbyteStateType
+        supportedStateType: AirbyteStateMessage.AirbyteStateType,
     ): List<AirbyteStateMessage> {
         // For backwards compatibility with existing connectors
         if (supportedStateType == AirbyteStateMessage.AirbyteStateType.LEGACY) {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                    .withData(Jsons.jsonNode(DbState()))
+                    .withData(Jsons.jsonNode(DbState())),
             )
         } else if (supportedStateType == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             val globalState =
@@ -300,13 +301,13 @@ object StateGeneratorUtils {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(globalState)
+                    .withGlobal(globalState),
             )
         } else {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(AirbyteStreamState())
+                    .withStream(AirbyteStreamState()),
             )
         }
     }

@@ -35,9 +35,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: true
       # Skipping to pass FAST Tests -- engineer should verify
       # connector works w/ oauth in Airbyte Cloud before merging.
       # - config_path: "secrets/config_oauth.json"

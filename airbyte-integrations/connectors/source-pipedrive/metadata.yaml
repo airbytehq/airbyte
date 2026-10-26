@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 4.0.0
+  dockerImageTag: 4.1.2
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -72,9 +72,14 @@ data:
               - roles
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message:
-          "This version removes the `pipeline_ids` field from the `deal_fields`
-          stream. Config has changed to only use API key. Please update your config."
+        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   releaseDate: 2021-07-19
   releaseStage: alpha
   suggestedStreams:
@@ -107,7 +112,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   externalDocumentationUrls:
     - title: Pipedrive API reference
       url: https://developers.pipedrive.com/docs/api/v1
@@ -121,4 +126,22 @@ data:
     - title: Pipedrive rate limits
       url: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
       type: rate_limits
+    - title: API v1 endpoint deprecation announcement
+      url: https://developers.pipedrive.com/changelog/post/deprecation-of-selected-api-v1-endpoints
+      type: api_deprecations
+    - title: Deprecated API v1 endpoints out of support
+      url: https://developers.pipedrive.com/changelog/post/deprecated-apiv1-endpoints-become-out-of-support
+      type: api_deprecations
+    - title: API v2 migration guide
+      url: https://pipedrive.readme.io/docs/pipedrive-api-v2-migration-guide
+      type: api_deprecations
+    - title: Changes to the API (breaking change policy)
+      url: https://pipedrive.readme.io/docs/changes-to-the-api
+      type: api_deprecations
+    - title: OpenAPI specification (v1)
+      url: https://developers.pipedrive.com/docs/api/v1/openapi.yaml
+      type: openapi_spec
+    - title: OpenAPI specification (v2)
+      url: https://developers.pipedrive.com/docs/api/v2/openapi.yaml
+      type: openapi_spec
 metadataSpecVersion: "1.0"

@@ -45,7 +45,7 @@ dependencies {
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
     
     // Test dependencies
-    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     
     // JUnit version alignment (required for Gradle 8.14+)
