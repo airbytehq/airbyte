@@ -97,6 +97,7 @@ def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_
     """
     config = {"access_token": "token1,token2", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = make_source(catalog=None, config=config, state=None)
+    config = source._config
 
     manifest_stream = source.streams(config)[0]
     manifest_authenticator = manifest_stream._stream_partition_generator._partition_factory._retriever.requester.authenticator
@@ -113,6 +114,7 @@ def test_quota_is_charged_once_across_repository_resolution_and_probe_stream(rat
     probe stream draw down one counter, not two."""
     config = {"access_token": "token1", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = make_source(catalog=None, config=config, state=None)
+    config = source._config
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
     requests_mock.get("https://api.github.com/repos/org/repo/probe_stream", json=[{"id": 1}])
 

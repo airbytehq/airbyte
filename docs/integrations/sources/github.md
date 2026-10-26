@@ -23,6 +23,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- GitHub App(s)
 <!-- /env:oss -->
 
 ## Setup guide
@@ -57,6 +58,8 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    <!-- env:oss -->
 
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+
+     Alternatively, authenticate with **GitHub App(s)**. Create a GitHub App under your organization's settings and install it on the repositories you want to sync, then enter its App ID, Installation ID, and private key (`.pem`) — one App per line group, repeatable for multiple Apps. Each App's access token is minted and refreshed automatically as needed, so it never goes stale mid-sync the way a pasted token would; installing several Apps also spreads requests across more than one rate-limit budget.
    <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -328,6 +331,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0 | 2026-10-22 | [85836](https://github.com/airbytehq/airbyte/pull/85836) | Add GitHub App authentication support, with multiple installations rotating for extra rate-limit headroom |
 | 2.8.0 | 2026-10-21 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add the `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt of each run |
 | 2.7.9 | 2026-10-20 | [89187](https://github.com/airbytehq/airbyte/pull/89187) | Update dependencies |
 | 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message, and names the skipped repository, instead of reporting a missing repository or missing token scopes. Upgrades to CDK 7.37.0 |
