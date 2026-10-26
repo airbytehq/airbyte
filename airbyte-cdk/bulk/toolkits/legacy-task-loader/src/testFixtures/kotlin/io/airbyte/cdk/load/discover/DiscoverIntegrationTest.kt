@@ -53,18 +53,19 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                 )
             runBlocking((Dispatchers.IO)) { process.run() }
             val messages = process.readMessages()
-            val catalogMessages =
-                messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }
+            val catalogMessages = messages.filter {
+                it.type == AirbyteMessage.Type.DESTINATION_CATALOG
+            }
             val testName = tc.name ?: ""
 
             assertEquals(
                 catalogMessages.size,
                 1,
-                "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages"
+                "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages",
             )
             assertFalse(
                 catalogMessages.first().destinationCatalog.operations.isEmpty(),
-                "$testName: Catalogs is expected to have at least one operation"
+                "$testName: Catalogs is expected to have at least one operation",
             )
         }
     }

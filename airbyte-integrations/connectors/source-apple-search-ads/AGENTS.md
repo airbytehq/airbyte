@@ -1,5 +1,3 @@
-> NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
-
 # source-apple-search-ads: Unique Connector Behaviors
 
 This connector is manifest-only (`language:manifest-only`, `cdk:low-code`); all behavior described
@@ -31,7 +29,14 @@ Declarative OAuth cannot be used for the same reason — there is no consent URL
 
 One consequence worth knowing: the `client_secret` JWT that users paste into the config is
 short-lived by Apple's own rules (Apple caps its `exp` at 180 days). Auth failures on a
-previously-working source are usually an expired JWT, not a revoked key.
+previously-working source are usually an expired JWT, not a revoked key. The token endpoint answers
+an expired or wrong secret with `400 {"error": "invalid_client"}`; `refresh_token_error_*` turns that
+into a configuration error whose text comes from the CDK and talks about a "refresh token". For this
+connector that message means: generate a new client secret. Token-endpoint failures with a non-JSON
+body or an unlisted `error` still surface as a system error, because the CDK only classifies the
+listed JSON shape on the initial and hourly token fetch (airbytehq/airbyte-python-cdk#1251). After an
+API `401`, the CDK's forced refresh fails any non-429 `4xx` from the token endpoint as a
+configuration error instead.
 
 **Why this matters:** Certification criteria A-1 and A-2 expect OAuth to be implemented
 declaratively and offered first in the UI _where the API supports it_. This API does not support a
@@ -107,30 +112,33 @@ endpoints are needed.
 ## 4. Entity streams are full refresh even though records carry `modificationTime`
 
 Only the four report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
-`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The four entity streams are
-full refresh, even though `campaigns`, `adgroups`, `keywords`, and `ads` records all include a
-`modificationTime` timestamp.
+`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The four entity streams
+(`campaigns`, `adgroups`, `keywords`, `ads`) are full refresh on purpose, even though their records
+carry `modificationTime`:
 
-This is a deliberate deferral, not an API limitation, and it should be documented as such. Apple
-exposes selector-condition endpoints (`POST /campaigns/find` and the equivalents for ad groups,
-keywords, and ads) whose `Condition` objects accept `modificationTime` with operators such as
-`GREATER_THAN`, so server-side incremental filtering is available in principle. Three reasons keep
-the streams full refresh today:
+- `modificationTime` does not move when the serving state changes. Apple documents it as "the date
+  and time of the most recent modification of the object", while `servingStatus`,
+  `servingStateReasons` and `displayStatus` are resolved by Apple from time, budget and billing
+  events: campaigns list reasons such as `CAMPAIGN_END_DATE_REACHED`, `DAILY_CAP_EXHAUSTED`,
+  `TOTAL_BUDGET_EXHAUSTED`, `CREDIT_CARD_DECLINED` and `PAUSED_BY_SYSTEM`
+  ([Campaign](https://developer.apple.com/documentation/apple_ads/campaign)), and ad groups list
+  `ADGROUP_END_DATE_REACHED` and `CAMPAIGN_NOT_RUNNING`
+  ([AdGroup](https://developer.apple.com/documentation/apple_ads/adgroup)). A `modificationTime`
+  cursor would leave these fields stale in the destination; a full refresh keeps them current.
+- Only `Campaign` and `Ad` document range operators (`LESS_THAN`, `GREATER_THAN`) on
+  `modificationTime`. `Keyword` documents `EQUALS` and `IN` only, and `AdGroup` documents no
+  operator for it ([Keyword](https://developer.apple.com/documentation/apple_ads/keyword),
+  [Ad](https://developer.apple.com/documentation/apple_ads/ad)), so two of the four streams have no
+  server-side cursor at all.
+- The range filters exist only on the `POST .../find` endpoints, a different request shape from the
+  `GET` list endpoints in use. Entity volumes are small next to the daily report streams.
 
-- Volume is small. Campaigns, ad groups, keywords, and ads are configuration objects, not event
-  data; a full refresh of an organization's campaign tree is cheap next to the daily report streams,
-  and the streams already page at `limit=1000` with `default_concurrency` from `num_workers`.
-- The `find` endpoints are a different request shape (`POST` with a selector body) than the `GET`
-  list endpoints in use, so this is a rewrite of four streams rather than adding a cursor.
-- Adding incremental sync to a stream that has none changes its state format from empty to a
-  per-stream cursor and changes the sync mode users see in the catalog. That has to ship as its own
-  reviewed change, not as a side effect of a documentation pass.
+Keep these streams full refresh. Revisit only if Apple documents a cursor that also tracks serving
+state changes.
 
-**Why this matters:** I-1 requires every stream with a viable cursor to be incremental, or a
-documented reason why not. `modificationTime` is a viable cursor, so this connector does not pass
-I-1 on the merits — it passes on a stated, revisitable deferral. Anyone picking this up should treat
-it as scoped work (switch to `find`, add `DatetimeBasedCursor` on `modificationTime`, verify
-substream partition routing still works) and not as a one-line manifest tweak.
+**Why this matters:** I-1 accepts full refresh only with a documented reason. A `modificationTime`
+cursor would freeze `servingStatus`, `servingStateReasons` and `displayStatus` in the destination
+whenever Apple changes them on its own, and keywords and ad groups have no range filter at all.
 
 ## 5. No `api_budget`: the Campaign Management API publishes no numeric quota
 
@@ -141,14 +149,44 @@ with a suggested ceiling (2 → 4 → 8 → 16 seconds). It publishes no request
 requests-per-window, and no quota headers for this API version, so there is no published limit for
 an `api_budget` to match.
 
-Instead, every stream uses a `CompositeErrorHandler` with an `ExponentialBackoffStrategy` (report
-streams take the multiplier from the optional `backoff_factor` config field) and retries `429` and
-`500`; `401` maps to `REFRESH_TOKEN_THEN_RETRY`. That mirrors Apple's own prescription.
+Each stream resolves to one `DefaultErrorHandler` through shared definitions: campaigns, adgroups,
+keywords, and ads use `error_handler`; campaigns_report_daily, adgroups_report_daily, and
+ads_report_daily use `report_error_handler`; keywords_report_daily uses
+`keywords_report_error_handler`, which first ignores Apple's `CAMPAIGN DOES NOT CONTAIN KEYWORD`
+response. The filters follow the status tables on each endpoint page (for example
+[Get All Ad Groups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) and
+[Get Campaign-Level Reports](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports)):
+
+- `401`: refresh the access token and retry; a `401` that persists after the refresh fails as a
+  configuration error.
+- `403` ("Insufficient rights to the resource."): configuration error that asks for an API role,
+  with Apple's first error message.
+- `400` ("An invalid query or missing required parameters."): on the report streams a configuration
+  error, because their requests carry the user's dates and Apple serves `DAILY` reports only when
+  "the startTime is <= 90 days in the past"
+  ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)). The spec
+  cannot enforce that limit: a Start Date older than 90 days, or a cursor that has not moved for about
+  60 days with the default 30-day lookback, crosses it. On the entity streams a `400` is a system
+  error, since their list requests carry no user input.
+- `404` ("The API can't locate the resource."): documented only on endpoints addressed by a parent
+  id, so a campaign or ad group removed during the sync; system error naming the URL, with Apple's
+  message.
+- `429`, `500`-`504` and statuses Apple does not list fall back to the CDK default mapping (retry
+  with backoff, or fail as a system error).
+
+Entity handlers use an exponential backoff strategy with the default factor and 5 retries. Report
+handlers take their factor from `backoff_factor` (default 5) and allow up to 10 retries, but the
+CDK stops retrying after 600 seconds, which is 6 retries at the default factor.
+
+Apple sunsets Campaign Management API v5 on 2027-01-26 (see the [API v5
+changelog](https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5)).
+The connector must migrate to the Apple Ads Platform API at `https://api.ads.apple.com/v1/` before
+then.
 
 There is one forward-looking caveat. Apple's newer **Apple Ads Platform API** (a different API from
 the Campaign Management API v5 this connector calls) _does_ return
 [IETF `RateLimit-Limit` / `RateLimit-Remaining` / `RateLimit-Reset` headers](https://developer.apple.com/documentation/apple-ads-platform-api/rate-limits).
-If this connector is ever migrated to that API, this justification no longer applies and the rate
+When this connector migrates to that API, this justification no longer applies and the rate
 limits should be honored, either via `api_budget` or by respecting `Retry-After` on `429`.
 
 **Why this matters:** P-2 requires `api_budget` wherever the API publishes rate limits, and

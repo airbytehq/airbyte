@@ -13,17 +13,30 @@ data:
       enabled: false
       packageName: airbyte-source-coassemble
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: 85999b05-fae0-4312-a3ae-f4987f50d434
-  dockerImageTag: 0.0.64
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-coassemble
   githubIssueLabel: source-coassemble
   icon: icon.svg
   license: ELv2
   name: Coassemble
   releaseDate: 2024-09-19
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          Coassemble replaced its legacy `COASSEMBLE-V1-SHA256 UserId/UserToken` authentication
+          with workspace API keys, now requires a course `id` to list trackings, and removed the
+          `GET /api/v1/headless/screen/types` endpoint. This version switches the connector to the
+          new `Workspace ID` + `API Key` credentials, reads `trackings` per course (adding a
+          `course_id` field), and removes the `screen_types` stream. All users must re-enter
+          their credentials; users syncing `screen_types` must deselect that stream. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/coassemble-migrations#upgrading-to-010).
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: disable
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/coassemble

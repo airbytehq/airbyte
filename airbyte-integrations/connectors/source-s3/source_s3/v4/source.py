@@ -54,7 +54,7 @@ _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
     "format": "streams.format",
     "path_pattern": "streams.globs",
-    "provider": "bucket, aws_access_key_id, aws_secret_access_key and endpoint",
+    "provider": "bucket, credentials and endpoint",
     "schema": "streams.input_schema",
 }
 
@@ -103,6 +103,11 @@ class SourceS3(FileBasedSource):
             converted_config = LegacyConfigTransformer.convert(parsed_legacy_config)
             emit_configuration_as_airbyte_control_message(converted_config)
             return converted_config
+
+        migrated_config = Config.migrate_legacy_credentials(config)
+        if migrated_config is not None:
+            emit_configuration_as_airbyte_control_message(migrated_config)
+            return migrated_config
         return config
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:

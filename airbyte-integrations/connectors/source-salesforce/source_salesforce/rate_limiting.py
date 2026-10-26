@@ -105,8 +105,9 @@ class SalesforceErrorHandler(ErrorHandler):
             if response.status_code == 401:
                 error_code, _ = self._extract_error_code_and_message(response)
                 if error_code == "INVALID_SESSION_ID":
+                    refreshed = False
                     if self._token_provider is not None:
-                        self._token_provider.force_refresh()
+                        refreshed = self._token_provider.force_refresh()
                         if self._token_provider.credentials_permanently_failed:
                             # The session is dead and the grant cannot mint a new one; retrying
                             # floods the token endpoint from every stream.
@@ -118,7 +119,8 @@ class SalesforceErrorHandler(ErrorHandler):
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
-                        "Salesforce session expired or invalid. Token has been refreshed.",
+                        "Salesforce session expired or invalid. "
+                        + ("Token has been refreshed." if refreshed else "The token could not be refreshed."),
                     )
 
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
@@ -168,6 +170,13 @@ class SalesforceErrorHandler(ErrorHandler):
                     FailureType.config_error,
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
+
+        if not isinstance(response, requests.Response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.system_error,
+                f"Request for stream '{self._stream_name}' failed with {type(response).__name__}: {response}",
+            )
 
         return ErrorResolution(
             ResponseAction.FAIL,
@@ -291,12 +300,13 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = (
-            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
-            != ResponseAction.RETRY
-        )
+        response_or_exception = exc if exc.response is None else exc.response
+        give_up = SalesforceErrorHandler().interpret_response(response_or_exception).response_action != ResponseAction.RETRY
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
+            if isinstance(response_or_exception, requests.Response):
+                logger.info(f"Giving up for returned HTTP status: {response_or_exception.status_code}, body: {response_or_exception.text}")
+            else:
+                logger.info(f"Giving up after {type(response_or_exception).__name__}: {response_or_exception}")
         return give_up
 
     return backoff.on_exception(

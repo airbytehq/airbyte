@@ -1,5 +1,37 @@
 # Airbyte Agents release notes
 
+## October 23, 2026
+
+Connectors
+
+- Your agents now report the correct star count for a GitHub repository even when GitHub doesn't show your account who starred it. GitHub now limits that list to repository admins and collaborators, which previously led your agents to report zero stars. This fix is also available in the SDK.
+- Your agents can now look up a single Amazon Ads portfolio or Sponsored Products campaign by its ID using Amazon's current API, replacing older endpoints that Amazon has deprecated. If you use the SDK, pass the ID inside the new portfolio or campaign ID filter instead of as a separate ID field.
+
+## October 21, 2026
+
+Connectors
+
+- Your agents can now set and adjust inventory quantities in Shopify again. Previously, these requests failed after Shopify changed its API. Each request now includes a unique key so Shopify doesn't apply a retried change twice, and can optionally confirm the current quantity before changing it. This fix is also available in the SDK.
+
+## October 15, 2026
+
+Connectors
+
+- Your agents can now list the call recordings in your Twilio account even when one of them has an error code, such as a recording that failed. Previously, a single recording like this caused the whole request to fail. This fix is also available in the SDK.
+- Your agents can now read the custom metafields on your Shopify product images. Previously, this request always failed. This fix is also available in the SDK.
+
+## October 7, 2026
+
+Connectors
+
+- Fixed an issue where your agents got an empty result when looking up a single reporting webhook in Customer.io. Your agents can now retrieve a webhook's name, endpoint URL, subscribed events, and status. This fix is also available in the SDK.
+
+## October 1, 2026
+
+Connectors
+
+- Your agents can now filter Twilio conferences by status, such as completed, in progress, or not yet started. Twilio now returns only in-progress conferences unless a status is specified, so this lets your agents keep finding past conference calls. This update is also available in the SDK.
+
 ## September 22, 2026
 
 Connectors

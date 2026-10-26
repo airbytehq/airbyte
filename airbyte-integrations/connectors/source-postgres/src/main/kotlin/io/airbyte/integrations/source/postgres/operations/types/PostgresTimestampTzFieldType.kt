@@ -21,6 +21,7 @@ object PostgresTimestampTzFieldType :
 // TODO: Improve performance by not stringifying and parsing
 object PgTimestampTzCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
+
     override fun decode(encoded: JsonNode): String {
         val decoded = encoded.asText()
         if (
@@ -31,6 +32,7 @@ object PgTimestampTzCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
         }
         return decoded
     }
+
     override fun valueForProtobufEncoding(v: String): Any? {
         val isBce = v.endsWith(" BC")
         val str = if (isBce) v.removeSuffix(" BC") else v
@@ -48,7 +50,7 @@ private object PgTimestampTzAccessor : JdbcAccessor<String> {
                 throw IllegalStateException("Timestamp '$timestampStr' is not supported")
             else ->
                 DateTimeConverter.convertToTimestampWithTimezone(
-                    rs.getObject(colIdx, OffsetDateTime::class.java)
+                    rs.getObject(colIdx, OffsetDateTime::class.java),
                 )
         }
     }

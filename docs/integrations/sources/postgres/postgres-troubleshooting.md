@@ -156,6 +156,8 @@ When using the `Read Changes using Write-Ahead Log (CDC)` update method, you mig
 
 This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector when dealing with low transaction volumes. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
 
+Connector version 3.8.10 and later (Debezium 3.4) no longer let the JDBC driver's keep-alive messages confirm WAL positions while the captured tables are idle. On a quiet database, only the fixes below advance the replication slot.
+
 #### Simple fix (read-only)
 
 The easiest way to fix this issue is to add one or more tables with high transaction volumes to the Airbyte publication. You do not need to actually sync these tables, but adding them to the publication will advance the log sequence number (LSN), ensuring the sync can succeed without you giving Airbyte write access to the database. However, this may greatly increase disk consumption.

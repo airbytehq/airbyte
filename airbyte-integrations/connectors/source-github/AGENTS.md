@@ -73,10 +73,13 @@ Things worth knowing before touching either half:
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
     `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first
-    run created more than 32 days before the cursor; `components.WorkflowRunsPaginationStrategy`
-    does the same from the raw page, reading the slice start from the `X-Airbyte-Window-Start`
-    request header (the paginator only sees records that survived the client-side filter, and
-    GitHub ignores the header). Do not replace this with GitHub's `created` filter: it caps the
+    run created more than 32 days before the cursor; the `CursorPagination` `stop_condition` does
+    the same from the raw page (`response`, not `last_record`, which only holds what survived the
+    client-side filter), comparing it with `stream_interval['start_time']`. The paginator has had
+    the slice in its interpolation context since airbytehq/airbyte-python-cdk#1166; before that a
+    custom strategy read the slice start back from a request header. Keep every operand of the
+    condition a comparison: a bare `None` reads as true to `InterpolatedBoolean` and would stop
+    pagination on a malformed page. Do not replace this with GitHub's `created` filter: it caps the
     result set at 1,000 runs, so a busy repository would silently lose runs. `lookback_window`
     would not do either: it moves the request window but `ConcurrentCursor.should_be_synced` still
     compares against the un-shifted start.
@@ -114,6 +117,11 @@ Things worth knowing before touching either half:
   matches what the legacy `GithubStreamABC.read_records` did for it, and remember that 410 is absent from
   the CDK default mapping — an endpoint GitHub answers 410 on needs a filter or it burns five
   retries behind the 60s backoff floor before failing.
+- `stargazers` uses `stargazers_error_handler` — `skip_inaccessible_error_handler` with 404/403
+  filters naming GitHub's admin/collaborator restriction on the stargazers listing; keep its
+  filter list in step when changing `skip_inaccessible_error_handler`. Each skip message starts
+  with the repository, taken from `request_url` with `regex_search`: a filter's `error_message`
+  never sees the partition.
 - The 410 disabled-feature skip (`disabled_feature_skip_filter`, mirroring
   the legacy `is_gone_with_feature_disabled`) lives on
   `skip_inaccessible_error_handler` only, and its predicate must name the feature:
@@ -252,6 +260,35 @@ the manifest and they reference the resolution router;
 `test_only_payload_confirmed_organizations_are_sliced` pins that, and reverting the `$ref` fails
 it for all three. Any org-scoped stream migrated from here on needs the same `$ref`.
 
+## Workflow run attempts: two silent traps
+
+`workflow_run_attempts` is a substream of `workflow_runs`, wired like `workflow_jobs`
+(`incremental_dependency: true`, `global_substream_cursor: true`). The listing returns only the
+latest attempt of each run, so the child requests `/attempts/{run_attempt}` and follows
+`previous_attempt_url` back to attempt 1. A run that was never re-run costs no request:
+`components.WorkflowRunAttemptsRetriever` (a `CustomRetriever`) emits its only attempt from the
+parent record, which reaches it whole through `extra_fields: [[]]` (dpath resolves the empty path
+to the record; the router keys it by the empty string). Compared live, that record differs from
+`GET .../attempts/1` only in the attempt-scoped `jobs_url`/`logs_url`, which the retriever
+rebuilds, and in `created_at`/`updated_at`, which the attempt endpoint rounds up a second for
+about a quarter of runs. Being a `CustomRetriever`, the factory hands it no client-side
+incremental filter and no transformations, and its paginator needs `$parameters.url_base`.
+
+Both traps below are pinned by `unit_tests/test_workflow_run_attempts.py`; if a test there starts
+failing, read this before "fixing" it.
+
+**Never filter the child on the attempt's own cursor.** A sync landing between the first attempt
+finishing and the re-run starting leaves the cursor above attempt 1's `updated_at`. If the child
+filters its own records, attempt 1 is dropped and no later sync revisits it, because the run's
+cursor has already moved past. The parent decides which runs are new; the child's cursor has no
+`is_client_side_incremental` and exists only so `incremental_dependency` persists parent state.
+
+**A JSON-Schema `$ref` to a file does not work inside a manifest.** The manifest reference resolver
+claims every `$ref` key, and for a non-`#/` target it returns the raw string and discards the
+sibling keys, so a property copied from a schema file as `{$ref: user.json, description: ...}`
+collapses to the literal string `"user.json"`. Shared sub-schemas belong in `definitions`
+(`github_user_schema`) and are referenced with `#/definitions/...`.
+
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
@@ -295,9 +332,10 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 | `issue_comment_reactions` | incremental | `created_at` | client-side | substream of `comments` |
 | `commits` | incremental | `created_at` | server-side `since` | slices per branch via `CommitsBranchPartitionRouter` |
 | `contributor_activity` | full refresh | — | — | retries 202 with a 90s constant backoff |
-| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `WorkflowRunsPaginationStrategy` |
+| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `CursorPagination` `stop_condition` on `stream_interval` |
 | `workflow_jobs` | incremental | `completed_at` | client-side, 32-day window | substream of `workflow_runs` |
-| `releases` | incremental | `created_at` | client-side | GraphQL |
+| `workflow_run_attempts` | incremental | `updated_at` | parent `workflow_runs` decides; child never filters | substream of `workflow_runs`, walks `previous_attempt_url` |
+| `releases` | incremental | `created_at` | data feed (newest-first stop) | GraphQL |
 | `projects_v2` | incremental | `updated_at` | client-side | GraphQL |
 | `pull_request_stats` | incremental | `updated_at` | data feed (newest-first stop) | GraphQL |
 | `reviews` | incremental | `updated_at` | client-side | GraphQL |
@@ -322,4 +360,4 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
   `{"errors": [...]}` — on the status you care about; a fixture with an empty body passes whatever
   the order is.
 
-- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Five of them are client-side incremental; `pull_request_stats` alone reads `pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})` with `is_data_feed: true` and stops at the first already-synced pull request. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take.
+- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Four of them are client-side incremental; `releases` (`releases(orderBy: {field: CREATED_AT, direction: DESC})`) and `pull_request_stats` (`pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})`) use `is_data_feed: true` and stop at the first already-synced record. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take. `reviews`, `issue_reactions` and `pull_request_comment_reactions` read every drilldown root with a CDK `CombinedExtractor` in `union` mode (one `DpathExtractor` per response shape, each with a `RecordExpander` that copies the one parent field the record needs with `parent_fields`). Both need an `airbyte-cdk` release containing airbyte-python-cdk#1162 and #1165.

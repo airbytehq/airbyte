@@ -1651,6 +1651,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+    `refresh_token: str | None`
+    :   Refresh token used to obtain new access tokens when the current one expires
+
 <a id="Tag"></a>
 
 `Tag(**data: Any)`
