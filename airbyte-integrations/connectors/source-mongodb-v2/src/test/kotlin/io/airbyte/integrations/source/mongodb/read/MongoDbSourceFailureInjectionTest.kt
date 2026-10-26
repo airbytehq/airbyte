@@ -63,7 +63,7 @@ class MongoDbSourceFailureInjectionTest {
     @CsvSource("10107, NotWritablePrimary", "43, CursorNotFound", "11600, InterruptedAtShutdown")
     fun testServerErrorMidSnapshotIsTransientAndResumesFromTheCheckpoint(
         code: Int,
-        codeName: String
+        codeName: String,
     ) {
         val catalog: ConfiguredAirbyteCatalog = fullRefreshCatalog()
         val failed: BufferingOutputConsumer =
@@ -185,7 +185,7 @@ class MongoDbSourceFailureInjectionTest {
         )
         Assertions.assertEquals(
             MongoDbSnapshotStatus.COMPLETE,
-            lastStreamState(resynced, PEOPLE)?.status
+            lastStreamState(resynced, PEOPLE)?.status,
         )
     }
 
@@ -201,7 +201,9 @@ class MongoDbSourceFailureInjectionTest {
         val sync1: BufferingOutputConsumer =
             withFailPoint(replicaSet, skip(1), blocking("find", millis = 4000)) {
                 val reading: CompletableFuture<BufferingOutputConsumer> =
-                    CompletableFuture.supplyAsync { read(config(), catalog) }
+                    CompletableFuture.supplyAsync {
+                        read(config(), catalog)
+                    }
                 waitForConnectorOperation("find", PEOPLE)
                 insert(1000)
                 reading.get(2, TimeUnit.MINUTES)
@@ -311,7 +313,7 @@ class MongoDbSourceFailureInjectionTest {
                                             ),
                                         ),
                                 ),
-                            )
+                            ),
                         )
                         .first() != null
                 if (running) return
@@ -322,12 +324,12 @@ class MongoDbSourceFailureInjectionTest {
     }
 
     private fun config(
-        extraRootProperties: Map<String, Any> = emptyMap()
+        extraRootProperties: Map<String, Any> = emptyMap(),
     ): MongoDbSourceConfigurationSpecification =
         MongoDbReadTestSupport.config(
             replicaSet,
             listOf(TEST_DB),
-            extraRootProperties = extraRootProperties
+            extraRootProperties = extraRootProperties,
         )
 
     private fun fullRefreshCatalog(): ConfiguredAirbyteCatalog =
@@ -364,7 +366,7 @@ class MongoDbSourceFailureInjectionTest {
                     .insertMany(
                         (1..BIG_DOCUMENTS).map {
                             Document("_id", it).append("payload", "x".repeat(BIG_DOCUMENT_BYTES))
-                        }
+                        },
                     )
             }
         }

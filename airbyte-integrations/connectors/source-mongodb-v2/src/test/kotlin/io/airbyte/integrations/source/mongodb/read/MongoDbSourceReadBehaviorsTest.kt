@@ -86,7 +86,7 @@ class MongoDbSourceReadBehaviorsTest {
         seed(
             SCHEMALESS,
             Document("_id", 1).append("v", "one"),
-            Document("_id", 2).append("v", "two")
+            Document("_id", 2).append("v", "two"),
         )
         val config: MongoDbSourceConfigurationSpecification = config(schemaEnforced = false)
         val catalog: ConfiguredAirbyteCatalog =
@@ -110,7 +110,7 @@ class MongoDbSourceReadBehaviorsTest {
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(SCHEMALESS)
             coll.insertOne(
-                Document("_id", 3).append("v", "three").append("nested", Document("k", 1))
+                Document("_id", 3).append("v", "three").append("nested", Document("k", 1)),
             )
             coll.updateOne(Filters.eq("_id", 1), Updates.set("v", "uno"))
             coll.deleteOne(Filters.eq("_id", 2))
@@ -126,7 +126,7 @@ class MongoDbSourceReadBehaviorsTest {
         Assertions.assertEquals(
             2,
             deleted["data"]["_id"].asInt(),
-            "a delete carries the key: $deleted"
+            "a delete carries the key: $deleted",
         )
     }
 
@@ -158,13 +158,13 @@ class MongoDbSourceReadBehaviorsTest {
         Assertions.assertEquals("replaced", replaced["v"].asText())
         Assertions.assertTrue(
             replaced["old"].isNull,
-            "a replace drops the fields it lacks: $replaced"
+            "a replace drops the fields it lacks: $replaced",
         )
         val storm: List<JsonNode> = changes.filter { it["_id"].asInt() == 2 }
         Assertions.assertEquals(UPDATES, storm.size, "one event per update")
         Assertions.assertTrue(
             storm.all { it["n"].asInt() == UPDATES },
-            "each looked up at read time"
+            "each looked up at read time",
         )
         val cursors: List<Long> = storm.map { it["_ab_cdc_cursor"].asLong() }
         Assertions.assertEquals(cursors.sorted().distinct(), cursors, "strictly increasing cursors")
@@ -189,7 +189,7 @@ class MongoDbSourceReadBehaviorsTest {
             ConfiguredAirbyteCatalog()
                 .withStreams(
                     configuredCatalog(config(), SyncMode.FULL_REFRESH, setOf(PLAIN)).streams +
-                        configuredCatalog(config(), SyncMode.INCREMENTAL, setOf(ADDED)).streams
+                        configuredCatalog(config(), SyncMode.INCREMENTAL, setOf(ADDED)).streams,
                 )
         val sync2: BufferingOutputConsumer = read(config(), withIncremental, fullRefresh.states())
         Assertions.assertEquals(listOf("one"), records(sync2, PLAIN).map { it["v"].asText() })
@@ -230,14 +230,14 @@ class MongoDbSourceReadBehaviorsTest {
                                         .withStreamDescriptor(
                                             StreamDescriptor()
                                                 .withName(RESTART)
-                                                .withNamespace(TEST_DB)
+                                                .withNamespace(TEST_DB),
                                         )
                                         .withStreamState(
                                             Jsons.readTree(
-                                                """{"id":"3","status":"FULL_REFRESH","idType":"INT","binarySubType":0}"""
-                                            )
+                                                """{"id":"3","status":"FULL_REFRESH","idType":"INT","binarySubType":0}""",
+                                            ),
                                         ),
-                                )
+                                ),
                             ),
                     ),
             )
@@ -266,7 +266,7 @@ class MongoDbSourceReadBehaviorsTest {
                     .withGlobal(
                         AirbyteGlobalState()
                             .withSharedState(
-                                Jsons.readTree("""{"resumeToken": null, "schemaEnforced": true}""")
+                                Jsons.readTree("""{"resumeToken": null, "schemaEnforced": true}"""),
                             )
                             .withStreamStates(
                                 listOf(
@@ -274,10 +274,10 @@ class MongoDbSourceReadBehaviorsTest {
                                         .withStreamDescriptor(
                                             StreamDescriptor()
                                                 .withName(PLAIN)
-                                                .withNamespace(TEST_DB)
+                                                .withNamespace(TEST_DB),
                                         )
                                         .withStreamState(Jsons.readTree("""{"foo": 1}""")),
-                                )
+                                ),
                             ),
                     ),
             )
@@ -307,7 +307,7 @@ class MongoDbSourceReadBehaviorsTest {
         assertFailure(
             failed,
             FailureType.CONFIG_ERROR,
-            "could not be read due to catalog validation errors"
+            "could not be read due to catalog validation errors",
         )
         Assertions.assertEquals(
             listOf(AirbyteStreamStatus.STARTED, AirbyteStreamStatus.INCOMPLETE),
@@ -405,7 +405,7 @@ class MongoDbSourceReadBehaviorsTest {
                 "rare",
                 "_ab_cdc_updated_at",
                 "_ab_cdc_deleted_at",
-                "_ab_cdc_cursor"
+                "_ab_cdc_cursor",
             ),
             stream.jsonSchema["properties"].fieldNames().asSequence().toSet(),
         )
@@ -492,13 +492,13 @@ class MongoDbSourceReadBehaviorsTest {
         val last: AirbyteStateMessage =
             Jsons.readValue(
                 Jsons.writeValueAsString(states.last()),
-                AirbyteStateMessage::class.java
+                AirbyteStateMessage::class.java,
             )
         last.global.streamStates =
             last.global.streamStates.filterNot { it.streamDescriptor.name == stream } +
                 AirbyteStreamState()
                     .withStreamDescriptor(
-                        StreamDescriptor().withName(stream).withNamespace(TEST_DB)
+                        StreamDescriptor().withName(stream).withNamespace(TEST_DB),
                     )
                     .withStreamState(value)
         return listOf(last)

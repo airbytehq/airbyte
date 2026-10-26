@@ -62,7 +62,7 @@ class MongoDbSourceShardedClusterTest {
                     .withGlobal(
                         AirbyteGlobalState()
                             .withSharedState(
-                                MongoDbCdcState.of(null, true, null).toOpaqueStateValue()
+                                MongoDbCdcState.of(null, true, null).toOpaqueStateValue(),
                             )
                             .withStreamStates(
                                 listOf(
@@ -70,18 +70,18 @@ class MongoDbSourceShardedClusterTest {
                                         .withStreamDescriptor(
                                             StreamDescriptor()
                                                 .withName(PEOPLE)
-                                                .withNamespace(TEST_DB)
+                                                .withNamespace(TEST_DB),
                                         )
                                         .withStreamState(
                                             MongoDbStreamStateValue.fromLastId(
                                                     40,
-                                                    MongoDbSnapshotStatus.FULL_REFRESH
+                                                    MongoDbSnapshotStatus.FULL_REFRESH,
                                                 )
-                                                .toOpaqueStateValue()
-                                        )
-                                )
-                            )
-                    )
+                                                .toOpaqueStateValue(),
+                                        ),
+                                ),
+                            ),
+                    ),
             )
         Assertions.assertEquals(
             (41..DOCUMENTS).toList(),
@@ -101,7 +101,7 @@ class MongoDbSourceShardedClusterTest {
                 MongoDbDiagnostics.collectionLine(
                     client,
                     StreamIdentifier.from(
-                        StreamDescriptor().withName(PEOPLE).withNamespace(TEST_DB)
+                        StreamDescriptor().withName(PEOPLE).withNamespace(TEST_DB),
                     ),
                 )
             Assertions.assertTrue(
@@ -130,7 +130,7 @@ class MongoDbSourceShardedClusterTest {
         Assertions.assertEquals(3, changes.size, "insert + update + delete: $changes")
         Assertions.assertEquals("updated", changes.single { it["_id"].asInt() == 1 }["v"].asText())
         Assertions.assertFalse(
-            changes.single { it["_id"].asInt() == 2 }["_ab_cdc_deleted_at"].isNull
+            changes.single { it["_id"].asInt() == 2 }["_ab_cdc_deleted_at"].isNull,
         )
     }
 

@@ -35,7 +35,7 @@ class MongoDbSharedState(
     private val inputState: InputState,
     /** Test hook: a snapshot batch size below the driver's maximum (`0` = maximum). */
     @Value("\${airbyte.connector.extract.mongodb.snapshot-batch-size:0}")
-    private val snapshotBatchSizeHook: Int = 0,
+    private val snapshotBatchSizeHook: Int,
 ) {
     /**
      * Documents per snapshot batch: as many as fit the 16MB reply unless the test hook says less.
@@ -103,7 +103,7 @@ class MongoDbSharedState(
     fun idTypes(streamId: StreamIdentifier): List<String> =
         try {
             MongoDbIdTypes.present(
-                client.getDatabase(streamId.namespace!!).getCollection(streamId.name)
+                client.getDatabase(streamId.namespace!!).getCollection(streamId.name),
             )
         } catch (e: Exception) {
             log.warn {

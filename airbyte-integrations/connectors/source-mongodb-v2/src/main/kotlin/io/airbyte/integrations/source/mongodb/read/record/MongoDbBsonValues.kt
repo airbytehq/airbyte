@@ -42,7 +42,7 @@ class MongoDbBsonValues {
                     override fun flush() {}
 
                     override fun close() {}
-                }
+                },
             )
             .setRootValueSeparator(null)
 

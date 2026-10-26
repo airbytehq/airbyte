@@ -66,17 +66,17 @@ class MongoDbExceptionClassifierTest {
     fun testServerSelectionTimeoutIsTransientInReadButConfigInCheck() {
         val exception =
             MongoTimeoutException(
-                "Timed out while waiting for a server that matches ReadPreferenceServerSelector{readPreference=primary}"
+                "Timed out while waiting for a server that matches ReadPreferenceServerSelector{readPreference=primary}",
             )
         Assertions.assertInstanceOf(TransientError::class.java, handler.classify(exception))
         val (trace, status) = handler.handleCheckFailure(exception)
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType
+            trace.failureType,
         )
         Assertions.assertTrue(
             status.message.contains("Timed out while waiting for a server"),
-            status.message
+            status.message,
         )
     }
 
@@ -109,7 +109,7 @@ class MongoDbExceptionClassifierTest {
                     .append("errmsg", BsonString("labelled"))
                     .append(
                         "errorLabels",
-                        org.bson.BsonArray(listOf(BsonString("ResumableChangeStreamError")))
+                        org.bson.BsonArray(listOf(BsonString("ResumableChangeStreamError"))),
                     ),
                 ServerAddress("mongo", 27017),
             )
@@ -146,7 +146,7 @@ class MongoDbExceptionClassifierTest {
     fun testOtherFailuresAreSystemErrors() {
         Assertions.assertInstanceOf(
             SystemError::class.java,
-            handler.classify(RuntimeException("something else"))
+            handler.classify(RuntimeException("something else")),
         )
         Assertions.assertInstanceOf(
             SystemError::class.java,

@@ -102,7 +102,7 @@ class MongoDbSourceAcceptanceTest {
         return CliRunner.source(
                 "read",
                 config(),
-                ConfiguredAirbyteCatalog().withStreams(configured)
+                ConfiguredAirbyteCatalog().withStreams(configured),
             )
             .run()
     }

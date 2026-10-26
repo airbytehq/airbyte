@@ -135,7 +135,7 @@ class MongoDbSnapshotPartitionReader(
                 "data loss (collection = ${stream.name}, types = $types)."
         }
         feedBootstrap.outputConsumer.accept(
-            AirbyteAnalyticsTraceMessage().withType(MongoDbIdTypes.ANALYTICS_KEY).withValue("1")
+            AirbyteAnalyticsTraceMessage().withType(MongoDbIdTypes.ANALYTICS_KEY).withValue("1"),
         )
     }
 

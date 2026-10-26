@@ -60,7 +60,7 @@ class MongoDbProtobufEncodingTest {
 
         Assertions.assertEquals(
             """{"x":1}""",
-            MongoJsonbValueCodec.valueForProtobufEncoding(OBJECT)
+            MongoJsonbValueCodec.valueForProtobufEncoding(OBJECT),
         )
         // A scalar in a `object` field is its JSON text, as the legacy connector sent it.
         Assertions.assertEquals("\"hi\"", MongoJsonbValueCodec.valueForProtobufEncoding(text("hi")))
@@ -92,7 +92,7 @@ class MongoDbProtobufEncodingTest {
             )) {
             val roundTripped: MongoDbValue =
                 MongoStringValueCodec.decode(
-                    Jsons.readTree(Jsons.writeValueAsString(MongoStringValueCodec.encode(value)))
+                    Jsons.readTree(Jsons.writeValueAsString(MongoStringValueCodec.encode(value))),
                 )
             Assertions.assertEquals(value.toJsonText(), roundTripped.toJsonText())
             Assertions.assertEquals(value::class, roundTripped::class)

@@ -4,7 +4,7 @@ airbyte:
     data-channel:
       medium: ${DATA_CHANNEL_MEDIUM:STDIO}
       format: ${DATA_CHANNEL_FORMAT:JSONL}
-      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS:}
     output:
       buffer-byte-size-threshold-for-flush: 8192
     exception-classifiers:

@@ -40,7 +40,7 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
     ) {
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
-            Jsons.textNode(updatedAt(timestamp))
+            Jsons.textNode(updatedAt(timestamp)),
         )
         recordData.set<JsonNode>(CommonMetaField.CDC_DELETED_AT.id, Jsons.nullNode())
         recordData.set<JsonNode>(MongoDbMetaField.CDC_CURSOR.id, Jsons.nullNode())

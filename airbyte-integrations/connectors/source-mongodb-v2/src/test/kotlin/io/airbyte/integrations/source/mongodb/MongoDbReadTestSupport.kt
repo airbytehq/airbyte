@@ -121,7 +121,7 @@ object MongoDbReadTestSupport {
                 block()
             } finally {
                 adminDb.runCommand(
-                    Document("configureFailPoint", GET_MORE_FAIL_POINT).append("mode", "off")
+                    Document("configureFailPoint", GET_MORE_FAIL_POINT).append("mode", "off"),
                 )
             }
         }
@@ -138,7 +138,7 @@ object MongoDbReadTestSupport {
     fun failing(
         vararg commands: String,
         errorCode: Int,
-        labels: List<String> = emptyList()
+        labels: List<String> = emptyList(),
     ): Document =
         Document("failCommands", commands.toList()).append("errorCode", errorCode).also {
             if (labels.isNotEmpty()) it.append("errorLabels", labels)
@@ -170,7 +170,7 @@ object MongoDbReadTestSupport {
                             .withSyncMode(syncMode)
                             .withDestinationSyncMode(
                                 if (syncMode == SyncMode.INCREMENTAL) DestinationSyncMode.APPEND
-                                else DestinationSyncMode.OVERWRITE
+                                else DestinationSyncMode.OVERWRITE,
                             )
                             .withCursorField(stream.defaultCursorField)
                             .withPrimaryKey(stream.sourceDefinedPrimaryKey)
@@ -263,7 +263,7 @@ object MongoDbReadTestSupport {
     /** Every checkpoint emitted for [stream], in order. */
     fun streamStates(
         result: BufferingOutputConsumer,
-        stream: String
+        stream: String,
     ): List<MongoDbStreamStateValue> =
         result
             .states()

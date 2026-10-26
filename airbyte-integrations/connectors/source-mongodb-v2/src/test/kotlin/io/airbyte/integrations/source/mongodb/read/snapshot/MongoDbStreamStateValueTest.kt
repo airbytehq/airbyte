@@ -47,7 +47,7 @@ class MongoDbStreamStateValueTest {
         Assertions.assertEquals(MongoDbIdType.OBJECT, checkpoint.idType)
         Assertions.assertEquals(
             """{"tenant": "acme", "seq": {"${'$'}numberLong": "2"}}""",
-            checkpoint.id
+            checkpoint.id,
         )
         val restored: MongoDbStreamStateValue =
             MongoDbStreamStateValue.fromOpaqueStateValue(checkpoint.toOpaqueStateValue())
@@ -95,7 +95,7 @@ class MongoDbStreamStateValueTest {
     fun testLegacyStateShape() {
         val legacy =
             Jsons.readTree(
-                """{"id":"650000000000000000000001","status":"IN_PROGRESS","idType":"OBJECT_ID","binarySubType":0}"""
+                """{"id":"650000000000000000000001","status":"IN_PROGRESS","idType":"OBJECT_ID","binarySubType":0}""",
             )
         val restored: MongoDbStreamStateValue = MongoDbStreamStateValue.fromOpaqueStateValue(legacy)
         Assertions.assertEquals(ObjectId("650000000000000000000001"), restored.resumeIdValue())

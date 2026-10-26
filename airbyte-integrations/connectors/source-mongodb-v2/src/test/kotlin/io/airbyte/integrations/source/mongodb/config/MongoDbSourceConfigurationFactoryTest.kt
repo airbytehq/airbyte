@@ -43,7 +43,7 @@ class MongoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(MongoDbClusterType.ATLAS_REPLICA_SET, config.clusterType)
         Assertions.assertEquals(
             "mongodb+srv://cluster0.abcd1.mongodb.net/",
-            config.connectionString
+            config.connectionString,
         )
         Assertions.assertEquals(listOf("db1", "db2"), config.databases)
         Assertions.assertEquals("user", config.username)
@@ -113,7 +113,7 @@ class MongoDbSourceConfigurationFactoryTest {
             )
         Assertions.assertEquals(
             "mongodb+srv://cluster0.abcd1.mongodb.net/",
-            config.connectionString
+            config.connectionString,
         )
     }
 
@@ -125,8 +125,8 @@ class MongoDbSourceConfigurationFactoryTest {
                 MongoDbSourceConfigurationFactory()
                     .make(
                         parse(
-                            """{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": ["db1"]}, "update_capture_mode": "x", "invalid_cdc_cursor_position_behavior": "Maybe"}"""
-                        )
+                            """{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": ["db1"]}, "update_capture_mode": "x", "invalid_cdc_cursor_position_behavior": "Maybe"}""",
+                        ),
                     )
             }
         Assertions.assertEquals(
@@ -206,7 +206,7 @@ class MongoDbSourceConfigurationFactoryTest {
         val config =
             MongoDbSourceConfigurationFactory()
                 .makeWithoutExceptionHandling(
-                    parse(selfManagedWithConnectionString("mongodb://[::1]/"))
+                    parse(selfManagedWithConnectionString("mongodb://[::1]/")),
                 )
         Assertions.assertEquals("::1", config.realHost)
         Assertions.assertEquals(27017, config.realPort)

@@ -123,7 +123,7 @@ class MongoDbCdcStateTest {
                     org.bson
                         .RawBsonDocument(tokenDocument, org.bson.codecs.BsonDocumentCodec())
                         .byteBuffer
-                        .array()
+                        .array(),
                 )
         val legacy =
             Jsons.readTree(
@@ -172,7 +172,7 @@ class MongoDbCdcStateTest {
     fun testNativeShapeWithoutSchemaEnforcedIsNull() {
         val parsed =
             MongoDbCdcState.fromOpaqueStateValue(
-                Jsons.readTree("""{"resumeToken": {"_data": "$TOKEN"}}""")
+                Jsons.readTree("""{"resumeToken": {"_data": "$TOKEN"}}"""),
             )!!
         Assertions.assertNull(parsed.schemaEnforced)
         Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
@@ -185,7 +185,7 @@ class MongoDbCdcStateTest {
             "\"$key\": \"{\\\"sec\\\":1,\\\"ord\\\":1,\\\"resume_token\\\":\\\"$token\\\"}\""
         val same =
             Jsons.readTree(
-                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", TOKEN)}}, "schema_enforced": true}"""
+                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", TOKEN)}}, "schema_enforced": true}""",
             )
         Assertions.assertEquals(
             TOKEN,
@@ -194,7 +194,7 @@ class MongoDbCdcStateTest {
         )
         val different =
             Jsons.readTree(
-                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", OTHER_TOKEN)}}, "schema_enforced": true}"""
+                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", OTHER_TOKEN)}}, "schema_enforced": true}""",
             )
         val e =
             Assertions.assertThrows(ConfigErrorException::class.java) {
@@ -226,11 +226,11 @@ class MongoDbCdcStateTest {
                 Assertions.assertThrows(
                     ConfigErrorException::class.java,
                     { MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree(case)) },
-                    case
+                    case,
                 )
             Assertions.assertTrue(
                 e.message!!.startsWith(
-                    "Failed to migrate to the new connector version state protocol"
+                    "Failed to migrate to the new connector version state protocol",
                 ),
                 e.message,
             )

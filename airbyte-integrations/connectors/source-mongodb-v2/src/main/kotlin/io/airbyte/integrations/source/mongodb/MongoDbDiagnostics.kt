@@ -67,8 +67,7 @@ object MongoDbDiagnostics {
         val member: String =
             hello.getString("me")?.let {
                 ", answering member $it${role?.let { r -> " ($r)" } ?: ""}"
-            }
-                ?: ""
+            } ?: ""
         val hosts: String = hello.getList("hosts", String::class.java)?.let { ", hosts $it" } ?: ""
         val compression: String =
             settings.compressorList.joinToString(",") { it.name }.ifEmpty { "none" }
@@ -101,8 +100,7 @@ object MongoDbDiagnostics {
                     } else {
                         "${hours(oldest, it)} h inside the window."
                     }
-            }
-                ?: ""
+            } ?: ""
         return "Oplog: ${bytes(stats.long("size"))} used of ${bytes(stats.long("maxSize"))}, " +
             "${count(stats.long("count"))} entries, ${instant(oldest)} to ${instant(newest)} " +
             "(window ${hours(oldest, newest)} h).$position"
@@ -136,8 +134,7 @@ object MongoDbDiagnostics {
             .sort(Document(NATURAL_ORDER, order))
             .limit(1)
             .first()
-            ?.get(TS_FIELD, BsonTimestamp::class.java)
-            ?: error("the oplog is empty")
+            ?.get(TS_FIELD, BsonTimestamp::class.java) ?: error("the oplog is empty")
 
     /** `collStats` sizes are `Int` while they fit and `Long` past that. */
     private fun Document.long(field: String): Long = (get(field) as? Number)?.toLong() ?: 0L

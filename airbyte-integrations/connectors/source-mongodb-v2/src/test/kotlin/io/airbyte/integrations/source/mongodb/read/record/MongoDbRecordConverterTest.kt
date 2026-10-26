@@ -37,7 +37,7 @@ class MongoDbRecordConverterTest {
                     schemaEnforced = true,
                     schemaFieldTypes = document.keys.associateWith { MongoDbFieldType.STRING },
                 )
-                .toPayload(document.toBsonDocument())
+                .toPayload(document.toBsonDocument()),
         )
 
     /** The payload as the JSON channel writes it (nested values are raw JSON text nodes). */
@@ -121,8 +121,8 @@ class MongoDbRecordConverterTest {
         val real =
             json(
                 converter.toPayload(
-                    (Document("_id", 1).append("tags", listOf("a"))).toBsonDocument()
-                )
+                    (Document("_id", 1).append("tags", listOf("a"))).toBsonDocument(),
+                ),
             )
         Assertions.assertEquals(listOf("a"), real["tags"].map { it.asText() })
         val absent = json(converter.toPayload(Document("_id", 1).toBsonDocument()))
@@ -157,8 +157,8 @@ class MongoDbRecordConverterTest {
                     Document("_id", 1)
                         .append("addr", Document("city", "Paris").append("zip", 75001))
                         .append("name", "alice")
-                        .toBsonDocument()
-                )
+                        .toBsonDocument(),
+                ),
             )
         // Objects become compact JSON; strings are emitted as-is (asText, not re-quoted).
         Assertions.assertEquals(
@@ -184,7 +184,7 @@ class MongoDbRecordConverterTest {
         val schemaless =
             json(
                 MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
-                    .toPayload(document.toBsonDocument())
+                    .toPayload(document.toBsonDocument()),
             )
         Assertions.assertFalse(schemaless["data"].has("lo"))
         Assertions.assertFalse(schemaless["data"].has("hi"))
@@ -287,9 +287,9 @@ class MongoDbRecordConverterTest {
         )
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"id":"abc","status":"IN_PROGRESS","idType":"STRING","binarySubType":0}"""
+                """{"id":"abc","status":"IN_PROGRESS","idType":"STRING","binarySubType":0}""",
             ),
-            node
+            node,
         )
     }
 

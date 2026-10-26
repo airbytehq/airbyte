@@ -74,7 +74,7 @@ class MongoDbSourceVersionMatrixTest {
                 db.getCollection(PEOPLE)
                     .insertOne(
                         Document("_id", ObjectId("650000000000000000000003"))
-                            .append("name", "carol")
+                            .append("name", "carol"),
                     )
                 db.getCollection(PEOPLE)
                     .updateOne(Filters.eq("name", "alice"), Updates.set("age", 31))
@@ -86,11 +86,11 @@ class MongoDbSourceVersionMatrixTest {
             Assertions.assertEquals(3, changes.size, "insert + update + delete: $changes")
             Assertions.assertEquals(
                 "carol",
-                changes.single { it["name"]?.asText() == "carol" }["name"].asText()
+                changes.single { it["name"]?.asText() == "carol" }["name"].asText(),
             )
             Assertions.assertEquals(
                 31,
-                changes.single { it["name"]?.asText() == "alice" }["age"].asInt()
+                changes.single { it["name"]?.asText() == "alice" }["age"].asInt(),
             )
             val deleted: JsonNode = changes.single { !it["_ab_cdc_deleted_at"].isNull }
             Assertions.assertEquals("650000000000000000000002", deleted["_id"].asText())
@@ -101,12 +101,12 @@ class MongoDbSourceVersionMatrixTest {
                 Assertions.assertEquals(
                     "kept",
                     preImageDelete["name"].asText(),
-                    "pre-image on $image"
+                    "pre-image on $image",
                 )
             } else {
                 Assertions.assertTrue(
                     preImageDelete["name"].isNull,
-                    "no pre-image before 6.0: $image"
+                    "no pre-image before 6.0: $image",
                 )
             }
         } finally {
@@ -134,14 +134,14 @@ class MongoDbSourceVersionMatrixTest {
                             .append("tags", listOf("a", "b"))
                             .append("nothing", null),
                         Document("_id", ObjectId("650000000000000000000002")).append("name", "bob"),
-                    )
+                    ),
                 )
             if (preImagesSupported) {
                 db.createCollection(
                     PRE_IMAGES,
                     CreateCollectionOptions()
                         .changeStreamPreAndPostImagesOptions(
-                            ChangeStreamPreAndPostImagesOptions(true)
+                            ChangeStreamPreAndPostImagesOptions(true),
                         ),
                 )
             }

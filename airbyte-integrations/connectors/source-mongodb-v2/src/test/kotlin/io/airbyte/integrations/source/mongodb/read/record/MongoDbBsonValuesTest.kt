@@ -117,8 +117,8 @@ class MongoDbBsonValuesTest {
                 .toPayload(document)
         Assertions.assertNull(
             MongoNumberValueCodec.valueForProtobufEncoding(
-                payload.getValue("nan").fieldValue as MongoDbValue
-            )
+                payload.getValue("nan").fieldValue as MongoDbValue,
+            ),
         )
     }
 
@@ -139,7 +139,7 @@ class MongoDbBsonValuesTest {
             )
         Assertions.assertEquals(
             setOf("_id", "kept", "n_aibyte_transform", "n"),
-            converter.readFields
+            converter.readFields,
         )
         val document =
             BsonDocument("_id", BsonInt32(1))
@@ -150,7 +150,7 @@ class MongoDbBsonValuesTest {
         val node: JsonNode = json(converter.toPayload(document))
         Assertions.assertEquals(
             setOf("_id", "kept", "n_aibyte_transform"),
-            node.fieldNames().asSequence().toSet()
+            node.fieldNames().asSequence().toSet(),
         )
         Assertions.assertEquals("yes", node["kept"].asText())
         Assertions.assertEquals("2.5", node["n_aibyte_transform"].asText())
@@ -172,8 +172,8 @@ class MongoDbBsonValuesTest {
                     BsonDocument("_id", BsonInt32(1))
                         .append("b", BsonBoolean(true))
                         .append("n", BsonDecimal128(Decimal128.parse("12.340")))
-                        .append("z", BsonNull())
-                )
+                        .append("z", BsonNull()),
+                ),
             )
         Assertions.assertEquals("true", node["b_aibyte_transform"].asText())
         Assertions.assertEquals("12.340", node["n_aibyte_transform"].asText())
@@ -191,8 +191,8 @@ class MongoDbBsonValuesTest {
         val oid: JsonNode =
             json(
                 converter.toPayload(
-                    BsonDocument("_id", BsonObjectId(ObjectId("650000000000000000000001")))
-                )
+                    BsonDocument("_id", BsonObjectId(ObjectId("650000000000000000000001"))),
+                ),
             )
         Assertions.assertEquals("650000000000000000000001", oid["_id"].asText())
         Assertions.assertEquals("650000000000000000000001", oid["data"]["_id"].asText())
@@ -201,9 +201,9 @@ class MongoDbBsonValuesTest {
                 converter.toPayload(
                     BsonDocument(
                         "_id",
-                        BsonDocument("tenant", BsonString("acme")).append("seq", BsonInt32(1))
-                    )
-                )
+                        BsonDocument("tenant", BsonString("acme")).append("seq", BsonInt32(1)),
+                    ),
+                ),
             )
         Assertions.assertEquals("""{"tenant":"acme","seq":1}""", composite["_id"].toString())
     }

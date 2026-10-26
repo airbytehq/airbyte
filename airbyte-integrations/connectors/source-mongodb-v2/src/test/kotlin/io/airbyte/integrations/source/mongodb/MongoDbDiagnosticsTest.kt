@@ -27,7 +27,7 @@ class MongoDbDiagnosticsTest {
         val configuration: MongoDbSourceConfiguration =
             MongoDbSourceConfigurationFactory()
                 .makeWithoutExceptionHandling(
-                    MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB))
+                    MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB)),
                 )
         val line: String =
             MongoDbDiagnostics.connectionLine(
@@ -86,14 +86,14 @@ class MongoDbDiagnosticsTest {
         Assertions.assertTrue(COLLECTION_LINE.matches(line), line)
         Assertions.assertTrue(
             line.startsWith("Snapshot of $TEST_DB.$PEOPLE: 1,500 documents, "),
-            line
+            line,
         )
         Assertions.assertTrue(line.endsWith(", 2 indexes; _id types [objectId]."), line)
 
         val empty: String = MongoDbDiagnostics.collectionLine(client, stream(EMPTY))
         Assertions.assertTrue(
             empty.startsWith("Snapshot of $TEST_DB.$EMPTY: 0 documents, 0 B, "),
-            empty
+            empty,
         )
         Assertions.assertFalse("_id types" in empty, empty)
     }
@@ -109,7 +109,7 @@ class MongoDbDiagnosticsTest {
                 MongoDbDiagnostics.collectionLine(
                     client,
                     StreamIdentifier.from(
-                        StreamDescriptor().withName("missing").withNamespace("no_such_db")
+                        StreamDescriptor().withName("missing").withNamespace("no_such_db"),
                     ),
                 )
             }
@@ -142,12 +142,12 @@ class MongoDbDiagnosticsTest {
         val OPLOG_LINE =
             Regex(
                 """Oplog: [\d.]+ (B|KB|MB|GB) used of [\d.]+ (B|KB|MB|GB), [\d,]+ entries, """ +
-                    """\S+Z to \S+Z \(window [\d.]+ h\)\."""
+                    """\S+Z to \S+Z \(window [\d.]+ h\)\.""",
             )
         val COLLECTION_LINE =
             Regex(
                 """Snapshot of \S+: [\d,]+ documents, [\d.]+ (B|KB|MB|GB) \(avg [\d.]+ (B|KB|MB|GB)\), """ +
-                    """[\d.]+ (B|KB|MB|GB) on disk, \d+ indexes; _id types \[[\w, ]+\]\."""
+                    """[\d.]+ (B|KB|MB|GB) on disk, \d+ indexes; _id types \[[\w, ]+\]\.""",
             )
 
         lateinit var replicaSet: MongoDBContainer
@@ -161,7 +161,7 @@ class MongoDbDiagnosticsTest {
             val db = client.getDatabase(TEST_DB)
             db.getCollection(PEOPLE)
                 .insertMany(
-                    (1..1500).map { Document("_id", ObjectId()).append("name", "person $it") }
+                    (1..1500).map { Document("_id", ObjectId()).append("name", "person $it") },
                 )
             db.getCollection(PEOPLE).createIndex(Document("name", 1))
             db.createCollection(EMPTY)

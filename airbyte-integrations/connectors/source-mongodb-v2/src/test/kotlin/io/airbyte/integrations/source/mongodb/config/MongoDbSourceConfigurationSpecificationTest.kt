@@ -46,7 +46,7 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertNull(pojo.schemaEnforced)
         Assertions.assertEquals(false, databaseConfig.schemaEnforced)
         Assertions.assertFalse(
-            MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo).schemaEnforced
+            MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo).schemaEnforced,
         )
 
         // The fixture still carries the dropped legacy `initial_waiting_seconds`/`queue_size`;

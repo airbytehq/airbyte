@@ -82,7 +82,7 @@ class MongoDbSourceDiscoverTest {
             MongoDbTestConfigs.config(
                 replicaSet.connectionString,
                 listOf(TEST_DB),
-                schemaEnforced = false
+                schemaEnforced = false,
             ),
             "expected-catalog-schemaless.json",
         )
@@ -101,7 +101,7 @@ class MongoDbSourceDiscoverTest {
         assertCatalogMatchesLegacy(
             MongoDbTestConfigs.config(
                 replicaSet.connectionString,
-                listOf("does_not_exist", TEST_DB)
+                listOf("does_not_exist", TEST_DB),
             ),
             "expected-catalog-schema-enforced.json",
         )
@@ -124,7 +124,7 @@ class MongoDbSourceDiscoverTest {
         Assertions.assertEquals(
             expected,
             actual,
-            Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
+            Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(actual),
         )
     }
 
@@ -133,8 +133,9 @@ class MongoDbSourceDiscoverTest {
      */
     private fun normalize(catalog: JsonNode): JsonNode {
         val streams: ArrayNode = catalog["streams"] as ArrayNode
-        val sorted: List<JsonNode> =
-            streams.sortedBy { "${it["namespace"].asText()}.${it["name"].asText()}" }
+        val sorted: List<JsonNode> = streams.sortedBy {
+            "${it["namespace"].asText()}.${it["name"].asText()}"
+        }
         return (catalog.deepCopy<ObjectNode>()).apply {
             set<JsonNode>("streams", Jsons.arrayNode().addAll(sorted))
         }
@@ -183,7 +184,7 @@ class MongoDbSourceDiscoverTest {
                             .append("dec", Decimal128(BigDecimal("12.34")))
                             .append(
                                 "uuid",
-                                uuidBinary(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                                uuidBinary(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
                             )
                             .append("bin", Binary(byteArrayOf(1, 2, 3)))
                             .append("ts", BsonTimestamp(1700000000, 1))
@@ -206,7 +207,7 @@ class MongoDbSourceDiscoverTest {
                             .append("dec", Decimal128(BigDecimal("0.1")))
                             .append(
                                 "uuid",
-                                uuidBinary(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"))
+                                uuidBinary(UUID.fromString("223e4567-e89b-12d3-a456-426614174000")),
                             )
                             .append("bin", Binary(byteArrayOf(4, 5, 6)))
                             .append("ts", BsonTimestamp(1700000001, 1))
@@ -226,27 +227,27 @@ class MongoDbSourceDiscoverTest {
                 .insertMany(
                     listOf(
                         Document("_id", 1).append("v", "one"),
-                        Document("_id", 2).append("v", "two")
-                    )
+                        Document("_id", 2).append("v", "two"),
+                    ),
                 )
             testDb
                 .getCollection("string_id")
                 .insertMany(
                     listOf(
                         Document("_id", "k1").append("v", 1),
-                        Document("_id", "k2").append("v", 2)
-                    )
+                        Document("_id", "k2").append("v", 2),
+                    ),
                 )
             testDb.createCollection("empty_coll")
             testDb.createView(
                 "people_view",
                 "people",
-                listOf(Document("\$project", Document("name", 1)))
+                listOf(Document("\$project", Document("name", 1))),
             )
             testDb.createView(
                 "people_view_no_id",
                 "people",
-                listOf(Document("\$project", Document("_id", 0).append("name", 1)))
+                listOf(Document("\$project", Document("_id", 0).append("name", 1))),
             )
             testDb.createCollection("system.buckets.ignored")
             testDb.createCollection(

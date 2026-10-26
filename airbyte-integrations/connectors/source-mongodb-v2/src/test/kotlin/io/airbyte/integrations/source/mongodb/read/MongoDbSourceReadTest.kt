@@ -245,7 +245,7 @@ class MongoDbSourceReadTest {
                 .toSet()
         val cdcState: MongoDbCdcState =
             MongoDbCdcState.fromOpaqueStateValue(
-                stateAfterSync1.mapNotNull { it.global?.sharedState }.last()
+                stateAfterSync1.mapNotNull { it.global?.sharedState }.last(),
             )!!
         val savedPosition: BsonTimestamp =
             MongoDbResumeTokens.timestamp(cdcState.resumeTokenBson()!!)
@@ -258,7 +258,7 @@ class MongoDbSourceReadTest {
         Assertions.assertEquals(
             setOf(BsonTimestamp(savedPosition.time, 0).value),
             snapshotCursors,
-            "snapshot rows carry the saved position"
+            "snapshot rows carry the saved position",
         )
         Assertions.assertTrue(
             cursors.first() > savedPosition.value,
@@ -400,7 +400,7 @@ class MongoDbSourceReadTest {
             coll.insertMany(
                 listOf("a", "b", "c").map {
                     Document("_id", Code("function $it() {}")).append("v", it)
-                }
+                },
             )
         }
         val result: BufferingOutputConsumer =
@@ -514,7 +514,7 @@ class MongoDbSourceReadTest {
                         listOf(
                             Binary(byteArrayOf(1)),
                             Binary(byteArrayOf(2)),
-                            Binary(byteArrayOf(3))
+                            Binary(byteArrayOf(3)),
                         ),
                         MongoDbIdType.BINARY,
                     ),
@@ -532,7 +532,7 @@ class MongoDbSourceReadTest {
                 DECIMAL_ID to
                     Pair(
                         listOf("1.10", "2.20", "3.30").map(Decimal128::parse),
-                        MongoDbIdType.DECIMAL
+                        MongoDbIdType.DECIMAL,
                     ),
                 DATE_ID to
                     Pair(
@@ -563,7 +563,7 @@ class MongoDbSourceReadTest {
                 val coll = client.getDatabase(TEST_DB).getCollection(name)
                 coll.drop()
                 coll.insertMany(
-                    idsAndType.first.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) }
+                    idsAndType.first.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) },
                 )
             }
         }
@@ -677,7 +677,7 @@ class MongoDbSourceReadTest {
             coll.insertMany(
                 listOf(1, 2, "a", "b", Date(1_700_000_000_000L)).mapIndexed { i, id ->
                     Document("_id", id).append("v", i + 1)
-                }
+                },
             )
         }
         val catalog: ConfiguredAirbyteCatalog =
@@ -690,7 +690,7 @@ class MongoDbSourceReadTest {
         val whole: BufferingOutputConsumer = read(catalog)
         Assertions.assertEquals(
             (1..5).toList(),
-            recordDataFor(whole, MIXED_ID).map { it["v"] as Int }
+            recordDataFor(whole, MIXED_ID).map { it["v"] as Int },
         )
         // As the legacy connector did: the mix is warned about and reported once, not refused.
         Assertions.assertEquals(listOf("1"), mixedIdTypeAnalytics(whole))
@@ -731,7 +731,7 @@ class MongoDbSourceReadTest {
                             BsonString("two"),
                             BsonDocument("three", BsonInt32(3)),
                             BsonArray(listOf(BsonInt32(4))),
-                        )
+                        ),
                     ),
                 )
                 .append("binData", BsonBinary(byteArrayOf(1, 2, 3)))
@@ -752,7 +752,7 @@ class MongoDbSourceReadTest {
                     "javascriptWithScope",
                     BsonJavaScriptWithScope(
                         "function() { return x; }",
-                        BsonDocument("x", BsonInt32(1))
+                        BsonDocument("x", BsonInt32(1)),
                     ),
                 )
                 .append("int", BsonInt32(7))
@@ -844,7 +844,7 @@ class MongoDbSourceReadTest {
         val standardUuidConfig: MongoDbSourceConfigurationSpecification =
             MongoDbTestConfigs.config(
                 "$connectionString&uuidRepresentation=standard",
-                listOf(TEST_DB)
+                listOf(TEST_DB),
             )
         val withUuidRepresentation: JsonNode =
             read(
@@ -919,7 +919,7 @@ class MongoDbSourceReadTest {
         Assertions.assertEquals(
             1,
             changes.size,
-            "expected only the post-token insert, got $changes"
+            "expected only the post-token insert, got $changes",
         )
         Assertions.assertEquals("670000000000000000000002", changes.single()["_id"])
         // ...and v3 writes its own position going forward while the legacy variables stay as they
@@ -1076,7 +1076,7 @@ class MongoDbSourceReadTest {
             SyncMode.INCREMENTAL,
             DestinationSyncMode.APPEND,
             names,
-            includeEmpty = false
+            includeEmpty = false,
         )
 
     /** Builds a configured catalog from the connector's own discover output. */
@@ -1127,7 +1127,7 @@ class MongoDbSourceReadTest {
 
     private fun statusesFor(
         result: BufferingOutputConsumer,
-        stream: String
+        stream: String,
     ): Set<AirbyteStreamStatus> =
         result
             .traces()
@@ -1272,7 +1272,7 @@ class MongoDbSourceReadTest {
             MongoDbTestConfigs.config(
                 connectionString,
                 listOf(TEST_DB),
-                schemaEnforced = schemaEnforced
+                schemaEnforced = schemaEnforced,
             )
 
         /** The 16 bytes of a UUID whose last byte is [n]. */

@@ -59,7 +59,7 @@ class MongoDbFieldTypeTest {
         MongoDbFieldType.STRING.jsonSchema().put("mutated", true)
         Assertions.assertEquals(
             Jsons.readTree("""{"type":"string"}"""),
-            MongoDbFieldType.STRING.jsonSchema()
+            MongoDbFieldType.STRING.jsonSchema(),
         )
     }
 

@@ -143,8 +143,9 @@ class MongoDbCdcPartitionReader(
                         // batch can precede events that are already committed; poll on until the
                         // idle shard's periodic no-op moves it, within a bound.
                         resumeToken = cursor.resumeToken
-                        val position: BsonTimestamp? =
-                            resumeToken?.let { MongoDbResumeTokens.timestamp(it) }
+                        val position: BsonTimestamp? = resumeToken?.let {
+                            MongoDbResumeTokens.timestamp(it)
+                        }
                         if (position == null || position >= target) break
                         if (++emptyPolls >= MAX_EMPTY_POLLS) {
                             log.warn {
@@ -169,7 +170,7 @@ class MongoDbCdcPartitionReader(
         }
         cdcSyncedUntil =
             Instant.ofEpochSecond(
-                MongoDbResumeTokens.timestamp(checkNotNull(resumeToken)).time.toLong()
+                MongoDbResumeTokens.timestamp(checkNotNull(resumeToken)).time.toLong(),
             )
         log.info {
             if (resumeAfter == null) "CDC cold start; captured resume token."
@@ -225,7 +226,7 @@ class MongoDbCdcPartitionReader(
             cursor.resumeToken
                 ?: throw ConfigErrorException(
                     "The server returned no resume token for an empty change-stream batch; " +
-                        "MongoDB 4.0.7 or later is required."
+                        "MongoDB 4.0.7 or later is required.",
                 )
         }
 
@@ -274,8 +275,7 @@ class MongoDbCdcPartitionReader(
                 OperationType.REPLACE ->
                     event.fullDocument?.let {
                         converter.changePayload(it, deletedAt = null).also { updates++ }
-                    }
-                        ?: deleted()
+                    } ?: deleted()
                 OperationType.DELETE -> deleted()
                 else -> return false
             }
@@ -337,8 +337,7 @@ class MongoDbCdcPartitionReader(
             )
         return configuration.databases.singleOrNull()?.let {
             sharedState.client.getDatabase(it).watch(pipeline, RawBsonDocument::class.java)
-        }
-            ?: sharedState.client.watch(pipeline, RawBsonDocument::class.java)
+        } ?: sharedState.client.watch(pipeline, RawBsonDocument::class.java)
     }
 
     private fun clusterTime(event: ChangeStreamDocument<RawBsonDocument>): String =

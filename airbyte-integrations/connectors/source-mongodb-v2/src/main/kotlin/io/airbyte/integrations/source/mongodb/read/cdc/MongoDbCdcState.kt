@@ -131,14 +131,15 @@ data class MongoDbCdcState(
                         MongoDbStateMigration.require(offsetValue.isTextual) {
                             "the offset value must be a JSON string, got $offsetValue"
                         }
-                        val offset: JsonNode =
-                            runCatching { Jsons.readTree(offsetValue.asText()) }
-                                .getOrElse {
-                                    MongoDbStateMigration.failure(
-                                        "the offset value is not valid JSON: ${offsetValue.asText()}",
-                                        it
-                                    )
-                                }
+                        val offset: JsonNode = runCatching {
+                            Jsons.readTree(offsetValue.asText())
+                        }
+                            .getOrElse {
+                                MongoDbStateMigration.failure(
+                                    "the offset value is not valid JSON: ${offsetValue.asText()}",
+                                    it,
+                                )
+                            }
                         val token: JsonNode? = offset[DEBEZIUM_RESUME_TOKEN]
                         MongoDbStateMigration.require(token?.isTextual == true) {
                             "the offset has no textual '$DEBEZIUM_RESUME_TOKEN', got $offset"
@@ -165,12 +166,12 @@ data class MongoDbCdcState(
                 BsonDocument("_data", BsonString(value))
             } else {
                 runCatching {
-                        RawBsonDocument(Base64.getDecoder().decode(value)).also { it.toJson() }
-                    }
+                    RawBsonDocument(Base64.getDecoder().decode(value)).also { it.toJson() }
+                }
                     .getOrElse {
                         MongoDbStateMigration.failure(
                             "'$DEBEZIUM_RESUME_TOKEN' is neither hex nor base64 BSON: $value",
-                            it
+                            it,
                         )
                     }
             }

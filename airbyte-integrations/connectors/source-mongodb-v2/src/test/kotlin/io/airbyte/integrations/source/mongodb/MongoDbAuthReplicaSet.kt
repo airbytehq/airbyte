@@ -31,7 +31,7 @@ class MongoDbAuthReplicaSet(image: String = "mongo:7.0") :
         )
         waitingFor(
             Wait.forLogMessage("(?i).*waiting for connections.*", 1)
-                .withStartupTimeout(Duration.ofMinutes(2))
+                .withStartupTimeout(Duration.ofMinutes(2)),
         )
     }
 
@@ -40,7 +40,7 @@ class MongoDbAuthReplicaSet(image: String = "mongo:7.0") :
         retry("rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:$MONGO_PORT'}]})")
         retry(
             "let n = 0; while (db.adminCommand({replSetGetStatus: 1}).myState != 1) " +
-                "{ if (++n > 150) quit(1); sleep(200); }"
+                "{ if (++n > 150) quit(1); sleep(200); }",
         )
         retry(
             """
@@ -56,7 +56,8 @@ class MongoDbAuthReplicaSet(image: String = "mongo:7.0") :
                  actions: ['find', 'changeStream']}]});
             admin.createUser({user: '$COLLECTION_USER', pwd: '$PASSWORD',
                 roles: [{role: 'one_collection', db: 'admin'}]});
-            """.trimIndent()
+            """
+                .trimIndent(),
         )
     }
 
@@ -93,7 +94,7 @@ class MongoDbAuthReplicaSet(image: String = "mongo:7.0") :
     fun rootClient(): MongoClient =
         MongoClients.create(
             "mongodb://$ROOT_USER:$PASSWORD@$host:${getMappedPort(MONGO_PORT)}/" +
-                "?directConnection=true&authSource=admin"
+                "?directConnection=true&authSource=admin",
         )
 
     companion object {

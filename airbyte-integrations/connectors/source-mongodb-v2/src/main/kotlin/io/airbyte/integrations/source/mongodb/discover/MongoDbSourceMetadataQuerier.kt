@@ -168,8 +168,7 @@ class MongoDbSourceMetadataQuerier(
         val configuredStream =
             catalog.streams.firstOrNull {
                 it.stream.name == streamID.name && it.stream.namespace == streamID.namespace
-            }
-                ?: return emptyList()
+            } ?: return emptyList()
         val properties: JsonNode =
             configuredStream.stream.jsonSchema?.get("properties") ?: return emptyList()
         return properties
@@ -210,6 +209,7 @@ class MongoDbSourceMetadataQuerier(
      *   {$unwind: "$fields"},
      *   {$group: {_id: "$fields"}} ]
      * ```
+     *
      * Each result is one distinct document shape; for a field with several types, the first wins.
      */
     private fun sampleFieldTypes(
@@ -223,15 +223,15 @@ class MongoDbSourceMetadataQuerier(
                     .append("as", "each")
                     .append(
                         "in",
-                        Document("k", "\$\$each.k").append("v", Document("\$type", "\$\$each.v"))
-                    )
+                        Document("k", "\$\$each.k").append("v", Document("\$type", "\$\$each.v")),
+                    ),
             )
         val pipeline: List<Bson> =
             listOfNotNull(
                 Aggregates.sample(if (idOnly) 1 else configuration.discoverSampleSize),
                 if (idOnly) Aggregates.project(Projections.include(ID_FIELD)) else null,
                 Aggregates.project(
-                    Document("fields", Document("\$arrayToObject", typeOfEachField))
+                    Document("fields", Document("\$arrayToObject", typeOfEachField)),
                 ),
                 Aggregates.unwind("\$fields"),
                 Document("\$group", Document("_id", "\$fields")),
@@ -242,7 +242,7 @@ class MongoDbSourceMetadataQuerier(
             for ((fieldName: String, bsonTypeName: Any?) in bsonTypeByField) {
                 fieldTypes.putIfAbsent(
                     fieldName,
-                    MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString())
+                    MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString()),
                 )
             }
         }
@@ -253,7 +253,7 @@ class MongoDbSourceMetadataQuerier(
     private fun sample(
         collection: MongoCollection<Document>,
         pipeline: List<Bson>,
-        consumer: (Document) -> Unit
+        consumer: (Document) -> Unit,
     ) {
         try {
             collection
@@ -328,6 +328,8 @@ class MongoDbSourceMetadataQuerier(
         val IGNORED_COLLECTION_PREFIXES: Set<String> = setOf("system.", "replset.", "oplog.")
 
         fun isSupportedCollection(collectionName: String): Boolean =
-            IGNORED_COLLECTION_PREFIXES.none { collectionName.startsWith(it) }
+            IGNORED_COLLECTION_PREFIXES.none {
+                collectionName.startsWith(it)
+            }
     }
 }

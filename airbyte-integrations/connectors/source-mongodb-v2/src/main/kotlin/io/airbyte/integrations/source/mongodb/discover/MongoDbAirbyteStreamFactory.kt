@@ -28,7 +28,7 @@ class MongoDbAirbyteStreamFactory(
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream {
         val properties: ObjectNode = Jsons.objectNode()
         for (field in discoveredStream.columns) {

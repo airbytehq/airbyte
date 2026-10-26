@@ -40,8 +40,7 @@ enum class MongoDbFieldType(
         MongoJsonbValueCodec,
     ),
     OBJECT(LeafAirbyteSchemaType.JSONB, jsonSchemaOf("object"), MongoJsonbValueCodec),
-    NULL(LeafAirbyteSchemaType.NULL, jsonSchemaOf("null"), MongoNullValueCodec),
-    ;
+    NULL(LeafAirbyteSchemaType.NULL, jsonSchemaOf("null"), MongoNullValueCodec);
 
     /** Values are converted by their BSON type; the codec adapts them to each output channel. */
     override val jsonEncoder: JsonEncoder<*> = valueCodec
@@ -96,8 +95,7 @@ enum class MongoDbMetaField(
     override val type: FieldType,
 ) : MetaField {
     /** Monotonic per-sync counter used as the (source-defined) cursor of every stream. */
-    CDC_CURSOR(CdcIntegerMetaFieldType),
-    ;
+    CDC_CURSOR(CdcIntegerMetaFieldType);
 
     override val id: String
         get() = MetaField.META_PREFIX + name.lowercase()

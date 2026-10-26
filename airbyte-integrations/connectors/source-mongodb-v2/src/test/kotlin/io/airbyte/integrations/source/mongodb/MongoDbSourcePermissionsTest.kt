@@ -174,7 +174,7 @@ class MongoDbSourcePermissionsTest {
                         listOf(
                             Document("_id", 1).append("name", "alice"),
                             Document("_id", 2).append("name", "bob"),
-                        )
+                        ),
                     )
                 root
                     .getDatabase(TEST_DB)

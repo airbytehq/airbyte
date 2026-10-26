@@ -16,7 +16,7 @@ class MongoDbClientFactoryTest {
     fun testAtlasConnectionsAlwaysUseTls() {
         val settings: MongoClientSettings =
             MongoDbClientFactory.settings(
-                atlas("mongodb+srv://cluster0.abcd1.mongodb.net/", username = "u", password = "p")
+                atlas("mongodb+srv://cluster0.abcd1.mongodb.net/", username = "u", password = "p"),
             )
         Assertions.assertTrue(settings.sslSettings.isEnabled)
     }
@@ -26,12 +26,12 @@ class MongoDbClientFactoryTest {
         Assertions.assertFalse(
             MongoDbClientFactory.settings(selfManaged("mongodb://host1:27017/"))
                 .sslSettings
-                .isEnabled
+                .isEnabled,
         )
         Assertions.assertTrue(
             MongoDbClientFactory.settings(selfManaged("mongodb://host1:27017/?tls=true"))
                 .sslSettings
-                .isEnabled
+                .isEnabled,
         )
     }
 
@@ -44,7 +44,7 @@ class MongoDbClientFactoryTest {
         Assertions.assertEquals(
             ReadPreference.primary(),
             MongoDbClientFactory.settings(
-                    selfManaged("mongodb://host1:27017/?readPreference=primary")
+                    selfManaged("mongodb://host1:27017/?readPreference=primary"),
                 )
                 .readPreference,
         )
@@ -74,7 +74,7 @@ class MongoDbClientFactoryTest {
         Assertions.assertEquals(
             UuidRepresentation.UNSPECIFIED,
             MongoDbClientFactory.settings(
-                    selfManaged("mongodb://host1:27017/?uuidRepresentation=standard")
+                    selfManaged("mongodb://host1:27017/?uuidRepresentation=standard"),
                 )
                 .uuidRepresentation,
         )
@@ -84,7 +84,7 @@ class MongoDbClientFactoryTest {
     fun testCredentialsUseTheAuthSourceAndUrlEncodeTheUsername() {
         val settings: MongoClientSettings =
             MongoDbClientFactory.settings(
-                selfManaged("mongodb://host1:27017/", username = "us@er:x", password = "p@ss")
+                selfManaged("mongodb://host1:27017/", username = "us@er:x", password = "p@ss"),
             )
         val credential = checkNotNull(settings.credential)
         Assertions.assertEquals("us%40er%3Ax", credential.userName)
@@ -95,7 +95,7 @@ class MongoDbClientFactoryTest {
     @Test
     fun testNoCredentialsWithoutAUsernameAndPassword() {
         Assertions.assertNull(
-            MongoDbClientFactory.settings(selfManaged("mongodb://host1:27017/")).credential
+            MongoDbClientFactory.settings(selfManaged("mongodb://host1:27017/")).credential,
         )
     }
 
@@ -103,7 +103,7 @@ class MongoDbClientFactoryTest {
     fun testConnectionStringOptionsAreHonoured() {
         val settings: MongoClientSettings =
             MongoDbClientFactory.settings(
-                selfManaged("mongodb://host1:27017/?appName=airbyte-test&replicaSet=rs0")
+                selfManaged("mongodb://host1:27017/?appName=airbyte-test&replicaSet=rs0"),
             )
         Assertions.assertEquals("airbyte-test", settings.applicationName)
         Assertions.assertEquals("rs0", settings.clusterSettings.requiredReplicaSetName)
@@ -121,7 +121,7 @@ class MongoDbClientFactoryTest {
                     listOf("db"),
                     username = username,
                     password = password,
-                )
+                ),
             )
 
     private fun atlas(
@@ -136,8 +136,9 @@ class MongoDbClientFactoryTest {
                     {"database_config": {"cluster_type": "ATLAS_REPLICA_SET",
                       "connection_string": "$connectionString", "databases": ["db"],
                       "username": "$username", "password": "$password", "auth_source": "admin"}}
-                    """.trimIndent(),
+                    """
+                        .trimIndent(),
                     MongoDbSourceConfigurationSpecification::class.java,
-                )
+                ),
             )
 }

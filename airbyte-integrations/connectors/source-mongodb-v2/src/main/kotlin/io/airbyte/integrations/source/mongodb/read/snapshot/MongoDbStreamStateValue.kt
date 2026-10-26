@@ -93,22 +93,21 @@ data class MongoDbStreamStateValue(
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
     /** The checkpointed `_id` as its native BSON type for the resume filter; null if none. */
-    fun resumeIdValue(): Any? =
-        id?.let {
-            when (idType) {
-                MongoDbIdType.OBJECT_ID -> ObjectId(it)
-                MongoDbIdType.INT -> it.toInt()
-                MongoDbIdType.LONG -> it.toLong()
-                MongoDbIdType.STRING -> it
-                MongoDbIdType.BINARY -> reconstructBinary(it, binarySubType)
-                MongoDbIdType.OBJECT -> BsonDocument.parse(it)
-                MongoDbIdType.DOUBLE -> it.toDouble()
-                MongoDbIdType.DECIMAL -> Decimal128.parse(it)
-                MongoDbIdType.DATE -> Date(it.toLong())
-                MongoDbIdType.TIMESTAMP -> BsonTimestamp(it.toLong())
-                MongoDbIdType.BSON -> BsonDocument.parse(it)[BSON_WRAPPER_FIELD]
-            }
+    fun resumeIdValue(): Any? = id?.let {
+        when (idType) {
+            MongoDbIdType.OBJECT_ID -> ObjectId(it)
+            MongoDbIdType.INT -> it.toInt()
+            MongoDbIdType.LONG -> it.toLong()
+            MongoDbIdType.STRING -> it
+            MongoDbIdType.BINARY -> reconstructBinary(it, binarySubType)
+            MongoDbIdType.OBJECT -> BsonDocument.parse(it)
+            MongoDbIdType.DOUBLE -> it.toDouble()
+            MongoDbIdType.DECIMAL -> Decimal128.parse(it)
+            MongoDbIdType.DATE -> Date(it.toLong())
+            MongoDbIdType.TIMESTAMP -> BsonTimestamp(it.toLong())
+            MongoDbIdType.BSON -> BsonDocument.parse(it)[BSON_WRAPPER_FIELD]
         }
+    }
 
     companion object {
         /**

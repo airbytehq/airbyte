@@ -104,8 +104,9 @@ class MongoDbSourceSpeedModeReadTest {
                 "mongo-sockets-",
             )
         val socketPaths: List<Path> = (1..NUM_SOCKETS).map { socketDir.resolve("socket-$it.sock") }
-        val readers: List<SpeedModeTestSupport.UnixSocketReader> =
-            socketPaths.map { SpeedModeTestSupport.UnixSocketReader(it) }
+        val readers: List<SpeedModeTestSupport.UnixSocketReader> = socketPaths.map {
+            SpeedModeTestSupport.UnixSocketReader(it)
+        }
         val properties: Map<String, String> =
             mapOf(
                 "$DATA_CHANNEL_PROPERTY_PREFIX.medium" to "SOCKET",
@@ -174,8 +175,9 @@ class MongoDbSourceSpeedModeReadTest {
         init {
             when (format) {
                 DataChannelFormat.PROTOBUF -> {
-                    val messages: List<AirbyteMessageProtobuf> =
-                        socketBytes.flatMap { SpeedModeTestSupport.parseProtobufMessages(it) }
+                    val messages: List<AirbyteMessageProtobuf> = socketBytes.flatMap {
+                        SpeedModeTestSupport.parseProtobufMessages(it)
+                    }
                     records =
                         messages
                             .filter { it.hasRecord() }
@@ -187,8 +189,9 @@ class MongoDbSourceSpeedModeReadTest {
                             .map { Jsons.readTree(it.airbyteProtocolMessage) }
                 }
                 DataChannelFormat.JSONL -> {
-                    val messages: List<JsonNode> =
-                        socketBytes.flatMap { SpeedModeTestSupport.parseJsonlMessages(it) }
+                    val messages: List<JsonNode> = socketBytes.flatMap {
+                        SpeedModeTestSupport.parseJsonlMessages(it)
+                    }
                     records =
                         messages
                             .filter { it["type"].asText() == "RECORD" }

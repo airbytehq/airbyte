@@ -137,8 +137,7 @@ class MongoDbPartitionsCreatorFactory(
                 .firstNotNullOfOrNull {
                     MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState(it))
                 }
-                ?.schemaEnforced
-                ?: configEnforced
+                ?.schemaEnforced ?: configEnforced
         if (setOf(configEnforced, catalogEnforced, stateEnforced).size > 1) {
             val remedy =
                 if (configEnforced == catalogEnforced) "Please refresh or clear your data."

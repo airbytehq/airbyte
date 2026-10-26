@@ -43,7 +43,7 @@ class MongoDbChangeStreamPipelineTest {
                         MongoDbChangeStreamPipeline.build(
                             listOf(streamId(TEST_DB, PEOPLE)),
                             preImages = true,
-                        )
+                        ),
                     )
                     .fullDocument(FullDocument.UPDATE_LOOKUP)
                     .fullDocumentBeforeChange(FullDocumentBeforeChange.WHEN_AVAILABLE)

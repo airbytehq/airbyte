@@ -32,9 +32,8 @@ interface SpecEnum {
 }
 
 /** Resolves a spec string to an entry of [E]; throws a config error naming [property] otherwise. */
-inline fun <reified E> parseSpecEnum(property: String, value: String): E where
-E : Enum<E>,
-E : SpecEnum =
+inline fun <reified E> parseSpecEnum(property: String, value: String): E
+    where E : Enum<E>, E : SpecEnum =
     enumValues<E>().firstOrNull { it.specValue == value }
         ?: throw ConfigErrorException(
             "Invalid value '$value' for $property, expected one of ${enumValues<E>().map { it.specValue }}.",
@@ -100,13 +99,14 @@ data class MongoDbSourceConfiguration(
 class MongoDbSourceConfigurationFactory
 @Inject
 constructor(
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
-    val socketPaths: List<String> = emptyList(),
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}") val socketPaths: List<String>,
     /** Test hook: a shorter checkpoint target interval than the default (`0` = default). */
     @Value("\${airbyte.connector.extract.mongodb.checkpoint-target-interval-ms:0}")
-    val checkpointTargetIntervalMs: Long = 0,
+    val checkpointTargetIntervalMs: Long,
 ) : SourceConfigurationFactory<Spec, MongoDbSourceConfiguration> {
+
+    constructor() : this(STDIO.name, emptyList(), 0)
 
     private val log = KotlinLogging.logger {}
 
@@ -154,7 +154,7 @@ constructor(
             discoverSampleSize = pojo.discoverSampleSize ?: Spec.DEFAULT_DISCOVER_SAMPLE_SIZE,
             discoverTimeout =
                 Duration.ofSeconds(
-                    (pojo.discoverTimeoutSeconds ?: Spec.DEFAULT_DISCOVER_TIMEOUT_SECONDS).toLong()
+                    (pojo.discoverTimeoutSeconds ?: Spec.DEFAULT_DISCOVER_TIMEOUT_SECONDS).toLong(),
                 ),
             invalidCdcCursorPositionBehavior =
                 parseSpecEnum(
@@ -165,7 +165,7 @@ constructor(
             maxSnapshotReadDuration =
                 Duration.ofHours(
                     (pojo.initialLoadTimeoutHours ?: Spec.DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS)
-                        .toLong()
+                        .toLong(),
                 ),
             maxConcurrency = maxConcurrency,
             realHost = firstHost.host,

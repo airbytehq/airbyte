@@ -30,7 +30,7 @@ class MongoDbLegacyStateFixturesTest {
             [
                 "legacy-state/v2-2.0-debezium2-hex-token.json",
                 "legacy-state/v2-2.1-debezium3-base64-token.json",
-            ]
+            ],
     )
     fun testLegacyStateFixtureIsReadAsIs(resource: String) {
         val message: AirbyteStateMessage =
@@ -42,7 +42,7 @@ class MongoDbLegacyStateFixturesTest {
         Assertions.assertEquals(TOKEN_DATA, token.getString("_data").value)
         Assertions.assertEquals(
             BsonTimestamp(1_690_221_043, 1),
-            MongoDbResumeTokens.timestamp(token)
+            MongoDbResumeTokens.timestamp(token),
         )
         Assertions.assertEquals(true, cdc.schemaEnforced)
         // Written back, the fixture's own variables are still there, unchanged, for a downgrade.
