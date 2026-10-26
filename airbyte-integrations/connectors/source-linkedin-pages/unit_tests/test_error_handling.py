@@ -132,6 +132,9 @@ _STREAM_URLS = {
     "total_follower_count": f"{_BASE_URL}/networkSizes/urn:li:organization:12345678",
     "follower_statistics_time_bound": f"{_BASE_URL}/organizationalEntityFollowerStatistics",
     "share_statistics_time_bound": f"{_BASE_URL}/organizationalEntityShareStatistics",
+    "posts": f"{_BASE_URL}/posts",
+    "page_statistics": f"{_BASE_URL}/organizationPageStatistics",
+    "page_statistics_time_bound": f"{_BASE_URL}/organizationPageStatistics",
 }
 
 
@@ -177,7 +180,7 @@ def test_server_errors_retry_and_emit_record(status_code):
         ("Invalid query parameters passed to request", False),
     ],
 )
-@pytest.mark.parametrize("stream_name", ["follower_statistics_time_bound", "share_statistics_time_bound"])
+@pytest.mark.parametrize("stream_name", ["follower_statistics_time_bound", "share_statistics_time_bound", "page_statistics_time_bound"])
 @freeze_time("2026-10-23T14:37:12Z")
 def test_time_bound_400_is_a_system_error(stream_name, linkedin_message, message_shown):
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()

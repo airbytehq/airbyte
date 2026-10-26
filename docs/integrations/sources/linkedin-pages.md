@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
+The LinkedIn Pages source supports incremental sync for Posts and the time-bound follower, share, and page statistics streams. All other streams support Full Refresh.
 
 Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
 
@@ -10,12 +10,19 @@ Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsof
 
 This Source is capable of syncing the following data as streams:
 
-* [Organization Lookup](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organizations)
-* [Follower Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http)
-* [Share Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http)
-* [Total Follower Count](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organization-follower-count)
-* [Follower Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-follower-statistics)
-* [Share Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-share-statistics)
+- [Organization Lookup](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organizations)
+- [Follower Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http)
+- [Share Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http)
+- [Total Follower Count](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organization-follower-count)
+- [Follower Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-follower-statistics)
+- [Share Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-share-statistics)
+- [Posts (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#find-posts-by-authors): posts last modified since the Start Date, or the last 2 years when it is blank. Incremental syncs add new and edited posts; LinkedIn does not return deleted posts, so they stay in your destination until you refresh the stream.
+- [Post Comments](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/comments-api#get-comments-on-shares): first-level comments on those posts. Replies to comments are not synced.
+- [Post Reactions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/reactions-api#get-reactions-on-a-share): reactions on those posts.
+- [Page Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/page-statistics#retrieve-lifetime-organization-page-statistics)
+- [Page Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/page-statistics#retrieve-time-bound-organization-page-statistics)
+
+Post Comments and Post Reactions send at least one request per post for every sync, so request volume grows with the number of posts since the Start Date. On LinkedIn's Development tier (500 requests per app and 100 per member per day) a page with many posts can run out of quota; set a later Start Date or apply for the Standard tier.
 
 ### Data type mapping
 
@@ -29,13 +36,13 @@ This Source is capable of syncing the following data as streams:
 
 ### Features
 
-| Feature                                   | Supported?\(Yes/No\) | Notes |
-| :---------------------------------------- |:---------------------| :---- |
-| Full Refresh Overwrite Sync               | Yes                  |       |
-| Full Refresh Append Sync                  | No                   |       |
-| Incremental - Append Sync                 | Yes                  |       |
-| Incremental - Append + Deduplication Sync | No                   |       |
-| Namespaces                                | No                   |       |
+| Feature                                   | Supported?\(Yes/No\) | Notes                                |
+| :---------------------------------------- | :------------------- | :----------------------------------- |
+| Full Refresh Overwrite Sync               | Yes                  |                                      |
+| Full Refresh Append Sync                  | No                   |                                      |
+| Incremental - Append Sync                 | Yes                  |                                      |
+| Incremental - Append + Deduplication Sync | Yes                  | Posts and Page Statistics Time Bound |
+| Namespaces                                | No                   |                                      |
 
 ### Performance considerations
 
@@ -56,9 +63,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Getting started
 
 The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Share Statistics`, `Total Follower Count`, `Follower Statistics Time Bound`, `Share Statistics Time Bound` require these permissions:
-* `r_organization_social`: Retrieve your organization's posts, comments, reactions, and other engagement data.
-* `rw_organization_admin`: Manage your organization's pages and retrieve reporting data.
+
+- `rw_organization_admin`: Organization Lookup, Follower Statistics, Share Statistics, Total Follower Count, Page Statistics and the time-bound statistics streams.
+- `r_organization_social` (LinkedIn's comments and reactions pages name `r_organization_social_feed`): Posts, Post Comments and Post Reactions.
 
 The API user account should be assigned the `ADMIN` role.
 
@@ -117,7 +124,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.0.0 | 2026-10-23 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys on all streams and type epoch-millisecond timestamp fields as integers |
+| 2.0.0 | 2026-10-27 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys on the six streams that existed before 1.3.0 and type the epoch-millisecond fields of `organization_lookup` and the follower and share time-bound streams as integers |
+| 1.3.0 | 2026-10-26 | [89713](https://github.com/airbytehq/airbyte/pull/89713) | Add `posts`, `post_comments`, `post_reactions`, `page_statistics` and `page_statistics_time_bound` streams |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
 | 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |

@@ -41,8 +41,9 @@ definitions:
     http_codes: [403]
     error_message: >-
       LinkedIn denied the request (403). The token needs the rw_organization_admin
-      scope and the LinkedIn member who authorized it must have the ADMINISTRATOR
-      role on organization {{ config['org_id'] }}. LinkedIn said:
+      scope (plus r_organization_social or r_organization_social_feed for posts,
+      comments and reactions), and the LinkedIn member who authorized it must have
+      the ADMINISTRATOR role on organization {{ config['org_id'] }}. LinkedIn said:
       {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
   rate_limit_filter:
     type: HttpResponseFilter
@@ -110,6 +111,505 @@ definitions:
       - $ref: "#/definitions/rate_limit_filter"
       - $ref: "#/definitions/server_error_filter"
       - $ref: "#/definitions/version_sunset_filter"
+  child_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      # A post deleted after the posts read returns 404 for its comments and reactions.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes: [404]
+        error_message: "Skipping {{ request_url }}: LinkedIn returned 404, the post was probably deleted during the sync."
+      - $ref: "#/definitions/unauthorized_filter"
+      - $ref: "#/definitions/forbidden_filter"
+      - $ref: "#/definitions/rate_limit_filter"
+      - $ref: "#/definitions/server_error_filter"
+      - $ref: "#/definitions/version_sunset_filter"
+  community_requester:
+    type: HttpRequester
+    url_base: https://api.linkedin.com/rest
+    http_method: GET
+    request_headers:
+      Linkedin-Version: "202610"
+      X-Restli-Protocol-Version: "2.0.0"
+    authenticator:
+      $ref: "#/definitions/selective_authenticator"
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  stats_requester:
+    type: HttpRequester
+    url_base: https://api.linkedin.com/rest
+    http_method: GET
+    request_headers:
+      Linkedin-Version: "202610"
+    authenticator:
+      $ref: "#/definitions/selective_authenticator"
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  offset_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+      inject_on_first_request: true
+  # LinkedIn's posts finder can return a short page while more posts follow; only paging.links marks the end.
+  posts_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.paging.start + response.paging.count }}"
+      stop_condition: "{{ not (((response.get('paging') or {}).get('links') or []) | selectattr('rel', 'equalto', 'next') | list) }}"
+  streams:
+    posts:
+      type: DeclarativeStream
+      name: posts
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: ["null", string]
+            container:
+              type: ["null", string]
+            author:
+              type: ["null", string]
+            commentary:
+              type: ["null", string]
+            content:
+              type: ["null", object]
+            createdAt:
+              type: ["null", integer]
+            lastModifiedAt:
+              type: ["null", integer]
+            publishedAt:
+              type: ["null", integer]
+            lifecycleState:
+              type: ["null", string]
+            lifecycleStateInfo:
+              type: ["null", object]
+            visibility:
+              type: ["null", string]
+            distribution:
+              type: ["null", object]
+            isReshareDisabledByAuthor:
+              type: ["null", boolean]
+            reshareContext:
+              type: ["null", object]
+            adContext:
+              type: ["null", object]
+            contentLandingPage:
+              type: ["null", string]
+            contentCallToActionLabel:
+              type: ["null", string]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/community_requester"
+          path: /posts
+          request_parameters:
+            author: "urn:li:organization:{{ config['org_id'] }}"
+            q: author
+            sortBy: LAST_MODIFIED
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        paginator:
+          $ref: "#/definitions/posts_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+    post_comments:
+      type: DeclarativeStream
+      name: post_comments
+      primary_key:
+        - object
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: ["null", string]
+            commentUrn:
+              type: ["null", string]
+            "$URN":
+              type: ["null", string]
+            actor:
+              type: ["null", string]
+            agent:
+              type: ["null", string]
+            object:
+              type: ["null", string]
+            parentComment:
+              type: ["null", string]
+            message:
+              type: ["null", object]
+            content:
+              type: ["null", array]
+            created:
+              type: ["null", object]
+              properties:
+                actor:
+                  type: ["null", string]
+                time:
+                  type: ["null", integer]
+            lastModified:
+              type: ["null", object]
+              properties:
+                actor:
+                  type: ["null", string]
+                time:
+                  type: ["null", integer]
+            likesSummary:
+              type: ["null", object]
+            commentsSummary:
+              type: ["null", object]
+            post_urn:
+              type: ["null", string]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/community_requester"
+          path: /socialActions/{{ stream_partition.post_urn | urlencode }}/comments
+          error_handler:
+            $ref: "#/definitions/child_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        paginator:
+          $ref: "#/definitions/offset_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: post_urn
+              incremental_dependency: false
+              stream:
+                $ref: "#/definitions/streams/posts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - post_urn
+              value: "{{ stream_partition.post_urn }}"
+              type: AddedFieldDefinition
+    post_reactions:
+      type: DeclarativeStream
+      name: post_reactions
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: ["null", string]
+            root:
+              type: ["null", string]
+            reactionType:
+              type: ["null", string]
+            created:
+              type: ["null", object]
+              properties:
+                actor:
+                  type: ["null", string]
+                time:
+                  type: ["null", integer]
+            lastModified:
+              type: ["null", object]
+              properties:
+                actor:
+                  type: ["null", string]
+                time:
+                  type: ["null", integer]
+            deleted:
+              type: ["null", object]
+              properties:
+                actor:
+                  type: ["null", string]
+                time:
+                  type: ["null", integer]
+            post_urn:
+              type: ["null", string]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/community_requester"
+          path: /reactions/(entity:{{ stream_partition.post_urn | urlencode }})
+          request_parameters:
+            q: entity
+          error_handler:
+            $ref: "#/definitions/child_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        paginator:
+          $ref: "#/definitions/offset_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: post_urn
+              incremental_dependency: false
+              stream:
+                $ref: "#/definitions/streams/posts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - post_urn
+              value: "{{ stream_partition.post_urn }}"
+              type: AddedFieldDefinition
+    page_statistics:
+      type: DeclarativeStream
+      name: page_statistics
+      primary_key:
+        - organization
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            organization:
+              type: ["null", string]
+            totalPageStatistics:
+              type: ["null", object]
+            pageStatisticsBySeniority:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByIndustryV2:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByGeoCountry:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByGeo:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByTargetedContent:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByStaffCountRange:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByFunction:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/stats_requester"
+          path: /organizationPageStatistics
+          request_parameters:
+            q: organization
+            organization: "urn:li:organization:{{ config['org_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        paginator:
+          type: NoPagination
+    page_statistics_time_bound:
+      type: DeclarativeStream
+      name: page_statistics_time_bound
+      primary_key:
+        - organization
+        - timeRangeStart
+        - timeRangeEnd
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            organization:
+              type: ["null", string]
+            totalPageStatistics:
+              type: ["null", object]
+            pageStatisticsBySeniority:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByIndustryV2:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByGeoCountry:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByGeo:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByTargetedContent:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByStaffCountRange:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            pageStatisticsByFunction:
+              type: ["null", array]
+              items:
+                type: object
+                additionalProperties: true
+            timeRangeStart:
+              type: ["null", integer]
+            timeRangeEnd:
+              type: ["null", integer]
+            date:
+              type: ["null", string]
+              format: date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/stats_requester"
+          path: /organizationPageStatistics
+          request_parameters:
+            q: organization
+            organization: "urn:li:organization:{{ config['org_id'] }}"
+            timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
+          error_handler:
+            $ref: "#/definitions/time_bound_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          # For MONTH windows LinkedIn also returns a zero-length bucket at the window end (verified 2026-10-26).
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['timeRange']['start'] < record['timeRange']['end'] }}"
+        paginator:
+          type: NoPagination
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - timeRangeStart
+              value: "{{ record.timeRange.start }}"
+              type: AddedFieldDefinition
+            - path:
+                - timeRangeEnd
+              value: "{{ record.timeRange.end }}"
+              type: AddedFieldDefinition
+        - type: RemoveFields
+          field_pointers:
+            - - timeRange
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ format_datetime(record['timeRangeStart'], '%Y-%m-%d', '%ms') }}"
+              type: AddedFieldDefinition
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: timeRangeEnd
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ max(day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z', config['start_date'][:10] + 'T00:00:00Z') if config.get('start_date') else day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z' }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: timeIntervals.timeRange.start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: timeIntervals.timeRange.end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ day_delta(-2, format='%Y-%m') + '-01T00:00:00Z' if config.get('time_granularity_type') == 'MONTH' else day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
@@ -533,6 +1033,7 @@ streams:
     primary_key:
       - - organizationalEntity
       - - timeRangeStart
+      - - timeRangeEnd
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -700,6 +1201,7 @@ streams:
     primary_key:
       - - organizationalEntity
       - - timeRangeStart
+      - - timeRangeEnd
     schema_loader:
       type: InlineSchemaLoader
       additionalProperties: true
@@ -854,6 +1356,11 @@ streams:
         datetime: >-
           {{ day_delta(-2, format='%Y-%m') + '-01T00:00:00Z' if config.get('time_granularity_type') == 'MONTH' else day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/post_comments"
+  - $ref: "#/definitions/streams/post_reactions"
+  - $ref: "#/definitions/streams/page_statistics"
+  - $ref: "#/definitions/streams/page_statistics_time_bound"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -927,10 +1434,12 @@ spec:
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         description: >-
-          UTC date and time from which to sync time-bound statistics, in the
-          format YYYY-MM-DDT00:00:00Z. LinkedIn only returns statistics from the
-          last 12 months up to 2 days before today; an earlier date is clamped
-          to 12 months ago. Leave blank to sync the full available window.
+          UTC date and time from which to sync, in the format
+          YYYY-MM-DDT00:00:00Z. Time-bound statistics are only available from the
+          last 12 months up to 2 days before today, so an earlier date is clamped
+          to 12 months ago for them. Posts, and the comments and reactions on
+          them, are synced for posts last modified since this date, or the last
+          2 years if you leave it blank.
       time_granularity_type:
         enum:
           - DAY
@@ -1003,3 +1512,8 @@ metadata:
     total_follower_count: false
     follower_statistics_time_bound: false
     share_statistics_time_bound: false
+    posts: false
+    post_comments: false
+    post_reactions: false
+    page_statistics: false
+    page_statistics_time_bound: false

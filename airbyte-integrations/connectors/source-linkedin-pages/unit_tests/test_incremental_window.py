@@ -23,6 +23,7 @@ _BASE_URL = "https://api.linkedin.com/rest"
 _STREAMS = {
     "follower_statistics_time_bound": "/organizationalEntityFollowerStatistics",
     "share_statistics_time_bound": "/organizationalEntityShareStatistics",
+    "page_statistics_time_bound": "/organizationPageStatistics",
 }
 _DAY_MS = 86_400_000
 
@@ -46,9 +47,10 @@ def _query_params(request):
 
 
 def _expected_query(stream_name, start_ms, end_ms, granularity="DAY"):
+    finder = "organization" if stream_name == "page_statistics_time_bound" else "organizationalEntity"
     return {
-        "q": "organizationalEntity",
-        "organizationalEntity": "urn:li:organization:12345678",
+        "q": finder,
+        finder: "urn:li:organization:12345678",
         "timeIntervals.timeGranularityType": granularity,
         "timeIntervals.timeRange.start": str(start_ms),
         "timeIntervals.timeRange.end": str(end_ms),

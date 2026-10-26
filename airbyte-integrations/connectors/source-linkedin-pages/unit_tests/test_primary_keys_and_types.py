@@ -28,12 +28,12 @@ _STREAM_PRIMARY_KEYS = [
     pytest.param("total_follower_count", [["organizationalEntity"]], id="total_follower_count"),
     pytest.param(
         "follower_statistics_time_bound",
-        [["organizationalEntity"], ["timeRangeStart"]],
+        [["organizationalEntity"], ["timeRangeStart"], ["timeRangeEnd"]],
         id="follower_statistics_time_bound",
     ),
     pytest.param(
         "share_statistics_time_bound",
-        [["organizationalEntity"], ["timeRangeStart"]],
+        [["organizationalEntity"], ["timeRangeStart"], ["timeRangeEnd"]],
         id="share_statistics_time_bound",
     ),
 ]
@@ -70,6 +70,8 @@ def test_epoch_millisecond_fields_are_integers_and_date_is_a_date() -> None:
         assert "number" not in start_type
         assert _schema_field(schema, ["timeRangeEnd"])["type"] == "integer"
         assert _schema_field(schema, ["date"])["format"] == "date"
+
+    assert _schema_field(streams["page_statistics_time_bound"].json_schema, ["date"])["format"] == "date"
 
     organization_schema = streams["organization_lookup"].json_schema
     for path in (["created", "time"], ["lastModified", "time"], ["id"]):
@@ -111,5 +113,14 @@ def test_time_bound_streams_emit_integer_timestamps_and_unique_keys(stream_name:
     assert records[0]["timeRangeStart"] == 1792540800000
     assert records[0]["timeRangeEnd"] == 1792627200000
     assert records[0]["date"] == "2026-10-21"
-    keys = [(record["organizationalEntity"], record["timeRangeStart"]) for record in records]
+    keys = [(record["organizationalEntity"], record["timeRangeStart"], record["timeRangeEnd"]) for record in records]
     assert len(keys) == len(set(keys))
+
+
+def test_time_bound_keys_tell_day_and_month_buckets_apart() -> None:
+    # A DAY bucket for the first of a month and that month's MONTH bucket share timeRangeStart.
+    stream = next(s for s in get_source(_CONFIG).resolved_manifest["streams"] if s["name"] == "follower_statistics_time_bound")
+    key_fields = [path[0] for path in stream["primary_key"]]
+    day_bucket = {"organizationalEntity": "urn:li:organization:1", "timeRangeStart": 1790812800000, "timeRangeEnd": 1790899200000}
+    month_bucket = {"organizationalEntity": "urn:li:organization:1", "timeRangeStart": 1790812800000, "timeRangeEnd": 1793491200000}
+    assert tuple(day_bucket[field] for field in key_fields) != tuple(month_bucket[field] for field in key_fields)

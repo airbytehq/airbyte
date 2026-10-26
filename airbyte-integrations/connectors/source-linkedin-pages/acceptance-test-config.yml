@@ -23,6 +23,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: posts
+            bypass_reason: "Test organization has no posts; covered by mock-server unit tests"
+          - name: post_comments
+            bypass_reason: "Test organization has no posts; covered by mock-server unit tests"
+          - name: post_reactions
+            bypass_reason: "Test organization has no posts; covered by mock-server unit tests"
   incremental:
     tests:
       - config_path: "secrets/config.json"

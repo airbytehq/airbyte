@@ -28,6 +28,11 @@ _STREAMS = [
     pytest.param("total_follower_count", "GET", "/networkSizes/urn:li:organization:12345678", {"firstDegreeSize": 10}),
     pytest.param("follower_statistics_time_bound", "GET", "/organizationalEntityFollowerStatistics", {"elements": []}),
     pytest.param("share_statistics_time_bound", "GET", "/organizationalEntityShareStatistics", {"elements": []}),
+    pytest.param("posts", "GET", "/posts", {"elements": [{"id": "urn:li:share:1"}]}),
+    pytest.param("post_comments", "GET", "/socialActions/urn%3Ali%3Ashare%3A1/comments", {"elements": [{"id": "comment-1"}]}),
+    pytest.param("post_reactions", "GET", "/reactions/(entity:urn%3Ali%3Ashare%3A1)", {"elements": [{"id": "reaction-1"}]}),
+    pytest.param("page_statistics", "GET", "/organizationPageStatistics", {"elements": []}),
+    pytest.param("page_statistics_time_bound", "GET", "/organizationPageStatistics", {"elements": []}),
 ]
 
 
@@ -35,8 +40,12 @@ _STREAMS = [
 def test_requests_use_linkedin_api_version(stream_name: str, method: str, path: str, response: dict[str, Any]) -> None:
     with requests_mock.Mocker() as mocker:
         mocker.register_uri(method, f"{_BASE_URL}{path}", json=response)
+        if stream_name in ("post_comments", "post_reactions"):
+            mocker.get(f"{_BASE_URL}/posts", json={"elements": [{"id": "urn:li:share:1"}]})
         catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-        read(get_source(_CONFIG), _CONFIG, catalog)
+        output = read(get_source(_CONFIG), _CONFIG, catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
 
         assert len(mocker.request_history) >= 1
         api_requests = [request for request in mocker.request_history if request.hostname == "api.linkedin.com"]

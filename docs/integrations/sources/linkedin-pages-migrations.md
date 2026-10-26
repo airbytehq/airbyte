@@ -3,12 +3,20 @@
 ## Upgrading to 2.0.0
 
 :::danger Risk of permanent data loss
-Follow the steps below to preserve historical data. If you don't, you risk permanent and irreversible loss of data in your destination.
+LinkedIn only returns time-bound statistics for the last 12 months. Back up the `follower_statistics_time_bound` and `share_statistics_time_bound` tables before you clear these streams or refresh them with **Remove records**. Rows older than 12 months cannot be synced again.
 :::
 
 ### What changed
 
-All six streams now declare primary keys:
+**Type changes.** These fields change from `number` to `integer`. The values stay the same epoch milliseconds.
+
+| Stream | Fields |
+| --- | --- |
+| `follower_statistics_time_bound` | `timeRangeStart`, `timeRangeEnd` |
+| `share_statistics_time_bound` | `timeRangeStart`, `timeRangeEnd` |
+| `organization_lookup` | `id`, `created.time`, `lastModified.time` |
+
+**Primary keys.** The six streams that existed before 1.3.0 now declare primary keys. The streams added in 1.3.0 are unchanged.
 
 | Stream | Primary key |
 | --- | --- |
@@ -16,42 +24,57 @@ All six streams now declare primary keys:
 | `follower_statistics` | `organizationalEntity` |
 | `share_statistics` | `organizationalEntity` |
 | `total_follower_count` | `organizationalEntity` |
-| `follower_statistics_time_bound` | [`organizationalEntity`, `timeRangeStart`] |
-| `share_statistics_time_bound` | [`organizationalEntity`, `timeRangeStart`] |
+| `follower_statistics_time_bound` | `organizationalEntity`, `timeRangeStart`, `timeRangeEnd` |
+| `share_statistics_time_bound` | `organizationalEntity`, `timeRangeStart`, `timeRangeEnd` |
 
-The declared type changes from `number` to `integer` for:
+**New fields.**
 
-- `timeRangeStart` and `timeRangeEnd` in `follower_statistics_time_bound` and `share_statistics_time_bound`.
-- `created.time`, `lastModified.time`, and `id` in `organization_lookup`.
+- `organizationalEntity` on `total_follower_count`, with the value `urn:li:organization:<Organization ID>`.
+- `date` on `follower_statistics_time_bound` and `share_statistics_time_bound`, and on `page_statistics_time_bound` from 1.3.0: the UTC date of `timeRangeStart`, formatted as `YYYY-MM-DD`.
 
-Values are unchanged; the timestamps remain epoch milliseconds.
-
-Two fields are added:
-
-- `organizationalEntity` on `total_follower_count`, with the value `urn:li:organization:<org_id>`.
-- `date` on both time-bound streams, formatted as `YYYY-MM-DD` for the UTC day of `timeRangeStart`.
-
-The cursor (`timeRangeEnd`) and saved state are unchanged.
-
-### Why
-
-The streams had no declared keys, so **Append + Deduped** was unavailable and re-syncs in append mode could duplicate rows. Timestamp fields were declared as generic numbers, so typed destinations could store epoch-millisecond values as floating-point columns.
+The cursor (`timeRangeEnd`) and saved state do not change.
 
 ### Who must act
 
-Every connection syncing any of the six streams above must refresh its source schema and follow the steps below.
+- **No action:** connections that sync none of `organization_lookup`, `follower_statistics_time_bound` and `share_statistics_time_bound`. The new keys and fields on the other streams need nothing.
+- **Everyone else:** follow the steps below. Most destinations only need the schema refresh in step 2.
 
 ### Steps
 
-1. Upgrade the connector to version 2.0.0.
-2. Refresh the source schema by selecting **Connection → Schema → Refresh source schema**, then review and accept the changes.
-3. For `organization_lookup`, `follower_statistics`, `share_statistics`, and `total_follower_count`, clearing or refreshing is safe. These are full-refresh streams containing the current snapshot; the next sync re-pulls their available records.
-4. Before changing `follower_statistics_time_bound` or `share_statistics_time_bound`, back up their destination tables. LinkedIn only returns time-bound statistics for the last 12 months, so clearing and re-syncing permanently loses any older rows. Prefer [**Refresh and retain records**](/platform/operator-guides/refreshes) if your destination supports it. Only clear these streams if you accept losing older history; see the [clear guide](/platform/operator-guides/clear).
-5. Optionally, switch the time-bound streams to **Incremental | Append + Deduped**.
+1. Upgrade the connector to 2.0.0.
+2. In the connection, open **Schema**, select **Refresh source schema**, then review and save the changes.
+3. Find your destination below. "Affected streams" means `organization_lookup`, `follower_statistics_time_bound` and `share_statistics_time_bound`.
+
+   | Destination | What the next sync does | Action |
+   | --- | --- | --- |
+   | BigQuery, Snowflake, Databricks, ClickHouse, MS SQL Server | Converts the existing columns to integer in place. The values are whole numbers, so nothing is lost. | None. |
+   | Postgres, Redshift | Converts the existing columns in place, but the sync fails if a view depends on one of them. | Drop the dependent views before the sync and recreate them after it. On Redshift, the **Drop tables with CASCADE** option also works, but it deletes those views. |
+   | MotherDuck, DuckDB | Keeps the existing decimal columns and writes the integer values into them. | None. |
+   | S3 Data Lake, GCS Data Lake | Iceberg cannot change a double column to a long. Incremental and append syncs of the affected streams fail with `Schema evolution for column ... between double and long is not allowed`. **Refresh and retain records** fails the same way. **Full Refresh \| Overwrite** syncs replace the column and succeed. | `organization_lookup` in **Full Refresh \| Overwrite**: none. Time-bound streams: back up the tables, set the Start Date as in step 4, then refresh the streams with **Remove records** or [clear](/platform/operator-guides/clear) them. |
+   | S3, GCS, Azure Blob Storage with Avro or Parquet | Writes new files that declare these fields as `long`. Older files declare them as `double`. | Make readers such as Glue, Athena or Spark accept both types, or cast. Do not clear: it deletes the files that hold older history. |
+   | S3, GCS, Azure Blob Storage with JSONL or CSV | Files carry no column types. | None. |
+
+4. **Start Date.** Before you clear a time-bound stream or refresh it with **Remove records**, leave **Start Date** empty or set it to 12 months ago. The connector never requests more than 12 months back, so an earlier date cannot restore older rows, and a later date restores even less.
+5. **Optional: deduplicate.** You can now switch the time-bound streams to **Incremental | Append + Deduped**. The switch only merges rows synced after it, so duplicate rows already in the table stay. Remove them with SQL on the new key, or refresh with **Remove records** and accept losing rows older than 12 months. Do not use **Refresh and retain records** while the stream is in **Incremental | Append**: it appends a second copy of the last 12 months.
+
+### If you skip these steps
+
+- BigQuery, Snowflake, Databricks, ClickHouse, MS SQL Server and MotherDuck: nothing else happens. History stays in place.
+- Postgres and Redshift with dependent views: syncs of the affected streams fail until you drop the views.
+- S3 Data Lake and GCS Data Lake: syncs of the affected streams keep failing until you refresh them with **Remove records** or clear them.
+- Avro and Parquet: new and old files under the same stream path declare different types for these fields.
+- If you don't refresh the source schema and your connection doesn't propagate schema changes automatically, the destination keeps the old types, and the new fields and keys don't appear.
 
 ### Downstream
 
-Update SQL, dbt models, dashboards, or other consumers that cast `follower_statistics_time_bound.timeRangeStart`, `follower_statistics_time_bound.timeRangeEnd`, `share_statistics_time_bound.timeRangeStart`, `share_statistics_time_bound.timeRangeEnd`, `organization_lookup.created.time`, `organization_lookup.lastModified.time`, or `organization_lookup.id` from floating-point values to use integer columns. Queries on `total_follower_count` can now join on `organizationalEntity`.
+- Update SQL, dbt models, dashboards and exports that read `timeRangeStart` and `timeRangeEnd` in `follower_statistics_time_bound` and `share_statistics_time_bound`, or `id`, `created.time` and `lastModified.time` in `organization_lookup`, as floating-point or decimal values. Where the destination converts them, they are now integer columns.
+- Update table definitions for readers of S3 Data Lake, GCS Data Lake, and Avro or Parquet files.
+- If you changed **Time Granularity Type** in the past, the time-bound tables hold both day and month rows. They have separate keys. Filter on `timeRangeEnd - timeRangeStart` (86400000 for a day) before you aggregate. The first sync after a clear can also include a partial first month when 12 months ago falls inside a month.
+- `total_follower_count` rows written before 2.0.0 have no `organizationalEntity`.
+
+### Rollback
+
+Pinning back to 1.x declares these fields as `number` again. BigQuery, Snowflake, Redshift, Postgres, Databricks, ClickHouse and MS SQL Server convert the columns back on the next sync, and Postgres and Redshift again fail while views depend on them. S3 Data Lake and GCS Data Lake cannot change a long column back to double, so a rollback there needs another **Remove records** refresh or clear, with the same 12-month limit.
 
 ## Upgrading to 1.0.7
 
