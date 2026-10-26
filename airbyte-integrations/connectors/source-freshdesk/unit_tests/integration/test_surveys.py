@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict
 
 import pytest
-
 from config_builder import ConfigBuilder
 
 from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, YamlDeclarativeSource
@@ -24,16 +23,12 @@ _STREAM_ENDPOINTS = {
     "satisfaction_ratings": "surveys/satisfaction_ratings",
     "surveys": "surveys",
 }
-_SURVEYS_PLAN_MESSAGE = (
-    "The Surveys feature(s) is/are not supported in your plan. Please upgrade your account to use it."
-)
+_SURVEYS_PLAN_MESSAGE = "The Surveys feature(s) is/are not supported in your plan. Please upgrade your account to use it."
 _EXPECTED_PLAN_ERROR = (
     "The <stream> stream requires the Freshdesk Surveys (CSAT) feature, which is not available on your Freshdesk "
     "plan. Deselect the satisfaction_ratings and surveys streams, or upgrade your Freshdesk plan."
 )
-_GENERIC_403_MESSAGE = (
-    "You are not authorized to perform this action."
-)
+_GENERIC_403_MESSAGE = "You are not authorized to perform this action."
 
 _SOURCE_FOLDER_PATH = Path(__file__).parent.parent.parent
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
@@ -83,8 +78,7 @@ def _assert_error(output: EntrypointOutput, expected_message: str) -> None:
         (
             401,
             {"code": "access_denied", "message": "Unauthorized"},
-            "The endpoint to access stream <stream> returned 401: Unauthorized. This is most likely due to wrong "
-            "credentials.",
+            "The endpoint to access stream <stream> returned 401: Unauthorized. This is most likely due to wrong " "credentials.",
         ),
     ),
 )
