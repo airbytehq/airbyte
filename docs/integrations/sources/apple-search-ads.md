@@ -25,13 +25,13 @@ The connector authenticates to the Apple Ads Campaign Management API using OAuth
 2. Select **Apple Ads** from the **Source type** dropdown and enter a name for the source.
 3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
 4. Enter the **Client ID** and **Client Secret** from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads).
-5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple's reporting API limits how far back daily data is available; requests for dates outside the supported window return no data.
+5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so set **Start Date** within that window for the report streams.
 6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
-8. For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits.
-9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
-10. (Optional) For **Token Refresh Endpoint**, override the default Apple OAuth token endpoint. Use this only if you proxy outbound requests; most users should leave it at the default.
-11. Click **Set up source**.
+8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
+9. Click **Set up source**.
+
+The **Exponential Backoff Factor** and **Token Refresh Endpoint** fields are hidden in the UI. Set them through the API if you need to: see `backoff_factor` and `token_refresh_endpoint` in the parameter table below.
 
 ## Supported sync modes
 
@@ -69,13 +69,13 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`search_terms_report_daily`](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports) — search-term-level daily metrics for Search Results campaigns.
 
 :::note
-Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
+Report streams use `date` as the cursor field and declare no primary key. Each row is broken out by `countryOrRegion`, which the connector exposes as `countryorregion`. To deduplicate, use the entity ID (`campaignId`, `adGroupId`, `keywordId` or `adId`), `date` and `countryorregion` in the destination.
 :::
 
 ## Performance considerations
 
 - Apple's API returns `401 Unauthorized` when an access token is invalid or expired. The connector automatically refreshes expired access tokens and retries the failed request.
-- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
+- Apple's API enforces rate limits and recommends exponential retry. The connector retries `429` rate-limit responses and `500`, `502`, `503` and `504` server errors with exponential backoff. The API-only `backoff_factor` sets the delay multiplier for the report streams.
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
@@ -96,10 +96,10 @@ For programmatic configuration, use these parameter names:
 | `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
-| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`; defaults to `UTC`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
-| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
-| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `backoff_factor` | No | Exponential retry delay factor for temporary Apple Ads API errors on the report streams. Valid values are `1` through `20`. Defaults to `5`. Hidden in the UI. |
+| `token_refresh_endpoint` | No | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. Hidden in the UI. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
@@ -109,7 +109,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.2.0 | 2026-10-23 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
+| 1.2.0 | 2026-10-26 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
+| 1.1.22 | 2026-10-26 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Report expired client secrets and rejected report dates as configuration errors, explain missing API roles, show Apple's message on other API errors, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired`, make Time Zone and Token Refresh Endpoint optional, hide Exponential Backoff Factor and Token Refresh Endpoint in the UI, and update the base image |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |

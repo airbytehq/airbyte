@@ -7,11 +7,11 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock as rm
+from _helpers import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
-from unit_tests.conftest import get_source
 
 
 API = "https://api.searchads.apple.com/api/v5"
