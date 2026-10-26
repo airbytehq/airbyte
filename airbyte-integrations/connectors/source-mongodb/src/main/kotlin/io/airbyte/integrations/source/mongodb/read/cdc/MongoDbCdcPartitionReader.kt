@@ -95,7 +95,7 @@ class MongoDbCdcPartitionReader(
                             "Saved offset is not valid. Please refresh or clear the connection, and then " +
                                 "increase oplog retention and/or increase sync frequency to " +
                                 "prevent this from happening in the future. See " +
-                                "https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams " +
+                                "https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams " +
                                 "for more details"
                         } else {
                             "The saved change stream position cannot be read by the server " +

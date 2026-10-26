@@ -33,7 +33,7 @@ airbyte:
               The configured MongoDB user is not authorized to read the configured databases. Grant it
               the 'read' role on the database (or 'readAnyDatabase' when several databases are
               configured), or set the Database Names to the databases it may read. See
-              https://docs.airbyte.com/integrations/sources/mongodb-v2#step-1-create-a-dedicated-read-only-mongodb-user
+              https://docs.airbyte.com/integrations/sources/mongodb#step-1-create-a-dedicated-read-only-mongodb-user
 
           # Server error 40573: a change stream was opened on a standalone server, which has no
           # oplog. CHECK passes there (as the legacy connector's did), so this is the first thing
@@ -47,7 +47,7 @@ airbyte:
               Incremental (CDC) syncs need a replica set or a sharded cluster: the configured MongoDB
               instance is a standalone server, which has no oplog and no change streams. Convert it to
               a replica set (a single-node replica set is enough), or sync its collections in Full
-              Refresh mode. See https://docs.airbyte.com/integrations/sources/mongodb-v2#requirements
+              Refresh mode. See https://docs.airbyte.com/integrations/sources/mongodb#requirements
 
           # Server selection timed out: a wrong host during CHECK (reported as a config error
           # there regardless), a network blip or an election mid-READ (retry from the checkpoint).
@@ -78,4 +78,4 @@ airbyte:
               'Incremental' mode, which does not use change streams. (2) Identify and restructure
               the large documents in your MongoDB collection to stay under 16MB. (3) Deselect streams
               containing documents that are too large. For more information, see
-              https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations
+              https://docs.airbyte.com/integrations/sources/mongodb#mongodb-cdc-limitations

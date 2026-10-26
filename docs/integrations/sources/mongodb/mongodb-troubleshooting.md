@@ -65,7 +65,7 @@ that was deleted before the event could be read is emitted as a delete.
 ### Schema Discovery & Enforcement
 
 - Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
-- When running with Schema Enforced set to `false`, discovery only determines the type of `_id`; the rest of the document is synced as one JSON object. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
+- When running with Schema Enforced set to `false`, discovery only determines the type of `_id`; the rest of the document is synced as one JSON object. See more in [Schema Enforcement](/integrations/sources/mongodb#schema-enforcement).
 
 ### Schema discovery performance impact
 
@@ -79,9 +79,9 @@ On clusters with hundreds of collections, this means hundreds of simultaneous ag
 
 These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
 
-1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb#schema-enforcement) for configuration details.
 
-2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb-v2#configuration-parameters) configuration parameter.
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb#configuration-parameters) configuration parameter.
 
 #### Other alternatives
 

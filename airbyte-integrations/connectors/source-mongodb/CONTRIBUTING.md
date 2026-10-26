@@ -6,7 +6,7 @@ toolkits) connector. It replaced the Debezium-based Java implementation (version
 b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`), so existing connections
 upgrade with no clear or refresh. The legacy connector is the parity oracle: `spec`, `check`, `discover` and
 `read` output, saved configurations and persisted state must stay compatible with it. The
-user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration and
+user-facing documentation is `docs/integrations/sources/mongodb.md` (plus the migration and
 troubleshooting pages next to it); keep it in step with behaviour changes.
 
 ## Build and test

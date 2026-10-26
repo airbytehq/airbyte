@@ -21,7 +21,7 @@ data:
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mongodb
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb
   githubIssueLabel: source-mongodb
   icon: mongodb.svg
   license: ELv2
@@ -53,7 +53,7 @@ data:
           airbyte/source-mongodb-v2 to airbyte/source-mongodb; if you run
           Self-Managed with a mirrored registry or an image allowlist, add
           airbyte/source-mongodb before upgrading. See
-          https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations#upgrading-to-300"
+          https://docs.airbyte.com/integrations/sources/mongodb-migrations#upgrading-to-300"
         upgradeDeadline: "2027-02-01"
         deadlineAction: "auto_upgrade"
       2.0.0:
@@ -75,13 +75,13 @@ data:
           3. Add any additional databases you want to sync
           4. Save the configuration and run a sync
 
-          For more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2) and the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).
+          For more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb) and the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-migrations).
           "
         upgradeDeadline: "2025-08-31"
       1.0.0:
         message:
           "**We advise against upgrading until you have run a test upgrade
-          as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This
+          as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-migrations).**  This
           version brings a host of updates to the MongoDB source connector, significantly
           increasing its scalability and reliability, especially for large collections.
           As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc)

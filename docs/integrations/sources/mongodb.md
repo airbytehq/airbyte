@@ -9,7 +9,7 @@ Airbyte's certified MongoDB connector offers the following features:
 
 This connector's Docker image was renamed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb` in version 3.0.0; the connector definition is unchanged.
 
-This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](mongodb-v2-migrations.md) first.
+This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](mongodb-migrations.md) first.
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ Setting up a MongoDB source takes four steps:
 - A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams: Full Refresh works against it, but an Incremental sync fails when the change stream is opened. A single-node replica set is fine for development: see [Convert a Standalone to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/).
 - MongoDB 4.4 or later. The connector is tested against MongoDB 7.0. Deletes carry the deleted document only on MongoDB 6.0 or later with [pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images) enabled on the collection.
 - On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers (M0, M2, M5) do not support the operations the connector relies on and may fail during connection setup.
-- An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams).
+- An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams).
 
 ### Step 1: Create a dedicated read-only MongoDB user
 
@@ -211,7 +211,7 @@ only retains a limited window of changes. If the saved position is no longer in 
 starts over, as chosen by the **Invalid CDC position behavior** setting. Long initial snapshots are protected
 automatically: a snapshot that runs longer than 8 hours pauses, its progress is saved and the sync is retried, and the
 retry reads the change stream before resuming the snapshot where it left off.
-See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams)
+See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams)
 for how to size the oplog.
 
 Every record of an incremental stream carries three metadata fields: `_ab_cdc_updated_at` (the change time of a
@@ -295,7 +295,7 @@ BSON types are mapped to the following Airbyte types in the discovered schema, a
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
+To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb/mongodb-troubleshooting).
 
 ### Schema discovery performance impact
 
@@ -305,11 +305,11 @@ Schema discovery runs aggregation queries against your MongoDB cluster **in para
 
 Because MongoDB collections are schemaless, no sample size can guarantee a complete or stable schema — new fields can appear in documents at any time. When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. On clusters with many collections or large documents, these concurrent queries can cause significant resource pressure on your MongoDB deployment, including degraded performance or cluster instability.
 
-For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
+For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb/mongodb-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
 
 ### MongoDB CDC Limitations
 
-MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
 
 ## Configuration Parameters
 
@@ -332,7 +332,7 @@ MongoDB has a 16MB maximum document size limit for BSON documents. During CDC sy
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.0.0   | 2026-10-08 | [88383](https://github.com/airbytehq/airbyte/pull/88383) | Rewrite on the Bulk CDK: change streams are read with the MongoDB driver instead of Debezium; existing connections upgrade in place; no clear or refresh needed. Views and time series collections are no longer discovered; booleans typed as `boolean`; decimals keep full precision; `initial_waiting_seconds`, `queue_size` and `update_capture_mode` removed. See the [migration guide](mongodb-v2-migrations.md#upgrading-to-300). |
+| 3.0.0   | 2026-10-08 | [88383](https://github.com/airbytehq/airbyte/pull/88383) | Rewrite on the Bulk CDK: change streams are read with the MongoDB driver instead of Debezium; existing connections upgrade in place; no clear or refresh needed. Views and time series collections are no longer discovered; booleans typed as `boolean`; decimals keep full precision; `initial_waiting_seconds`, `queue_size` and `update_capture_mode` removed. See the [migration guide](mongodb-migrations.md#upgrading-to-300). |
 | 2.1.1   | 2026-09-26 | [87019](https://github.com/airbytehq/airbyte/pull/87019) | Harden initial load iterator: surface sub-query failures instead of silently ending the stream, and fail with the intended transient error on CDC initial-load timeout.                                                                                                                                                                                                                                                                  |
 | 2.1.0   | 2026-09-02 | [83705](https://github.com/airbytehq/airbyte/pull/83705) | Support sharded clusters and object-type `_id` fields; detect `_id` types with index seeks instead of a full collection scan; bump Debezium to 3.6.2 and base image to 2.0.4                                                                                                                                                                                                                                                             |
 | 2.0.7   | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu)                                                                                                                                                                                                                                                                                                                   |
