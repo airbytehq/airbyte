@@ -744,9 +744,9 @@ def test_messages_details_parent_state_does_not_advance_past_failed_child(base_c
     assert emitted_states, "Expected emitted state messages after the child request failure"
     for emitted_state in emitted_states:
         parent_cursor = _parent_listed_until(emitted_state)
-        assert parent_cursor is None or int(parent_cursor) <= 1080777600, (
-            f"Parent state advanced past the failed child partition: {parent_cursor!r}"
-        )
+        assert (
+            parent_cursor is None or int(parent_cursor) <= 1080777600
+        ), f"Parent state advanced past the failed child partition: {parent_cursor!r}"
 
 
 def test_messages_details_full_refresh_reads_all_listed_ids(base_config, requests_mock):
