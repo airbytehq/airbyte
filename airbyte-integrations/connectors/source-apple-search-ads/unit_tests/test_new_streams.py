@@ -182,8 +182,8 @@ def test_search_terms_report_daily_requests_each_search_campaign_and_day(mocker)
     mocker.post(f"{API}/reports/campaigns/1/searchterms", json=report)
     mocker.post(f"{API}/reports/campaigns/3/searchterms", json=report)
 
-    # One day per request: the CDK folds the last day into the final slice, but endTime always equals startTime.
-    windows = [("2024-01-01", "2024-01-01"), ("2024-01-02", "2024-01-02"), ("2024-01-03", "2024-01-03"), ("2024-01-04", "2024-01-04")]
+    # One day per request, and the configured End Date is the last day requested.
+    windows = [(f"2024-01-0{day}", f"2024-01-0{day}") for day in range(1, 6)]
     records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-05"))
 
     requests = _api_requests(mocker, "POST", "/reports/campaigns/")
@@ -320,9 +320,28 @@ def test_search_terms_report_daily_resumes_from_state_minus_lookback(mocker, str
     output = _read_with_state(stream_state, dict(CONFIG, end_date="2024-01-05"))
 
     starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
-    assert starts == ["2024-01-03", "2024-01-04"]
+    assert starts == ["2024-01-03", "2024-01-04", "2024-01-05"]
     # global_substream_cursor keeps one cursor for all campaigns instead of per-partition states.
     assert "states" not in output.most_recent_state.stream_state.__dict__
+
+
+def test_search_terms_report_daily_without_end_date_requests_today_and_keeps_record_date_state(mocker):
+    def report(request, context):
+        row = {"metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": "term", "countryOrRegion": "US"}}
+        return {
+            "data": {"reportingDataResponse": {"row": [dict(row, granularity=[{"date": request.json()["startTime"], "impressions": 5}])]}}
+        }
+
+    for campaign_id in (1, 3):
+        mocker.post(f"{API}/reports/campaigns/{campaign_id}/searchterms", json=report)
+    config = {key: value for key, value in CONFIG.items() if key != "end_date"}
+
+    output = _read_with_state({}, dict(config, start_date="2024-01-05"))
+
+    starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
+    assert starts == ["2024-01-05", "2024-01-06"]
+    # The cursor ends one day after today, but the state keeps the newest record date.
+    assert output.most_recent_state.stream_state.state == {"date": "2024-01-06"}
 
 
 def test_search_terms_report_daily_future_state_sends_no_report_requests(mocker):
