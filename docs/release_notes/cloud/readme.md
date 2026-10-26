@@ -2,6 +2,33 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 23, 2026
+
+Connections
+
+- Saving a source no longer fails in some cases where Airbyte couldn't read a previously stored credential for that source.
+
+Connector Builder
+
+- The Connector Builder loads again for workspaces that have a custom connector forked from a connector without an icon. Previously, the Builder page could fail to load with an error.
+- When a test read fails because of a problem with your connector's configuration, such as an invalid date value, the Connector Builder now shows a clear message describing the problem instead of a generic error ID.
+
+Platform
+
+- Every Airbyte Cloud organization can now open the **Install MCP** page from the sidebar to connect AI tools to Airbyte through the Airbyte MCP server. Previously, this page was only available to organizations enrolled in or eligible for Airbyte Agents.
+- On Cloud Pro and Enterprise Flex plans, data worker usage charts now show the "DW" unit once as the y-axis title, and the y-axis values are plain numbers.
+
+## October 22, 2026
+
+Connections
+
+- When you set up a new source or destination, the setup form now shows the connector's icon and name at the top. From this header, you can invite teammates to your workspace if you can manage workspace access, and for sources, you can fork or edit the connector in the Connector Builder. The **Copy JSON** button no longer appears on source and destination forms.
+- The refresh dialog for connections and streams is simpler and easier to read. The two refresh options are now called **Backfill missing or updated records** and **Overwrite existing data**, and the dialog links to the refresh documentation so you can learn more before you start.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, when you turn on **Compare to previous period** on a data worker usage chart, the chart now shows a loading indicator until the comparison data finishes loading. Previously, the chart could show only the current period while the previous period was still loading.
+
 ## October 21, 2026
 
 Platform

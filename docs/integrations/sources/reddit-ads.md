@@ -64,7 +64,9 @@ You need a refresh token only for the **Use your own Reddit app** option. The co
 
 #### Find your ad account ID
 
-In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **Assets** > **Ad Accounts**. The ID appears under the ad account's name and starts with `a2_`. You can also call [List Ad Accounts By Business](https://ads-api.reddit.com/docs/v3/api/ad-accounts) with an access token for your app.
+Sign in to [Reddit Ads Manager](https://ads.reddit.com/account/). Your ad account ID appears in the top right corner and starts with `a2_`.
+
+You can also open **Business Manager** > **Assets** > **Ad Accounts** in Reddit Ads Manager, where the ID appears under the ad account's name and starts with `a2_`. Alternatively, call [List Ad Accounts By Business](https://ads-api.reddit.com/docs/v3/api/ad-accounts) with an access token for your app.
 
 ### Step 2: Set up the Reddit Ads connector in Airbyte
 
@@ -172,6 +174,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 1.0.2 | 2026-10-22 | [89672](https://github.com/airbytehq/airbyte/pull/89672) | Promote to certified |
+| 1.0.1 | 2026-10-22 | [89670](https://github.com/airbytehq/airbyte/pull/89670) | Use Reddit's official icon from the Reddit Brand System; document where to find the ad account ID |
 | 1.0.0 | 2026-10-20 | [89083](https://github.com/airbytehq/airbyte/pull/89083) | Type timestamp, date and integer fields to match Reddit's API and normalize report `date` to `YYYY-MM-DD` |
 | 0.4.1 | 2026-10-20 | [88784](https://github.com/airbytehq/airbyte/pull/88784) | Update dependencies |
 | 0.4.0 | 2026-10-16 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams; show Reddit's field-level reason in HTTP 400 error messages |

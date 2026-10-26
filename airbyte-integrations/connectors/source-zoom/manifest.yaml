@@ -13744,6 +13744,7 @@ spec:
             properties:
               auth_type:
                 type: string
+                title: Auth Type
                 const: oauth2.0
                 order: 0
               client_id:
@@ -13786,27 +13787,29 @@ spec:
             properties:
               auth_type:
                 type: string
+                title: Auth Type
                 const: server_to_server
                 order: 0
               account_id:
                 type: string
                 title: Account ID
-                description: 'The account ID for your Zoom account. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
+                description: The Account ID shown on your Server-to-Server OAuth app's "App Credentials" page in the Zoom App Marketplace.
                 order: 1
               client_id:
                 type: string
                 title: Client ID
-                description: 'The client ID for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
+                description: The Client ID shown on the same "App Credentials" page.
                 order: 2
               client_secret:
                 type: string
                 title: Client Secret
-                description: 'The client secret for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
+                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes (or their granular equivalents).
                 airbyte_secret: true
                 order: 3
               authorization_endpoint:
                 type: string
                 title: Authorization Endpoint
+                description: Leave the default unless Zoom support has given you a different token URL.
                 default: https://zoom.us/oauth/token
                 airbyte_hidden: true
                 order: 4
