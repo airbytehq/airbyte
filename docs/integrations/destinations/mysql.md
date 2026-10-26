@@ -113,7 +113,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                             |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 1.1.2 | 2026-10-26 | [89768](https://github.com/airbytehq/airbyte/pull/89768) | Upgrade MySQL Connector/J to 9.1.0 for MySQL and MySQL Strict Encrypt destinations. |
 | 1.1.1 | 2025-08-04 | [63736](https://github.com/airbytehq/airbyte/pull/63736) | Use MySQL/MariaDB compatible timestamp format |
