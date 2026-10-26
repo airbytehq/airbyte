@@ -6,7 +6,7 @@
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
 - One of the following authentication methods:
   - **OAuth 2.0** (recommended): A Zendesk OAuth client with a client ID, client secret, and refresh token
-  - **API Token**: An existing, active Zendesk API token and the email address associated with the token. Zendesk no longer lets you create new API tokens.
+  - **API Token**: A Zendesk API token and the email address associated with the token. Zendesk disables new API token creation on October 27, 2026.
 
 ## Setup guide
 
@@ -20,7 +20,7 @@ Choose one of the following authentication methods:
 Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Starting October 27, 2026, Zendesk accounts can't create new API tokens, so you can only use **API Token** authentication with an active token you already have. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Set up new sources with **OAuth 2.0**, and switch existing API token sources to OAuth before April 30, 2027.
 :::
 
-If you already have an active API token, find it in your Zendesk Admin Center under **Apps and integrations > APIs > Zendesk API**.
+Generate an API token in your Zendesk Admin Center under **Apps and integrations > APIs > Zendesk API**. For details, see [Managing API token access to the Zendesk API](https://support.zendesk.com/hc/en-us/articles/4408889192858) in the Zendesk documentation. We recommend creating a token specifically for Airbyte access. After October 27, 2026, Zendesk doesn't let you create new tokens, so these steps only work before that date.
 
 **OAuth 2.0**
 
