@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from _helpers import get_source
+from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -27,6 +28,13 @@ _CONFIG = {
 _TOKEN_URL = _CONFIG["token_refresh_endpoint"]
 _API_URL = "https://api.searchads.apple.com/api/v5"
 _CAMPAIGNS_URL = f"{_API_URL}/campaigns"
+
+
+@pytest.fixture(autouse=True)
+def frozen_clock():
+    # Report windows start at most 89 days back, so the August 2026 dates need a fixed clock.
+    with freeze_time("2026-09-01T12:00:00Z"):
+        yield
 
 
 def _read_stream(stream_name, *, sync_mode=SyncMode.full_refresh, expecting_exception=False):
@@ -107,7 +115,7 @@ def test_child_404_is_a_system_error(requests_mock):
     assert "Org Id" not in error.message
 
 
-def test_report_400_points_at_the_report_date_window(requests_mock):
+def test_report_400_is_a_system_error_with_apples_message(requests_mock):
     _register_token(requests_mock)
     requests_mock.post(
         f"{_API_URL}/reports/campaigns",
@@ -121,8 +129,8 @@ def test_report_400_points_at_the_report_date_window(requests_mock):
     output = _read_stream("campaigns_report_daily", sync_mode=SyncMode.incremental, expecting_exception=True)
 
     error = output.errors[0].trace.error
-    assert error.failure_type == FailureType.config_error
-    assert "last 90 days" in error.message
+    # The report window always starts inside Apple's 90-day limit, so the user's dates cannot cause this 400.
+    assert error.failure_type == FailureType.system_error
     assert "Apple said: Apple date detail" in error.message
 
 

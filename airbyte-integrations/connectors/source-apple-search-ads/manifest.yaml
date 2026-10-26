@@ -54,21 +54,6 @@ definitions:
         {%- set first_error = apple_errors[0] if apple_errors else {} -%}
         {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
         {{ ' Apple said: ' ~ apple_message[:300] }}
-    invalid_report_request:
-      type: HttpResponseFilter
-      action: FAIL
-      http_codes:
-        - 400
-      failure_type: config_error
-      error_message: >-
-        Apple Ads rejected the report request (400). Apple serves daily reports
-        for the last 90 days only: set the Start Date within that window, or
-        refresh the stream if it has not synced for a long time.
-        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
-        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
-        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
-        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
-        {{ ' Apple said: ' ~ apple_message[:300] }}
     forbidden:
       type: HttpResponseFilter
       action: FAIL
@@ -124,17 +109,6 @@ definitions:
         factor: "{{ config.get('backoff_factor', 5) }}"
     response_filters:
       - $ref: "#/definitions/response_filters/token_expired"
-      - $ref: "#/definitions/response_filters/invalid_report_request"
-      - $ref: "#/definitions/response_filters/forbidden"
-      - $ref: "#/definitions/response_filters/not_found"
-  search_terms_report_error_handler:
-    type: DefaultErrorHandler
-    max_retries: 10
-    backoff_strategies:
-      - type: ExponentialBackoffStrategy
-        factor: "{{ config.get('backoff_factor', 5) }}"
-    response_filters:
-      - $ref: "#/definitions/response_filters/token_expired"
       - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
@@ -147,7 +121,7 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/keyword_missing"
       - $ref: "#/definitions/response_filters/token_expired"
-      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
   streams:
@@ -323,7 +297,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -373,9 +347,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
@@ -424,7 +401,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -482,9 +459,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
@@ -534,7 +514,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -592,9 +572,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
@@ -688,7 +671,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -746,9 +729,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
@@ -1007,7 +993,7 @@ definitions:
             returnRowTotals: false
             returnGrandTotals: false
           error_handler:
-            $ref: "#/definitions/search_terms_report_error_handler"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
