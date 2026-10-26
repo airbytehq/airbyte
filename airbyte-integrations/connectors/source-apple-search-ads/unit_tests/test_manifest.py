@@ -166,6 +166,8 @@ def test_num_workers_spec_field(manifest):
     assert num_workers["default"] == 2
     assert num_workers.get("minimum", 0) >= 1
     assert num_workers.get("maximum", 999) <= 20
+
+
 @pytest.mark.parametrize(
     ("stream_name", "expected_primary_key"),
     [
