@@ -46,10 +46,10 @@ class AirbyteValueToJsonTest {
                         ObjectValue(
                             linkedMapOf(
                                 "street" to StringValue("123 Main St"),
-                                "city" to StringValue("San Francisco")
-                            )
+                                "city" to StringValue("San Francisco"),
+                            ),
                         ),
-                )
+                ),
             )
         val jsonValue = AirbyteValueToJson().convert(airbyteValue)
         val roundTripValue = JsonToAirbyteValue().convert(jsonValue)

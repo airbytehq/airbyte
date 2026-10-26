@@ -201,6 +201,7 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ConversationsSearchData]
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[TeamsSearchData]
+    * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2425,10 +2426,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: dict[str, typing.Any] | None`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: str | None`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: dict[str, typing.Any] | None`
     :   Statistics related to the conversation.

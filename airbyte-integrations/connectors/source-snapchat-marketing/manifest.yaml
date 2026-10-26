@@ -37,6 +37,13 @@ definitions:
                     error_message: >-
                       Got permission error when accessing URL. Skipping
                       {{self.name}} stream.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      {% if config.get('organization_ids') %}Snapchat could not find one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% else %}Snapchat could not find the organizations for the authenticated user. Verify that the authenticated user has access to at least one Snapchat organization.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -109,6 +116,13 @@ definitions:
                     error_message: >-
                       Got permission error when accessing URL. Skipping
                       {{self.name}} stream.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      {% if config.get('ad_account_ids') %}Snapchat could not find one or more of the configured ad accounts ({{ config['ad_account_ids'] | join(', ') }}). Verify the values in the Ad Account IDs field and that the authenticated user has access to these ad accounts.{% else %}Snapchat could not find the ad accounts for one of the organizations. Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -891,7 +905,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -1307,6 +1321,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1329,7 +1353,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -1775,6 +1799,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1796,7 +1830,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -2199,6 +2233,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2221,7 +2265,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -2637,6 +2681,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2659,7 +2713,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -3105,6 +3159,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3126,7 +3190,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -3529,6 +3593,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3551,7 +3625,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -3967,6 +4041,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3989,7 +4073,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -4435,6 +4519,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -4456,7 +4550,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -4859,6 +4953,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -7571,6 +7675,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -7951,6 +8065,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -8331,6 +8455,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -8711,6 +8845,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9091,6 +9235,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9471,6 +9625,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9851,6 +10015,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -10231,6 +10405,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -10611,6 +10795,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"

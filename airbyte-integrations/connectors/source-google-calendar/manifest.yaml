@@ -126,47 +126,199 @@ definitions:
         schema:
           $ref: "#/schemas/calendars"
     events:
-      type: DeclarativeStream
+      type: StateDelegatingStream
       name: events
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: calendars/{{ config['calendarid'] }}/events
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - items
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('nextPageToken') }}"
-            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/events"
+      # Google rejects updatedMin older than 29 days (410 updatedMinTooLongAgo, measured live). The
+      # limit is undocumented and has been tighter in the past, so 21 days keeps a week of margin:
+      # a tighter limit would otherwise fail every sync whose cursor sits between the two values.
+      # With no saved cursor, or one older than 21 days, the stale state is cleared and the
+      # full-refresh stream re-reads the calendar; otherwise the incremental stream sends
+      # updatedMin from the saved cursor. Keep in step with the day_delta(-21) guard below.
+      api_retention_period: P21D
+      full_refresh_stream:
+        $ref: "#/definitions/events_stream_base"
+        incremental_sync:
+          $ref: "#/definitions/events_stream_base/incremental_sync"
+          # A re-read cannot be bounded server-side past 29 days, so when start_date is set,
+          # records modified before it are dropped client-side. Without start_date the cursor
+          # starts at 2000-01-01, so no record older than that is dropped: recurring series are
+          # returned as one record whose `updated` is the last edit of the series, so a default
+          # floor would drop active series that have not been edited recently. The filter's upper
+          # bound is end_datetime (tomorrow), so clock skew between the worker and Google cannot
+          # drop a record edited moments before the sync.
+          is_client_side_incremental: true
+      incremental_stream:
+        $ref: "#/definitions/events_stream_base"
+        retriever:
+          $ref: "#/definitions/events_stream_base/retriever"
+          requester:
+            $ref: "#/definitions/events_stream_base/retriever/requester"
+            request_parameters:
+              showDeleted: "true"
+              maxResults: "2500"
+              singleEvents: "false"
+              updatedMin: "{{ stream_slice['start_time'] }}"
+  events_stream_base:
+    type: DeclarativeStream
+    name: events
+    primary_key:
+      - id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: calendars/{{ config['calendarid'] }}/events
+        http_method: GET
+        request_parameters:
+          showDeleted: "true"
+          maxResults: "2500"
+          singleEvents: "false"
+          # First sync (no saved cursor): honour a start_date within the retention margin (see api_retention_period).
+          updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-21, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageToken
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('nextPageToken') }}"
+          stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+    transformations:
+      # Cancelled events arrive as stubs without `updated`, the cursor. Destinations dedup on the
+      # cursor with NULLS LAST and only replace a row when the incoming cursor is non-null, so an
+      # unstamped stub would never retire the live row in Append + Deduped. Stamp it with the
+      # newest value it can safely carry: at least the slice start (the saved cursor), and at
+      # least one hour before now, so the cursor never moves past an edit the request could have
+      # missed while still out-dating every row the stub replaces.
+      - type: AddFields
+        condition: "{{ not record.get('updated') }}"
+        fields:
+          - path:
+              - updated
+            value: "{{ [stream_slice['start_time'], format_datetime(now_utc() - duration('PT1H'), '%Y-%m-%dT%H:%M:%S.%fZ')] | max }}"
+      - type: AddFields
+        fields:
+          - path:
+              - calendar_id
+            value: "{{ config['calendarid'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/events"
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config['client_id'] }}"
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['client_refresh_token_2'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              failure_type: config_error
+              error_message: "Google rejected the OAuth credentials for the Calendar API. Re-authorize the connector or generate a new refresh token for the configured client."
+            - type: HttpResponseFilter
+              predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              # 403 usageLimits errors that do not clear within the sync (project or user quota).
+              # Excludes the body's 429 status so a 429 with the same reason still goes to RATE_LIMITED; a string
+              # or missing code is tolerated. http_codes would OR with the predicate and catch every 403, and the
+              # CDK's `string` filter wraps non-strings in triple quotes, so the code is compared as int or str.
+              predicate: "{{ response.get('error', {}).get('code') not in (429, '429') and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
+              action: FAIL
+              failure_type: transient_error
+              error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              failure_type: config_error
+              error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
+            - type: HttpResponseFilter
+              # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
+              # syncToken, which this connector does not send): the user must act, not wait.
+              # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
+              predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
+              action: FAIL
+              failure_type: config_error
+              error_message: "The calendar configured in \"Calendar Id\" no longer exists or requires a full re-sync. Check the ID, then reset the events stream."
+            - type: HttpResponseFilter
+              # 410 updatedMinTooLongAgo: Google's window moved under a cursor that was within our
+              # margin. Nothing in the configuration causes it; the next sync clears the stale cursor
+              # and re-reads, so classify as transient rather than blaming the user.
+              http_codes:
+                - 410
+              action: FAIL
+              failure_type: transient_error
+              error_message: "Google Calendar rejected the saved sync position of the events stream as too old. The next sync re-reads the calendar automatically; reset the events stream to do it now."
+            - type: HttpResponseFilter
+              http_codes:
+                - 429
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+                - 502
+                - 503
+                - 504
+              action: RETRY
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 500
+          interval: PT1M
+      matchers: []
 
 streams:
   - $ref: "#/definitions/streams/colors"
@@ -190,22 +342,41 @@ spec:
         type: string
         order: 0
         title: Client ID
+        description: The client ID of the Google Cloud OAuth 2.0 application used to access the Calendar API.
         airbyte_secret: true
       client_secret:
         type: string
         order: 1
         title: Client secret
+        description: The client secret of the Google Cloud OAuth 2.0 application.
         airbyte_secret: true
       client_refresh_token_2:
         type: string
         order: 2
         title: Refresh token
+        description: A refresh token obtained for the OAuth application with the Calendar API scope. It is exchanged for an access token at the start of every sync.
         airbyte_secret: true
       calendarid:
         type: string
         order: 3
         title: Calendar Id
+        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works, but it is stored verbatim in the events' calendar_id column, so prefer the real ID when that column should join to calendarlist.
+      start_date:
+        type: string
+        order: 4
+        title: Start date
+        format: date-time
+        description: Only sync events last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read (after a reset, or when the saved cursor is older than 21 days); other incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
+      num_workers:
+        type: integer
+        order: 5
+        title: Number of concurrent workers
+        description: The number of worker threads used to fetch data concurrently.
+        minimum: 1
+        maximum: 10
+        default: 3
     additionalProperties: true
+
 
 metadata:
   autoImportSchema:
@@ -1004,6 +1175,10 @@ schemas:
               type:
                 - string
                 - "null"
+      calendar_id:
+        type:
+          - string
+          - "null"
       attendees:
         type:
           - array

@@ -210,7 +210,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLikeCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesStartswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesEndswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesArrayContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FilesAnyCondition"></a>
@@ -264,10 +264,24 @@ Classes
     `updated_at: Any`
     :   Timestamp of the last modification to the file.
 
+<a id="FilesArrayContainsCondition"></a>
+
+`FilesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_drive.types.FilesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="FilesContainsCondition"></a>
 
 `FilesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -342,6 +356,20 @@ Classes
     :   The type of the None singleton.
 
     `supports_all_drives: bool`
+    :   The type of the None singleton.
+
+<a id="FilesEndswithCondition"></a>
+
+`FilesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_drive.types.FilesStringFilter`
     :   The type of the None singleton.
 
 <a id="FilesEqCondition"></a>
@@ -505,20 +533,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_drive.types.FilesStringFilter`
     :   The type of the None singleton.
 
-<a id="FilesLikeCondition"></a>
-
-`FilesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_drive.types.FilesStringFilter`
-    :   The type of the None singleton.
-
 <a id="FilesListParams"></a>
 
 `FilesListParams(*args, **kwargs)`
@@ -621,7 +635,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLikeCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesStartswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesEndswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesArrayContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition`
     :   The type of the None singleton.
 
 <a id="FilesOrCondition"></a>
@@ -643,7 +657,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLikeCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesStartswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesEndswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesArrayContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FilesSearchFilter"></a>
@@ -686,7 +700,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLikeCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_drive.types.FilesEqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNeqCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesGteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLtCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesLteCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesInCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesStartswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesEndswithCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesFuzzyCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesKeywordCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesArrayContainsCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesNotCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAndCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesOrCondition | airbyte_agent_sdk.connectors.google_drive.types.FilesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_drive.types.FilesSortFilter]`
@@ -721,10 +735,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp of the last modification to the file.
 
+<a id="FilesStartswithCondition"></a>
+
+`FilesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_drive.types.FilesStringFilter`
+    :   The type of the None singleton.
+
 <a id="FilesStringFilter"></a>
 
 `FilesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

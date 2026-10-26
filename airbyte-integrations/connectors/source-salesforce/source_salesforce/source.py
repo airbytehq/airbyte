@@ -15,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
+from airbyte_cdk import BearerAuthenticator
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
@@ -38,11 +39,17 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import (
+    PARENT_SALESFORCE_OBJECTS,
+    UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS,
+    UNSUPPORTED_FILTERING_STREAMS,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from .streams import (
     DEFAULT_LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
@@ -112,6 +119,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if not new_refresh_token or new_refresh_token == config.get("refresh_token"):
             return
         config["refresh_token"] = new_refresh_token
+        # A rotated token is as live as the configured one, so it must be masked too if a later token request is logged
+        add_to_secrets(new_refresh_token)
         message = create_connector_config_control_message(config)
         # Emit the CONNECTOR_CONFIG control message straight to stdout so the platform persists the
         # rotated token immediately (under RTR the previous token is already invalid, and check/discover
@@ -163,9 +172,19 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                     message=f"The lookback_window value is invalid: {internal_message.rstrip('.')}. Please provide a valid ISO 8601 duration (e.g., 'PT10M' for 10 minutes, 'PT1H' for 1 hour). See https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting for more details.",
                 )
 
+    @staticmethod
+    def _validate_end_date(end_date: Optional[str], start_date: Optional[str]):
+        if end_date and start_date and pendulum.parse(end_date) <= pendulum.parse(start_date):
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message="end_date is not after start_date",
+                message=f"'End Date' ({end_date}) must be later than 'Start Date' ({start_date}). Please fix the date range and try again.",
+            )
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
         self._validate_lookback_window(config.get("lookback_window"))
+        self._validate_end_date(config.get("end_date"), config.get("start_date"))
         salesforce = self._get_sf_object(config)
         salesforce.describe()
         return True, None
@@ -243,7 +262,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """Generates a list of stream by their names. It can be used for different tests too"""
-        authenticator = TokenAuthenticator(sf_object.access_token)
+        # Reads the current token on every request and retry, so REST streams see any refresh
+        authenticator = BearerAuthenticator(
+            token_provider=SalesforceTokenProvider(sf_object, proactive_refresh=False), config={}, parameters={}
+        )
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
@@ -314,6 +336,14 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
         cursor_field = CursorField(cursor_field_key)
         stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+        start_date = datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc)
+        end_provider = stream.state_converter.get_end_provider()
+        if config.get("end_date"):
+            self._validate_end_date(config["end_date"], config["start_date"])
+            end_date = datetime.fromtimestamp(pendulum.parse(config["end_date"]).timestamp(), timezone.utc)
+            default_end_provider = end_provider
+            # cap at the current time: slicing past "now" would persist a future state boundary and permanently skip records
+            end_provider = lambda: min(end_date, default_end_provider())
         return ConcurrentCursor(
             stream.name,
             stream.namespace,
@@ -323,8 +353,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             stream.state_converter,
             cursor_field,
             self._get_slice_boundary_fields(stream, state_manager),
-            datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
-            stream.state_converter.get_end_provider(),
+            start_date,
+            end_provider,
             isodate.parse_duration(config["lookback_window"])
             if "lookback_window" in config
             else timedelta(seconds=DEFAULT_LOOKBACK_SECONDS),
