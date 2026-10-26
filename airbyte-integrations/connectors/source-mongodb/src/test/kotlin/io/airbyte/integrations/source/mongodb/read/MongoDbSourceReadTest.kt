@@ -1147,7 +1147,7 @@ class MongoDbSourceReadTest {
             .records()
             .filter { it.stream == stream }
             .map { record ->
-                record.data.fields().asSequence().associate { (k, v) ->
+                record.data.properties().asSequence().associate { (k, v) ->
                     k to
                         when {
                             v.isNull -> null

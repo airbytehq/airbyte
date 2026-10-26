@@ -172,7 +172,7 @@ class MongoDbSourceMetadataQuerier(
         val properties: JsonNode =
             configuredStream.stream.jsonSchema?.get("properties") ?: return emptyList()
         return properties
-            .fields()
+            .properties()
             .asSequence()
             .filterNot { (name, _) -> name.startsWith(MetaField.META_PREFIX) }
             .map { (name, schema) -> EmittedField(name, MongoDbFieldType.fromJsonSchema(schema)) }

@@ -267,10 +267,13 @@ class MongoDbCdcPartitionReader(
                 .also { deletes++ }
         val payload: NativeRecordPayload =
             when (event.operationType) {
+                null -> return false
                 OperationType.INSERT ->
                     converter
                         .changePayload(event.fullDocument ?: return false, deletedAt = null)
-                        .also { inserts++ }
+                        .also {
+                            inserts++
+                        }
                 OperationType.UPDATE,
                 OperationType.REPLACE ->
                     event.fullDocument?.let {
