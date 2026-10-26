@@ -13973,7 +13973,7 @@ streams:
           - predicate: "{{ response.code == 4711 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope; add this scope to the app and reconnect."
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:user:admin); add this scope to the app and reconnect."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 1001 }}"
             action: IGNORE
@@ -13986,7 +13986,7 @@ streams:
           - predicate: "{{ response.code == 200 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope; upgrade the plan and grant this scope."
+            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:user:admin); upgrade the plan and grant this scope."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 124 }}"
             action: REFRESH_TOKEN_THEN_RETRY
@@ -14241,7 +14241,7 @@ streams:
           - predicate: "{{ response.code == 4711 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope; add this scope to the app and reconnect."
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:daily_usage:admin); add this scope to the app and reconnect."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
             action: IGNORE
@@ -14250,7 +14250,7 @@ streams:
           - predicate: "{{ response.code == 200 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope; upgrade the plan and grant this scope."
+            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:daily_usage:admin); upgrade the plan and grant this scope."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 124 }}"
             action: REFRESH_TOKEN_THEN_RETRY
@@ -14320,7 +14320,7 @@ streams:
           - predicate: "{{ response.code == 4711 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the chat_channel:read:admin scope; add this scope to the app and reconnect."
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the chat_channel:read:admin scope (or granular team_chat:read:list_user_channels:admin); add this scope to the app and reconnect."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 1001 }}"
             action: IGNORE
@@ -14489,7 +14489,7 @@ streams:
           - predicate: "{{ response.code == 4711 }}"
             action: FAIL
             failure_type: config_error
-            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the zoom_events_basic:read:admin scope; add this scope to the app and reconnect."
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the zoom_events_basic:read:admin scope (or granular zoom_events:read:list_events:admin); add this scope to the app and reconnect."
             type: HttpResponseFilter
           - predicate: "{{ response.code == 124 }}"
             action: REFRESH_TOKEN_THEN_RETRY
@@ -14793,7 +14793,7 @@ spec:
               client_secret:
                 type: string
                 title: Client Secret
-                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes, plus chat_channel:read:admin for chat_channels and zoom_events_basic:read:admin for zoom_events (or their granular equivalents).
+                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes, plus chat_channel:read:admin for chat_channels and zoom_events_basic:read:admin for zoom_events. Apps that use granular scopes need the scopes listed in the Zoom source documentation instead.
                 airbyte_secret: true
                 order: 3
               authorization_endpoint:

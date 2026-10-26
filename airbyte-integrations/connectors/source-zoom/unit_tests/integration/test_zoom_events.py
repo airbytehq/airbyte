@@ -87,5 +87,6 @@ class TestZoomEvents(TestCase):
 
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("zoom_events_basic:read:admin")
+        assert output.is_in_logs("zoom_events:read:list_events:admin")
         for current in requests:
             http_mocker.assert_number_of_calls(current, 1)

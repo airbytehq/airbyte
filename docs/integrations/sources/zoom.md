@@ -40,6 +40,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 `report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
 
+If you set up your Zoom app before version 1.5.0, add the scopes for any of these four streams you want to sync. With OAuth2.0, then re-authenticate the source in Airbyte so the new token includes the added scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection. Streams you already sync don't need new scopes.
+
 ### Features
 
 | Feature                       | Supported?  |
@@ -103,7 +105,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 2.0.0 | 2026-10-23 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add primary keys, date-time typing and incremental sync |
-| 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams |
+| 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |
 | 1.3.2 | 2026-10-20 | [89459](https://github.com/airbytehq/airbyte/pull/89459) | Update dependencies |

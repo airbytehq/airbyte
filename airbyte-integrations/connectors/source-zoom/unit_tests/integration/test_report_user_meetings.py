@@ -162,9 +162,7 @@ class TestReportUserMeetings(TestCase):
         output = read_stream(
             _STREAM,
             sync_mode=SyncMode.incremental,
-            state=StateBuilder()
-            .with_stream_state(_STREAM, _global_state("2026-10-10"))
-            .build(),
+            state=StateBuilder().with_stream_state(_STREAM, _global_state("2026-10-10")).build(),
         )
 
         assert_completed_without_errors(output, _STREAM)
@@ -237,6 +235,7 @@ class TestReportUserMeetings(TestCase):
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("Pro or higher plan")
         assert output.is_in_logs("report:read:admin")
+        assert output.is_in_logs("report:read:user:admin")
         http_mocker.assert_number_of_calls(current, 1)
 
     @HttpMocker()
@@ -254,4 +253,5 @@ class TestReportUserMeetings(TestCase):
 
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("report:read:admin")
+        assert output.is_in_logs("report:read:user:admin")
         http_mocker.assert_number_of_calls(current, 1)
