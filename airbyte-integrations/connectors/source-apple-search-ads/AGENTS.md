@@ -80,7 +80,7 @@ honest description of what the API returns.
 per stream with the reason. These five streams are the exception, and the reason is not "we did not
 get around to it": the identifying tuple is derived from the connector's own request parameters
 rather than from the API, so it is not a stable record identity. Users who need deduplicated
-reporting rows should dedupe on `(<entity>Id, date, countryorregion)` in the destination.
+reporting rows should dedupe on `(<entity>Id, date, countryorregion)` (for `search_terms_report_daily`, on `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and `countryorregion`) in the destination.
 
 ## 3. Deletions are replicated as a `deleted` flag on the entity streams
 
@@ -126,7 +126,7 @@ Only the five report streams are incremental (`DatetimeBasedCursor` on `date`, `
 `adgroup_negative_keywords`, `product_pages`, `organization`) are full refresh on purpose, even
 though most of their records carry `modificationTime`:
 
-- The newer entity streams read `GET` endpoints with no modification-time filter: Get All Creatives
+- The newer entity streams read `GET` endpoints with no modification-time filter (only the separate Find Creatives endpoint filters on it): Get All Creatives
   and both negative keyword endpoints take only `limit` and `offset`, Get Product Pages takes only
   `name` and `states`, and Get User ACL takes no parameters.
 
@@ -257,9 +257,12 @@ request sets `granularity` ([ReportingRequest](https://developer.apple.com/docum
 It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULTS` (a `RecordFilter`
 on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
 campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
-with `other: true` and a null `searchTermText`. The first window starts at most 89 days back, because
-Apple serves `DAILY` reports only when "the startTime is <= 90 days in the past"; a day of margin
-covers organization time zones ahead of UTC.
+with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
+slice start), so a row's `date` always matches its metrics; the newest day arrives on the next sync
+through the lookback. The first window starts at most 89 days back, because Apple serves `DAILY`
+reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
+zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
+handler reports it as a system error.
 
 **Why this matters:** with `timezone: UTC`, this stream's `date` is an organization-time-zone day
 while the other report streams use UTC days, so joins by `date` can shift by one day. Do not make it

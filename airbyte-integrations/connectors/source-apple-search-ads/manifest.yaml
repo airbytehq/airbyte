@@ -91,8 +91,8 @@ definitions:
         - 404
       failure_type: system_error
       error_message: >-
-        Apple Ads returned 404 for {{ request_url }}. A campaign or ad group may
-        have been deleted while the sync was running.
+        Apple Ads returned 404 for {{ request_url }}. A campaign, ad group or app
+        may have been deleted while the sync was running.
         {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
         {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
         {%- set first_error = apple_errors[0] if apple_errors else {} -%}
@@ -125,6 +125,17 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/token_expired"
       - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  search_terms_report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
   keywords_report_error_handler:
@@ -768,6 +779,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+          # Get User ACL returns every organization the API user can access; keep the configured one.
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.orgId == config.org_id }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -963,7 +978,8 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            # One day per request, so every row's date matches its metrics; the newest day arrives on the next sync.
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "impressions", "sortOrder":
@@ -975,7 +991,7 @@ definitions:
             returnRowTotals: false
             returnGrandTotals: false
           error_handler:
-            $ref: "#/definitions/report_error_handler"
+            $ref: "#/definitions/search_terms_report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1075,7 +1091,8 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - searchTermText
-              value: "{{ record.metadata.searchTermText }}"
+              # tojson stops literal_eval from rewriting terms such as "vpn" or 2048.
+              value: "{{ record.metadata.searchTermText | tojson }}"
               value_type: string
       schema_loader:
         type: InlineSchemaLoader

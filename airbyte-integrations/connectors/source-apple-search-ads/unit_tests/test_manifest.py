@@ -170,7 +170,7 @@ def test_num_workers_spec_field(manifest):
         ("campaign_negative_keywords", "#/definitions/error_handler"),
         ("adgroup_negative_keywords", "#/definitions/error_handler"),
         ("product_pages", "#/definitions/error_handler"),
-        ("search_terms_report_daily", "#/definitions/report_error_handler"),
+        ("search_terms_report_daily", "#/definitions/search_terms_report_error_handler"),
     ],
 )
 def test_streams_use_expected_shared_error_handler(manifest, stream_name, expected_ref):
@@ -191,7 +191,8 @@ def test_each_stream_resolves_to_default_error_handler(manifest):
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
 def test_streams_classify_api_errors(manifest, stream_name):
     filters = _get_response_filters(manifest, _get_stream_def(manifest, stream_name))
-    bad_request = "config_error" if stream_name.endswith("_report_daily") else "system_error"
+    # Report requests carry the user's dates; search terms start inside Apple's 90-day window, so a 400 there is not a config problem.
+    bad_request = "config_error" if stream_name.endswith("_report_daily") and stream_name != "search_terms_report_daily" else "system_error"
     for status_code, failure_type in ((400, bad_request), (403, "config_error"), (404, "system_error")):
         matching = [response_filter for response_filter in filters if status_code in response_filter.get("http_codes", [])]
         assert matching

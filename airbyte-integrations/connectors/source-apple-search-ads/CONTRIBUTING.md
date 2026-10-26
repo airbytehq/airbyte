@@ -22,12 +22,12 @@ declarative OAuth spec.
 Apple's reporting endpoints return metric aggregations with no record identifier. A row is
 identified by the reporting entity id plus `date` plus `countryorregion` — all three assembled by
 the connector from its own request parameters — so no stable API-provided primary key exists to
-declare. Dedupe on that tuple in the destination if needed.
+declare. Dedupe on that tuple in the destination if needed; for `search_terms_report_daily`, add `adGroupId`, `keywordId` and `searchTermText`.
 
 ### 3. Deletions are replicated as a `deleted` flag on the entity streams
 
 The canonical pattern for this connector is a deletion flag on the primary streams
-(`campaigns`, `adgroups`, `keywords`, `ads` all carry Apple's `deleted` boolean), not dedicated
+(`campaigns`, `adgroups`, `keywords`, `ads` and the two negative keyword streams all carry Apple's `deleted` boolean), not dedicated
 `deleted_*` streams. The connector does not explicitly request deleted records, and whether Apple's
 `GET` list endpoints include soft-deleted rows is unverified.
 
@@ -37,7 +37,7 @@ Apple's `modificationTime` records changes to the object itself, but `servingSta
 `servingStateReasons` and `displayStatus` change when Apple's system reacts to dates, budgets and
 billing. A cursor on `modificationTime` would leave those fields stale, `Keyword` and `AdGroup`
 document no range filter on it, and the newer entity streams (`creatives`, the negative keyword
-streams, `product_pages`, `organization`) have no time filter at all. The entity streams stay full
+streams, `product_pages`, `organization`) read `GET` endpoints with no time filter. The entity streams stay full
 refresh; see
 [AGENTS.md](./AGENTS.md#4-entity-streams-are-full-refresh-even-though-records-carry-modificationtime).
 

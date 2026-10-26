@@ -93,9 +93,10 @@ def test_discover_exposes_new_streams():
 
 
 def test_organization_reads_user_acls(mocker):
-    mocker.get(f"{API}/acls", json={"data": [{"orgId": 1, "orgName": "Org A"}, {"orgId": 2, "orgName": "Org B"}]})
+    # Get User ACL lists every organization the API user can access; only the configured one is synced.
+    mocker.get(f"{API}/acls", json={"data": [{"orgId": 12345, "orgName": "Org A"}, {"orgId": 2, "orgName": "Another client"}]})
     records = _read("organization")
-    assert [r["orgId"] for r in records] == [1, 2]
+    assert [r["orgId"] for r in records] == [12345]
     assert len(_api_requests(mocker, "GET", "/acls")) == 1
 
 
@@ -181,8 +182,8 @@ def test_search_terms_report_daily_requests_each_search_campaign_and_day(mocker)
     mocker.post(f"{API}/reports/campaigns/1/searchterms", json=report)
     mocker.post(f"{API}/reports/campaigns/3/searchterms", json=report)
 
-    # Same P1D windows the existing report streams produce for this range; the CDK folds the last day into the final window.
-    windows = [("2024-01-01", "2024-01-01"), ("2024-01-02", "2024-01-02"), ("2024-01-03", "2024-01-03"), ("2024-01-04", "2024-01-05")]
+    # One day per request: the CDK folds the last day into the final slice, but endTime always equals startTime.
+    windows = [("2024-01-01", "2024-01-01"), ("2024-01-02", "2024-01-02"), ("2024-01-03", "2024-01-03"), ("2024-01-04", "2024-01-04")]
     records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-05"))
 
     requests = _api_requests(mocker, "POST", "/reports/campaigns/")
@@ -289,7 +290,7 @@ def test_search_terms_report_daily_keeps_low_volume_rollup_row(mocker):
 
     records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-01"))
 
-    # The CDK serializer drops null values, so the destination sees searchTermText as null.
+    # The AddFields condition skips null terms, so the top-level key is absent and the destination sees null.
     assert [(r["campaignId"], r.get("searchTermText"), r["other"]) for r in records] == [(1, None, True)]
 
 
@@ -344,10 +345,35 @@ def test_search_terms_report_daily_starts_within_apples_daily_window(mocker):
 
 
 def test_search_terms_report_daily_keeps_numeric_search_terms_as_text(mocker):
-    row = {"metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": "2048", "countryOrRegion": "US"}, "granularity": []}
-    mocker.post(f"{API}/reports/campaigns/1/searchterms", json={"data": {"reportingDataResponse": {"row": [row]}}})
+    terms = ["2048", '"vpn"', "'a' 'b'", "True"]
+    rows = [
+        {"metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": term, "countryOrRegion": "US"}, "granularity": []} for term in terms
+    ]
+    mocker.post(f"{API}/reports/campaigns/1/searchterms", json={"data": {"reportingDataResponse": {"row": rows}}})
     mocker.post(f"{API}/reports/campaigns/3/searchterms", json={"data": {"reportingDataResponse": {"row": []}}})
 
     records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-01"))
 
-    assert [record["searchTermText"] for record in records] == ["2048"]
+    assert [record["searchTermText"] for record in records] == terms
+
+
+def test_search_terms_report_daily_400_is_a_system_error(mocker):
+    mocker.post(
+        f"{API}/reports/campaigns/1/searchterms",
+        status_code=400,
+        json={"data": None, "error": {"errors": [{"messageCode": "INVALID_INPUT", "message": "some other problem", "field": ""}]}},
+    )
+    mocker.post(f"{API}/reports/campaigns/3/searchterms", json={"data": {"reportingDataResponse": {"row": []}}})
+    catalog = (
+        CatalogBuilder()
+        .with_stream(ConfiguredAirbyteStreamBuilder().with_name("search_terms_report_daily").with_sync_mode(SyncMode.incremental))
+        .build()
+    )
+    config = dict(CONFIG, end_date="2024-01-01")
+
+    output = read(get_source(config), config, catalog, expecting_exception=True)
+
+    error = output.errors[0].trace.error
+    assert error.failure_type.value == "system_error"
+    assert "Start Date" not in error.message
+    assert "some other problem" in error.message
