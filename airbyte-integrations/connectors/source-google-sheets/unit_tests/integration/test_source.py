@@ -32,6 +32,7 @@ from .conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_c
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
+_URL_SPREADSHEET_ID = "1p0IUIkTdUIO6_VfN_lz9J29q63TzuXGDEJo1ZSTNWeA"
 
 _STREAM_NAME = "a_stream_name"
 _B_STREAM_NAME = "b_stream_name"
@@ -48,6 +49,27 @@ GET_STREAM_DATA = "get_stream_data"
 
 
 class TestSourceCheck(GoogleSheetsBaseTest):
+    def test_check_accepts_spreadsheet_links(self) -> None:
+        spreadsheet_ids = [
+            _URL_SPREADSHEET_ID,
+            f"https://docs.google.com/spreadsheets/d/{_URL_SPREADSHEET_ID}/edit?usp=sharing",
+            f"https://docs.google.com/spreadsheets/d/{_URL_SPREADSHEET_ID}/edit?gid=0#gid=0",
+            f"https://docs.google.com/spreadsheets/u/0/d/{_URL_SPREADSHEET_ID}/edit",
+            f"docs.google.com/spreadsheets/d/{_URL_SPREADSHEET_ID}/edit?gid=0#gid=0",
+            f"http://docs.google.com/spreadsheets/d/{_URL_SPREADSHEET_ID}/edit",
+            f"  https://docs.google.com/spreadsheets/d/{_URL_SPREADSHEET_ID}/edit  ",
+            f"https://drive.google.com/open?id={_URL_SPREADSHEET_ID}",
+        ]
+        for spreadsheet_id in spreadsheet_ids:
+            with self.subTest(spreadsheet_id=spreadsheet_id), HttpMocker() as http_mocker:
+                TestSourceCheck.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta", spreadsheet_id=_URL_SPREADSHEET_ID)
+                TestSourceCheck.get_sheet_first_row(http_mocker, "check_succeeded_range", spreadsheet_id=_URL_SPREADSHEET_ID)
+
+                config = {**self._config, "spreadsheet_id": spreadsheet_id}
+                output = self._check(config, expecting_exception=False)
+                expected_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Check succeeded"))
+                assert output.logs[-1] == expected_message
+
     @HttpMocker()
     def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
         TestSourceCheck.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta")
