@@ -162,9 +162,7 @@ class TestReportUserMeetings(TestCase):
         output = read_stream(
             _STREAM,
             sync_mode=SyncMode.incremental,
-            state=StateBuilder()
-            .with_stream_state(_STREAM, _global_state("2026-10-10"))
-            .build(),
+            state=StateBuilder().with_stream_state(_STREAM, _global_state("2026-10-10")).build(),
         )
 
         assert_completed_without_errors(output, _STREAM)
