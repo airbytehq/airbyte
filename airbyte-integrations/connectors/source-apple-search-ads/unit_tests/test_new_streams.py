@@ -377,3 +377,29 @@ def test_search_terms_report_daily_400_is_a_system_error(mocker):
     assert error.failure_type.value == "system_error"
     assert "Start Date" not in error.message
     assert "some other problem" in error.message
+
+
+@pytest.mark.parametrize(
+    "stream_name, field_path, expected",
+    [
+        ("creatives", ("creationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        ("creatives", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        ("campaign_negative_keywords", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        ("adgroup_negative_keywords", ("creationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        ("product_pages", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        ("search_terms_report_daily", ("date",), {"format": "date"}),
+        ("search_terms_report_daily", ("granularity", "items", "date"), {"format": "date"}),
+        (
+            "search_terms_report_daily",
+            ("metadata", "modificationTime"),
+            {"format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+        ),
+    ],
+)
+def test_new_streams_type_their_dates(stream_name, field_path, expected):
+    # Typed from the start: retyping a released stream later would be a breaking change.
+    streams = {stream.name: stream for stream in discover(get_source(CONFIG), CONFIG).catalog.catalog.streams}
+    node = streams[stream_name].json_schema
+    for key in field_path:
+        node = node["items"] if key == "items" else node["properties"][key]
+    assert {key: node.get(key) for key in expected} == expected

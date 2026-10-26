@@ -2317,10 +2317,14 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       modificationTime:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
     required:
       - id
   negative_keywords:
@@ -2358,10 +2362,14 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       modificationTime:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
     required:
       - id
   product_pages:
@@ -2391,10 +2399,14 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       modificationTime:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
     required:
       - id
   search_terms_report_daily:
@@ -2404,6 +2416,7 @@ schemas:
     properties:
       date:
         type: string
+        format: date
       campaignId:
         type:
           - integer
@@ -2499,6 +2512,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type:
               - integer
@@ -2510,6 +2525,12 @@ schemas:
         items:
           type: object
           additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+                - "null"
+              format: date
       total:
         type:
           - object
