@@ -6,10 +6,12 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import freezegun
+import pytest
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .ad_requests import AttributionReportRequestBuilder, OAuthRequestBuilder, ProfilesRequestBuilder
 from .ad_responses import AttributionReportResponseBuilder, ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder
@@ -931,3 +933,155 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
+
+
+_ATTRIBUTION_STREAMS = [
+    ("attribution_report_products", "products"),
+    ("attribution_report_performance_adgroup", "performance_adgroup"),
+    ("attribution_report_performance_campaign", "performance_campaign"),
+    ("attribution_report_performance_creative", "performance_creative"),
+]
+_PROFILE_IDS = [1, 2]
+_ATTRIBUTION_WINDOW_DAYS = 14
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestAttributionReportStreamsIncremental:
+    _profile_timezone = ZoneInfo(ProfilesRecordBuilder.profiles_record().build().get("timezone"))
+    _today = _NOW.astimezone(_profile_timezone).date()
+    _window_start = _A_START_DATE.astimezone(_profile_timezone).date()
+    _sync_end_date = _NOW.date().isoformat()
+
+    def _config(self, look_back_window=None, with_start_date=True) -> dict:
+        config_builder = ConfigBuilder().with_profiles(_PROFILE_IDS)
+        if with_start_date:
+            config_builder = config_builder.with_start_date(self._window_start)
+        config = config_builder.build()
+        if look_back_window is not None:
+            config["look_back_window"] = look_back_window
+        return config
+
+    def _given_oauth_and_profiles(self, http_mocker: HttpMocker, config: dict) -> None:
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint(
+                client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]
+            ).build(),
+            OAuthResponseBuilder.token_response().build(),
+        )
+        profiles_response = ProfilesResponseBuilder.profiles_response()
+        for profile_id in _PROFILE_IDS:
+            profiles_response = profiles_response.with_record(ProfilesRecordBuilder.profiles_record().with_id(profile_id))
+        http_mocker.get(
+            ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
+            profiles_response.build(),
+        )
+
+    def _given_report(self, http_mocker: HttpMocker, config: dict, endpoint: str, profile_id: int, start_date) -> None:
+        http_mocker.post(
+            getattr(AttributionReportRequestBuilder, f"{endpoint}_endpoint")(
+                config["client_id"],
+                config["access_token"],
+                profile_id,
+                start_date=start_date,
+                end_date=self._today,
+            ).build(),
+            getattr(AttributionReportResponseBuilder, f"{endpoint}_response")()
+            .with_record(getattr(AttributionReportRecordBuilder, f"{endpoint}_record")())
+            .build(),
+        )
+
+    @staticmethod
+    def _state(stream_name: str, cursor_per_profile: dict) -> list:
+        return (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "states": [
+                        {"partition": {"parent_slice": {}, "profileId": profile_id}, "cursor": {"reportDate": cursor.isoformat()}}
+                        for profile_id, cursor in cursor_per_profile.items()
+                    ]
+                },
+            )
+            .build()
+        )
+
+    @staticmethod
+    def _cursor_per_profile(output) -> dict:
+        return {state["partition"]["profileId"]: state["cursor"]["reportDate"] for state in output.most_recent_state.stream_state.states}
+
+    @pytest.mark.parametrize("stream_name,endpoint", _ATTRIBUTION_STREAMS)
+    def test_given_no_state_when_read_incremental_then_request_full_window_and_emit_state(self, stream_name, endpoint):
+        config = self._config()
+        with HttpMocker() as http_mocker:
+            self._given_oauth_and_profiles(http_mocker, config)
+            for profile_id in _PROFILE_IDS:
+                self._given_report(http_mocker, config, endpoint, profile_id, start_date=self._window_start)
+
+            output = read_stream(stream_name, SyncMode.incremental, config)
+
+        assert len(output.records) == 2
+        assert all(record.record.data["reportDate"] == self._sync_end_date for record in output.records)
+        assert self._cursor_per_profile(output) == {profile_id: self._sync_end_date for profile_id in _PROFILE_IDS}
+
+    @pytest.mark.parametrize("stream_name,endpoint", _ATTRIBUTION_STREAMS)
+    def test_given_state_when_read_incremental_then_request_start_date_from_state_minus_attribution_window(self, stream_name, endpoint):
+        config = self._config()
+        recent_cursor = self._today - timedelta(days=20)
+        cursor_older_than_retention = self._today - timedelta(days=90)
+        state = self._state(stream_name, {1: recent_cursor, 2: cursor_older_than_retention})
+        with HttpMocker() as http_mocker:
+            self._given_oauth_and_profiles(http_mocker, config)
+            self._given_report(http_mocker, config, endpoint, 1, start_date=recent_cursor - timedelta(days=_ATTRIBUTION_WINDOW_DAYS))
+            self._given_report(http_mocker, config, endpoint, 2, start_date=self._window_start)
+
+            output = read_stream(stream_name, SyncMode.incremental, config, state)
+
+        assert len(output.records) == 2
+        assert self._cursor_per_profile(output) == {profile_id: self._sync_end_date for profile_id in _PROFILE_IDS}
+
+    def test_given_look_back_window_longer_than_attribution_window_when_read_incremental_then_use_look_back_window(self):
+        stream_name, endpoint = _ATTRIBUTION_STREAMS[0]
+        config = self._config(look_back_window=30)
+        cursor = self._today - timedelta(days=10)
+        state = self._state(stream_name, {profile_id: cursor for profile_id in _PROFILE_IDS})
+        with HttpMocker() as http_mocker:
+            self._given_oauth_and_profiles(http_mocker, config)
+            for profile_id in _PROFILE_IDS:
+                self._given_report(http_mocker, config, endpoint, profile_id, start_date=cursor - timedelta(days=30))
+
+            output = read_stream(stream_name, SyncMode.incremental, config, state)
+
+        assert len(output.records) == 2
+        assert self._cursor_per_profile(output) == {profile_id: self._sync_end_date for profile_id in _PROFILE_IDS}
+
+    @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+    @pytest.mark.parametrize("stream_name,endpoint", _ATTRIBUTION_STREAMS)
+    def test_given_no_start_date_and_no_state_when_read_then_request_only_today(self, stream_name, endpoint, sync_mode):
+        config = self._config(with_start_date=False)
+        with HttpMocker() as http_mocker:
+            self._given_oauth_and_profiles(http_mocker, config)
+            for profile_id in _PROFILE_IDS:
+                self._given_report(http_mocker, config, endpoint, profile_id, start_date=self._today)
+
+            output = read_stream(stream_name, sync_mode, config)
+
+        assert len(output.records) == 2
+
+    @pytest.mark.parametrize("stream_name,endpoint", _ATTRIBUTION_STREAMS)
+    def test_given_no_start_date_and_state_when_read_incremental_then_request_start_date_from_state_minus_attribution_window(
+        self, stream_name, endpoint
+    ):
+        config = self._config(with_start_date=False)
+        recent_cursor = self._today - timedelta(days=5)
+        cursor_older_than_retention = self._today - timedelta(days=90)
+        state = self._state(stream_name, {1: recent_cursor, 2: cursor_older_than_retention})
+        with HttpMocker() as http_mocker:
+            self._given_oauth_and_profiles(http_mocker, config)
+            self._given_report(http_mocker, config, endpoint, 1, start_date=recent_cursor - timedelta(days=_ATTRIBUTION_WINDOW_DAYS))
+            self._given_report(http_mocker, config, endpoint, 2, start_date=self._today - timedelta(days=60))
+
+            output = read_stream(stream_name, SyncMode.incremental, config, state)
+
+        assert len(output.records) == 2
+        assert self._cursor_per_profile(output) == {profile_id: self._sync_end_date for profile_id in _PROFILE_IDS}

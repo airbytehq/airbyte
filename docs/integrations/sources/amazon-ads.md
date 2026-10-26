@@ -121,6 +121,8 @@ This source is capable of syncing the following streams:
 The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. If Amazon rejects an Attribution report request for a profile, either with the message `This profileID is not authorized to use Amazon Attribution` or with an HTTP 401 Unauthorized response, the connector skips that profile, writes a message to the sync logs, and continues with the remaining profiles. The sync doesn't fail.
 
 If a sync produces no Attribution records, check the sync logs for these messages. A 401 response usually means Amazon Attribution isn't enabled for the profile, or your Amazon Ads API app doesn't have access to the Attribution API.
+
+The Attribution report streams support incremental syncs. Each record gets a `reportDate` field set to the sync's end date in UTC, which is the stream's cursor. For profiles in timezones behind UTC, `reportDate` can be one day after the last day the report covers. The first sync requests the same window as a full refresh: from `start_date` (no earlier than 60 days ago) to today, or only today when `start_date` isn't set. Later syncs request reports from the saved cursor minus the larger of `look_back_window` and 14 days, but no earlier than `start_date` or 60 days ago. This lookback is needed because Attribution metrics use a 14-day attribution window and recent days keep changing. The streams have no primary key, so re-read days are appended again rather than deduplicated.
 :::
 
 :::note
@@ -232,6 +234,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.3.0 | 2026-10-21 | [89005](https://github.com/airbytehq/airbyte/pull/89005) | Add incremental sync to the Attribution report streams |
 | 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
 | 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
 | 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
