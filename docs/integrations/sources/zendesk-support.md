@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the [Zendesk Su
 The Zendesk Support source connector supports three authentication methods:
 
 - OAuth 2.0 with refresh token (recommended)
-- API token (existing tokens only, see the following caution)
+- API token (Zendesk disables new API token creation on October 27, 2026, see the following caution)
 - OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
 
 :::note
@@ -46,7 +46,7 @@ We recommend using OAuth to authenticate your Zendesk Support account. See [Gene
 ### Generate an API token
 
 :::note
-Starting October 27, 2026, Zendesk doesn't let you create new API tokens, so these steps no longer work. If you already have an active API token, you can use it until April 30, 2027. Otherwise, [generate OAuth credentials](#generate-oauth-credentials).
+Zendesk disables API token creation on October 27, 2026. After that date, you can't create a new token with these steps. Tokens created before then keep working until April 30, 2027, when Zendesk deactivates all API tokens. If you can't create a token, [generate OAuth credentials](#generate-oauth-credentials) instead.
 :::
 
 1. Log in to your Zendesk account.
