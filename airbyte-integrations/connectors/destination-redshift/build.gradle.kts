@@ -40,6 +40,8 @@ dependencies {
     
     // AWS S3 for staging (SDK v2)
     implementation("software.amazon.awssdk:s3:$awsSdkV2Version")
+    // STS for OIDC web identity credentials (AssumeRoleWithWebIdentity)
+    implementation("software.amazon.awssdk:sts:$awsSdkV2Version")
     
     // SSH tunnel support (from old CDK)
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))

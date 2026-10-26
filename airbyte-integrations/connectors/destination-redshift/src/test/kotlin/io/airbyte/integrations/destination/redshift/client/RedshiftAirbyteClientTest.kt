@@ -39,6 +39,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse
@@ -51,6 +54,7 @@ internal class RedshiftAirbyteClientTest {
     @MockK lateinit var dataSource: DataSource
     @MockK lateinit var sqlGenerator: RedshiftSqlGenerator
     @MockK lateinit var s3Client: S3Client
+    @MockK lateinit var credentialsProvider: AwsCredentialsProvider
     @MockK lateinit var mockConnection: Connection
     @MockK lateinit var mockStatement: Statement
     @MockK lateinit var mockPreparedStatement: PreparedStatement
@@ -70,7 +74,7 @@ internal class RedshiftAirbyteClientTest {
         every { mockPreparedStatement.close() } returns Unit
         every { mockResultSet.close() } returns Unit
 
-        client = RedshiftAirbyteClient(dataSource, sqlGenerator, s3Client)
+        client = RedshiftAirbyteClient(dataSource, sqlGenerator, s3Client, credentialsProvider)
     }
 
     // ================================================================
@@ -714,16 +718,32 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `copyFromS3 delegates to sqlGenerator and suppresses logging`() = runTest {
+        every { credentialsProvider.resolveCredentials() } returns
+            AwsBasicCredentials.create("AKIA", "secret")
         every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", null, "us-east-1")
         } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
 
-        client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+        client.copyFromS3(testTable, "s3://bucket/key", "us-east-1")
 
         verify {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", null, "us-east-1")
         }
+        verify { mockStatement.execute("COPY SQL") }
+    }
+
+    @Test
+    fun `copyFromS3 passes session token from temporary credentials`() = runTest {
+        every { credentialsProvider.resolveCredentials() } returns
+            AwsSessionCredentials.create("ASIA", "secret", "tok")
+        every {
+            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "ASIA", "secret", "tok", "us-east-1")
+        } returns "COPY SQL"
+        every { mockStatement.execute("COPY SQL") } returns false
+
+        client.copyFromS3(testTable, "s3://bucket/key", "us-east-1")
+
         verify { mockStatement.execute("COPY SQL") }
     }
 
