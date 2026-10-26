@@ -32,10 +32,13 @@ PAGE_SIZE = "30"
 USER_ID = "u1"
 
 CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": "https://zoom.us/oauth/token",
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": "https://zoom.us/oauth/token",
+    }
 }
 
 WEBINAR_1 = {"id": 81111111111, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "Webinar one"}
@@ -91,8 +94,13 @@ def mock_token(http_mocker: HttpMocker) -> None:
     http_mocker.post(_TOKEN_REQUEST, json_response({"access_token": "test_access_token", "expires_in": 3599}))
 
 
-def mock_users(http_mocker: HttpMocker) -> None:
-    http_mocker.get(request("/users", paginated_query()), json_response({"users": [{"id": USER_ID}], "next_page_token": ""}))
+def mock_users(http_mocker: HttpMocker, users: Optional[List[Dict[str, Any]]] = None) -> HttpRequest:
+    users_request = request("/users", paginated_query())
+    http_mocker.get(
+        users_request,
+        json_response({"users": users if users is not None else [{"id": USER_ID}], "next_page_token": ""}),
+    )
+    return users_request
 
 
 def mock_webinar_parents(http_mocker: HttpMocker) -> None:
@@ -118,13 +126,21 @@ def mock_webinars_parent_error(http_mocker: HttpMocker, response: HttpResponse) 
     return parent_request
 
 
-def read_stream(stream_name: str, expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+def read_stream(
+    stream_name: str,
+    expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS,
+    config: Optional[Dict[str, Any]] = None,
+    sync_mode: SyncMode = SyncMode.full_refresh,
+    state: Optional[List[Any]] = None,
+) -> EntrypointOutput:
+    read_config = config if config is not None else CONFIG
+    read_state = state if state is not None else StateBuilder().build()
+    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     return read(
-        get_source(config=CONFIG),
-        config=CONFIG,
+        get_source(config=read_config, state=read_state),
+        config=read_config,
         catalog=catalog,
-        state=StateBuilder().build(),
+        state=read_state,
         expected_outcome=expected_outcome,
     )
 
@@ -157,6 +173,14 @@ def assert_completed_without_errors(output: EntrypointOutput, stream_name: str) 
     assert output.errors == []
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
     assert_records_match_schema(output, stream_name)
+
+
+def assert_failed_with_config_error(output: EntrypointOutput, stream_name: str) -> None:
+    assert output.records == []
+    assert AirbyteStreamStatus.INCOMPLETE in output.get_stream_statuses(stream_name)
+    assert AirbyteStreamStatus.COMPLETE not in output.get_stream_statuses(stream_name)
+    assert output.errors, "expected an error trace message"
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
 
 
 _WEBINAR_PLAN_MISSING = zoom_error(

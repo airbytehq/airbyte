@@ -70,10 +70,14 @@ You can authenticate using either an API Key or OAuth 2.0.
 2. Create a new project or select an existing one.
 3. Navigate to **APIs & Services** > **Library** and enable the YouTube Data API v3.
 4. Go to **APIs & Services** > **Credentials**.
-5. Click **Create Credentials** > **OAuth client ID**.
-6. Configure the OAuth consent screen if prompted.
+5. Click **Create Credentials** > **OAuth client ID**. Configure the OAuth consent screen if prompted.
+6. Select **Web application** as the application type, and add `https://developers.google.com/oauthplayground` as an authorized redirect URI so you can generate a refresh token in the next steps.
 7. Copy the **Client ID** and **Client Secret**.
-8. Use these credentials to obtain a refresh token. Refer to [Google's OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions.
+8. Open the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground). Click the settings icon, select **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
+9. In the scope field, enter `https://www.googleapis.com/auth/youtube.force-ssl`, then click **Authorize APIs**. Sign in with the Google account that owns the channel if you want to sync unlisted and private videos.
+10. Click **Exchange authorization code for tokens** and copy the **Refresh token**.
+
+If your OAuth consent screen's publishing status is **Testing**, Google [expires refresh tokens after 7 days](https://developers.google.com/identity/protocols/oauth2#expiration), and syncs start failing with authentication errors. Set the publishing status to **In production** before you generate the refresh token you use for scheduled syncs.
 
 #### Set up the connector
 
@@ -95,14 +99,14 @@ The YouTube Data API source connector supports the following sync modes:
 - [Incremental - Append](/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 - [Incremental - Append + Deduped](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-Every stream except `channels` supports incremental sync. The YouTube Data API has no date filters, but every endpoint the connector reads lists newest first, so an incremental sync reads pages until it reaches the first record it already has and stops. In steady state that is one request per channel for `videos` and `channel_comments`, one request per video for `comments`, and one request per 50 videos for `video` and `video_engagement`.
+Every stream except `channels` supports incremental sync. The YouTube Data API has no date filters, but every endpoint the connector reads lists newest first, so an incremental sync reads pages until it reaches the first record it already has and stops. See [Quota and rate limiting](#quota-and-rate-limiting) for the request cost of each stream.
 
 Two streams behave differently in incremental mode:
 
 - **`video`** only fetches videos published since the last sync. Its statistics fields are a snapshot from the moment the video was first fetched and are not refreshed; use `video_engagement` for counters that move.
 - **`video_engagement`** re-reads the counters of every video on every sync and stamps each record with the fetch time as its cursor. **Incremental - Append** therefore builds a time series of counters per video, while **Incremental - Append + Deduped** keeps only the latest counters.
 
-Comments are keyed on their publish time, so edits to existing comments are not re-synced. Deleted videos and comments are never removed from the destination.
+The comment streams use the top-level comment's publish time as the cursor, so incremental syncs don't pick up edits to existing comments or changes to their reply counts. Incremental syncs also don't remove videos or comments that were deleted on YouTube from the destination.
 
 ## Supported streams
 
@@ -140,7 +144,18 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 The YouTube Data API enforces a daily [quota](https://developers.google.com/youtube/v3/getting-started#quota) per Google Cloud project. Google's documented default allocation is 10,000 quota units per day, and every endpoint this connector reads (`playlistItems.list`, `channels.list`, `videos.list`, and `commentThreads.list`) costs 1 unit per request. Google notes that defaults are subject to change, so check the **Quotas** page for the YouTube Data API in the Google Cloud console to see what applies to your project. If you need more, [request a quota extension](https://support.google.com/youtube/contact/yt_api_form) from Google.
 
-Requests per sync scale with the number of videos, V, in the configured channels. A first sync, or a Full Refresh sync, costs about V/50 requests for `videos`, V/50 for `video`, V/50 for `video_engagement`, one per channel for `channels`, and one per video plus one per 100 comment threads for `comments` and `channel_comments`. An incremental sync costs one request per channel for `videos` and `channel_comments`, one per video for `comments`, V/50 for `video_engagement`, and V/50 for the new videos only for `video`. For example, a 5,000-video channel syncing `videos`, `video`, `video_engagement`, `channels`, and `channel_comments` hourly uses roughly 100 units per sync, or 2,400 per day.
+Requests per sync scale with the number of videos, V, in the configured channels. The `video`, `video_engagement`, and `comments` streams each read the uploads playlist themselves to find video IDs, so their costs below include that parent read. `video` reads only new playlist items in incremental mode, while `video_engagement` and `comments` re-read the whole playlist on every sync.
+
+| Stream             | First sync or Full Refresh                                                                              | Incremental sync                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `videos`           | About V/50                                                                                              | About one per channel                             |
+| `video`            | About V/50 for the playlist plus V/50 for video details                                                 | About one per channel, plus one per 50 new videos |
+| `video_engagement` | About V/50 for the playlist plus V/50 for statistics                                                    | Same as a first sync                              |
+| `channels`         | One per channel                                                                                         | Not supported                                     |
+| `comments`         | About V/50 for the playlist, plus one per video, plus one per additional 100 comment threads on a video | About V/50 for the playlist plus one per video    |
+| `channel_comments` | One per channel, plus one per additional 100 comment threads                                            | About one or two per channel                      |
+
+For example, a 5,000-video channel syncing `videos`, `video`, `video_engagement`, `channels`, and `channel_comments` incrementally every hour uses roughly 200 units per sync, or about 5,000 per day. Most of that is `video_engagement`; sync it less often, or not at all, if you don't need frequent counter snapshots.
 
 The connector also paces its own requests as a burst guard: at most 100 requests per minute across all endpoints. A request that would exceed this limit waits for the next free slot rather than failing. If YouTube returns a per-minute rate-limit error (`rateLimitExceeded`, `userRateLimitExceeded`, or HTTP 429), the connector retries with backoff. If YouTube reports the daily quota as exhausted (`quotaExceeded` or `dailyLimitExceeded`), the sync fails immediately rather than retrying, because the quota only resets at midnight Pacific time; incremental streams resume from their last checkpoint on the next scheduled sync.
 
@@ -156,7 +171,7 @@ The connector's pacing applies to each Airbyte source separately, but Google met
 
 ### Data coverage
 
-- The `videos` stream reads each channel's uploads playlist, which has no result cap; channels with more than 500 videos are no longer truncated.
+- The `videos` stream reads each channel's uploads playlist, which has no result cap, so it returns every upload regardless of channel size.
 - Unlisted and private uploads appear in `videos`, `video`, `video_engagement`, and `comments` only when the source authenticates with OAuth 2.0 as the channel owner. With an API key, or for channels the OAuth user doesn't own, these streams contain public videos only.
 - YouTube exposes only current engagement counters. `video_engagement` records are per-sync snapshots, not a history the connector can backfill.
 - The `comments` stream skips videos with comments disabled and deleted videos without producing records or errors.
@@ -173,7 +188,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                              |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1.0   | 2026-09-29 | [87495](https://github.com/airbytehq/airbyte/pull/87495) | Add incremental sync to `videos`, `video`, `comments`, and `channel_comments`; add the `video_engagement` stream; add `publishedAt`, `privacyStatus`, `channelId`, and `title` to `videos` records; fetch 50 videos per `videos.list` request and 100 comment threads per `commentThreads.list` request; fail fast when the daily quota is exhausted |
+| 1.1.0   | 2026-10-20 | [87495](https://github.com/airbytehq/airbyte/pull/87495) | Add incremental sync to `videos`, `video`, `comments`, and `channel_comments`; add the `video_engagement` stream; add `publishedAt`, `privacyStatus`, `channelId`, and `title` to `videos` records; fetch 50 videos per `videos.list` request and 100 comment threads per `commentThreads.list` request; fail fast when the daily quota is exhausted |
 | 1.0.8   | 2026-10-20 | [89482](https://github.com/airbytehq/airbyte/pull/89482) | Update dependencies                                                                                                                                                                                                                                                                                                                                  |
 | 1.0.7   | 2026-10-13 | [88831](https://github.com/airbytehq/airbyte/pull/88831) | Update dependencies                                                                                                                                                                                                                                                                                                                                  |
 | 1.0.6   | 2026-10-07 | [87637](https://github.com/airbytehq/airbyte/pull/87637) | Enumerate channel videos through the uploads playlist to remove the search endpoint's 500-video cap.                                                                                                                                                                                                                                                 |

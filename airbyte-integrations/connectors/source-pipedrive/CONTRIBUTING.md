@@ -48,12 +48,14 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    section 5.
 6. **HTTP Errors Are Classified on the Shared Base Requester** -- every status code Pipedrive
    documents is mapped, with its vendor meaning, in AGENTS.md: 401/402/403/415 fail as configuration
-   errors, 410/501 as system errors, 429 waits on `x-ratelimit-reset`, 5xx retry through the CDK
-   default. Message templates survive any body and cap Pipedrive's text at 300 characters. Child
+   errors, 410/501 as system errors, 429 waits on `x-ratelimit-reset`, 408 and 5xx except 501 retry
+   (on the nine per-stream handlers an HTML page with an unlisted 5xx fails). Message templates
+   survive any body and cap Pipedrive's text at 300 characters. Child
    streams skip a single deleted or hidden parent; plan-gated streams return no records when Pipedrive
-   reports the feature as unavailable; Cloudflare's HTML 403 and statuses the CDK default mapping
-   lacks always reach the shared handler. Per-stream handlers must be a `CompositeErrorHandler` that
-   falls through to `base_error_handler`. Details in AGENTS.md section 6.
+   reports the feature as unavailable. Per-stream handlers `$ref` `base_error_handler` and override
+   `response_filters`: skips that hold whatever the body, the reachable shared filters, an HTML guard
+   (Cloudflare's 403 block, or an API v2 route Pipedrive no longer serves, fails the sync), then the
+   skips that must stay JSON-only. Details in AGENTS.md section 6.
 7. **One Shared Request Budget and a Small Thread Pool** -- `api_budget` throttles every stream to
    20 requests per rolling 2 seconds (Pipedrive's lowest-plan burst limit, matched by URL path so
    OAuth company hosts are covered too) and drains on a zero `x-ratelimit-remaining`; the daily token
