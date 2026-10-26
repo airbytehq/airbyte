@@ -11,14 +11,14 @@ description: >-
   governance.
 
 
-  Stream: activity_events (incremental, primary key: time + id). Records include
-  the actor (email, profile ID, caller type, application info), events and their
-  parameters, resource IDs, and an isAgenticAction flag.
+  Stream: activity_events (incremental, primary key: time + uniqueQualifier).
+  Records include the actor (email, profile ID, caller type, application info),
+  events and their parameters, resource IDs, and an isAgenticAction flag.
 
 
-  Authentication: OAuth 2.0 with a refresh token (scopes:
-  admin.reports.audit.readonly and admin.reports.usage.readonly). Requires a
-  Google Workspace admin with access to the Reports API.
+  Authentication: OAuth 2.0 with a refresh token (scope:
+  admin.reports.audit.readonly). Requires a Google Workspace admin with access
+  to the Reports API.
 
 
   Sync behavior: incremental on time in 1-day slices with a 1-day lookback
@@ -57,7 +57,6 @@ streams:
           type: OAuthAuthenticator
           scopes:
             - https://www.googleapis.com/auth/admin.reports.audit.readonly
-            - https://www.googleapis.com/auth/admin.reports.usage.readonly
           client_id: "{{ config['client_id'] }}"
           grant_type: refresh_token
           client_secret: "{{ config['client_secret'] }}"
@@ -69,10 +68,6 @@ streams:
           refresh_token_name: refresh_token
           token_refresh_endpoint: https://oauth2.googleapis.com/token
           send_refresh_request_as_query_params: false
-          access_token_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
-          refresh_token_error_key: ""
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -81,31 +76,13 @@ streams:
               action: RETRY
               http_codes:
                 - 429
-              error_message_contains: ""
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
                 - 500
-              error_message_contains: ""
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
                 - 502
-              error_message_contains: ""
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
                 - 503
-              error_message_contains: ""
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
                 - 504
-              error_message_contains: ""
           backoff_strategies:
             - type: ExponentialBackoffStrategy
               factor: 2
-              jitter_range_in_seconds: null
         request_parameters:
           eventName: feature_utilization
       record_selector:
@@ -116,7 +93,7 @@ streams:
             - items
     primary_key:
       - time
-      - id
+      - uniqueQualifier
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -124,7 +101,7 @@ streams:
         $schema: http://json-schema.org/schema#
         required:
           - time
-          - id
+          - uniqueQualifier
         properties:
           id:
             type: object
@@ -146,6 +123,8 @@ streams:
                   - string
                   - "null"
           time:
+            type: string
+          uniqueQualifier:
             type: string
           actor:
             type:
@@ -234,7 +213,12 @@ streams:
           - type: AddedFieldDefinition
             path:
               - time
-            value: "{{ record['id'].get('time')  }}"
+            value: "{{ record['id'].get('time') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - uniqueQualifier
+            value: "{{ record['id'].get('uniqueQualifier') }}"
             value_type: string
       - type: RemoveFields
         field_pointers:
@@ -250,8 +234,8 @@ streams:
       end_datetime:
         type: MinMaxDatetime
         datetime: >-
-          {{  config['end_time'] or  (today_utc() -
-          duration('PT0.001S')).strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}
+          {{ config['end_time'] or
+          today_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
@@ -275,8 +259,6 @@ streams:
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
-      partition_field_end: ""
-      partition_field_start: ""
 
 spec:
   type: Spec
@@ -291,13 +273,10 @@ spec:
       end_time:
         type: string
         description: >-
-          End of the report time range in RFC 3339 format  (e.g.
-          2010-10-28T10:26:35.000Z). If not provided, defaults to the  start of
-          the current day (00:00:00 UTC), meaning only complete  days up to
-          yesterday are synced. The default is derived from  today_utc()
-          (midnight UTC, start-of-day), not now_utc() (the current  timestamp),
-          so the nominal minus-1ms is a no-op against that  start-of-day base
-          and no partial same-day activity is included.
+          End of the report time range in RFC 3339 format (e.g.
+          2010-10-28T10:26:35.000Z). If not provided, defaults to the start of
+          the current day (00:00:00 UTC), so only complete days up to yesterday
+          are synced.
         order: 5
         title: End Time
         pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$
@@ -310,10 +289,10 @@ spec:
         type: string
         description: >-
           Start of the report time range in RFC 3339 format (e.g.
-          2010-10-28T10:26:35.000Z). The API only allows data from the  last 180
-          days, so earlier dates are automatically adjusted forward  to stay
-          within that window. If not provided, defaults to the start  of the day
-          (00:00:00 UTC) 180 days before the current date, syncing  the maximum
+          2010-10-28T10:26:35.000Z). The API only allows data from the last 180
+          days, so earlier dates are automatically adjusted forward to stay
+          within that window. If not provided, defaults to the start of the day
+          (00:00:00 UTC) 180 days before the current date, syncing the maximum
           available history in whole days.
         order: 4
         title: Start Time
@@ -322,12 +301,6 @@ spec:
         type: string
         order: 1
         title: Client secret
-        airbyte_secret: true
-      client_access_token:
-        type: string
-        order: 3
-        title: Access token
-        airbyte_hidden: true
         airbyte_secret: true
       client_refresh_token:
         type: string

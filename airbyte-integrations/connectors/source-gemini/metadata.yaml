@@ -3,6 +3,7 @@ data:
   allowedHosts:
     hosts:
       - "admin.googleapis.com"
+      - "oauth2.googleapis.com"
   registryOverrides:
     oss:
       enabled: true
@@ -13,7 +14,7 @@ data:
       enabled: false
       packageName: airbyte-source-gemini
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.27.0@sha256:b68768a6ef880500de7b3b228f60045126e45b0f336e0bc6ff8a361d95162f69
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorSubtype: api
   connectorType: source
   definitionId: 726008ad-34d8-4a52-bedb-d0eebbd3d78a

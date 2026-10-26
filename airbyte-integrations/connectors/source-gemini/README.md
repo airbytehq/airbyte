@@ -3,9 +3,9 @@ This directory contains the manifest-only connector for `source-gemini`.
 
 Google Gemini for Workspace source connector. Syncs Gemini in Google Workspace activity from the Google Workspace Admin SDK Reports API (gemini_in_workspace_apps application, feature_utilization events). Admins can use it to track Gemini feature adoption and usage across Workspace apps such as Gmail, Docs, Sheets, Slides and Meet, and to support auditing and governance.
 
-Stream: activity_events (incremental, primary key: time + id). Records include the actor (email, profile ID, caller type, application info), events and their parameters, resource IDs, and an isAgenticAction flag.
+Stream: activity_events (incremental, primary key: time + uniqueQualifier). Records include the actor (email, profile ID, caller type, application info), events and their parameters, resource IDs, and an isAgenticAction flag.
 
-Authentication: OAuth 2.0 with a refresh token (scopes: admin.reports.audit.readonly and admin.reports.usage.readonly). Requires a Google Workspace admin with access to the Reports API.
+Authentication: OAuth 2.0 with a refresh token (scope: admin.reports.audit.readonly). Requires a Google Workspace admin with access to the Reports API.
 
 Sync behavior: incremental on time in 1-day slices with a 1-day lookback window. The Reports API only retains 180 days of data, so the default start is 180 days ago and earlier start times are moved forward to that limit. The default end is the start of the current UTC day, so only complete days are synced. Retries on 429, 500, 502, 503 and 504 with exponential backoff. The ipAddress, networkInfo, resourceDetails, etag and kind fields are removed from records.
 
