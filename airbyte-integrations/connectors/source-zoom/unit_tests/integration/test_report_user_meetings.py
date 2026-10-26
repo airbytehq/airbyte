@@ -235,6 +235,7 @@ class TestReportUserMeetings(TestCase):
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("Pro or higher plan")
         assert output.is_in_logs("report:read:admin")
+        assert output.is_in_logs("report:read:user:admin")
         http_mocker.assert_number_of_calls(current, 1)
 
     @HttpMocker()
@@ -252,4 +253,5 @@ class TestReportUserMeetings(TestCase):
 
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("report:read:admin")
+        assert output.is_in_logs("report:read:user:admin")
         http_mocker.assert_number_of_calls(current, 1)

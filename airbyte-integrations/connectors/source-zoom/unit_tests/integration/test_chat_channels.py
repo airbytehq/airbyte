@@ -95,4 +95,5 @@ class TestChatChannels(TestCase):
 
         assert_failed_with_config_error(output, _STREAM)
         assert output.is_in_logs("chat_channel:read:admin")
+        assert output.is_in_logs("team_chat:read:list_user_channels:admin")
         http_mocker.assert_number_of_calls(current, 1)
