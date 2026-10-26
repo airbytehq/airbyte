@@ -70,6 +70,6 @@ The daily streams make one request per site per day, and one more for every 1,00
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-26 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Initial release |
+| 0.0.1 | 2026-10-26 | [89753](https://github.com/airbytehq/airbyte/pull/89753) | Initial release |
 
 </details>
