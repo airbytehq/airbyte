@@ -5,9 +5,7 @@
 > Use the Airbyte Ops CLI instead (`uv tool install airbyte-internal-ops`):
 >
 > - `airbyte-ops secrets fetch` replaces `write-to-storage`
-> - `airbyte-ops secrets push` replaces `update-secrets`
->
-> From a connector directory, `poe fetch-secrets` and `poe push-secrets` wrap the same commands.
+> - `airbyte-ops secrets update` replaces `update-secrets`
 
 CLI tooling to read and manage GSM secrets:
 

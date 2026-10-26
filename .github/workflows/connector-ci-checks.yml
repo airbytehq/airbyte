@@ -327,10 +327,7 @@ jobs:
         run: poe test-integration-tests
 
       - name: Push updated connector secrets
-        # Connectors that rotate credentials during tests (e.g. single-use OAuth refresh
-        # tokens) persist the new config under `secrets/updated_configurations/`. Write it
-        # back to GSM so the next run starts from valid credentials, even when tests failed.
-        # Skipped on forks and whenever secrets were not fetched successfully.
+        # Persist credentials rotated during the tests back to GSM, even when tests failed.
         if: >
           always() && matrix.connector &&
           needs.generate-matrix.outputs.creds-available == 'true' &&
@@ -488,10 +485,7 @@ jobs:
           airbyte-cdk image test
 
       - name: Push updated connector secrets
-        # Connectors that rotate credentials during tests (e.g. single-use OAuth refresh
-        # tokens) persist the new config under `secrets/updated_configurations/`. Write it
-        # back to GSM so the next run starts from valid credentials, even when tests failed.
-        # Skipped on forks and whenever secrets were not fetched successfully.
+        # Persist credentials rotated during the tests back to GSM, even when tests failed.
         if: >
           always() && matrix.connector &&
           needs.generate-matrix.outputs.creds-available == 'true' &&

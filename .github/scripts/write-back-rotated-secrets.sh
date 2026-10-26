@@ -1,21 +1,14 @@
 #!/usr/bin/env bash
 # Write connector configs rotated during tests back to GSM.
 #
-# Tests persist each rotated config as `secrets/updated_configurations/<stem>|<emitted_at_ms>.json`.
-# For each stem, the newest file is written as a new version of the GSM secret whose
-# `filename` label is `<stem>` (default `config`) via `airbyte-ops secrets update`, which also
-# disables the previously enabled versions. If no such secret exists, `airbyte-ops secrets create`
-# adds `SECRET_<CONNECTOR_UPPER>__<STEM_UPPER>`. Reads `GCP_GSM_CREDENTIALS` to look up secret
-# names and `GCP_GSM_WRITER_CREDENTIALS` to write.
+# Tests persist rotated configs as `secrets/updated_configurations/<stem>|<emitted_at_ms>.json`.
+# The newest file per stem becomes a new version of the GSM secret labelled `filename=<stem>`
+# (`airbyte-ops secrets update`), or a new `SECRET_<CONNECTOR>__<STEM>` secret if none exists
+# (`airbyte-ops secrets create`).
 set -euo pipefail
 
 : "${CONNECTOR:?CONNECTOR is required}"
 
-# TODO: Drop this guard once an `airbyte-internal-ops` release with `secrets update` is on PyPI.
-if ! airbyte-ops secrets --help 2>/dev/null | grep -qE '^\W*update\s'; then
-  echo "::warning::Installed airbyte-ops has no 'secrets update' command; rotated secrets were not written back."
-  exit 0
-fi
 if [[ -z "${GCP_GSM_WRITER_CREDENTIALS:-}" ]]; then
   echo "::warning::GCP_GSM_WRITER_CREDENTIALS is not set; rotated secrets were not written back."
   exit 0
