@@ -87,6 +87,8 @@ def test_posts_follow_the_next_link_after_a_short_page():
         assert output.errors == [], output.get_formatted_error_message()
         assert len(output.records) == 147
         assert len(mocker.request_history) == 2
+        # The next page starts at start + requested count, not after the 97 posts returned.
+        assert parse_qs(urlsplit(mocker.request_history[1].url).query)["start"] == ["100"]
 
 
 def test_posts_incremental_cursor_filters_records_before_state():
@@ -349,5 +351,29 @@ def test_new_streams_primary_keys_and_cursors():
         "post_comments": ([["object"], ["id"]], None),
         "post_reactions": ([["id"]], None),
         "page_statistics": ([["organization"]], None),
-        "page_statistics_time_bound": ([["organization"], ["timeRangeStart"]], ["timeRangeEnd"]),
+        "page_statistics_time_bound": ([["organization"], ["timeRangeStart"], ["timeRangeEnd"]], ["timeRangeEnd"]),
     }
+
+
+@freeze_time("2026-10-23T14:37:12Z")
+def test_page_statistics_time_bound_drops_zero_length_month_bucket():
+    september, october = 1788220800000, 1790812800000
+    record = {"organization": _ORGANIZATION, "totalPageStatistics": {"views": {"allPageViews": {"pageViews": 3}}}}
+    config = {**_CONFIG, "time_granularity_type": "MONTH"}
+    state = StateBuilder().with_stream_state("page_statistics_time_bound", {"timeRangeEnd": september}).build()
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/organizationPageStatistics",
+            json={
+                "elements": [
+                    {**record, "timeRange": {"start": september, "end": october}},
+                    # LinkedIn appends a zero-length bucket at the end of a MONTH window.
+                    {**record, "timeRange": {"start": october, "end": october}},
+                ]
+            },
+        )
+
+        output = _read("page_statistics_time_bound", SyncMode.incremental, state, config=config)
+
+    assert output.errors == [], output.get_formatted_error_message()
+    assert [(r.record.data["timeRangeStart"], r.record.data["timeRangeEnd"]) for r in output.records] == [(september, october)]

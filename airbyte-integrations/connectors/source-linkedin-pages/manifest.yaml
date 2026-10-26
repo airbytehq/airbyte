@@ -124,6 +124,7 @@ definitions:
       - type: HttpResponseFilter
         action: IGNORE
         http_codes: [404]
+        error_message: "Skipping {{ request_url }}: LinkedIn returned 404, the post was probably deleted during the sync."
       - $ref: "#/definitions/unauthorized_filter"
       - $ref: "#/definitions/forbidden_filter"
       - $ref: "#/definitions/rate_limit_filter"
@@ -488,6 +489,7 @@ definitions:
       primary_key:
         - organization
         - timeRangeStart
+        - timeRangeEnd
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -555,6 +557,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - elements
+          # For MONTH windows LinkedIn also returns a zero-length bucket at the window end (verified 2026-10-26).
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['timeRange']['start'] < record['timeRange']['end'] }}"
         paginator:
           type: NoPagination
       transformations:
