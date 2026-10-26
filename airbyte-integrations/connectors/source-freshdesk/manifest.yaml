@@ -854,20 +854,32 @@ definitions:
           path: surveys/satisfaction_ratings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream satisfaction_ratings returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ response is mapping and 'Surveys feature' in (response.get('message', '') | string) }}"
+                error_message: >-
+                  The satisfaction_ratings stream requires the Freshdesk Surveys (CSAT) feature, which is not available
+                  on your Freshdesk plan. Deselect the satisfaction_ratings and surveys streams, or upgrade your
+                  Freshdesk plan.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes: [403]
+                error_message: >-
+                  Freshdesk denied access to the satisfaction_ratings stream. Confirm the API key belongs to a user
+                  with permission to view surveys, or deselect the satisfaction_ratings stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                error_message: >-
+                  The endpoint to access stream satisfaction_ratings returned 401: Unauthorized. This is most likely due to wrong credentials.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1284,20 +1296,32 @@ definitions:
           path: surveys
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream surveys returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ response is mapping and 'Surveys feature' in (response.get('message', '') | string) }}"
+                error_message: >-
+                  The surveys stream requires the Freshdesk Surveys (CSAT) feature, which is not available on your
+                  Freshdesk plan. Deselect the satisfaction_ratings and surveys streams, or upgrade your Freshdesk
+                  plan.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes: [403]
+                error_message: >-
+                  Freshdesk denied access to the surveys stream. Confirm the API key belongs to a user with permission
+                  to view surveys, or deselect the surveys stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                error_message: >-
+                  The endpoint to access stream surveys returned 401: Unauthorized. This is most likely due to wrong credentials.
         record_selector:
           type: RecordSelector
           extractor:
