@@ -8,10 +8,12 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 import requests_mock as rm
 from _helpers import get_source
+from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 API = "https://api.searchads.apple.com/api/v5"
@@ -36,6 +38,9 @@ CAMPAIGNS = [
     {"id": 3, "adamId": 200},
 ]
 
+FULL_PAGE = [{"id": i} for i in range(1000)]
+EMPTY_REPORT = {"data": {"reportingDataResponse": {"row": []}}}
+
 NEW_STREAMS = {
     "organization": (["orgId"], False),
     "creatives": (["id"], False),
@@ -52,6 +57,13 @@ def mocker():
         m.post(TOKEN_URL, json={"access_token": "token", "expires_in": 3600, "token_type": "Bearer"})
         m.get(f"{API}/campaigns", json={"data": CAMPAIGNS})
         yield m
+
+
+@pytest.fixture(autouse=True)
+def frozen_clock():
+    # The fixtures use January 2024 dates, and search term windows start at most 89 days back.
+    with freeze_time("2024-01-06T12:00:00Z"):
+        yield
 
 
 def _read(stream_name, sync_mode=SyncMode.full_refresh, config=CONFIG):
@@ -182,7 +194,8 @@ def test_search_terms_report_daily_requests_each_search_campaign_and_day(mocker)
                 {
                     "startTime": start,
                     "endTime": end,
-                    "timeZone": "UTC",
+                    # Apple: "Search term-level reports only support a timeZone value of ORTZ."
+                    "timeZone": "ORTZ",
                     "granularity": "DAILY",
                     "groupBy": ["countryOrRegion"],
                     "returnRowTotals": False,
@@ -207,3 +220,134 @@ def test_search_terms_report_daily_requests_each_search_campaign_and_day(mocker)
         assert record["keywordId"] == 8
         assert record["searchTermText"] == f"term {record['date']}"
         assert record["countryorregion"] == "US"
+
+
+@pytest.mark.parametrize(
+    "stream_name, path, pages, expected_queries",
+    [
+        pytest.param(
+            "campaign_negative_keywords",
+            "/campaigns/1/negativekeywords",
+            [FULL_PAGE, [{"id": 1000}]],
+            [{"limit": ["1000"]}, {"limit": ["1000"], "offset": ["1000"]}],
+            id="campaign_negative_keywords",
+        ),
+        pytest.param(
+            "adgroup_negative_keywords",
+            "/campaigns/1/adgroups/11/negativekeywords",
+            [FULL_PAGE, [{"id": 1000}]],
+            [{"limit": ["1000"]}, {"limit": ["1000"], "offset": ["1000"]}],
+            id="adgroup_negative_keywords",
+        ),
+        # Apple documents no limit or offset for Get Product Pages.
+        pytest.param("product_pages", "/apps/100/product-pages", [[{"id": "pp-1"}]], [{}], id="product_pages"),
+    ],
+)
+def test_child_streams_send_org_context_and_paginate(mocker, stream_name, path, pages, expected_queries):
+    mocker.get(f"{API}/campaigns", json={"data": [CAMPAIGNS[0]]})
+    mocker.get(f"{API}/campaigns/1/adgroups", json={"data": [{"id": 11, "campaignId": 1}]})
+    mocker.get(f"{API}{path}", [{"json": {"data": page}} for page in pages])
+
+    records = _read(stream_name)
+
+    requests = [r for r in mocker.request_history if urlparse(r.url).path == f"/api/v5{path}"]
+    assert len(records) == sum(len(page) for page in pages)
+    assert [parse_qs(urlparse(r.url).query) for r in requests] == expected_queries
+    assert all(r.headers["X-AP-Context"] == "orgId=12345" for r in requests)
+
+
+def _search_term_rows(count):
+    return [
+        {"metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": f"term {i}", "countryOrRegion": "US"}, "granularity": []}
+        for i in range(count)
+    ]
+
+
+def test_search_terms_report_daily_paginates_in_selector(mocker):
+    mocker.post(
+        f"{API}/reports/campaigns/1/searchterms",
+        [{"json": {"data": {"reportingDataResponse": {"row": rows}}}} for rows in (_search_term_rows(1000), _search_term_rows(1))],
+    )
+    mocker.post(f"{API}/reports/campaigns/3/searchterms", json=EMPTY_REPORT)
+
+    records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-01"))
+
+    assert len(records) == 1001
+    pages = [r.json()["selector"]["pagination"] for r in _api_requests(mocker, "POST", "/reports/campaigns/1/")]
+    assert pages == [{"limit": 1000}, {"limit": 1000, "offset": 1000}]
+
+
+def test_search_terms_report_daily_keeps_low_volume_rollup_row(mocker):
+    # Apple: `other` rows hold search terms under 10 impressions, with the dimensions set to null.
+    rollup = {
+        "other": True,
+        "metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": None, "countryOrRegion": "US", "searchTermSource": "TARGETED"},
+        "granularity": [{"date": "2024-01-01", "impressions": 3}],
+    }
+    mocker.post(f"{API}/reports/campaigns/1/searchterms", json={"data": {"reportingDataResponse": {"row": [rollup]}}})
+    mocker.post(f"{API}/reports/campaigns/3/searchterms", json=EMPTY_REPORT)
+
+    records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-01"))
+
+    # The CDK serializer drops null values, so the destination sees searchTermText as null.
+    assert [(r["campaignId"], r.get("searchTermText"), r["other"]) for r in records] == [(1, None, True)]
+
+
+def _read_with_state(stream_state, config):
+    catalog = (
+        CatalogBuilder()
+        .with_stream(ConfiguredAirbyteStreamBuilder().with_name("search_terms_report_daily").with_sync_mode(SyncMode.incremental))
+        .build()
+    )
+    state = StateBuilder().with_stream_state("search_terms_report_daily", stream_state).build()
+    output = read(get_source(config, catalog=catalog, state=state), config, catalog, state)
+    assert not output.errors, output.errors
+    return output
+
+
+@pytest.mark.parametrize(
+    "stream_state",
+    [
+        pytest.param({"date": "2024-01-04"}, id="legacy_flat_state"),
+        pytest.param({"state": {"date": "2024-01-04"}, "use_global_cursor": True}, id="global_state"),
+    ],
+)
+def test_search_terms_report_daily_resumes_from_state_minus_lookback(mocker, stream_state):
+    for campaign_id in (1, 3):
+        mocker.post(f"{API}/reports/campaigns/{campaign_id}/searchterms", json=EMPTY_REPORT)
+
+    output = _read_with_state(stream_state, dict(CONFIG, end_date="2024-01-05"))
+
+    starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
+    assert starts == ["2024-01-03", "2024-01-04"]
+    # global_substream_cursor keeps one cursor for all campaigns instead of per-partition states.
+    assert "states" not in output.most_recent_state.stream_state.__dict__
+
+
+def test_search_terms_report_daily_future_state_sends_no_report_requests(mocker):
+    # Same shape as integration_tests/abnormal_state.json.
+    _read_with_state({"date": "2999-11-06"}, dict(CONFIG, end_date="2024-01-05"))
+
+    assert _api_requests(mocker, "POST", "/reports/campaigns/") == []
+
+
+def test_search_terms_report_daily_starts_within_apples_daily_window(mocker):
+    mocker.post(f"{API}/reports/campaigns/1/searchterms", json={"data": {"reportingDataResponse": {"row": []}}})
+    mocker.post(f"{API}/reports/campaigns/3/searchterms", json={"data": {"reportingDataResponse": {"row": []}}})
+
+    with freeze_time("2026-10-26T10:00:00Z"):
+        _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, start_date="2020-01-01", end_date="2026-07-30"))
+
+    starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
+    # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+    assert starts[0] == "2026-07-29"
+
+
+def test_search_terms_report_daily_keeps_numeric_search_terms_as_text(mocker):
+    row = {"metadata": {"adGroupId": 7, "keywordId": 8, "searchTermText": "2048", "countryOrRegion": "US"}, "granularity": []}
+    mocker.post(f"{API}/reports/campaigns/1/searchterms", json={"data": {"reportingDataResponse": {"row": [row]}}})
+    mocker.post(f"{API}/reports/campaigns/3/searchterms", json={"data": {"reportingDataResponse": {"row": []}}})
+
+    records = _read("search_terms_report_daily", SyncMode.incremental, dict(CONFIG, end_date="2024-01-01"))
+
+    assert [record["searchTermText"] for record in records] == ["2048"]

@@ -761,23 +761,7 @@ definitions:
           path: /acls
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -804,23 +788,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -860,23 +828,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -926,23 +878,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -990,23 +926,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1048,31 +968,14 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "impressions", "sortOrder":
               "DESCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            # Apple serves search term reports in the organization's time zone only.
+            timeZone: ORTZ
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
             returnRowTotals: false
             returnGrandTotals: false
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1126,7 +1029,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -1134,6 +1037,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past; 89 leaves room for ORTZ.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.end_date or today_utc() }}"
@@ -1158,16 +1063,20 @@ definitions:
               value: "{{ record.metadata.keywordId }}"
             - type: AddedFieldDefinition
               path:
-                - searchTermText
-              value: "{{ record.metadata.searchTermText }}"
-            - type: AddedFieldDefinition
-              path:
                 - date
               value: "{{ stream_slice.start_time }}"
             - type: AddedFieldDefinition
               path:
                 - countryorregion
               value: "{{ record.metadata.countryOrRegion }}"
+        - type: AddFields
+          condition: "{{ record.metadata.searchTermText is not none }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - searchTermText
+              value: "{{ record.metadata.searchTermText }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1297,7 +1206,8 @@ spec:
         default: UTC
         description: >-
           The timezone for the reporting data. Use 'ORTZ' for Organization Time
-          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC. Search term
+          reports always use ORTZ, the only time zone Apple serves them in.
         enum:
           - ORTZ
           - UTC
@@ -2559,6 +2469,22 @@ schemas:
           searchTermText:
             type:
               - string
+              - "null"
+          campaignId:
+            type:
+              - integer
+              - "null"
+          keywordStatus:
+            type:
+              - string
+              - "null"
+          modificationTime:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - integer
               - "null"
       granularity:
         type:

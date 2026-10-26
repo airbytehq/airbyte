@@ -2,9 +2,9 @@
 
 This connector is manifest-only (`language:manifest-only`, `cdk:low-code`); all behavior described
 below lives in `manifest.yaml`. It targets the Apple Ads (formerly Apple Search Ads) Campaign
-Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request carries an
-`X-AP-Context: orgId={{ config.org_id }}` header, which the API requires on all campaign-management
-calls.
+Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request except
+`organization`'s `GET /acls` carries an `X-AP-Context: orgId={{ config.org_id }}` header, which the
+API requires on campaign-management calls.
 
 Streams: `campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
 `adgroup_negative_keywords`, `product_pages` (entity streams, `primary_key: [id]`, full refresh),
@@ -15,9 +15,7 @@ the ACL call lists every organization the API user can access) and `campaigns_re
 
 `product_pages` is partitioned by the app (`adamId`) of each campaign through a deduplicating
 `GroupingPartitionRouter` (`group_size: 1`), so an app advertised by several campaigns is requested
-once. `search_terms_report_daily` only requests campaigns whose `supplySources` include
-`APPSTORE_SEARCH_RESULTS` (a `RecordFilter` on the parent `campaigns` stream): search terms only
-exist for Search Results campaigns. Campaigns without `supplySources` are kept.
+once.
 
 ## 1. Authentication is two-legged only; there is no user-consent OAuth flow
 
@@ -88,8 +86,9 @@ reporting rows should dedupe on `(<entity>Id, date, countryorregion)` in the des
 
 The canonical deletion pattern for this connector is **a deletion flag field on the primary
 streams**, not dedicated `deleted_*` streams. Apple soft-deletes campaign-management objects and
-returns `deleted: true|false` on `Campaign`, `AdGroup`, `Keyword`, and `Ad`; the schemas of
-`campaigns`, `adgroups`, `keywords`, and `ads` all include that boolean, so whatever Apple returns
+returns `deleted: true|false` on `Campaign`, `AdGroup`, `Keyword`, `Ad` and `NegativeKeyword`; the
+schemas of `campaigns`, `adgroups`, `keywords`, `ads`, `campaign_negative_keywords` and
+`adgroup_negative_keywords` all include that boolean, so whatever Apple returns
 is passed through to the destination unchanged. There are no `deleted_*` streams and none should be
 added.
 
@@ -121,10 +120,15 @@ endpoints are needed.
 
 ## 4. Entity streams are full refresh even though records carry `modificationTime`
 
-Only the four report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
-`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The four entity streams
-(`campaigns`, `adgroups`, `keywords`, `ads`) are full refresh on purpose, even though their records
-carry `modificationTime`:
+Only the five report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
+`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The entity streams
+(`campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
+`adgroup_negative_keywords`, `product_pages`, `organization`) are full refresh on purpose, even
+though most of their records carry `modificationTime`:
+
+- The newer entity streams read `GET` endpoints with no modification-time filter: Get All Creatives
+  and both negative keyword endpoints take only `limit` and `offset`, Get Product Pages takes only
+  `name` and `states`, and Get User ACL takes no parameters.
 
 - `modificationTime` does not move when the serving state changes. Apple documents it as "the date
   and time of the most recent modification of the object", while `servingStatus`,
@@ -160,8 +164,9 @@ requests-per-window, and no quota headers for this API version, so there is no p
 an `api_budget` to match.
 
 Each stream resolves to one `DefaultErrorHandler` through shared definitions: campaigns, adgroups,
-keywords, and ads use `error_handler`; campaigns_report_daily, adgroups_report_daily, and
-ads_report_daily use `report_error_handler`; keywords_report_daily uses
+keywords, ads, organization, creatives, campaign_negative_keywords, adgroup_negative_keywords and
+product_pages use `error_handler`; campaigns_report_daily, adgroups_report_daily, ads_report_daily
+and search_terms_report_daily use `report_error_handler`; keywords_report_daily uses
 `keywords_report_error_handler`, which first ignores Apple's `CAMPAIGN DOES NOT CONTAIN KEYWORD`
 response. The filters follow the status tables on each endpoint page (for example
 [Get All Ad Groups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) and
@@ -241,3 +246,23 @@ download it), which has not been verified against a live account.
 **Why this matters:** V-1 asks whether stream coverage matches the market, and passes only when
 there are no `missing` rows or each is justified. Every Fivetran table now has a matching stream. Anyone adding streams here
 should update this table in the same change.
+
+## 7. `search_terms_report_daily` always uses ORTZ and only Search Results campaigns
+
+The stream sends `timeZone: ORTZ` whatever `timezone` says, because Apple states "Search term-level
+reports only support a `timeZone` value of `ORTZ`"
+([Get Search Term-Level Reports](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports)),
+and it sends `returnRowTotals: false` and `returnGrandTotals: false`, which Apple requires when a
+request sets `granularity` ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)).
+It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULTS` (a `RecordFilter`
+on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
+campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
+with `other: true` and a null `searchTermText`. The first window starts at most 89 days back, because
+Apple serves `DAILY` reports only when "the startTime is <= 90 days in the past"; a day of margin
+covers organization time zones ahead of UTC.
+
+**Why this matters:** with `timezone: UTC`, this stream's `date` is an organization-time-zone day
+while the other report streams use UTC days, so joins by `date` can shift by one day. Do not make it
+follow the `timezone` setting, and keep the 89-day floor: search terms are sparse, a sync without
+rows does not move the cursor, and without the floor such a stream would restart from an old Start
+Date that Apple rejects.

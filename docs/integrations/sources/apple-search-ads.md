@@ -26,7 +26,7 @@ The connector authenticates to the Apple Ads Campaign Management API using OAuth
 3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
 4. Enter the **Client ID** and **Client Secret** from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads).
 5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so set **Start Date** within that window for the report streams.
-6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
+6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`. `search_terms_report_daily` always uses `ORTZ`, because Apple serves search term reports in the organization time zone only.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
 8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
 9. Click **Set up source**.
@@ -66,10 +66,10 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`adgroups_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports) — ad-group-level daily metrics.
 - [`keywords_report_daily`](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports) — keyword-level daily metrics.
 - [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
-- [`search_terms_report_daily`](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports) — search-term-level daily metrics for Search Results campaigns.
+- [`search_terms_report_daily`](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports): search-term-level daily metrics for Search Results campaigns, for the last 90 days at most.
 
 :::note
-Report streams use `date` as the cursor field and declare no primary key. Each row is broken out by `countryOrRegion`, which the connector exposes as `countryorregion`. To deduplicate, use the entity ID (`campaignId`, `adGroupId`, `keywordId` or `adId`), `date` and `countryorregion` in the destination.
+Report streams use `date` as the cursor field and declare no primary key. Each row is broken out by `countryOrRegion`, which the connector exposes as `countryorregion`. To deduplicate, use the entity ID (`campaignId`, `adGroupId`, `keywordId` or `adId`), `date` and `countryorregion` in the destination. For `search_terms_report_daily`, use `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and `countryorregion`. Apple reports search terms under its 10-impression limit in rows with `other: true` and no `searchTermText`.
 :::
 
 ## Performance considerations
@@ -96,7 +96,7 @@ For programmatic configuration, use these parameter names:
 | `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
-| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`; defaults to `UTC`. |
+| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`; defaults to `UTC`. `search_terms_report_daily` always uses `ORTZ`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
 | `backoff_factor` | No | Exponential retry delay factor for temporary Apple Ads API errors on the report streams. Valid values are `1` through `20`. Defaults to `5`. Hidden in the UI. |
 | `token_refresh_endpoint` | No | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. Hidden in the UI. |

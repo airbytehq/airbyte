@@ -23,12 +23,19 @@ STREAM_NAMES = [
     "keywords_report_daily",
     "ads",
     "ads_report_daily",
+    "organization",
+    "creatives",
+    "campaign_negative_keywords",
+    "adgroup_negative_keywords",
+    "product_pages",
+    "search_terms_report_daily",
 ]
 REPORT_STREAM_NAMES = [
     "campaigns_report_daily",
     "adgroups_report_daily",
     "keywords_report_daily",
     "ads_report_daily",
+    "search_terms_report_daily",
 ]
 
 
@@ -72,15 +79,7 @@ def _get_response_filters(manifest, stream):
     return [_resolve_ref(manifest, response_filter) for response_filter in error_handler.get("response_filters", [])]
 
 
-@pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
-        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
-        pytest.param("keywords_report_daily", id="keywords_report_daily"),
-        pytest.param("ads_report_daily", id="ads_report_daily"),
-    ],
-)
+@pytest.mark.parametrize("stream_name", REPORT_STREAM_NAMES)
 def test_report_stream_date_field_uses_start_time(manifest, stream_name):
     """DatetimeBasedCursor produces slices with start_time/end_time keys.
     The date transformation must use stream_slice.start_time."""
@@ -109,19 +108,7 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
     assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
 
 
-@pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("campaigns", id="campaigns"),
-        pytest.param("adgroups", id="adgroups"),
-        pytest.param("keywords", id="keywords"),
-        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
-        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
-        pytest.param("keywords_report_daily", id="keywords_report_daily"),
-        pytest.param("ads", id="ads"),
-        pytest.param("ads_report_daily", id="ads_report_daily"),
-    ],
-)
+@pytest.mark.parametrize("stream_name", STREAM_NAMES)
 def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
     """Apple Ads may return 401 before the CDK's tracked token expiry."""
     stream = _get_stream_def(manifest, stream_name)
@@ -178,6 +165,12 @@ def test_num_workers_spec_field(manifest):
         ("adgroups_report_daily", "#/definitions/report_error_handler"),
         ("keywords_report_daily", "#/definitions/keywords_report_error_handler"),
         ("ads_report_daily", "#/definitions/report_error_handler"),
+        ("organization", "#/definitions/error_handler"),
+        ("creatives", "#/definitions/error_handler"),
+        ("campaign_negative_keywords", "#/definitions/error_handler"),
+        ("adgroup_negative_keywords", "#/definitions/error_handler"),
+        ("product_pages", "#/definitions/error_handler"),
+        ("search_terms_report_daily", "#/definitions/report_error_handler"),
     ],
 )
 def test_streams_use_expected_shared_error_handler(manifest, stream_name, expected_ref):
