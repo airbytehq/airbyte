@@ -280,6 +280,7 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
+        schema_normalization: Default
         extractor:
           type: DpathExtractor
           field_path: []
@@ -404,6 +405,38 @@ streams:
         fields:
           - type: AddedFieldDefinition
             path:
+              - message
+              - author
+              - skills_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('skills_used')
+              | string if record.get('message', {}).get('author',
+              {}).get('skills_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - message
+              - author
+              - tools_used
+            value: >-
+              {{ record.get('message', {}).get('author', {}).get('tools_used') |
+              string if record.get('message', {}).get('author',
+              {}).get('tools_used') is not none else '' }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - message
+              - content
+              - value
+            value: >-
+              {{ record.get('message', {}).get('content', {}).get('value') |
+              string if record.get('message', {}).get('content', {}).get('value')
+              is not none else '' }}
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
               - actor_type
             value: "{{ record.get('actor', {}).get('type') }}"
           - type: AddedFieldDefinition
@@ -450,21 +483,24 @@ streams:
             value: >-
               {{ record.get('message', {}).get('author', {}).get('skills_used')
               | string if record.get('message', {}).get('author',
-              {}).get('skills_used') is not none else none }}
+              {}).get('skills_used') is not none else '' }}
+            value_type: string
           - type: AddedFieldDefinition
             path:
               - author_tools_used
             value: >-
               {{ record.get('message', {}).get('author', {}).get('tools_used') |
               string if record.get('message', {}).get('author',
-              {}).get('tools_used') is not none else none }}
+              {}).get('tools_used') is not none else '' }}
+            value_type: string
           - type: AddedFieldDefinition
             path:
               - message_content_value
             value: >-
               {{ record.get('message', {}).get('content', {}).get('value') |
               string if record.get('message', {}).get('content', {}).get('value')
-              is not none else none }}
+              is not none else '' }}
+            value_type: string
           - type: AddedFieldDefinition
             path:
               - conversation_id
@@ -500,6 +536,8 @@ streams:
           - - conversation
           - - actor
           - - principal
+          - - skills_used
+          - - tools_used
     incremental_sync:
       type: DatetimeBasedCursor
       global_substream_cursor: true
