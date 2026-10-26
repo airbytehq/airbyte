@@ -348,7 +348,7 @@ constructor(
 
         // Parse URL parameters from jdbcUrlParams
         val pattern = "^([^=]+)=(.*)$".toRegex()
-        for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
+        for (pair in (pojo.jdbcUrlParams ?: "").trim().split("[&;]".toRegex())) {
             if (pair.isBlank()) {
                 continue
             }
