@@ -66,7 +66,11 @@ transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`
 out of nested `record.metadata`), the `date` copied from `stream_slice.start_time`, and
 `countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
 Every request covers one day (`endTime` equals the slice start), so `date` is also the day of the
-row's metrics. The manifest declares this composite as the primary key of the four entity report
+row's metrics. The CDK folds the last day into the final slice, so the cursor ends one day after the
+End Date (or today) to give that day its own request. The first window starts at most 89 days back,
+because Apple serves `DAILY` reports only when "the startTime is <= 90 days in the past"
+([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)); a day of
+margin covers organization time zones ahead of UTC. The manifest declares this composite as the primary key of the four entity report
 streams. Metrics are nested under the `granularity` array; entity attributes stay under `metadata`.
 
 `search_terms_report_daily` declares no key. Its rows add `adGroupId`, `keywordId` and
@@ -179,13 +183,9 @@ response. The filters follow the status tables on each endpoint page (for exampl
   configuration error.
 - `403` ("Insufficient rights to the resource."): configuration error that asks for an API role,
   with Apple's first error message.
-- `400` ("An invalid query or missing required parameters."): on the report streams a configuration
-  error, because their requests carry the user's dates and Apple serves `DAILY` reports only when
-  "the startTime is <= 90 days in the past"
-  ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)). The spec
-  cannot enforce that limit: a Start Date older than 90 days, or a cursor that has not moved for about
-  60 days with the default 30-day lookback, crosses it. On the entity streams a `400` is a system
-  error, since their list requests carry no user input.
+- `400` ("An invalid query or missing required parameters."): system error with Apple's first
+  error message. Report windows start at most 89 days back (section 2), so neither the Start Date nor
+  an old cursor can cross Apple's 90-day `DAILY` limit, and list requests carry no user input.
 - `404` ("The API can't locate the resource."): documented only on endpoints addressed by a parent
   id, so a campaign or ad group removed during the sync; system error naming the URL, with Apple's
   message.
@@ -261,12 +261,8 @@ It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULT
 on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
 campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
 with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
-slice start), so a row's `date` always matches its metrics. The CDK folds the last day into the
-final slice, so the cursor ends one day after the End Date (or today) to give that day its own
-request. The first window starts at most 89 days back, because Apple serves `DAILY`
-reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
-zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
-handler reports it as a system error.
+slice start), and the window rules match the other report streams (section 2): the cursor ends one
+day after the End Date (or today), and the first window starts at most 89 days back.
 
 **Why this matters:** with `timezone: UTC`, this stream's `date` is an organization-time-zone day
 while the other report streams use UTC days, so joins by `date` can shift by one day. Do not make it

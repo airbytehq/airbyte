@@ -7,7 +7,6 @@ Validates the declarative manifest structure to catch copy-paste errors
 and typos in stream definitions.
 """
 
-from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -216,10 +215,7 @@ def test_date_like_fields_are_typed(manifest, stream_name):
     assert found_fields, f"{stream_name} must have at least one date-like field"
 
 
-def test_timestamp_fields_declared_without_timezone_match_observed_values(manifest):
-    observed_value = "2026-09-29T09:36:45.541"
-    assert datetime.fromisoformat(observed_value).tzinfo is None
-
+def test_timestamp_fields_are_declared_without_timezone(manifest):
     timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
     found_fields = 0
 

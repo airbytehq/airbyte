@@ -45,7 +45,7 @@ Apple accepts a client secret for at most 180 days. Before your client secret ex
 2. Select **Apple Ads** from the **Source type** dropdown and enter a name for the source.
 3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
 4. For **Client Id**, enter the `clientId` from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads). For **Client Secret**, enter the signed JWT you created in Step 1.
-5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. **Start Date** is required. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so set **Start Date** within that window. Apple can reject report requests for earlier dates; `search_terms_report_daily` never asks for more than the last 89 days.
+5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. **Start Date** is required. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so report streams never request more than the last 89 days, whatever the **Start Date**.
 6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`. `search_terms_report_daily` always uses `ORTZ`, because Apple serves search term reports in the organization time zone only.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
 8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
@@ -79,6 +79,8 @@ The Apple Ads source connector exposes the following streams. For full schema an
 - [`campaign_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-campaign-negative-keywords) — negative keywords set on each campaign.
 - [`adgroup_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-ad-group-negative-keywords) — negative keywords set on each ad group.
 - [`product_pages`](https://developer.apple.com/documentation/apple_ads/get-product-pages) — custom product pages for each app advertised by a campaign.
+
+`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone. Apple returns them in UTC.
 
 ### Daily report streams
 
@@ -114,7 +116,6 @@ When Apple reports that a campaign doesn't contain keywords, `keywords_report_da
 
 - **`Refresh token was rejected by the OAuth provider`** or **`Refreshed OAuth access token is rejected by the API`**: The client secret has expired, or the API user lost access. Create a new client secret as described in [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads) and update the **Client Secret** field. The connector uses the client credentials grant, so "refresh token" in the first message refers to the client secret.
 - **`Apple Ads denied access (403) for org ...`**: The API user doesn't have an API role on the organization in **Org Id**. Ask an account administrator to assign an API role, such as **API Account Manager** or **API Account Read Only**, to the API user for that organization.
-- **`Apple Ads rejected the report request (400)`**: A report stream requested a date that Apple no longer serves. Apple serves daily reports for the last 90 days only. Set **Start Date** within the last 90 days. If a report stream hasn't synced for longer than that, its saved cursor is also outside the window, so [refresh](https://docs.airbyte.com/platform/operator-guides/refreshes) the stream. `search_terms_report_daily` never starts more than 89 days back, so this does not apply to it.
 - **`Apple Ads returned 404 for ...`**: A campaign, ad group or app was probably deleted while the sync was running. Run the sync again.
 
 ## IP allow list

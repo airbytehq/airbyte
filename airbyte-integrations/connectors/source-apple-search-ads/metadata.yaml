@@ -33,9 +33,9 @@ data:
         strategy: fast
     breakingChanges:
       2.0.0:
-        message: "Date and timestamp fields are now typed (`date` as date; `creationTime`, `modificationTime`, `startTime`, `endTime` as timestamp without timezone) on all streams, and the four daily report streams now declare a primary key of (<entity>Id, date, countryorregion). Refresh the affected streams (Refresh → Clear data) so destinations re-create the tables with the new types and keys."
+        message: "Apple Ads date and time fields are now typed, and the four daily report streams get primary keys. `date` and `granularity.date` become dates, and `creationTime`, `modificationTime`, `startTime` and `endTime` (top level and under `metadata`) become timestamps without time zone in `campaigns`, `adgroups`, `keywords`, `ads`, `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily` and `ads_report_daily`. The report stream keys are (`<entity>Id`, `date`, `countryorregion`). After upgrading, refresh the source schema. Warehouse destinations convert the columns in place and need no clear. Do not clear the report streams unless the migration guide says so for your destination: Apple serves daily reports for the last 90 days only, so a clear permanently deletes older report rows. Data lake (Iceberg) destinations and Avro or Parquet object storage need extra steps: https://docs.airbyte.com/integrations/sources/apple-search-ads-migrations#upgrading-to-200"
         upgradeDeadline: "2026-12-22"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:

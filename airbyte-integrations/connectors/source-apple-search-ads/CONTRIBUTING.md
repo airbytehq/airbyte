@@ -21,7 +21,8 @@ declarative OAuth spec.
 
 Apple's reporting endpoints return metric aggregations with no record identifier. The connector
 assembles each row's key from the reporting entity id, `date`, and `countryorregion` and declares
-that composite as the primary key of the four entity report streams; each request covers one day.
+that composite as the primary key of the four entity report streams; each request covers one day,
+and report streams never start more than 89 days back, where Apple stops serving daily reports.
 `search_terms_report_daily` stays keyless because Apple's low-volume rollup rows have no search term.
 Changes to `groupBy`, `granularity`, the request window or the cursor `step` change row identity and
 require a major version.
