@@ -2,6 +2,22 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 23, 2026
+
+Connections
+
+- Saving a source no longer fails in some cases where Airbyte couldn't read a previously stored credential for that source.
+
+Connector Builder
+
+- The Connector Builder loads again for workspaces that have a custom connector forked from a connector without an icon. Previously, the Builder page could fail to load with an error.
+- When a test read fails because of a problem with your connector's configuration, such as an invalid date value, the Connector Builder now shows a clear message describing the problem instead of a generic error ID.
+
+Platform
+
+- Every Airbyte Cloud organization can now open the **Install MCP** page from the sidebar to connect AI tools to Airbyte through the Airbyte MCP server. Previously, this page was only available to organizations enrolled in or eligible for Airbyte Agents.
+- On Cloud Pro and Enterprise Flex plans, data worker usage charts now show the "DW" unit once as the y-axis title, and the y-axis values are plain numbers.
+
 ## October 22, 2026
 
 Connections
