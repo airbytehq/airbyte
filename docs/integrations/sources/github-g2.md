@@ -90,7 +90,9 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 ## Output shape
 
-All streams emit flat records with deterministic scalar or scalar-array columns. Embedded GitHub identities use prefixed identity columns, and the multi-field arrays are separate streams: `workflow_job_steps`, `release_assets`, and `contributor_activity_weeks`. `events.payload` and `deployments.payload` remain opaque JSON fields under approved exemptions.
+All streams emit flat records with deterministic scalar columns and arrays of scalars. Embedded GitHub identities use prefixed identity columns. Child streams are used only when their members require a separate API call; none of the current streams needs a child stream for an array available in its parent response. `events.payload` and `deployments.payload` remain opaque JSON fields under approved exemptions.
+
+`workflow_jobs` keeps job-level `status`, `conclusion`, `started_at`, `completed_at`, and `created_at`; step names and per-step timing are not emitted. `releases.asset_download_urls` contains up to 100 asset download URLs per release; other per-asset metadata is not emitted. `contributor_activity` emits `author_id`, `author_login`, `author_type`, `repository`, and `total`, but not per-week additions, deletions, or commits.
 
 Every field is strongly typed; values without a stable shape are opaque JSON (`payload`), never partially described objects. Every stream root uses `additionalProperties: false`; a future need for fields beyond declared columns requires a dedicated opaque JSON column kept separate from declared columns, never root `additionalProperties`, and human approval recorded in `FLATTEN_EXEMPTIONS`.
 
@@ -112,7 +114,6 @@ This connector outputs the following full refresh streams:
 - [Assignees](https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees)
 - [Branches](https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches)
 - [Contributor Activity](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
-- [Contributor activity weeks](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
 - [Collaborators](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators)
 - [Issue labels](https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository)
 - [Organizations](https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations)
@@ -145,13 +146,11 @@ This connector outputs the following incremental streams:
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
 - [Releases](https://docs.github.com/en/graphql/reference/objects#release)
-- [Release assets](https://docs.github.com/en/graphql/reference/objects#releaseasset)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
 - [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
-- [Workflow job steps](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
@@ -246,9 +245,9 @@ This currently affects the `repositories` stream. Other streams still fall back 
 
 GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an instance in that state answers `GET /rate_limit` with `404 Rate limiting is not enabled.`. The connector reads that as "this instance does not track quotas" and continues without quota tracking — it no longer treats it as a failed connection. Requests are still authenticated, multiple tokens are still used in turn, and any rate limiting the instance *does* enforce (secondary rate limits are a separate GHES setting) is still honored through the usual retry and backoff.
 
-#### Release asset pagination
+#### Release assets
 
-The `release_assets` stream uses GitHub's paginated REST endpoint and follows Link headers, so all release assets are emitted across pages of up to 100 assets.
+The `releases.asset_download_urls` array contains up to 100 download URLs per release. If a release has more than 100 assets, the remaining URLs are truncated and the connector logs a warning. Other asset metadata (`id`, `name`, `size`, `download_count`, `content_type`, `digest`, `label`, `state`, and uploader) is no longer emitted; keep the existing `release_assets` table if you need those values.
 
 #### Stargazers stream requires admin or collaborator access
 
@@ -306,6 +305,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Drop workflow_job_steps and contributor_activity_weeks data; replace release_assets with download URLs |
+| 0.1.2 | 2026-10-24 | [89749](https://github.com/airbytehq/airbyte/pull/89749) | Declare `workflow_runs.pull_request_ids` and `pull_request_numbers` items as integers |
 | 0.1.1 | 2026-10-20 | [89588](https://github.com/airbytehq/airbyte/pull/89588) | Rename display name to GitHub (Experimental, Gen 2) |
 | 0.1.0 | 2026-10-20 | - | Initial release, forked from source-github 2.7.9 |
 

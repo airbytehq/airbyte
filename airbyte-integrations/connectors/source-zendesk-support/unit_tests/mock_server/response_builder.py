@@ -1222,6 +1222,22 @@ class TicketAuditsResponseBuilder(HttpResponseBuilder):
         return response
 
 
+class TicketAuditsPerTicketResponseBuilder(HttpResponseBuilder):
+    """Response builder for the ticket_audits_per_ticket stream (GET /tickets/{ticket_id}/audits.json).
+
+    The stream uses links_next_paginator: links.next is the next request URL and meta.has_more is
+    the stop condition. Call with_pagination() to point links.next at `next_page_url`.
+    """
+
+    @classmethod
+    def ticket_audits_per_ticket_response(cls, next_page_url: Optional[str] = None) -> "TicketAuditsPerTicketResponseBuilder":
+        return cls(
+            find_template("ticket_audits", __file__),
+            FieldPath("audits"),
+            CursorBasedPaginationStrategy(next_page_url),
+        )
+
+
 class TicketCommentsResponseBuilder(HttpResponseBuilder):
     """Custom response builder for ticket_comments stream.
 
