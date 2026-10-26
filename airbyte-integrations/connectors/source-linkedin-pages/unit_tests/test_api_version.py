@@ -1,6 +1,5 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-import re
 from typing import Any
 
 import pytest
@@ -40,10 +39,13 @@ _STREAMS = [
 @pytest.mark.parametrize("stream_name, method, path, response", _STREAMS)
 def test_requests_use_linkedin_api_version(stream_name: str, method: str, path: str, response: dict[str, Any]) -> None:
     with requests_mock.Mocker() as mocker:
-        # Child streams need the posts parent as well as their own endpoint.
-        mocker.register_uri(method, re.compile(f"{_BASE_URL}/.*"), json=response)
+        mocker.register_uri(method, f"{_BASE_URL}{path}", json=response)
+        if stream_name in ("post_comments", "post_reactions"):
+            mocker.get(f"{_BASE_URL}/posts", json={"elements": [{"id": "urn:li:share:1"}]})
         catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-        read(get_source(_CONFIG), _CONFIG, catalog)
+        output = read(get_source(_CONFIG), _CONFIG, catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
 
         assert len(mocker.request_history) >= 1
         api_requests = [request for request in mocker.request_history if request.hostname == "api.linkedin.com"]

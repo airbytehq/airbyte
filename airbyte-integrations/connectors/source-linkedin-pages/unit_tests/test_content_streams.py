@@ -3,12 +3,14 @@
 from datetime import date, datetime, time, timedelta, timezone
 from urllib.parse import parse_qs, urlsplit
 
+import pytest
 import requests_mock
 from conftest import get_source
+from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -38,8 +40,10 @@ def _day_start_millis(day: date) -> int:
     return int(datetime.combine(day, time.min, timezone.utc).timestamp() * 1000)
 
 
-def _posts_response(*posts: dict) -> dict:
-    return {"elements": list(posts)}
+def _posts_response(*posts: dict, start: int = 0, has_next: bool = False) -> dict:
+    # LinkedIn's documented paging block: a "next" link marks that more posts follow, even after a short page.
+    links = [{"rel": "next", "type": "application/json", "href": f"/rest/posts?q=author&start={start + 100}&count=100"}] if has_next else []
+    return {"elements": list(posts), "paging": {"start": start, "count": 100, "links": links}}
 
 
 def test_posts_paginates_with_exact_parameters_and_protocol_header():
@@ -48,7 +52,10 @@ def test_posts_paginates_with_exact_parameters_and_protocol_header():
     with requests_mock.Mocker() as mocker:
         mocker.get(
             f"{_BASE_URL}/posts",
-            response_list=[{"json": _posts_response(*first_page)}, {"json": _posts_response(*second_page)}],
+            response_list=[
+                {"json": _posts_response(*first_page, has_next=True)},
+                {"json": _posts_response(*second_page, start=100)},
+            ],
         )
 
         output = _read("posts")
@@ -56,18 +63,30 @@ def test_posts_paginates_with_exact_parameters_and_protocol_header():
         assert output.errors == [], output.get_formatted_error_message()
         assert len(output.records) == 101
         assert [request.path for request in mocker.request_history] == ["/rest/posts", "/rest/posts"]
-        for request, start in zip(mocker.request_history, ("0", "100")):
-            _assert_params(
-                request,
-                {
-                    "author": _ORGANIZATION,
-                    "q": "author",
-                    "sortBy": "LAST_MODIFIED",
-                    "start": start,
-                    "count": "100",
-                },
-            )
+        expected = {"author": _ORGANIZATION, "q": "author", "sortBy": "LAST_MODIFIED", "count": "100"}
+        _assert_params(mocker.request_history[0], expected)
+        _assert_params(mocker.request_history[1], {**expected, "start": "100"})
+        for request in mocker.request_history:
             assert request.headers["X-Restli-Protocol-Version"] == "2.0.0"
+
+
+def test_posts_follow_the_next_link_after_a_short_page():
+    first_page = [{"id": f"urn:li:share:{index}"} for index in range(97)]
+    second_page = [{"id": f"urn:li:share:{index}"} for index in range(100, 150)]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/posts",
+            response_list=[
+                {"json": _posts_response(*first_page, has_next=True)},
+                {"json": _posts_response(*second_page, start=100)},
+            ],
+        )
+
+        output = _read("posts")
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert len(output.records) == 147
+        assert len(mocker.request_history) == 2
 
 
 def test_posts_incremental_cursor_filters_records_before_state():
@@ -93,7 +112,6 @@ def test_posts_incremental_cursor_filters_records_before_state():
                 "author": _ORGANIZATION,
                 "q": "author",
                 "sortBy": "LAST_MODIFIED",
-                "start": "0",
                 "count": "100",
             },
         )
@@ -122,7 +140,8 @@ def test_post_comments_encodes_post_urns_adds_parent_and_ignores_deleted_post():
         assert output.errors == [], output.get_formatted_error_message()
         assert [record.record.data for record in output.records] == [{"id": 1, "post_urn": _POST_URNS[0]}]
         comment_requests = [request for request in mocker.request_history if "/comments" in request.path]
-        assert [urlsplit(request.url).path for request in comment_requests] == [
+        # Partitions run concurrently, so the request order is not fixed.
+        assert sorted(urlsplit(request.url).path for request in comment_requests) == [
             f"/rest/socialActions/{encoded_urns[0]}/comments",
             f"/rest/socialActions/{encoded_urns[1]}/comments",
         ]
@@ -146,9 +165,9 @@ def test_post_reactions_uses_literal_parentheses_and_adds_parent_urn():
         assert {record.record.data["post_urn"] for record in output.records} == set(_POST_URNS)
         assert {record.record.data["id"] for record in output.records} == {f"reaction-{urn}" for urn in _POST_URNS}
         reaction_requests = [request for request in mocker.request_history if "/reactions/" in request.path]
-        assert [urlsplit(request.url).path for request in reaction_requests] == [
+        assert sorted(urlsplit(request.url).path for request in reaction_requests) == sorted(
             f"/rest/reactions/(entity:{urn.replace(':', '%3A')})" for urn in _POST_URNS
-        ]
+        )
         for request in reaction_requests:
             _assert_params(request, {"q": "entity", "start": "0", "count": "100"})
 
@@ -187,6 +206,7 @@ def _page_statistics_dates() -> tuple[int, int]:
     return _day_start_millis(start_day), _day_start_millis(end_day)
 
 
+@freeze_time("2026-10-23T14:37:12Z")
 def test_page_statistics_time_bound_aligns_midnight_and_removes_time_range():
     start_millis, end_millis = _page_statistics_dates()
     record = {
@@ -226,15 +246,12 @@ def test_page_statistics_time_bound_aligns_midnight_and_removes_time_range():
         assert "X-Restli-Protocol-Version" not in mocker.request_history[0].headers
 
 
-def test_page_statistics_time_bound_ignores_same_day_resync_error():
+@freeze_time("2026-10-23T14:37:12Z")
+def test_page_statistics_time_bound_same_day_resync_requests_nothing():
     _, end_millis = _page_statistics_dates()
     state = StateBuilder().with_stream_state("page_statistics_time_bound", {"timeRangeEnd": end_millis}).build()
     with requests_mock.Mocker() as mocker:
-        mocker.get(
-            f"{_BASE_URL}/organizationPageStatistics",
-            status_code=400,
-            json={"message": "Invalid timeIntervals parameter. End time must be greater than start time."},
-        )
+        mocker.get(f"{_BASE_URL}/organizationPageStatistics", json={"elements": []})
 
         output = _read("page_statistics_time_bound", SyncMode.incremental, state)
 
@@ -243,36 +260,21 @@ def test_page_statistics_time_bound_ignores_same_day_resync_error():
         assert mocker.request_history == []
 
 
-def test_page_statistics_time_bound_ignores_month_granularity_error():
+@freeze_time("2026-10-23T14:37:12Z")
+def test_page_statistics_time_bound_month_resume_inside_the_month_requests_nothing():
+    # LinkedIn rejects a MONTH window that ends inside the month it starts in, so only complete months are requested.
     _, end_millis = _page_statistics_dates()
     state_millis = end_millis - 5 * 24 * 60 * 60 * 1000
     state = StateBuilder().with_stream_state("page_statistics_time_bound", {"timeRangeEnd": state_millis}).build()
     config = {**_CONFIG, "time_granularity_type": "MONTH"}
     with requests_mock.Mocker() as mocker:
-        mocker.get(
-            f"{_BASE_URL}/organizationPageStatistics",
-            status_code=400,
-            json={
-                "message": "Invalid timeIntervals parameter [...]. End time must be greater than start time by at least one multiple of the granularity type [MONTH].",
-                "status": 400,
-            },
-        )
+        mocker.get(f"{_BASE_URL}/organizationPageStatistics", json={"elements": []})
 
         output = _read("page_statistics_time_bound", SyncMode.incremental, state, config=config)
 
         assert output.errors == [], output.get_formatted_error_message()
         assert output.records == []
-        assert len(mocker.request_history) == 1
-        _assert_params(
-            mocker.request_history[0],
-            {
-                "q": "organization",
-                "organization": _ORGANIZATION,
-                "timeIntervals.timeGranularityType": "MONTH",
-                "timeIntervals.timeRange.start": str(state_millis),
-                "timeIntervals.timeRange.end": str(end_millis),
-            },
-        )
+        assert mocker.request_history == []
 
 
 def test_posts_403_is_a_config_error_with_scope_remediation():
@@ -285,3 +287,67 @@ def test_posts_403_is_a_config_error_with_scope_remediation():
         assert all(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
         assert any("r_organization_social" in error.trace.error.message for error in output.errors)
         assert any("rw_organization_admin" in error.trace.error.message for error in output.errors)
+
+
+@freeze_time("2026-10-23T14:37:12Z")
+@pytest.mark.parametrize(
+    "start_date, expected_ids",
+    [
+        pytest.param("2026-01-01T00:00:00Z", {"this_year"}, id="start_date"),
+        pytest.param(None, {"this_year", "last_year"}, id="two_year_default"),
+    ],
+)
+def test_posts_first_incremental_sync_drops_posts_before_start(start_date, expected_ids):
+    config = {key: value for key, value in {**_CONFIG, "start_date": start_date}.items() if value is not None}
+    posts = [
+        {"id": "this_year", "lastModifiedAt": _day_start_millis(date(2026, 3, 1))},
+        {"id": "last_year", "lastModifiedAt": _day_start_millis(date(2025, 3, 1))},
+        {"id": "three_years_ago", "lastModifiedAt": _day_start_millis(date(2023, 3, 1))},
+    ]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/posts", json=_posts_response(*posts))
+
+        output = _read("posts", SyncMode.incremental, config=config)
+
+    assert output.errors == [], output.get_formatted_error_message()
+    assert {record.record.data["id"] for record in output.records} == expected_ids
+
+
+@pytest.mark.parametrize(
+    "stream_name, child_path",
+    [
+        ("post_comments", "/socialActions/urn%3Ali%3Ashare%3A1/comments"),
+        ("post_reactions", "/reactions/(entity:urn%3Ali%3Ashare%3A1)"),
+    ],
+)
+def test_child_streams_ignore_deleted_post_and_fail_403_as_config_error(stream_name, child_path):
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/posts", json=_posts_response({"id": "urn:li:share:1"}))
+        mocker.get(
+            f"{_BASE_URL}{child_path}",
+            [{"status_code": 404, "json": {"message": "Not found"}}, {"status_code": 403, "json": {"message": "Denied"}}],
+        )
+
+        deleted = _read(stream_name)
+        denied = _read(stream_name)
+
+    assert deleted.errors == [] and deleted.records == []
+    assert denied.errors
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in denied.errors)
+    assert any("r_organization_social" in error.trace.error.message for error in denied.errors)
+
+
+def test_new_streams_primary_keys_and_cursors():
+    catalog = discover(get_source(_CONFIG), _CONFIG).catalog.catalog
+    streams = {stream.name: stream for stream in catalog.streams}
+
+    assert {
+        name: (streams[name].source_defined_primary_key, streams[name].default_cursor_field)
+        for name in ("posts", "post_comments", "post_reactions", "page_statistics", "page_statistics_time_bound")
+    } == {
+        "posts": ([["id"]], ["lastModifiedAt"]),
+        "post_comments": ([["object"], ["id"]], None),
+        "post_reactions": ([["id"]], None),
+        "page_statistics": ([["organization"]], None),
+        "page_statistics_time_bound": ([["organization"], ["timeRangeStart"]], ["timeRangeEnd"]),
+    }
