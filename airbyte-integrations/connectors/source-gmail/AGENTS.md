@@ -16,10 +16,10 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 | profile | small | top-level parent | none | none | deferred_no_api_support | Singleton user profile endpoint |
 | threads | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Same limitation as messages — q parameter filters by date received |
 | labels_details | medium | child | none | none | deferred_child |  |
-| messages_details | medium | child | internalDate (ms) | created_at_only | incremental_lookback | Private `messages_for_details` parent filters by receipt date; state cursor is emitted in milliseconds |
+| messages_details | medium | child | internalDate (ms) | created_at_only | incremental_lookback | Private `messages_for_details` parent uses 30-day slices with a one-hour lookback |
 | threads_details | medium | child | none | none | deferred_child |  |
 
-`messages_details` uses an internal `messages_for_details` parent, which is not exposed as a top-level stream. The parent cursor stores `_listed_until` as Unix seconds and bounds Gmail's list request to the previous sync end minus one day; the child `internalDate` cursor is stored in milliseconds using `%ms`. Gmail's `after:` filter is based on receipt date, not modification time, so label or read-state changes on older messages require a full refresh.
+`messages_details` uses an internal `messages_for_details` parent, which is not exposed as a top-level stream. The parent cursor stores each 30-day slice's `_listed_until` in Unix seconds and bounds Gmail's list request to the previous sync end minus one hour; the child `internalDate` cursor is stored in milliseconds using `%ms`. Gmail's `after:` filter is based on receipt date, not modification time, so label or read-state changes on older messages require a full refresh.
 
 ### Future incremental stream candidates
 

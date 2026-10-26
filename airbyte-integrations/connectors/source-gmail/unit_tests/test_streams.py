@@ -49,6 +49,21 @@ def _messages_list_requests(requests_mock):
     return [r for r in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(r.url).path == messages_path]
 
 
+def _config_starting_days_ago(config, days_ago):
+    start = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(days=days_ago)
+    return {**config, "start_date": start.strftime("%Y-%m-%dT%H:%M:%SZ")}, int(start.timestamp())
+
+
+def _message_list_query_bounds(request):
+    query = parse_qs(urlparse(request.url).query)["q"][0]
+    after, before = query.split()
+    after_operator, after_value = after.split(":", 1)
+    before_operator, before_value = before.split(":", 1)
+    assert after_operator == "after"
+    assert before_operator == "before"
+    return query, int(after_value), int(before_value)
+
+
 def _message_detail_paths(requests_mock, requests_since=0):
     messages_path = urlparse(_MESSAGES_LIST_URL).path
     return {
@@ -557,6 +572,10 @@ def test_messages_details_checkpoints_on_internal_date(base_config, requests_moc
     successful sync its cursor is the max `internalDate` in milliseconds,
     while the internal parent state tracks the list interval in Unix seconds.
     """
+    config, start_epoch = _config_starting_days_ago(base_config, days_ago=5)
+    first_cursor = str((start_epoch + 10) * 1000)
+    second_cursor = str((start_epoch + 20) * 1000)
+
     # users.messages.list returns stubs only — this mirrors the real Gmail API.
     requests_mock.get(
         _MESSAGES_LIST_URL,
@@ -565,14 +584,14 @@ def test_messages_details_checkpoints_on_internal_date(base_config, requests_moc
     # users.messages.get populates internalDate on each message.
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/m1",
-        json={"id": "m1", "threadId": "t1", "internalDate": "1700000000000", "snippet": "a"},
+        json={"id": "m1", "threadId": "t1", "internalDate": first_cursor, "snippet": "a"},
     )
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/m2",
-        json={"id": "m2", "threadId": "t2", "internalDate": "1700001000000", "snippet": "b"},
+        json={"id": "m2", "threadId": "t2", "internalDate": second_cursor, "snippet": "b"},
     )
 
-    output = _read_stream("messages_details", SyncMode.incremental, base_config)
+    output = _read_stream("messages_details", SyncMode.incremental, config)
 
     assert output.records, "Expected at least one record from messages_details"
     states = output.state_messages
@@ -580,7 +599,7 @@ def test_messages_details_checkpoints_on_internal_date(base_config, requests_moc
     final_state = _state_data(output)
     global_state = final_state.get("state", {})
     cursor_value = global_state.get("internalDate")
-    assert cursor_value == "1700001000000", f"Expected max internalDate in milliseconds; got {final_state!r}"
+    assert cursor_value == second_cursor, f"Expected max internalDate in milliseconds; got {final_state!r}"
     assert len(cursor_value) == 13
     partitions = final_state.get("states", [])
     assert partitions, "Expected at least one per-partition cursor entry"
@@ -601,8 +620,10 @@ def test_messages_details_parent_uses_default_start_date_when_none_configured(ba
 
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
-    qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert qs.get("q") == ["after:1080777600"]
+    query, after, before = _message_list_query_bounds(list_calls[0])
+    assert query == "after:1080777600 before:1083369600"
+    assert after == 1080777600
+    assert before == 1083369600
 
 
 def test_messages_details_parent_injects_after_from_start_date(config_with_start_date, requests_mock):
@@ -617,8 +638,10 @@ def test_messages_details_parent_injects_after_from_start_date(config_with_start
 
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
-    qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert qs.get("q") == ["after:1704067200"], f"Expected q=after:1704067200, got {qs.get('q')!r}"
+    query, after, before = _message_list_query_bounds(list_calls[0])
+    assert query == "after:1704067200 before:1706659200"
+    assert after == 1704067200
+    assert before == 1706659200
 
 
 def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_mock):
@@ -628,6 +651,11 @@ def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_
     incremental sync on `messages_details` provides — state continuity
     across syncs.
     """
+    config, _ = _config_starting_days_ago(base_config, days_ago=3)
+    prior_cursor = int((datetime.now(timezone.utc) - timedelta(hours=2)).timestamp() * 1000)
+    first_cursor = str(prior_cursor + 1000)
+    second_cursor = str(prior_cursor + 2000)
+
     # New messages observed on the second sync; both newer than prior cursor.
     requests_mock.get(
         _MESSAGES_LIST_URL,
@@ -635,38 +663,42 @@ def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_
     )
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/n1",
-        json={"id": "n1", "threadId": "t1", "internalDate": "1700001000000", "snippet": "a"},
+        json={"id": "n1", "threadId": "t1", "internalDate": first_cursor, "snippet": "a"},
     )
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/n2",
-        json={"id": "n2", "threadId": "t2", "internalDate": "1700002000000", "snippet": "b"},
+        json={"id": "n2", "threadId": "t2", "internalDate": second_cursor, "snippet": "b"},
     )
 
-    # Seed prior state at the value the previous sync's checkpoint test
-    # emitted (1700001000 unix seconds = 1700001000000 ms).
     prior_state = (
         StateBuilder()
         .with_stream_state(
             "messages_details",
-            {"state": {"internalDate": "1700001000"}, "states": [], "lookback_window": 0},
+            {"state": {"internalDate": str(prior_cursor)}, "states": [], "lookback_window": 0},
         )
         .build()
     )
-    output = _read_stream("messages_details", SyncMode.incremental, base_config, state=prior_state)
+    output = _read_stream("messages_details", SyncMode.incremental, config, state=prior_state)
 
     # State must advance to the latest observed value, not regress to start_datetime.
     states = output.state_messages
     assert states, "Expected the second sync to emit state"
     final_state = states[-1].state.stream.stream_state.__dict__
     global_cursor = final_state.get("state", {}).get("internalDate")
-    assert global_cursor == "1700002000000", (
-        f"Expected state to advance to max observed internalDate=1700002000000; got {global_cursor!r}. "
+    assert global_cursor == second_cursor, (
+        f"Expected state to advance to max observed internalDate={second_cursor}; got {global_cursor!r}. "
         "If this regresses, the cursor is being reset on repeat syncs and incremental is broken."
     )
 
 
 def test_messages_details_start_date_request_fetches_only_listed_ids(config_with_start_date, requests_mock):
-    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": [{"id": "m1", "threadId": "t1"}]})
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        [
+            {"json": {"messages": [{"id": "m1", "threadId": "t1"}]}},
+            {"json": {"messages": []}},
+        ],
+    )
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/m1",
         json={"id": "m1", "threadId": "t1", "internalDate": "1704067201000"},
@@ -674,14 +706,19 @@ def test_messages_details_start_date_request_fetches_only_listed_ids(config_with
 
     output = _read_stream("messages_details", SyncMode.incremental, config_with_start_date)
 
-    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[0].url).query)
-    assert query.get("q") == ["after:1704067200"]
-    assert query.get("includeSpamTrash") == ["False"]
+    query, after, before = _message_list_query_bounds(_messages_list_requests(requests_mock)[0])
+    assert query == "after:1704067200 before:1706659200"
+    assert after == 1704067200
+    assert before == 1706659200
+    assert parse_qs(urlparse(_messages_list_requests(requests_mock)[0].url).query).get("includeSpamTrash") == ["False"]
     assert len(output.records) == 1
     assert _message_detail_paths(requests_mock) == {f"{urlparse(_MESSAGES_LIST_URL).path}/m1"}
 
 
 def test_messages_details_second_sync_uses_parent_state_and_round_trips_ms(base_config, requests_mock):
+    config, _ = _config_starting_days_ago(base_config, days_ago=5)
+    internal_date = str(int((datetime.now(timezone.utc) - timedelta(hours=2)).timestamp() * 1000))
+
     requests_mock.get(
         _MESSAGES_LIST_URL,
         [
@@ -692,12 +729,12 @@ def test_messages_details_second_sync_uses_parent_state_and_round_trips_ms(base_
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/m1",
         [
-            {"json": {"id": "m1", "threadId": "t1", "internalDate": "1700001000000"}},
-            {"json": {"id": "m1", "threadId": "t1", "internalDate": "1700001000000"}},
+            {"json": {"id": "m1", "threadId": "t1", "internalDate": internal_date}},
+            {"json": {"id": "m1", "threadId": "t1", "internalDate": internal_date}},
         ],
     )
 
-    first = _read_stream("messages_details", SyncMode.incremental, base_config)
+    first = _read_stream("messages_details", SyncMode.incremental, config)
     first_state = _state_data(first)
     first_cursor = first_state["state"]["internalDate"]
     previous_end = _parent_listed_until(first_state)
@@ -707,49 +744,102 @@ def test_messages_details_second_sync_uses_parent_state_and_round_trips_ms(base_
     state = StateBuilder().with_stream_state("messages_details", first_state).build()
 
     requests_before_second = len(requests_mock.request_history)
-    second = _read_stream("messages_details", SyncMode.incremental, base_config, state=state)
-    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[-1].url).query)
+    second = _read_stream("messages_details", SyncMode.incremental, config, state=state)
+    query, after, before = _message_list_query_bounds(_messages_list_requests(requests_mock)[-1])
     second_state = _state_data(second)
 
-    assert query.get("q") == [f"after:{previous_end - 86400}"]
-    assert second_state["state"]["internalDate"] == first_cursor
+    assert after == previous_end - 3600
     second_parent_end = _parent_listed_until(second_state)
+    assert second_parent_end is not None
+    assert before == int(second_parent_end) + 1
+    assert query == f"after:{previous_end - 3600} before:{before}"
+    assert second_state["state"]["internalDate"] == first_cursor
     assert second_parent_end is not None and len(second_parent_end) == 10
     assert int(second_parent_end) >= previous_end
     assert _message_detail_paths(requests_mock, requests_before_second) == {f"{urlparse(_MESSAGES_LIST_URL).path}/m1"}
 
 
-def test_messages_details_parent_state_does_not_advance_past_failed_child(base_config, requests_mock):
+def test_messages_details_parent_checkpoints_completed_slices_before_failed_child(base_config, requests_mock):
+    config, start_epoch = _config_starting_days_ago(base_config, days_ago=75)
+    step = 30 * 24 * 60 * 60
+    first_slice_end = start_epoch + step - 1
+    second_slice_end = start_epoch + 2 * step - 1
+    third_slice_start = second_slice_end + 1
     requests_mock.get(
         _MESSAGES_LIST_URL,
-        json={"messages": [{"id": "ok", "threadId": "t1"}, {"id": "fail", "threadId": "t2"}]},
+        [
+            {"json": {"messages": [{"id": "slice-1", "threadId": "t1"}]}},
+            {"json": {"messages": [{"id": "slice-2", "threadId": "t2"}]}},
+            {"json": {"messages": [{"id": "slice-3", "threadId": "t3"}]}},
+        ],
     )
     requests_mock.get(
-        f"{_MESSAGES_LIST_URL}/ok",
-        json={"id": "ok", "threadId": "t1", "internalDate": "1700001000000"},
+        f"{_MESSAGES_LIST_URL}/slice-1",
+        json={"id": "slice-1", "threadId": "t1", "internalDate": str((start_epoch + 10) * 1000)},
     )
     requests_mock.get(
-        f"{_MESSAGES_LIST_URL}/fail",
+        f"{_MESSAGES_LIST_URL}/slice-2",
+        json={"id": "slice-2", "threadId": "t2", "internalDate": str((start_epoch + step + 10) * 1000)},
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/slice-3",
         status_code=400,
         json={"error": {"code": 400, "message": "Invalid request"}},
     )
     state = StateBuilder().build()
     catalog = CatalogBuilder().with_stream("messages_details", SyncMode.incremental).build()
 
-    output = read(build_source(base_config, state), base_config, catalog, state, expecting_exception=True)
+    output = read(build_source(config, state), config, catalog, state, expecting_exception=True)
 
     assert output.errors
-    assert {path.rsplit("/", 1)[-1] for path in _message_detail_paths(requests_mock)} == {"ok", "fail"}
+    assert {path.rsplit("/", 1)[-1] for path in _message_detail_paths(requests_mock)} == {
+        "slice-1",
+        "slice-2",
+        "slice-3",
+    }
+
+    list_calls = _messages_list_requests(requests_mock)
+    assert len(list_calls) == 3
+    queries = [_message_list_query_bounds(request) for request in list_calls]
+    assert queries[0] == (f"after:{start_epoch} before:{first_slice_end + 1}", start_epoch, first_slice_end + 1)
+    assert queries[1] == (
+        f"after:{first_slice_end + 1} before:{second_slice_end + 1}",
+        first_slice_end + 1,
+        second_slice_end + 1,
+    )
+    assert queries[2][1] == third_slice_start
+    assert queries[2][2] > third_slice_start
+
     emitted_states = [message.state.stream.stream_state.__dict__ for message in output.state_messages]
     assert emitted_states, "Expected emitted state messages after the child request failure"
-    for emitted_state in emitted_states:
-        parent_cursor = _parent_listed_until(emitted_state)
-        assert (
-            parent_cursor is None or int(parent_cursor) <= 1080777600
-        ), f"Parent state advanced past the failed child partition: {parent_cursor!r}"
+    parent_cursors = [
+        int(parent_cursor) for emitted_state in emitted_states if (parent_cursor := _parent_listed_until(emitted_state)) is not None
+    ]
+    assert parent_cursors
+    assert list(dict.fromkeys(parent_cursors)) == [first_slice_end, second_slice_end]
+    assert parent_cursors[-1] == second_slice_end
+    assert all(parent_cursor < third_slice_start for parent_cursor in parent_cursors)
+
+
+def test_messages_details_slice_queries_are_contiguous_epoch_seconds(base_config, requests_mock):
+    config, start_epoch = _config_starting_days_ago(base_config, days_ago=75)
+    step = 30 * 24 * 60 * 60
+    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
+
+    _read_stream("messages_details", SyncMode.incremental, config)
+
+    list_calls = _messages_list_requests(requests_mock)
+    assert len(list_calls) == 3
+    queries = [_message_list_query_bounds(request) for request in list_calls]
+    assert queries[0][0] == f"after:{start_epoch} before:{start_epoch + step}"
+    assert queries[1][0] == f"after:{start_epoch + step} before:{start_epoch + 2 * step}"
+    assert queries[2][1] == queries[1][2]
+    assert all(after < before for _, after, before in queries)
 
 
 def test_messages_details_full_refresh_reads_all_listed_ids(base_config, requests_mock):
+    config, _ = _config_starting_days_ago(base_config, days_ago=5)
+    internal_date = str(int(datetime.now(timezone.utc).timestamp() * 1000))
     requests_mock.get(
         _MESSAGES_LIST_URL,
         json={"messages": [{"id": "m1", "threadId": "t1"}, {"id": "m2", "threadId": "t2"}]},
@@ -757,10 +847,10 @@ def test_messages_details_full_refresh_reads_all_listed_ids(base_config, request
     for message_id in ("m1", "m2"):
         requests_mock.get(
             f"{_MESSAGES_LIST_URL}/{message_id}",
-            json={"id": message_id, "threadId": "t1", "internalDate": "1700001000000"},
+            json={"id": message_id, "threadId": "t1", "internalDate": internal_date},
         )
 
-    output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
+    output = _read_stream("messages_details", SyncMode.full_refresh, config)
 
     assert len(output.records) == 2
     assert _message_detail_paths(requests_mock) == {
@@ -770,7 +860,13 @@ def test_messages_details_full_refresh_reads_all_listed_ids(base_config, request
 
 
 def test_messages_details_legacy_truncated_state_reads_from_start_date(config_with_start_date, requests_mock):
-    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": [{"id": "m1", "threadId": "t1"}]})
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        [
+            {"json": {"messages": [{"id": "m1", "threadId": "t1"}]}},
+            {"json": {"messages": []}},
+        ],
+    )
     requests_mock.get(
         f"{_MESSAGES_LIST_URL}/m1",
         json={"id": "m1", "threadId": "t1", "internalDate": "1704067201000"},
@@ -785,8 +881,10 @@ def test_messages_details_legacy_truncated_state_reads_from_start_date(config_wi
 
     output = _read_stream("messages_details", SyncMode.incremental, config_with_start_date, state=state)
 
-    query = parse_qs(urlparse(_messages_list_requests(requests_mock)[0].url).query)
-    assert query.get("q") == ["after:1704067200"]
+    query, after, before = _message_list_query_bounds(_messages_list_requests(requests_mock)[0])
+    assert query == "after:1704067200 before:1706659200"
+    assert after == 1704067200
+    assert before == 1706659200
     assert len(output.records) == 1
 
 

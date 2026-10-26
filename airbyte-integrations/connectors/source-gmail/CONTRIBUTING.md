@@ -14,10 +14,10 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 | profile | small | top-level parent | none | none | deferred_no_api_support | Singleton user profile endpoint |
 | threads | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Same limitation as messages — q parameter filters by date received |
 | labels_details | medium | child | none | none | deferred_child |  |
-| messages_details | medium | child | internalDate (ms) | created_at_only | incremental_lookback | Uses a private list parent bounded by the previous sync end minus one day |
+| messages_details | medium | child | internalDate (ms) | created_at_only | incremental_lookback | Uses a private list parent bounded by the previous sync end minus one hour |
 | threads_details | medium | child | none | none | deferred_child |  |
 
-Incremental `messages_details` uses a one-day lookback on received time, and its `internalDate` cursor is stored in milliseconds (`%ms`). Gmail's date filter does not detect label or read-state changes on older messages, so use a full refresh to pick those up; see [AGENTS.md](./AGENTS.md) for implementation details.
+Incremental `messages_details` uses a one-hour lookback on received time, and its `internalDate` cursor is stored in milliseconds (`%ms`). Messages received during the hour before the previous sync are fetched and emitted again, so append-only destinations can contain duplicates; **Append + Deduped** avoids them. Gmail's date filter does not detect label or read-state changes on older messages, so use a full refresh to pick those up; see [AGENTS.md](./AGENTS.md) for implementation details.
 
 ### Future incremental stream candidates
 
