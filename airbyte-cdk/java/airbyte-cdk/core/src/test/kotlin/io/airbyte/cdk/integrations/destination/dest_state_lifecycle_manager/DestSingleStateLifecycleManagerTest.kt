@@ -132,7 +132,7 @@ internal class DestSingleStateLifecycleManagerTest {
                 .withState(
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                        .withData(Jsons.jsonNode("a"))
+                        .withData(Jsons.jsonNode("a")),
                 )
         private val MESSAGE2: AirbyteMessage =
             AirbyteMessage()
@@ -140,7 +140,7 @@ internal class DestSingleStateLifecycleManagerTest {
                 .withState(
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                        .withData(Jsons.jsonNode("b"))
+                        .withData(Jsons.jsonNode("b")),
                 )
     }
 }

@@ -44,7 +44,7 @@ class FailSyncTask(
 class FailSyncTaskFactory(
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
-    private val destinationWriter: DestinationWriter
+    private val destinationWriter: DestinationWriter,
 ) {
     fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask {
         return FailSyncTask(

@@ -8,7 +8,7 @@ The Google-Drive connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download), [Context Store Search](#files-context-store-search), [Semantic Search](#files-semantic-search) |
+| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download), [Context Store Search](#files-context-store-search), [Context Store SQL Query](#files-context-store-sql-query), [Semantic Search](#files-semantic-search) |
 | Files Upload | [Create](#files-upload-create) |
 | Files Export | [Download](#files-export-download) |
 | Drives | [List](#drives-list), [Get](#drives-get) |
@@ -769,6 +769,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].file_path` | `string` | Full path of the file within the synced Drive folder. |
 | `data[].mime_type` | `string` | MIME type of the file. |
 | `data[].content` | `string` | Extracted text content of the file. |
+
+</details>
+
+### Files Context Store SQL Query
+
+Run a SQL query against files records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

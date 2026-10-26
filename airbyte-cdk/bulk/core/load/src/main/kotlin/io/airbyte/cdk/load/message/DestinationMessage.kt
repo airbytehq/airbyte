@@ -65,7 +65,7 @@ data class DestinationRecord(
                                         .asProtocolObject()
                                 },
                             ),
-                    )
+                    ),
             )
 
     fun asDestinationRecordRaw(): DestinationRecordRaw {
@@ -163,7 +163,7 @@ private fun statusToProtocolMessage(
                         .withStreamDescriptor(
                             StreamDescriptor()
                                 .withNamespace(destinationStream.unmappedNamespace)
-                                .withName(destinationStream.unmappedName)
+                                .withName(destinationStream.unmappedName),
                         )
                         .withStatus(status),
                 ),
@@ -205,7 +205,7 @@ data object ProbeMessage : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         throw UnsupportedOperationException(
             "ProbeMessage cannot be converted to AirbyteMessage. " +
-                "It is only used by the source to verify that the data channel is open."
+                "It is only used by the source to verify that the data channel is open.",
         )
     }
 }

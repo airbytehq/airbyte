@@ -856,6 +856,7 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[ConversionTagsSearchData]
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[CustomerListsSearchData]
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[KeywordsSearchData]
+    * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

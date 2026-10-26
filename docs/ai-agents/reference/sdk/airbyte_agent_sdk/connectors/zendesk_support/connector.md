@@ -52,6 +52,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against article_attachments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `download(self, article_id: str, attachment_id: str, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
     :   Downloads the file content of a specific attachment
         
@@ -153,6 +168,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against articles records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Article`
     :   Retrieves the details of a specific article
@@ -266,6 +296,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against automations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, automation_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Automation`
     :   Returns an automation by its ID
         
@@ -338,6 +383,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against brands records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, brand_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Brand`
     :   Returns a brand by its ID
         
@@ -397,6 +457,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against deleted_tickets records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page: int | None = None, sort_by: str | None = None, sort_order: str | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[DeletedTicket], DeletedTicketsListResultMeta]`
     :   Returns a list of deleted tickets in your account. Only tickets deleted in the past 30 days are returned.
         
@@ -449,6 +524,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against group_memberships records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[GroupMembership], GroupMembershipsListResultMeta]`
     :   Returns a list of all group memberships
         
@@ -500,6 +590,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, group_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Group`
     :   Returns a group by its ID
@@ -565,6 +670,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against macros records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, macro_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Macro`
     :   Returns a macro by its ID
@@ -635,6 +755,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against organization_memberships records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[OrganizationMembership], OrganizationMembershipsListResultMeta]`
     :   Returns a list of all organization memberships
         
@@ -692,6 +827,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against organizations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, organization_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Organization`
     :   Returns an organization by its ID
@@ -758,6 +908,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against satisfaction_ratings records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, satisfaction_rating_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.SatisfactionRating`
     :   Returns a satisfaction rating by its ID
         
@@ -823,6 +988,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against sla_policies records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, sla_policy_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.SLAPolicy`
     :   Returns an SLA policy by its ID
         
@@ -878,6 +1058,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[Tag], TagsListResultMeta]`
     :   Returns a list of all tags used in the account
         
@@ -928,6 +1123,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ticket_audits records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, ticket_id: str, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[TicketAudit], TicketAuditsListResultMeta]`
     :   Returns a list of audits for a specific ticket
@@ -1009,6 +1219,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ticket_comments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, ticket: TicketCommentsCreateParamsTicket, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
     :   Adds a public reply or internal note to an existing ticket by updating it with a comment object.
@@ -1094,6 +1319,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ticket_fields records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, ticket_field_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.TicketField`
     :   Returns a ticket field by its ID
         
@@ -1164,6 +1404,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ticket_forms records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, ticket_form_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.TicketForm`
     :   Returns a ticket form by its ID
@@ -1250,6 +1505,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ticket_metrics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[TicketMetric], TicketMetricsListResultMeta]`
     :   Returns a list of all ticket metrics
         
@@ -1333,6 +1603,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tickets records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, ticket: TicketsCreateParamsTicket, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
     :   Creates a new ticket in Zendesk Support
@@ -1422,6 +1707,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against triggers records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, trigger_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Trigger`
     :   Returns a trigger by its ID
@@ -1518,6 +1818,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, user: UsersCreateParamsUser, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
     :   Creates a new end-user, agent, or admin in Zendesk Support
@@ -1618,7 +1933,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Zendesk subdomain
     Examples:
         # Local mode (direct API calls)
-        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."))
+        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ZendeskSupportConnector(
             auth_config=AirbyteAuthConfig(
@@ -1652,12 +1967,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -1716,7 +2032,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -1729,6 +2049,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -1770,9 +2093,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -1827,7 +2152,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

@@ -28,6 +28,7 @@ Some output streams are available from this source. A list of these streams can 
 
 Getting oauth credentials require contacting Outreach to request an account. Check out [here](https://www.outreach.io/lp/watch-demo#request-demo).
 Once you have an API application, you can follow the steps [here](https://api.outreach.io/api/v2/docs#authentication) to obtain a refresh token.
+Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings. The connector fills them in and saves each new refresh token that Outreach returns.
 
 ## Streams
 
@@ -49,6 +50,14 @@ List of available streams:
 - Templates
 - Snippets
 
+:::warning Upcoming change to the Prospects stream
+Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
+
+After that date, the `contactHistogram` column in the `Prospects` stream will be `null` for newly synced records. Syncs will continue to run normally, and no other fields, the primary key (`id`), or the cursor (`updatedAt`) are affected. Historical values already in your destination are unchanged.
+
+If you rely on `contactHistogram`, retrieve it directly from the Outreach API by requesting it explicitly with the `fields[prospect]` parameter.
+:::
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -60,6 +69,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.50 | 2026-10-20 | [89080](https://github.com/airbytehq/airbyte/pull/89080) | Save rotated OAuth tokens and refresh the access token on 401 |
+| 1.1.49 | 2026-10-20 | [89347](https://github.com/airbytehq/airbyte/pull/89347) | Update dependencies |
+| 1.1.48 | 2026-10-13 | [88737](https://github.com/airbytehq/airbyte/pull/88737) | Update dependencies |
+| 1.1.47 | 2026-10-06 | [87971](https://github.com/airbytehq/airbyte/pull/87971) | Update dependencies |
+| 1.1.46 | 2026-09-29 | [87292](https://github.com/airbytehq/airbyte/pull/87292) | Update dependencies |
+| 1.1.45 | 2026-09-22 | [86761](https://github.com/airbytehq/airbyte/pull/86761) | Update dependencies |
+| 1.1.44 | 2026-09-15 | [86167](https://github.com/airbytehq/airbyte/pull/86167) | Update dependencies |
+| 1.1.43 | 2026-09-08 | [85592](https://github.com/airbytehq/airbyte/pull/85592) | Update dependencies |
 | 1.1.42 | 2026-08-18 | [84700](https://github.com/airbytehq/airbyte/pull/84700) | Update dependencies |
 | 1.1.41 | 2026-08-11 | [84057](https://github.com/airbytehq/airbyte/pull/84057) | Update dependencies |
 | 1.1.40 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |

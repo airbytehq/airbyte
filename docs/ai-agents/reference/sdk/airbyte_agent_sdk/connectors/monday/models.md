@@ -157,6 +157,7 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UpdatesSearchData]
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[WorkspacesSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1649,6 +1650,9 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+    `refresh_token: str | None`
+    :   Refresh token used to obtain new access tokens when the current one expires
 
 <a id="Tag"></a>
 

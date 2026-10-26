@@ -1,15 +1,73 @@
 version: 5.14.0
 definitions:
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - credentials
+      - auth_type
+    authenticators:
+      oauth2.0:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: https://zoom.us/oauth/token
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+        grant_type: refresh_token
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+            - credentials
+            - access_token
+          refresh_token_config_path:
+            - credentials
+            - refresh_token
+          token_expiry_date_config_path:
+            - credentials
+            - token_expiry_date
+        refresh_token_error_status_codes: [400, 401, 404]
+        refresh_token_error_key: error
+        refresh_token_error_values:
+          - invalid_grant
+          - invalid_client
+          - invalid_request
+          - unsupported_grant_type
+      server_to_server:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['credentials'].get('authorization_endpoint') or 'https://zoom.us/oauth/token' }}"
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        grant_type: account_credentials
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['credentials']['account_id'] }}"
+        refresh_token_error_status_codes: [400, 401, 404]
+        refresh_token_error_key: error
+        refresh_token_error_values:
+          - invalid_client
+          - invalid_request
+          - unsupported_grant_type
+  zoom_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: "{{ response.code == 124 }}"
+        action: REFRESH_TOKEN_THEN_RETRY
+        error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+      - type: HttpResponseFilter
+        predicate: "{{ response.code == 4711 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Zoom access token lacks a required scope ('{{ response.message }}'). Add the scopes listed in the Zoom source documentation to the Zoom app and re-authenticate the source."
   requester:
     url_base: "https://api.zoom.us/v2"
     http_method: "GET"
-    authenticator:
-      class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-      client_id: "{{ config['client_id'] }}"
-      account_id: "{{ config['account_id'] }}"
-      client_secret: "{{ config['client_secret'] }}"
-      authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-      grant_type: "account_credentials"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/zoom_error_handler"
   zoom_paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -28,25 +86,15 @@ definitions:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
+      authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/zoom_error_handler"
   users_stream:
     retriever:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
+        error_handler: "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -191,14 +239,18 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/users/{{ stream_partition.parent_id }}/meetings"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+            - predicate: "{{ response.code == 3161 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+              type: HttpResponseFilter
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -226,13 +278,8 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
+                error_handler: "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -379,14 +426,18 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/meetings/{{ stream_partition.parent_id }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -401,14 +452,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -436,14 +491,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1208,22 +1257,20 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/meetings/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - predicate: "{{ response.code == 300 }}"
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -1251,14 +1298,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1286,14 +1337,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1555,23 +1600,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -1587,14 +1630,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1622,14 +1669,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1904,13 +1945,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/past_meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -1921,7 +1956,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -1937,14 +1972,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1972,14 +2011,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2189,23 +2222,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/meetings/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -2220,14 +2251,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2255,14 +2290,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2473,13 +2502,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/users/{{ stream_partition.parent_id }}/webinars"
         error_handler:
           type: CompositeErrorHandler
@@ -2489,7 +2512,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -2517,13 +2540,8 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
+                error_handler: "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2670,13 +2688,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -2687,7 +2699,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -2702,13 +2714,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -2718,7 +2724,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2746,14 +2752,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3298,13 +3298,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}/panelists"
         error_handler:
           type: CompositeErrorHandler
@@ -3315,7 +3309,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -3331,13 +3325,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -3347,7 +3335,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3375,14 +3363,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3583,13 +3565,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
@@ -3600,7 +3576,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -3628,13 +3604,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -3644,7 +3614,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3672,14 +3642,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3941,14 +3905,8 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
+        authenticator: "#/definitions/authenticator"
+        path: "/past_webinars/{{ stream_partition.parent_uuid | urlencode | replace('/', '%2F') | urlencode }}/absentees"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -3958,7 +3916,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -3986,13 +3944,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4002,7 +3954,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4030,14 +3982,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4299,13 +4245,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -4316,7 +4256,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4332,13 +4272,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4348,7 +4282,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4376,14 +4310,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4658,14 +4586,8 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
+        authenticator: "#/definitions/authenticator"
+        path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/polls"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -4674,7 +4596,7 @@ definitions:
             - http_codes:
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4690,13 +4612,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4706,7 +4622,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4734,14 +4650,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4939,23 +4849,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4970,13 +4878,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4986,7 +4888,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5014,14 +4916,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5232,23 +5128,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/webinars/{{ stream_partition.parent_id }}/tracking_sources"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5264,13 +5158,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -5280,7 +5168,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5308,14 +5196,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5500,14 +5382,8 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
+        authenticator: "#/definitions/authenticator"
+        path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/qa"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5517,7 +5393,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5533,13 +5409,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -5549,7 +5419,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5577,14 +5447,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5774,13 +5638,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/report/meetings/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -5791,7 +5649,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5806,14 +5664,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5841,14 +5703,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6093,13 +5949,7 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
+        authenticator: "#/definitions/authenticator"
         path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
@@ -6110,7 +5960,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -6138,14 +5988,18 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                      type: HttpResponseFilter
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6173,14 +6027,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6405,23 +6253,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
-        path: "/report/webinars/{{ stream_partition.parent_id }}"
+        authenticator: "#/definitions/authenticator"
+        path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -6436,13 +6282,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -6452,7 +6292,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6480,14 +6320,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6734,23 +6568,21 @@ definitions:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
-        authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-          client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-          grant_type: "account_credentials"
-        path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
+        authenticator: "#/definitions/authenticator"
+        path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/participants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -6778,13 +6610,7 @@ definitions:
               requester:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
-                authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                  client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
-                  client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                  grant_type: "account_credentials"
+                authenticator: "#/definitions/authenticator"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -6794,7 +6620,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6822,14 +6648,8 @@ definitions:
                       requester:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
-                        authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                          client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
-                          client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
-                          grant_type: "account_credentials"
+                        authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -7038,14 +6858,8 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/zoom_error_handler"
       type: HttpRequester
       path: "/users"
     paginator:
@@ -7197,15 +7011,18 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/meetings/{{ stream_partition.parent_id }}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -7222,15 +7039,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -7261,15 +7081,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8051,24 +7864,21 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/meetings/{{ stream_partition.parent_id }}/registrants"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - predicate: "{{ response.code == 300 }}"
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -8099,15 +7909,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8138,15 +7951,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8426,25 +8232,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/meetings/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -8462,15 +8265,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8501,15 +8307,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8802,14 +8601,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/past_meetings/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -8821,7 +8613,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -8839,15 +8631,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8878,15 +8673,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9113,25 +8901,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/meetings/{{ stream_partition.parent_id }}/registrants/questions"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9148,15 +8933,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -9187,15 +8975,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9423,14 +9204,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}"
       error_handler:
         type: CompositeErrorHandler
@@ -9442,7 +9216,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9459,14 +9233,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -9477,7 +9244,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -9508,15 +9275,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10078,14 +9838,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}/panelists"
       error_handler:
         type: CompositeErrorHandler
@@ -10097,7 +9850,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -10115,14 +9868,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10133,7 +9879,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10164,15 +9910,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10390,14 +10129,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}/registrants"
       error_handler:
         type: CompositeErrorHandler
@@ -10409,7 +10141,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -10440,14 +10172,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10458,7 +10183,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10489,15 +10214,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10776,15 +10494,8 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
+      authenticator: "#/definitions/authenticator"
+      path: "/past_webinars/{{ stream_partition.parent_uuid | urlencode | replace('/', '%2F') | urlencode }}/absentees"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -10795,7 +10506,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -10826,14 +10537,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10844,7 +10548,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10875,15 +10579,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11163,14 +10860,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -11182,7 +10872,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11200,14 +10890,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11218,7 +10901,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11249,15 +10932,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11549,15 +11225,8 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
+      authenticator: "#/definitions/authenticator"
+      path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/polls"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -11567,7 +11236,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11585,14 +11254,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11603,7 +11265,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11634,15 +11296,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11857,25 +11512,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}/registrants/questions"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11892,14 +11544,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11910,7 +11555,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11941,15 +11586,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12177,25 +11815,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/webinars/{{ stream_partition.parent_id }}/tracking_sources"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12213,14 +11848,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -12231,7 +11859,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12262,15 +11890,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12473,15 +12094,8 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
+      authenticator: "#/definitions/authenticator"
+      path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/qa"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -12492,7 +12106,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12510,14 +12124,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -12528,7 +12135,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12559,15 +12166,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12774,14 +12374,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/report/meetings/{{ stream_partition.parent_id }}"
       error_handler:
         type: CompositeErrorHandler
@@ -12793,7 +12386,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12810,15 +12403,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12849,15 +12445,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13119,14 +12708,7 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
+      authenticator: "#/definitions/authenticator"
       path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
       error_handler:
         type: CompositeErrorHandler
@@ -13138,7 +12720,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -13169,15 +12751,18 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
+                    type: HttpResponseFilter
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13208,15 +12793,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13459,25 +13037,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/report/webinars/{{ stream_partition.parent_id }}"
+      authenticator: "#/definitions/authenticator"
+      path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -13494,14 +13069,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -13512,7 +13080,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13543,15 +13111,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13815,25 +13376,22 @@ streams:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
-      authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-        client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-        grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
+      authenticator: "#/definitions/authenticator"
+      path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/participants"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -13864,14 +13422,7 @@ streams:
             requester:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
+              authenticator: "#/definitions/authenticator"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -13882,7 +13433,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13913,15 +13464,8 @@ streams:
                     requester:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                      authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -14156,29 +13700,204 @@ spec:
     title: Zoom Spec
     type: object
     required:
-    - account_id
-    - client_id
-    - client_secret
-    - authorization_endpoint
+    - credentials
     additionalProperties: true
     properties:
-      account_id:
-        type: string
+      credentials:
+        type: object
+        title: Authentication
         order: 0
-        description: 'The account ID for your Zoom account. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
-      client_id:
-        type: string
-        order: 1
-        description: 'The client ID for your Zoom app. You can find this in the Zoom
-          Marketplace under the "Manage" tab for your app.'
-      client_secret:
-        type: string
-        order: 2
-        description: 'The client secret for your Zoom app. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
-        airbyte_secret: true
-      authorization_endpoint:
-        type: string
-        order: 3
-        default: "https://zoom.us/oauth/token"
+        description: Choose how to authenticate to Zoom.
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                title: Auth Type
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your admin-managed Zoom General app.
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your admin-managed Zoom General app.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The Refresh Token Zoom issues when an account owner or admin authorizes your Zoom General app.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                airbyte_secret: true
+                airbyte_hidden: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                format: date-time
+                airbyte_hidden: true
+                order: 5
+            additionalProperties: true
+          - type: object
+            title: Server-to-Server OAuth
+            required:
+              - auth_type
+              - account_id
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                title: Auth Type
+                const: server_to_server
+                order: 0
+              account_id:
+                type: string
+                title: Account ID
+                description: The Account ID shown on your Server-to-Server OAuth app's "App Credentials" page in the Zoom App Marketplace.
+                order: 1
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID shown on the same "App Credentials" page.
+                order: 2
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes (or their granular equivalents).
+                airbyte_secret: true
+                order: 3
+              authorization_endpoint:
+                type: string
+                title: Authorization Endpoint
+                description: Leave the default unless Zoom support has given you a different token URL.
+                default: https://zoom.us/oauth/token
+                airbyte_hidden: true
+                order: 4
+            additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://zoom.us/oauth/authorize?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state_value}}"
+        access_token_url: https://zoom.us/oauth/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Migrates the existing flat Server-to-Server OAuth config to the nested credentials format.
+          OLD: {"account_id": ..., "client_id": ..., "client_secret": ..., "authorization_endpoint": ...}
+          NEW: {"credentials": {"auth_type": "server_to_server", "account_id": ..., "client_id": ..., "client_secret": ..., "authorization_endpoint": ...}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "account_id"]
+                value: "{{ config['account_id'] }}"
+                value_type: string
+            condition: "{{ config.get('account_id') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_id"]
+                value: "{{ config['client_id'] }}"
+                value_type: string
+            condition: "{{ config.get('client_id') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_secret"]
+                value: "{{ config['client_secret'] }}"
+                value_type: string
+            condition: "{{ config.get('client_secret') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "authorization_endpoint"]
+                value: "{{ config['authorization_endpoint'] }}"
+                value_type: string
+            condition: "{{ config.get('authorization_endpoint') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: server_to_server
+            condition: "{{ not config.get('credentials', {}).get('auth_type') and (config.get('client_id') or config.get('account_id')) }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - [account_id]
+              - [client_id]
+              - [client_secret]
+              - [authorization_endpoint]
+            condition: "{{ config.get('credentials', {}).get('auth_type') }}"

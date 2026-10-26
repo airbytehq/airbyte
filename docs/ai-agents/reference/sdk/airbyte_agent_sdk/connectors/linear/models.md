@@ -68,6 +68,7 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[WorkflowStatesSearchData]
+    * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
