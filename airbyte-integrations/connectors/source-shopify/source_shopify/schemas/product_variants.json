@@ -217,6 +217,35 @@
       "description": "Indicates whether the variant requires shipping",
       "type": ["null", "boolean"]
     },
+    "requires_components": {
+      "description": "Whether the product variant requires components. If true, the variant can only be purchased as a parent bundle with components.",
+      "type": ["null", "boolean"]
+    },
+    "product_variant_components": {
+      "description": "The component variants that make up a bundle product variant.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "The unique identifier for the product variant component.",
+            "type": ["null", "integer"]
+          },
+          "quantity": {
+            "description": "The required quantity of the component.",
+            "type": ["null", "integer"]
+          },
+          "variant_id": {
+            "description": "The unique identifier for the component product variant.",
+            "type": ["null", "integer"]
+          },
+          "product_id": {
+            "description": "The unique identifier for the component product.",
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
     "admin_graphql_api_id": {
       "description": "The unique identifier for the variant used by the GraphQL Admin API",
       "type": ["null", "string"]
