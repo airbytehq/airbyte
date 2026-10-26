@@ -124,7 +124,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.0.0 | 2026-10-27 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys on the six streams that existed before 1.3.0 and type the epoch-millisecond fields of `organization_lookup` and the follower and share time-bound streams as integers |
+| 2.0.0 | 2026-10-27 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys on the six streams that existed before 1.3.0, type the epoch-millisecond fields of `organization_lookup` and the follower and share time-bound streams as integers, and add `date` to the three time-bound statistics streams |
 | 1.3.0 | 2026-10-26 | [89713](https://github.com/airbytehq/airbyte/pull/89713) | Add `posts`, `post_comments`, `post_reactions`, `page_statistics` and `page_statistics_time_bound` streams |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
