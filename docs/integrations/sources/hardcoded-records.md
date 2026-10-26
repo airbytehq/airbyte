@@ -1,12 +1,34 @@
 # Hardcoded Records
 
-## Sync overview
+The Hardcoded Records source emits the same sample record repeatedly, as fast as it can. Use it to performance test destinations and Airbyte deployments without depending on a real data source.
 
-The Sample Data (Hardcoded Records) source outputs sample data (same record over and over again, but very fast) and is intended to be used in performance testing.
+This connector doesn't connect to any external system and doesn't need credentials.
 
-### Output schemas
+## Configuration
 
-This source will generate an dataset with products (skinny), customers (fat) and dummy fields. Here's the examples:
+| Field | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| Count | No | 1000 | The number of records to emit for each stream. The minimum value is 1. |
+
+## Supported sync modes
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | No |
+| Namespaces | No |
+
+## Supported streams
+
+Each stream emits the number of records set in **Count**. Every record in a stream is identical, and no stream has a primary key.
+
+| Stream | Description |
+| :--- | :--- |
+| `products` | A small record with 7 fields. |
+| `customers` | A large record with 28 top-level fields, including nested objects and arrays. |
+| `dummy_fields` | A record with 5 string fields. |
+
+The following examples show the record that each stream emits.
 
 <details>
 <summary>Products</summary>
@@ -129,23 +151,6 @@ This source will generate an dataset with products (skinny), customers (fat) and
 
 </details>
 
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes |
-|:------------------|:---------------------|:------|
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
-| Namespaces        | No                   |       |
-
-
-### Requirements
-
-None!
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -153,7 +158,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
-| 0.0.47 | 2026-10-20 | [89548](https://github.com/airbytehq/airbyte/pull/89548) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
+| 0.0.47 | 2026-10-21 | [89548](https://github.com/airbytehq/airbyte/pull/89548) | Upgrade to airbyte-cdk 7 and Python 3.13 base image |
 | 0.0.46 | 2025-10-21 | [68285](https://github.com/airbytehq/airbyte/pull/68285) | Update dependencies |
 | 0.0.45 | 2025-10-14 | [67921](https://github.com/airbytehq/airbyte/pull/67921) | Update dependencies |
 | 0.0.44 | 2025-10-07 | [67413](https://github.com/airbytehq/airbyte/pull/67413) | Update dependencies |
