@@ -38,15 +38,24 @@ _FULL_28_DAY_WINDOWS = [("2026-08-26", "2026-09-22"), ("2026-09-23", "2026-10-20
 _USER_ID = "u1"
 
 
-def _report_request(start: str, end: str, next_page_token: str = ""):
+def _report_request(start: str, end: str, next_page_token: str = "", user_id: str = _USER_ID):
     params = {"type": "past", "page_size": "300", "from": start, "to": end}
     if next_page_token:
         params["next_page_token"] = next_page_token
-    return request(f"/report/users/{_USER_ID}/meetings", params)
+    return request(f"/report/users/{user_id}/meetings", params)
 
 
 def _meeting(end_time: str, uuid: str = "meeting-uuid"):
     return {"uuid": uuid, "end_time": end_time, "topic": "Team sync"}
+
+
+def _global_state(end_time: str) -> dict[str, object]:
+    return {
+        "use_global_cursor": True,
+        "state": {"end_time": end_time},
+        "lookback_window": 0,
+        "parent_state": {},
+    }
 
 
 def _mock_parents(http_mocker: HttpMocker) -> None:
@@ -84,12 +93,9 @@ class TestReportUserMeetings(TestCase):
         assert_completed_without_errors(output, _STREAM)
         assert records_data(output) == [{**_meeting("2026-10-19T12:00:00Z"), "user_id": _USER_ID}]
         assert all((date.fromisoformat(end) - date.fromisoformat(start)).days == 27 for start, end in _FULL_28_DAY_WINDOWS)
-        assert output.most_recent_state.stream_state.__dict__["states"] == [
-            {
-                "partition": {"parent_id": _USER_ID, "parent_slice": {}},
-                "cursor": {"end_time": "2026-10-19"},
-            }
-        ]
+        emitted_state = output.most_recent_state.stream_state.__dict__
+        assert emitted_state["use_global_cursor"] is True
+        assert emitted_state["state"] == {"end_time": "2026-10-19"}
         for http_request in requests:
             http_mocker.assert_number_of_calls(http_request, 1)
 
@@ -157,22 +163,34 @@ class TestReportUserMeetings(TestCase):
             _STREAM,
             sync_mode=SyncMode.incremental,
             state=StateBuilder()
-            .with_stream_state(
-                _STREAM,
-                {
-                    "states": [
-                        {
-                            "partition": {"parent_id": _USER_ID, "parent_slice": {}},
-                            "cursor": {"end_time": "2026-10-10"},
-                        }
-                    ]
-                },
-            )
+            .with_stream_state(_STREAM, _global_state("2026-10-10"))
             .build(),
         )
 
         assert_completed_without_errors(output, _STREAM)
         http_mocker.assert_number_of_calls(current, 1)
+
+    @HttpMocker()
+    def test_global_cursor_uses_one_window_for_users_without_prior_meetings(self, http_mocker: HttpMocker):
+        mock_token(http_mocker)
+        mock_users(http_mocker, users=[{"id": "u1"}, {"id": "u2"}])
+        requests = [
+            _report_request("2026-10-09", "2026-10-20", user_id="u1"),
+            _report_request("2026-10-09", "2026-10-20", user_id="u2"),
+        ]
+        http_mocker.get(requests[0], json_response({"meetings": [_meeting("2026-10-10T12:00:00Z")]}))
+        http_mocker.get(requests[1], json_response({"meetings": []}))
+
+        output = read_stream(
+            _STREAM,
+            sync_mode=SyncMode.incremental,
+            state=StateBuilder().with_stream_state(_STREAM, _global_state("2026-10-10")).build(),
+        )
+
+        assert_completed_without_errors(output, _STREAM)
+        assert records_data(output) == [{**_meeting("2026-10-10T12:00:00Z"), "user_id": "u1"}]
+        for current in requests:
+            http_mocker.assert_number_of_calls(current, 1)
 
     @HttpMocker()
     def test_unknown_user_is_ignored(self, http_mocker: HttpMocker):
