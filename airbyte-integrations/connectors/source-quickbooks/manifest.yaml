@@ -127,7 +127,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -144,7 +144,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -312,7 +312,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}'
               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -329,7 +329,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -491,7 +491,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -508,7 +508,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -757,7 +757,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -774,7 +774,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1118,7 +1118,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1135,7 +1135,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1333,7 +1333,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1350,7 +1350,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1638,7 +1638,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}'
               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1655,7 +1655,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1825,7 +1825,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1842,7 +1842,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2225,7 +2225,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -2242,7 +2242,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2592,7 +2592,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -2609,7 +2609,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2740,7 +2740,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -2757,7 +2757,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3040,7 +3040,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -3057,7 +3057,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3254,7 +3254,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -3271,7 +3271,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3705,7 +3705,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}'
               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -3722,7 +3722,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3837,7 +3837,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -3854,7 +3854,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4402,7 +4402,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -4419,7 +4419,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4613,7 +4613,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -4630,7 +4630,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4944,7 +4944,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -4961,7 +4961,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -5079,7 +5079,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -5096,7 +5096,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -5522,7 +5522,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -5539,7 +5539,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -5981,7 +5981,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -5998,7 +5998,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6386,7 +6386,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -6403,7 +6403,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6746,7 +6746,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}'
               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -6763,7 +6763,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6928,7 +6928,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -6945,7 +6945,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7376,7 +7376,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -7393,7 +7393,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7515,7 +7515,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -7532,7 +7532,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7702,7 +7702,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -7719,7 +7719,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7900,7 +7900,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -7917,7 +7917,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -8059,7 +8059,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -8076,7 +8076,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -8254,7 +8254,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -8271,7 +8271,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -8429,7 +8429,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' ORDER BY
               Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -8446,7 +8446,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -8703,7 +8703,7 @@ definitions:
               + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
               false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              (config.max_results or '1000') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -8720,7 +8720,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -9008,7 +9008,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -9025,7 +9025,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9193,7 +9193,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}'
           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -9210,7 +9210,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9372,7 +9372,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -9389,7 +9389,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9638,7 +9638,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -9655,7 +9655,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9999,7 +9999,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10016,7 +10016,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -10214,7 +10214,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10231,7 +10231,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -10518,7 +10518,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}'
           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10535,7 +10535,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -10705,7 +10705,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10722,7 +10722,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11105,7 +11105,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -11122,7 +11122,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11472,7 +11472,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -11489,7 +11489,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11620,7 +11620,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -11637,7 +11637,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11920,7 +11920,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -11937,7 +11937,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12134,7 +12134,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -12151,7 +12151,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12585,7 +12585,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}'
           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -12602,7 +12602,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12717,7 +12717,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -12734,7 +12734,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13282,7 +13282,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -13299,7 +13299,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13493,7 +13493,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -13510,7 +13510,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13824,7 +13824,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -13841,7 +13841,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13959,7 +13959,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -13976,7 +13976,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14401,7 +14401,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -14418,7 +14418,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14860,7 +14860,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -14877,7 +14877,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -15265,7 +15265,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -15282,7 +15282,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -15625,7 +15625,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}'
           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -15642,7 +15642,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -15807,7 +15807,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -15824,7 +15824,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -16255,7 +16255,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -16272,7 +16272,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -16394,7 +16394,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -16411,7 +16411,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -16581,7 +16581,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -16598,7 +16598,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -16779,7 +16779,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -16796,7 +16796,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -16938,7 +16938,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -16955,7 +16955,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -17133,7 +17133,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -17150,7 +17150,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -17308,7 +17308,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' ORDER BY
           Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -17325,7 +17325,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -17582,7 +17582,7 @@ streams:
           + ":" + stream_slice.start_time[-2:] }}' AND Active IN (true,
           false) ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          (config.max_results or '1000') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -17599,7 +17599,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -17813,6 +17813,19 @@ streams:
           - string
 spec:
   type: Spec
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Raise a Page Size of 200, the pre-5.1.0 default, to the new default of 1,000.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('max_results') in [200, '200'] }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["max_results"]
+                value: "{{ 1000 }}"
+                value_type: integer
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -17836,13 +17849,13 @@ spec:
         type: integer
         order: 2
         title: Page Size
-        default: 200
+        default: 1000
         minimum: 1
         maximum: 1000
         description: >-
           Number of records requested per query page (Intuit's `MAXRESULTS`).
-          Raising it reduces the number of requests on companies with long
-          histories; 1,000 is the maximum Intuit accepts.
+          Defaults to 1,000, the maximum Intuit accepts. Lower it only if
+          large responses time out.
       credentials:
         type: object
         order: 0
