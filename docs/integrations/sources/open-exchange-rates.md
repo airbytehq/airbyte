@@ -52,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.14 | 2026-04-13 | [76258](https://github.com/airbytehq/airbyte/pull/76258) | Migrate path interpolation from deprecated `stream_state` to `stream_interval`; fixes `invalid_date` errors on incremental syncs |
 | 0.3.13 | 2025-02-15 | [53979](https://github.com/airbytehq/airbyte/pull/53979) | Update dependencies |
 | 0.3.12 | 2025-02-08 | [53469](https://github.com/airbytehq/airbyte/pull/53469) | Update dependencies |
 | 0.3.11 | 2025-02-01 | [52968](https://github.com/airbytehq/airbyte/pull/52968) | Update dependencies |
