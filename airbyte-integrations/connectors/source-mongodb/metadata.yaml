@@ -20,9 +20,9 @@ data:
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 3.0.0
-  dockerRepository: airbyte/source-mongodb-v2
+  dockerRepository: airbyte/source-mongodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
-  githubIssueLabel: source-mongodb-v2
+  githubIssueLabel: source-mongodb
   icon: mongodb.svg
   license: ELv2
   maxSecondsBetweenMessages: 7200
@@ -49,7 +49,10 @@ data:
           compare them to 'true'/'false'), or you had set Capture mode to Post Image
           (the setting is removed; updates always read the document's current state).
           'initial_waiting_seconds', 'queue_size' and 'update_capture_mode' are removed
-          from the spec. See
+          from the spec. The Docker image is renamed from
+          airbyte/source-mongodb-v2 to airbyte/source-mongodb; if you run
+          Self-Managed with a mirrored registry or an image allowlist, add
+          airbyte/source-mongodb before upgrading. See
           https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations#upgrading-to-300"
         upgradeDeadline: "2027-02-01"
         deadlineAction: "auto_upgrade"

@@ -24,6 +24,8 @@ If you have any further questions, don't hesitate to contact us.
 
 Version 3.0.0 is a rewrite of the MongoDB source on Airbyte's Bulk CDK. Change data capture now reads MongoDB change streams directly with the MongoDB driver instead of through Debezium.
 
+In version 3.0.0, the Docker image changed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb`. If you run Self-Managed with a mirrored registry or an image allowlist, add `airbyte/source-mongodb` before upgrading.
+
 **Most connections need no action.** Existing connections keep syncing from where they left off, with no clear or refresh: the saved change stream position, the progress of an initial snapshot and your saved settings are all read as they are. Act before upgrading if any of these apply to you:
 
 - **Your connection syncs a view or a time series collection.** 3.0.0 no longer syncs them. MongoDB does not deliver changes to views or time series collections through the oplog, so they could never be synced incrementally; earlier versions discovered them by mistake, and only their Full Refresh syncs worked. After the upgrade, a view or time series stream still in your connection makes the sync fail ("could not be read due to catalog validation errors") until you refresh the source schema, which removes it. The data already in your destination is left in place but is no longer updated. For a view, sync the underlying collection instead.

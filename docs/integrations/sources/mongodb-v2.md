@@ -7,6 +7,8 @@ Airbyte's certified MongoDB connector offers the following features:
 - Reliable replication of collections of any size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing): an interrupted sync resumes from the last document it checkpointed instead of starting over.
 - A choice between a discovered schema (fields sampled from your documents) and a schemaless mode that syncs each document as one JSON object.
 
+This connector's Docker image was renamed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb` in version 3.0.0; the connector definition is unchanged.
+
 This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](mongodb-v2-migrations.md) first.
 
 ## Quick Start
