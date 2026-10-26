@@ -3,6 +3,24 @@ OpenAI organization and ChatGPT Enterprise compliance source. Syncs organization
 
 The connection **check** only runs the `users` stream (OpenAI Admin API). A valid organization API key can pass the check even if the compliance token or workspace ID is missing or invalid; those errors appear when compliance-related streams run during a sync.
 
+## Setup
+
+### API Platform (Admin API) — required for `users`, `invites`, and `completions`
+
+1. **Organization ID** — In [OpenAI Platform](https://platform.openai.com/) organization settings, copy your organization ID (for example `org-…`). Enter it as **OpenAI-Organization** (`openai_organization`).
+2. **Admin API key** — An organization owner creates an [Admin API key](https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform) under **Organization settings → Admin keys**. Use a key with the scopes needed for members, invites, and usage (see the [Admin APIs guide](https://developers.openai.com/api/docs/guides/admin-apis)). Enter the secret as **OpenAI-token** (`openai_token`).
+
+These credentials call `api.openai.com` (organization users, invites, and completion usage). They are separate from ChatGPT workspace Admin keys.
+
+### ChatGPT Enterprise compliance — required for compliance streams only
+
+Compliance-related streams (`conversation_messages`, `conversation_messages_log`, `current_users`, `historical_users`) require a **[ChatGPT Enterprise or Edu](https://help.openai.com/en/articles/9261474-openai-compliance-platform-for-enterprise-and-edu-customers)** workspace. Standard API Platform access alone is not enough.
+
+1. **Compliance API token** — In [Admin Console](https://chatgpt.com/admin), a workspace owner or admin creates a **workspace-scoped Admin key** with the compliance permissions your integration needs (for example conversation messages and workspace user read access). See [Managing Admin keys in Admin Console](https://help.openai.com/en/articles/20001407-managing-admin-keys-in-admin-console). Enter the key as **OpenAI-compliance-token** (`openai_compliance_token`). Only workspace owners can grant broad compliance or conversation-message access.
+2. **Workspace ID** — In Admin Console, open the target workspace and copy its workspace ID from the URL or workspace settings. Enter it as **Workspace ID** (`workspace_id`). Compliance API requests use `https://api.chatgpt.com/v1` with this ID in the path.
+
+If you only need organization admin data, you can leave the compliance token and workspace ID blank and disable the compliance streams in the connection schema.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -36,6 +54,6 @@ Each JSONL line is flattened for analytics: message text is available as `messag
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-08 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-10-08 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>

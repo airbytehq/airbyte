@@ -574,7 +574,7 @@ streams:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: 7
+          page_size: 31
           cursor_value: "{{ response.next_page }}"
           stop_condition: "{{ response.has_more is false }}"
       requester:
@@ -637,6 +637,34 @@ streams:
             type:
               - number
               - "null"
+          input_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+          input_cached_tokens:
+            type:
+              - number
+              - "null"
+          input_audio_tokens:
+            type:
+              - number
+              - "null"
+          output_audio_tokens:
+            type:
+              - number
+              - "null"
+          api_key_id:
+            type:
+              - string
+              - "null"
+          batch:
+            type:
+              - boolean
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -677,7 +705,7 @@ streams:
           - - original_record
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1D
+      step: P31D
       cursor_field: start_time
       end_datetime:
         type: MinMaxDatetime
