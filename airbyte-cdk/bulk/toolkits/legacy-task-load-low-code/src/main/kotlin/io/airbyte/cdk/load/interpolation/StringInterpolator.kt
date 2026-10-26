@@ -26,7 +26,7 @@ import jinjava.javax.el.PropertyNotWritableException
 @SuppressFBWarnings(
     "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
     justification =
-        "The param in getValue needs to be nullable because it's a Java class but we fail if it's null"
+        "The param in getValue needs to be nullable because it's a Java class but we fail if it's null",
 )
 private class MapGetOperatorELResolver : ELResolver() {
     override fun getCommonPropertyType(context: ELContext?, base: Any?): Class<*>? {
@@ -37,7 +37,7 @@ private class MapGetOperatorELResolver : ELResolver() {
 
     override fun getFeatureDescriptors(
         context: ELContext?,
-        base: Any?
+        base: Any?,
     ): Iterator<FeatureDescriptor?>? {
         return null
     }
@@ -83,9 +83,9 @@ class StringInterpolator {
                     CompositeELResolver().apply {
                         this.add(MapGetOperatorELResolver())
                         this.add(JinjavaInterpreterResolver.DEFAULT_RESOLVER_READ_ONLY)
-                    }
+                    },
                 )
-                .build()
+                .build(),
         )
 
     /** Possible improvement: validate if all variables have been resolved and if not, throw. */

@@ -34,7 +34,7 @@ object FiniteFloatCodec : JsonCodec<Float> {
         }
         if (encode(decoded).doubleValue().compareTo(encoded.doubleValue()) != 0) {
             throw IllegalArgumentException(
-                "invalid IEEE-754 32-bit floating point value $encoded (type ${encoded.javaClass.canonicalName})"
+                "invalid IEEE-754 32-bit floating point value $encoded (type ${encoded.javaClass.canonicalName})",
             )
         }
         return decoded

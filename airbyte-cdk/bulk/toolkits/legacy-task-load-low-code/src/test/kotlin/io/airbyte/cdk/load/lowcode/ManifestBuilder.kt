@@ -22,7 +22,7 @@ class ManifestBuilder {
             HttpRequester(
                 url = "https://any_url.com",
                 method = HttpMethod.GET,
-            )
+            ),
         )
     private var spec: Spec =
         Spec(
@@ -36,9 +36,9 @@ class ManifestBuilder {
                     StaticCatalogOperation(
                         objectName = "test",
                         destinationImportMode = InsertModel,
-                        schema = Jsons.objectNode()
+                        schema = Jsons.objectNode(),
                     ),
-                )
+                ),
         )
 
     fun withChecker(checker: Checker): ManifestBuilder {

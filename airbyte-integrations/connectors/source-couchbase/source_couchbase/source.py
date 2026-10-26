@@ -14,6 +14,11 @@ from airbyte_cdk.sources.streams import Stream
 from .streams import DocumentStream
 
 
+QUERY_TIMEOUT = timedelta(minutes=15)
+# Internal scope maintained by Couchbase Server 7.6+ for service data; not user data.
+SYSTEM_SCOPE = "_system"
+
+
 class SourceCouchbase(AbstractSource):
     def __init__(self):
         super().__init__()
@@ -36,6 +41,8 @@ class SourceCouchbase(AbstractSource):
         auth = PasswordAuthenticator(self.username, self.password)
         options = ClusterOptions(auth)
         options.apply_profile("wan_development")
+        # A page may have to scan many unchanged documents before it fills up; allow more than the profile's 120s.
+        options["query_timeout"] = QUERY_TIMEOUT
         cluster = Cluster(self.connection_string, options)
         cluster.wait_until_ready(timedelta(seconds=5))
         return cluster
@@ -70,6 +77,8 @@ class SourceCouchbase(AbstractSource):
         streams = []
 
         for scope in bucket.collections().get_all_scopes():
+            if scope.name == SYSTEM_SCOPE:
+                continue
             for collection in scope.collections:
                 self._ensure_primary_index(cluster, self.bucket_name, scope.name, collection.name)
                 stream = DocumentStream(cluster, self.bucket_name, scope.name, collection.name)
