@@ -1,12 +1,10 @@
 // Import the original mapper
-import { AgentConnectorTitle } from "@site/src/components/AgentConnectorTitle";
 import { AppliesTo } from "@site/src/components/AppliesTo";
 import { Arcade } from "@site/src/components/Arcade";
 import { FieldAnchor } from "@site/src/components/FieldAnchor";
 import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
 import { HideInUI } from "@site/src/components/HideInUI";
 import { Navattic } from "@site/src/components/Navattic";
-import { PlanInformation } from "@site/src/components/PlanInformation";
 import { ProductInformation } from "@site/src/components/ProductInformation";
 import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
@@ -18,12 +16,10 @@ import { DocMetaTags } from "../../components/DocMetaTags";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 import { Grid } from "../../components/Grid/Grid";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
-import { QuickInstall } from "../../components/AiAgentsHome";
 
 export default {
   // Re-use the default mapping
   ...MDXComponents,
-  AgentConnectorTitle,
   Arcade,
   AppliesTo,
   FieldAnchor,
@@ -32,7 +28,6 @@ export default {
   Navattic,
   SpecSchema,
   PyAirbyteExample,
-  PlanInformation,
   ProductInformation,
   Details,
   EntityRelationshipDiagram,
@@ -41,5 +36,4 @@ export default {
   YoutubeEmbed,
   DocMetaTags,
   CopyPageButton,
-  QuickInstall,
 };

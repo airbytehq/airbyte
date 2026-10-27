@@ -80,15 +80,6 @@ export default {
           },
           items: [],
         },
-        {
-          type: "category",
-          label: "Agents",
-          link: {
-            type: "doc",
-            id: "agents/readme",
-          },
-          items: [],
-        },
       ],
     },
   ],

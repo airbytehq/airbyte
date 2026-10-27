@@ -475,6 +475,7 @@ module.exports = {
             "airbyte-mcp/self-managed",
           ],
         },
+        "airbyte-knowledge-mcp",
         {
           type: "category",
           label: "Context layer",

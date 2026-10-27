@@ -124,10 +124,8 @@ jobs:
               /^airbyte-integrations\/connectors\//,
               /^docs\/integrations\/sources\//,
               /^docs\/integrations\/destinations\//,
-              /^docs\/ai-agents\/connectors\//,
               /^docs\/developers\/pyairbyte\//,
               /^docs\/release_notes\//,
-              /^docusaurus\/src\/data\//,
             ];
             const pullNumber = Number(process.env.PR_NUMBER);
             const { data: pull } = await github.rest.pulls.get({

@@ -8,7 +8,7 @@ export default function DocsVersionDropdownNavbarItemWrapper(props) {
 
   // Check if the current page belongs to this docs plugin by verifying the pathname
   // starts with the plugin's route base path (e.g. "/platform/"). Using a prefix check
-  // instead of a substring match avoids false positives like "/ai-agents/platform/"
+  // instead of a substring match avoids false positives like "/release_notes/platform/"
   // matching the "platform" plugin.
 
   // Swizzling this component is technically unsafe, although the risk is very low. Worst-case scenario, we have to upgrade it ourselves in a future breaking change with Docusaurus.

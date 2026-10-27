@@ -32,7 +32,7 @@ A connector can have one or both of these capabilities:
 
 - **Data replication** moves data. The connector extracts data from a source and loads it into a destination during a sync. Everything in the [connector catalog](/integrations/) supports data replication.
 
-- **Agent access** answers questions. The connector calls a third-party system in real time and returns only the records an AI agent asks for. Some connectors, like HubSpot or Zendesk, support [agent access](/ai-agents/connectors/) as well as data replication.
+- **Agent access** answers questions. The connector calls a third-party system in real time and returns only the records an AI agent asks for. Some connectors, like HubSpot or Zendesk, support agent access as well as data replication.
 
 Each connector's page shows which capabilities it has under **Connector type**.
 
