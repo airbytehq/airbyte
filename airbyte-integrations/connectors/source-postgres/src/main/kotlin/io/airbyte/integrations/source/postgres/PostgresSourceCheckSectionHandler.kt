@@ -11,15 +11,12 @@ import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.CdcReplicationMethodConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.SECTION_CONNECTION
 import io.airbyte.integrations.source.postgres.config.SECTION_CREDENTIALS
 import io.airbyte.integrations.source.postgres.config.SECTION_SYNC_METHOD
-import io.airbyte.integrations.source.postgres.config.UserDefinedCursorIncrementalConfiguration
-import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -34,7 +31,7 @@ import java.sql.SQLException
  * - [SECTION_CREDENTIALS]: the user can log into the database, which proves the server reachable
  *   once more, and the connector's check queries run.
  * - [SECTION_SYNC_METHOD]: the credentials check, plus the replication method's prerequisites on
- *   the server.
+ *   the server, the same ones the full check applies.
  * - The review section is the last one, so the CDK runs the full check for it.
  */
 @Singleton
@@ -123,8 +120,9 @@ class PostgresSourceCheckSectionHandler(
 
     /**
      * Everything the credentials check needs, plus the replication method's prerequisites on the
-     * server: no xmin wraparound for Xmin; for CDC `wal_level = logical`, the replication slot and
-     * the publication exist on this database, and the user may open a replication connection.
+     * server ([PostgresSourceMetadataQuerier.validateReplicationMethod]: no xmin wraparound for
+     * Xmin; for CDC `wal_level = logical`, the replication slot and the publication exist on this
+     * database, and the user may open a replication connection).
      */
     private fun checkSyncMethod(pojo: PostgresSourceConfigurationSpecification) {
         requireCredentials(SECTION_SYNC_METHOD, pojo)
@@ -137,73 +135,8 @@ class PostgresSourceCheckSectionHandler(
         validateNetworkSettings(config)
         JdbcConnectionFactory(config).get().use { conn: Connection ->
             checkQueries.executeAll(conn)
-            when (val incremental = config.incrementalConfiguration) {
-                is XminIncrementalConfiguration -> {
-                    if (PostgresSourceMetadataQuerier.dbNumWraparound(conn) > 0) {
-                        throw ConfigErrorException(
-                            PostgresSourceMetadataQuerier.xminWraparoundError,
-                        )
-                    }
-                }
-                is CdcIncrementalConfiguration -> checkCdcPrerequisites(conn, config, incremental)
-                is UserDefinedCursorIncrementalConfiguration ->
-                    log.info { "Cursor-based replication has no server-side prerequisite." }
-            }
+            PostgresSourceMetadataQuerier.validateReplicationMethod(conn, config)
         }
-    }
-
-    private fun checkCdcPrerequisites(
-        conn: Connection,
-        config: PostgresSourceConfiguration,
-        cdc: CdcIncrementalConfiguration,
-    ) {
-        val walLevel: String? =
-            conn.createStatement().use { stmt ->
-                stmt.executeQuery("SHOW wal_level").use { rs ->
-                    if (rs.next()) rs.getString(1) else null
-                }
-            }
-        if (walLevel != "logical") {
-            throw ConfigErrorException(
-                "CDC requires the server setting wal_level = logical; it is '$walLevel'.",
-            )
-        }
-        val plugin: String =
-            conn
-                .prepareStatement(
-                    "SELECT plugin FROM pg_replication_slots WHERE slot_name = ? AND database = ?",
-                )
-                .use { stmt ->
-                    stmt.setString(1, cdc.replicationSlot)
-                    stmt.setString(2, config.database)
-                    stmt.executeQuery().use { rs ->
-                        if (rs.next()) rs.getString("plugin") else null
-                    }
-                }
-                ?: throw ConfigErrorException(
-                    "Replication slot '${cdc.replicationSlot}' does not exist " +
-                        "in database '${config.database}'.",
-                )
-        if (plugin != "pgoutput") {
-            throw ConfigErrorException(
-                "Replication slot '${cdc.replicationSlot}' uses the '$plugin' output plugin; " +
-                    "Airbyte requires pgoutput.",
-            )
-        }
-        val publicationExists: Boolean =
-            conn.prepareStatement("SELECT 1 FROM pg_publication WHERE pubname = ?").use { stmt ->
-                stmt.setString(1, cdc.publication)
-                stmt.executeQuery().use { rs -> rs.next() }
-            }
-        if (!publicationExists) {
-            throw ConfigErrorException(
-                "Publication '${cdc.publication}' does not exist in database '${config.database}'.",
-            )
-        }
-        // The replication connection READ opens first; it fails for a user without the
-        // REPLICATION attribute (or the rds_replication role).
-        log.info { "Opening a replication connection as '${config.jdbcProperties["user"]}'." }
-        (PostgresSourceJdbcConnectionFactory(config).getReplication() as Connection).close()
     }
 
     /** The Cloud-only rules on the host and the encryption, which the full check applies too. */
