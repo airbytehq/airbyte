@@ -52,7 +52,7 @@ user-consent flow at all, so the `client_id` / `client_secret` pair is the only 
 shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
 connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
 
-## 2. The daily report streams use deterministic composite primary keys
+## 2. The four entity report streams use deterministic composite primary keys
 
 `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily` and
 `search_terms_report_daily` are aggregate reporting streams: the request is a `POST` to
@@ -67,7 +67,8 @@ out of nested `record.metadata`), the `date` copied from `stream_slice.start_tim
 `countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
 Every request covers one day (`endTime` equals the slice start), so `date` is also the day of the
 row's metrics. The CDK folds the last day into the final slice, so the cursor ends one day after the
-End Date (or today) to give that day its own request. The first window starts at most 89 days back,
+End Date (or today) to give that day its own request, and `is_compare_strictly` keeps a start equal
+to that end from requesting a day past the range. The first window starts at most 89 days back,
 because Apple serves `DAILY` reports only when "the startTime is <= 90 days in the past"
 ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)); a day of
 margin covers organization time zones ahead of UTC. The manifest declares this composite as the primary key of the four entity report

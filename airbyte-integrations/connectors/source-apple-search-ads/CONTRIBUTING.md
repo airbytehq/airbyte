@@ -17,12 +17,12 @@ Apple's API only offers machine-to-machine OAuth: a self-signed ES256 JWT acts a
 so the connector uses a plain `OAuthAuthenticator` and intentionally has no `advanced_auth` or
 declarative OAuth spec.
 
-### 2. The daily report streams use deterministic composite primary keys
+### 2. The four entity report streams use deterministic composite primary keys
 
 Apple's reporting endpoints return metric aggregations with no record identifier. The connector
 assembles each row's key from the reporting entity id, `date`, and `countryorregion` and declares
 that composite as the primary key of the four entity report streams; each request covers one day,
-and report streams never start more than 89 days back, where Apple stops serving daily reports.
+and report streams never start more than 89 days back, one day inside Apple's 90-day limit for daily reports.
 `search_terms_report_daily` stays keyless because Apple's low-volume rollup rows have no search term.
 Changes to `groupBy`, `granularity`, the request window or the cursor `step` change row identity and
 require a major version.

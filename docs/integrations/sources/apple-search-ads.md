@@ -45,7 +45,7 @@ Apple accepts a client secret for at most 180 days. Before your client secret ex
 2. Select **Apple Ads** from the **Source type** dropdown and enter a name for the source.
 3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
 4. For **Client Id**, enter the `clientId` from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads). For **Client Secret**, enter the signed JWT you created in Step 1.
-5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. **Start Date** is required. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so report streams never request more than the last 89 days, whatever the **Start Date**.
+5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. **Start Date** is required. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so report streams never request more than the last 89 days, whatever the **Start Date**. If **End Date** is more than 89 days ago, report streams sync no rows. A connection paused for longer than that resumes 89 days back, and Apple can't serve the days in between.
 6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`. `search_terms_report_daily` always uses `ORTZ`, because Apple serves search term reports in the organization time zone only.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
 8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
@@ -80,7 +80,7 @@ The Apple Ads source connector exposes the following streams. For full schema an
 - [`adgroup_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-ad-group-negative-keywords) — negative keywords set on each ad group.
 - [`product_pages`](https://developer.apple.com/documentation/apple_ads/get-product-pages) — custom product pages for each app advertised by a campaign.
 
-`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone. Apple returns them in UTC.
+`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone. Apple documents `startTime` and `endTime` as UTC.
 
 ### Daily report streams
 
