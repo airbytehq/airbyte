@@ -3884,6 +3884,22 @@ definitions:
         type:
           - "null"
           - number
+      TARGETING_TYPE:
+        description: >-
+          Targeting dimension of the row in a targeting-level report, for example
+          TARGETED_INTEREST or FEED_TYPE. Pinterest adds it to targeting-level reports
+          without it being requested.
+        type:
+          - "null"
+          - string
+      TARGETING_VALUE:
+        description: >-
+          Targeting value of the row in a targeting-level report, for example an interest
+          path or a feed type. Pinterest adds it to targeting-level reports without it
+          being requested.
+        type:
+          - "null"
+          - string
       TOTAL_CHECKOUT:
         description: Total number of checkout actions
         type:
@@ -4467,6 +4483,22 @@ definitions:
         type:
           - "null"
           - number
+      TARGETING_TYPE:
+        description: >-
+          Targeting dimension of the row in a targeting-level report, for example
+          TARGETED_INTEREST or FEED_TYPE. Pinterest adds it to targeting-level reports
+          without it being requested.
+        type:
+          - "null"
+          - string
+      TARGETING_VALUE:
+        description: >-
+          Targeting value of the row in a targeting-level report, for example an interest
+          path or a feed type. Pinterest adds it to targeting-level reports without it
+          being requested.
+        type:
+          - "null"
+          - string
       TOTAL_CHECKOUT:
         description: Total number of checkout actions
         type:
