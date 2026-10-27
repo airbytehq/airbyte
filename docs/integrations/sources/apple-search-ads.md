@@ -155,6 +155,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 2.0.1 | 2026-10-27 | [90111](https://github.com/airbytehq/airbyte/pull/90111) | Mark the connector as certified |
 | 2.0.0 | 2026-10-27 | [89709](https://github.com/airbytehq/airbyte/pull/89709) | Type date and timestamp fields and add primary keys to the entity report streams |
 | 1.2.0 | 2026-10-26 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add organization, creatives, negative keyword, product page and search term streams, and declare the report metrics Apple documents |
 | 1.1.22 | 2026-10-26 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Explain authentication, permission and request errors, add missing campaign and ad group fields, and simplify the spec |
