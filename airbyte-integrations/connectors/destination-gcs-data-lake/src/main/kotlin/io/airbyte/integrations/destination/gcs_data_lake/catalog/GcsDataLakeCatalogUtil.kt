@@ -50,7 +50,9 @@ class GcsDataLakeCatalogUtil(
         return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
             is GcsRestCatalogConfiguration ->
                 gcsProperties +
-                    mapOf(CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST) +
+                    mapOf(
+                        CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+                    ) +
                     catalogConfiguration.rest.toProperties()
             is BigLakeCatalogConfiguration ->
                 buildBigLakeProperties(config, catalogConfiguration, gcsProperties)

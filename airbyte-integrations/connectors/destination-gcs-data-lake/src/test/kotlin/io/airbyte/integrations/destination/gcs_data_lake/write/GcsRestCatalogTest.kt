@@ -15,6 +15,7 @@ import io.mockk.mockk
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.gcp.GCPProperties
+import org.apache.iceberg.gcp.auth.GoogleAuthManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -23,14 +24,17 @@ import org.junit.jupiter.api.Test
 class GcsRestCatalogTest {
     private val util = GcsDataLakeCatalogUtil(mockk())
 
-    private fun properties(rest: RestCatalogConfiguration): Map<String, String> =
+    private fun properties(
+        rest: RestCatalogConfiguration,
+        endpoint: String? = "http://localhost:9023",
+    ): Map<String, String> =
         util.toCatalogProperties(
             GcsDataLakeConfiguration(
                 gcsBucketName = "bucket",
                 serviceAccountJson = "{}",
                 gcpProjectId = "project",
                 gcpLocation = "us",
-                gcsEndpoint = "http://localhost:9023",
+                gcsEndpoint = endpoint,
                 namespace = rest.namespace,
                 gcsCatalogConfiguration =
                     GcsCatalogConfiguration(
@@ -66,6 +70,18 @@ class GcsRestCatalogTest {
         assertEquals("uc", props["warehouse"])
         assertEquals("token", props["token"])
         assertEquals("https://catalog", props["uri"])
+    }
+
+    @Test
+    fun `REST passes service account credentials to the shared GCS file IO setup`() {
+        val props =
+            properties(RestCatalogConfiguration("https://catalog", "schema", token = "token"), null)
+        assertEquals("project", props[GCPProperties.GCS_PROJECT_ID])
+        assertEquals("{}", props[GoogleAuthManager.GCP_CREDENTIALS_JSON_PROPERTY])
+        assertEquals("token", props["token"])
+        assertFalse(props.containsKey(GCPProperties.GCS_NO_AUTH))
+        assertFalse(props.containsKey(GCPProperties.GCS_SERVICE_HOST))
+        assertFalse(props.containsKey("rest.auth.type"))
     }
 
     @Test

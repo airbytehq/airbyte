@@ -157,7 +157,7 @@ internal class GcsDataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns incomingSchema
+            every { toIcebergSchema(any(), any()) } returns incomingSchema
         }
         return GcsDataLakeStreamLoader(
             makeConfiguration(mainBranchName),
