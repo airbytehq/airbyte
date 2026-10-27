@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
+import com.mongodb.MongoQueryException;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
@@ -36,6 +37,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -442,6 +444,31 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsAllowDiskUseNotSupportedException() {
+    final MongoQueryException queryException = mongoQueryException(303, "Field 'allowDiskUse' is currently not supported");
+    final MongoCommandException commandException = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0.0, \"code\": 303, \"errmsg\": \"Field 'allowDiskUse' is currently not supported\"}"),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isAllowDiskUseNotSupportedException(queryException));
+    assertTrue(MongoUtil.isAllowDiskUseNotSupportedException(
+        new FailedRecordIteratorException(new RuntimeException("Failed to start subquery", queryException))));
+    assertTrue(MongoUtil.isAllowDiskUseNotSupportedException(commandException));
+    assertFalse(MongoUtil.isAllowDiskUseNotSupportedException(mongoQueryException(303, "Field 'hint' is currently not supported")));
+    assertFalse(MongoUtil.isAllowDiskUseNotSupportedException(mongoQueryException(2, "Field 'allowDiskUse' is currently not supported")));
+    assertFalse(MongoUtil.isAllowDiskUseNotSupportedException(mongoQueryException(13, "Unauthorized")));
+    assertFalse(MongoUtil.isAllowDiskUseNotSupportedException(
+        new RuntimeException("Field 'allowDiskUse' is currently not supported")));
+    assertFalse(MongoUtil.isAllowDiskUseNotSupportedException(null));
+  }
+
+  private static MongoQueryException mongoQueryException(final int code, final String errorMessage) {
+    final BsonDocument response = BsonDocument.parse(
+        "{\"ok\": 0.0, \"code\": " + code + ", \"errmsg\": \"" + errorMessage + "\"}");
+    return new MongoQueryException(response, new ServerAddress());
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,

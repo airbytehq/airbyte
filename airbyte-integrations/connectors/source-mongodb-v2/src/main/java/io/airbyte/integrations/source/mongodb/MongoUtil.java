@@ -433,6 +433,27 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception is caused by MongoDB rejecting the allowDiskUse query option.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by an unsupported allowDiskUse option, false otherwise.
+   */
+  public static boolean isAllowDiskUseNotSupportedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException &&
+          mongoException.getErrorCode() == MongoConstants.ALLOW_DISK_USE_NOT_SUPPORTED_ERROR_CODE &&
+          mongoException.getErrorMessage() != null &&
+          mongoException.getErrorMessage().contains(MongoConstants.ALLOW_DISK_USE_OPTION) &&
+          mongoException.getErrorMessage().contains("not supported")) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.

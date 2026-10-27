@@ -59,6 +59,13 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int ALLOW_DISK_USE_NOT_SUPPORTED_ERROR_CODE = 303;
+  public static final String ALLOW_DISK_USE_OPTION = "allowDiskUse";
+  public static final String ALLOW_DISK_USE_NOT_SUPPORTED_ERROR_MESSAGE =
+      "The MongoDB server rejected a query option that the connector requires ('allowDiskUse' on find). " +
+          "This usually means the server is Amazon DocumentDB or another MongoDB-compatible engine that this connector does not support. " +
+          "Connect the source to a MongoDB replica set or sharded cluster instead.";
+
   private MongoConstants() {}
 
 }

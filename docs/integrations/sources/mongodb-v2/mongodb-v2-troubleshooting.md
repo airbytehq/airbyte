@@ -150,3 +150,4 @@ Airbyte does not support self-signed SSL certificates for SSH tunnels.
 #### AWS DocumentDB
 
 The Airbyte connector does not support custom SSL certificates, which DocumentDB requires.
+DocumentDB also does not support the `allowDiskUse` option on the `find` command, which the connector uses for initial-load reads, so syncs fail with a configuration error stating that the server rejected a query option. See the [AWS DocumentDB functional differences](https://docs.aws.amazon.com/documentdb/latest/developerguide/functional-differences.html).
