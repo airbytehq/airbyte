@@ -47,6 +47,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.74 | 2026-10-27 | [90077](https://github.com/airbytehq/airbyte/pull/90077) | Update dependencies |
+| 0.0.73 | 2026-10-20 | [89477](https://github.com/airbytehq/airbyte/pull/89477) | Update dependencies |
 | 0.0.72 | 2026-10-13 | [88887](https://github.com/airbytehq/airbyte/pull/88887) | Update dependencies |
 | 0.0.71 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88291) | Correct user JWT authentication instructions without changing existing configuration fields. |
 | 0.0.70 | 2026-10-06 | [88121](https://github.com/airbytehq/airbyte/pull/88121) | Update dependencies |

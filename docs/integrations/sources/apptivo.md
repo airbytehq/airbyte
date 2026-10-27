@@ -28,6 +28,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-27 | [89810](https://github.com/airbytehq/airbyte/pull/89810) | Update dependencies |
+| 0.0.65 | 2026-10-20 | [89133](https://github.com/airbytehq/airbyte/pull/89133) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88522](https://github.com/airbytehq/airbyte/pull/88522) | Update dependencies |
 | 0.0.63 | 2026-10-07 | [88263](https://github.com/airbytehq/airbyte/pull/88263) | Fail `check`/syncs with a clear error when Apptivo returns an HTTP 200 `status: FAILURE` body (e.g. wrong API/Access Key) instead of silently emitting 0 records |
 | 0.0.62 | 2026-10-06 | [87763](https://github.com/airbytehq/airbyte/pull/87763) | Update dependencies |

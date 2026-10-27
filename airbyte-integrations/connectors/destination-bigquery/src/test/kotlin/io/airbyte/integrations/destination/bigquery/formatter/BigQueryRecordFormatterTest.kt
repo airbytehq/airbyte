@@ -36,7 +36,7 @@ class BigQueryRecordFormatterTest {
                         unmappedName = "name",
                         Append,
                         ObjectType(
-                            linkedMapOf("test" to FieldType(TimestampTypeWithTimezone, true))
+                            linkedMapOf("test" to FieldType(TimestampTypeWithTimezone, true)),
                         ),
                         generationId = 42,
                         minimumGenerationId = 0,
@@ -56,18 +56,18 @@ class BigQueryRecordFormatterTest {
                                             // and bigquery supports anything in that range.
                                             // So we set our offset to a negative number, because
                                             // bigquery translates everything to UTC >.>
-                                            """{"test": "9999-12-31T23:59:59.999999-08"}"""
-                                        )
-                                    )
-                            )
+                                            """{"test": "9999-12-31T23:59:59.999999-08"}""",
+                                        ),
+                                    ),
+                            ),
                     ),
                     serializedSizeBytes = 42,
                     airbyteRawId = UUID.fromString("129b0dc6-826a-4e86-a50f-33250cbf63c2"),
-                )
+                ),
             )
         assertEquals(
             """{"_airbyte_raw_id":"129b0dc6-826a-4e86-a50f-33250cbf63c2","_airbyte_extracted_at":"1970-01-01 00:00:01.234000+00:00","_airbyte_generation_id":42,"_airbyte_meta":{"sync_id":42,"changes":[{"field":"test","change":"NULLED","reason":"DESTINATION_FIELD_SIZE_LIMITATION"}]}}""",
-            formatted
+            formatted,
         )
     }
 }

@@ -33,6 +33,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-27 | [90030](https://github.com/airbytehq/airbyte/pull/90030) | Update dependencies |
+| 0.0.69 | 2026-10-20 | [89348](https://github.com/airbytehq/airbyte/pull/89348) | Update dependencies |
 | 0.0.68 | 2026-10-13 | [88722](https://github.com/airbytehq/airbyte/pull/88722) | Update dependencies |
 | 0.0.67 | 2026-10-07 | [88214](https://github.com/airbytehq/airbyte/pull/88214) | Use openFDA `search_after` Link-header pagination so streams with more than 25,000 records no longer fail with `Skip value must 25000 or less`; use page size 1000; add optional `api_key` to raise rate limits |
 | 0.0.66 | 2026-10-06 | [87984](https://github.com/airbytehq/airbyte/pull/87984) | Update dependencies |

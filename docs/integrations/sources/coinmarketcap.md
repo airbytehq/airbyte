@@ -46,6 +46,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.54 | 2026-10-27 | [89827](https://github.com/airbytehq/airbyte/pull/89827) | Update dependencies |
+| 0.2.53 | 2026-10-20 | [89177](https://github.com/airbytehq/airbyte/pull/89177) | Update dependencies |
 | 0.2.52 | 2026-10-13 | [88574](https://github.com/airbytehq/airbyte/pull/88574) | Update dependencies |
 | 0.2.51 | 2026-10-07 | [88251](https://github.com/airbytehq/airbyte/pull/88251) | Fail the `quotes` stream with a clear configuration error when no symbols are configured; document API credit usage and 429 rate limiting |
 | 0.2.50 | 2026-10-06 | [87805](https://github.com/airbytehq/airbyte/pull/87805) | Update dependencies |

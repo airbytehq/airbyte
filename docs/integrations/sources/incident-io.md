@@ -1,76 +1,107 @@
 # Incident.io
 
-[Incident.io](https://incident.io/) is an incident management platform that provides on-call scheduling, status pages, and incident response tooling. This connector syncs data from the [Incident.io API](https://api-docs.incident.io/).
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Incident.io](https://docs.airbyte.com/integrations/sources/incident-io) source connector.
+
+</HideInUI>
+
+[Incident.io](https://incident.io/) is an incident management platform that provides on-call scheduling, status pages, and incident response tooling. This connector reads your account's data through the [Incident.io API](https://docs.incident.io/api-reference/introduction).
 
 ## Prerequisites
 
-- An Incident.io account with API access. You can sign up at [incident.io](https://incident.io/).
-- An Incident.io API key. To create one, go to **Settings** → **API keys** in your Incident.io dashboard. When you create the key, choose which actions it can take. Keys can have account-level permissions, team-scoped permissions, or both. For this connector, the key needs read access to all resources you want to sync. To see which scope each stream needs, see [API key scopes by stream](#api-key-scopes-by-stream). For example, the `escalations` stream requires the **View data** or **Create and manage on-call resources** permission. You can only grant permissions that you have yourself. To create or edit API keys, you need the **Manage API keys** permission. Incident.io shows the API key token only once, so store it somewhere safe.
+- An Incident.io account.
+- An Incident.io API key with permission to view the resources you want to sync. [Step 1](#step-1-set-up-incidentio) explains how to create one, and the [Supported Streams](#supported-streams) table lists the permission each stream needs.
 
-For more information about the API, see the [Incident.io API reference](https://api-docs.incident.io/).
+## Setup guide
 
-## Set up the Incident.io source connector
+### Step 1: Set up Incident.io
 
-1. Click **Sources** and then click **+ New source**.
-2. On the Set up the source page, select **Incident.io** from the Source type dropdown.
-3. Enter a name for the source.
-4. For **API Key**, enter the API key you created in your Incident.io dashboard.
-5. (Optional) Set **Start Date**, **Time window**, and **Number of concurrent workers**. See [Configuration](#configuration) for details.
-6. Click **Set up source**.
+1. In Incident.io, go to **Settings** → **API keys** and create a key. Creating or editing keys requires the **Manage API keys** permission.
+2. Choose what the key can do. Keys can have account-level permissions, team-scoped permissions, or both, and you can only grant permissions that you hold yourself. The connector needs the view permission for every stream you plan to sync. The [Supported Streams](#supported-streams) table names the permission for each stream.
+3. Copy the token. Incident.io shows it only once.
+
+For more about keys and permissions, see [Authentication](https://docs.incident.io/api-reference/introduction#authentication) in the Incident.io API reference.
+
+### Step 2: Set up the Incident.io connector in Airbyte
+
+#### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Incident.io from the Source type dropdown.
+4. Enter a name for the Incident.io connector.
+5. For **API Key**, enter the key you created in Step 1.
+6. (Optional) Set **Start Date**, **Time window**, and **Number of concurrent workers**. See [Configuration options](#configuration-options).
+7. Click **Set up source**.
+
+#### For Airbyte Open Source
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Incident.io from the Source type dropdown.
+4. Enter a name for the Incident.io connector.
+5. For **API Key**, enter the key you created in Step 1.
+6. (Optional) Set **Start Date**, **Time window**, and **Number of concurrent workers**. See [Configuration options](#configuration-options).
+7. Click **Set up source**.
+
+### Configuration options
+
+| Input | Type | Description | Default Value |
+| ------- | ------ | ------------- | --------------- |
+| `api_key` | `string` | API Key. An Incident.io API key with view permission for the streams you sync. Create it in Incident.io under Settings → API keys. | |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, for the `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups` streams. Applies to both Full Refresh and Incremental syncs. The default predates all incident.io data. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date. | 2020-01-01T00:00:00Z |
+| `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
+| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel, from 1 to 10. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Supported sync modes
 
 The Incident.io source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes):
 
-- Full Refresh
-- Incremental (`incidents`, `alerts`, `escalations`, `actions`, `follow-ups`, on `updated_at`)
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes, on `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups`, using `updated_at` |
 
 Incremental streams request `updated_at` in windows sized by the `time_window` option (default 30 days), resuming from the last synced timestamp with a small overlap so rows that commit slightly out of order are still captured. With the Append + Deduped destination sync mode those repeats are removed by primary key; with plain Append they are kept.
 
-The `start_date` filter applies to these five streams in every sync mode, including Full Refresh. If you set a `start_date` later than the default, Full Refresh syncs of these streams don't return records last updated before that date.
+The `start_date` filter applies to the five incremental streams in every sync mode, including Full Refresh. If you set a `start_date` later than the default, Full Refresh syncs of these streams don't return records last updated before that date.
 
-## Configuration
+## Supported Streams
 
-| Input | Type | Description | Default Value |
-| ------- | ------ | ------------- | --------------- |
-| `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
-| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, for the `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups` streams. Applies to both Full Refresh and Incremental syncs. The default predates all incident.io data. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date. | 2020-01-01T00:00:00Z |
-| `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
-| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel, from 1 to 10. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
+The **Required permission** column names the API key permission each stream needs, as the [Incident.io API reference](https://docs.incident.io/api-reference/introduction#authentication) documents it. A key without that permission gets HTTP 403 on the stream; see [Limitations & Troubleshooting](#limitations--troubleshooting).
 
-## Streams
+| Stream | Endpoint | Primary key | Full Refresh | Incremental | Required permission |
+| ------- | ---------- | ------------- | -------------- | ------------- | --------------------- |
+| actions | `/v3/actions` | id | ✅ | ✅ | `actions.view` |
+| alert_attributes | `/v2/alert_attributes` | id | ✅ | ❌ | `alert_schema.view` |
+| alert_routes | `/v3/alert_routes` | id | ✅ | ❌ | `alert_routes.view` |
+| alert_sources | `/v2/alert_sources` | id | ✅ | ❌ | `alert_sources.view` |
+| alerts | `/v2/alerts` | id | ✅ | ✅ | `alerts.view` |
+| catalog_entries | `/v3/catalog_entries` | id | ✅ | ❌ | `catalog_entries.view` |
+| catalog_resources | `/v3/catalog_resources` | type | ✅ | ❌ | `catalog_types.view` |
+| catalog_types | `/v3/catalog_types` | id | ✅ | ❌ | `catalog_types.view` |
+| custom_field_options | `/v1/custom_field_options` | id | ✅ | ❌ | `custom_fields.view` |
+| custom_fields | `/v2/custom_fields` | id | ✅ | ❌ | `custom_fields.view` |
+| escalation_paths | `/v2/escalation_paths` | id | ✅ | ❌ | `escalation_paths.view` |
+| escalations | `/v2/escalations` | id | ✅ | ✅ | `escalations.view` |
+| follow-ups | `/v3/follow_ups` | id | ✅ | ✅ | `actions.view` |
+| incident_alerts | `/v2/incident_alerts` | id | ✅ | ❌ | `alerts.view` |
+| incident_attachments | `/v1/incident_attachments` | id | ✅ | ❌ | `attachments.view` |
+| incident_roles | `/v2/incident_roles` | id | ✅ | ❌ | `incident_roles.view` |
+| incident_statuses | `/v1/incident_statuses` | id | ✅ | ❌ | `incident_statuses.view` |
+| incident_timestamps | `/v2/incident_timestamps` | id | ✅ | ❌ | Not documented by Incident.io |
+| incident_types | `/v1/incident_types` | id | ✅ | ❌ | `incident_types.view` |
+| incident_updates | `/v2/incident_updates` | id | ✅ | ❌ | `incidents.view` |
+| incidents | `/v2/incidents` | id | ✅ | ✅ | `incidents.view` |
+| schedules | `/v2/schedules` | id | ✅ | ❌ | `schedules.view` |
+| severities | `/v1/severities` | id | ✅ | ❌ | `severities.view` |
+| users | `/v2/users` | id | ✅ | ❌ | `users.view` |
+| workflows | `/v2/workflows` | id | ✅ | ❌ | `workflows.view` |
 
-| Stream Name | Endpoint | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-| ------------- | ---------- | ------------- | ------------ | --------------------- | ---------------------- |
-| actions | `/v3/actions` | id | DefaultPaginator | ✅ | ✅ |
-| alert_attributes | `/v2/alert_attributes` | id | No pagination | ✅ | ❌ |
-| alert_routes | `/v2/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
-| alert_sources | `/v2/alert_sources` | id | No pagination | ✅ | ❌ |
-| alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
-| catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
-| catalog_resources | `/v3/catalog_resources` | type | No pagination | ✅ | ❌ |
-| catalog_types | `/v2/catalog_types` | id | No pagination | ✅ | ❌ |
-| custom_field_options | `/v1/custom_field_options` | id | DefaultPaginator | ✅ | ❌ |
-| custom_fields | `/v2/custom_fields` | id | No pagination | ✅ | ❌ |
-| escalation_paths | `/v2/escalation_paths` | id | DefaultPaginator | ✅ | ❌ |
-| escalations | `/v2/escalations` | id | DefaultPaginator | ✅ | ✅ |
-| follow-ups | `/v3/follow_ups` | id | DefaultPaginator | ✅ | ✅ |
-| incident_alerts | `/v2/incident_alerts` | id | DefaultPaginator | ✅ | ❌ |
-| incident_attachments | `/v1/incident_attachments` | id | No pagination | ✅ | ❌ |
-| incident_roles | `/v2/incident_roles` | id | No pagination | ✅ | ❌ |
-| incident_statuses | `/v1/incident_statuses` | id | No pagination | ✅ | ❌ |
-| incident_timestamps | `/v2/incident_timestamps` | id | No pagination | ✅ | ❌ |
-| incident_types | `/v1/incident_types` | id | No pagination | ✅ | ❌ |
-| incident_updates | `/v2/incident_updates` | id | DefaultPaginator | ✅ | ❌ |
-| incidents | `/v2/incidents` | id | DefaultPaginator | ✅ | ✅ |
-| schedules | `/v2/schedules` | id | DefaultPaginator | ✅ | ❌ |
-| severities | `/v1/severities` | id | No pagination | ✅ | ❌ |
-| users | `/v2/users` | id | DefaultPaginator | ✅ | ❌ |
-| workflows | `/v2/workflows` | id | No pagination | ✅ | ❌ |
+The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
 
-The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default. It doesn't set the API's `mode` filter, so it only includes `standard` and `retrospective` incidents. Test, tutorial, and stream incidents aren't synced.
-
-The `actions` and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude records from test, tutorial, and stream incidents, inner join on `incident_id` to the `incidents` stream, which only contains `standard` and `retrospective` incidents.
+By default, the Incident.io API only returns `standard` and `retrospective` incidents and the records that belong to them. The `incidents`, `actions`, and `follow-ups` streams request every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. The `/v2/incidents` endpoint doesn't document the `stream` mode, so `incidents` contains stream incidents only if Incident.io returns them. To exclude test, tutorial, or stream incidents, filter `incidents` on its `mode` field. For `actions` and `follow-ups`, join on `incident_id` to `incidents`, then filter on `mode`.
 
 The `users` stream includes deactivated and not-yet-active users. Use the `is_active` field to filter them.
 
@@ -78,47 +109,44 @@ The `incident_alerts` stream links alerts to the incidents they're attached to. 
 
 The `alert_sources` stream doesn't include each alert source's `secret_token`. The connector removes this field before it emits records.
 
+The `schedules` stream doesn't include `next_shifts`. Incident.io only returns that field on pages of 25 schedules or fewer, and the connector reads larger pages.
+
 The connector reads three streams once for each record of a parent stream:
 
 - `catalog_entries` reads the entries of each catalog type returned by `catalog_types`.
 - `custom_field_options` reads the options of each custom field returned by `custom_fields`.
 - `incident_attachments` reads the attachments of each incident returned by `incidents`, so it only covers incidents last updated on or after `start_date`.
 
-## Limitations and troubleshooting
+### Performance considerations
 
-The Incident.io API allows 1,200 requests per minute per API key, and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
+The Incident.io API allows [1,200 requests per minute per API key](https://docs.incident.io/api-reference/introduction#rate-limits), and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
+
+`num_workers` sets how many streams and partitions the connector reads at the same time. All workers share the same rate budget, so a higher value can't exceed the limits above; it only uses more of them.
+
+`incident_attachments` sends one request per incident on every sync, after re-reading the `incidents` endpoint from `start_date` at 60 requests per minute. On accounts with many incidents this stream adds significant time to each sync. If you don't need attachments, deselect the stream.
+
+## Data type map
+
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `string` in RFC 3339 date-time format | `timestamp_with_timezone` |
+| `number` | `number` |
+| `integer` | `integer` |
+| `boolean` | `boolean` |
+| `array` | `array` |
+| `object` | `object` |
+
+Incident.io returns timestamps as RFC 3339 strings. The connector declares them with `format: date-time`, so destinations that support it store them as timestamps with time zone.
+
+## Limitations & Troubleshooting
 
 - **Invalid API key (HTTP 401):** The sync fails if the API key is invalid or has been revoked. Create a new key in Incident.io under **Settings** → **API keys** and update the source configuration.
-- **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Edit the API key in Incident.io under **Settings** → **API keys** to add that permission, or deselect the affected stream in your connection. You don't need to create a new key or update the source configuration.
-- **Transient errors (HTTP 408 and 5xx):** The connector retries these requests automatically.
-- **Deprecated `catalog_types` endpoint:** The `catalog_types` stream reads `/v2/catalog_types`, which the [Incident.io API reference](https://api-docs.incident.io/) marks as deprecated in favor of `/v3/catalog_types`.
-- **Slow syncs with `incident_attachments`:** On every sync, this stream reads the `incidents` endpoint from `start_date`, which allows only 60 requests per minute, and then sends one request per incident. This happens even if you sync the `incidents` stream incrementally. On accounts with many incidents, this can add significant time to each sync. If you don't need attachments, deselect this stream. If someone deletes an incident during a sync, the connector skips its attachments instead of failing.
-
-### API key scopes by stream
-
-If a sync fails with HTTP 403, use this table to find the streams that need the missing scope. The scopes come from the [Incident.io API reference](https://api-docs.incident.io/). The API reference doesn't list a scope for the `incident_timestamps` endpoint.
-
-| Scope | Streams |
-| ------- | --------- |
-| `actions.view` | `actions`, `follow-ups` |
-| `alert_routes.view` | `alert_routes` |
-| `alert_schema.view` | `alert_attributes` |
-| `alert_sources.view` | `alert_sources` |
-| `alerts.view` | `alerts`, `incident_alerts` |
-| `attachments.view` | `incident_attachments` |
-| `catalog_entries.view` | `catalog_entries` |
-| `catalog_types.view` | `catalog_resources`, `catalog_types` |
-| `custom_fields.view` | `custom_field_options`, `custom_fields` |
-| `escalation_paths.view` | `escalation_paths` |
-| `escalations.view` | `escalations` |
-| `incident_roles.view` | `incident_roles` |
-| `incident_statuses.view` | `incident_statuses` |
-| `incident_types.view` | `incident_types` |
-| `incidents.view` | `incident_updates`, `incidents` |
-| `schedules.view` | `schedules` |
-| `severities.view` | `severities` |
-| `users.view` | `users` |
-| `workflows.view` | `workflows` |
+- **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Find the streams that need it in the [Supported Streams](#supported-streams) table, then either edit the API key in Incident.io under **Settings** → **API keys** to add that permission, or deselect the affected streams in your connection. You don't need to create a new key or update the source configuration.
+- **Transient errors (HTTP 408, 500, 502, 503, and 504):** The connector retries these requests automatically.
+- **Rejected requests (other HTTP 4xx, such as 400, 404, or 422):** The sync fails with Incident.io's error message. The `incident_attachments` stream is the exception for 404; see the next item. For the full list of API error codes, see [Errors](https://docs.incident.io/api-reference/introduction#errors) in the Incident.io API reference.
+- **Deleted incidents during a sync:** If someone deletes an incident while `incident_attachments` is running, the connector skips that incident's attachments instead of failing.
+- **Upgrading from 0.x to 1.0.0:** Version 1.0.0 changes field types and endpoints. Follow the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) and refresh the source schema after upgrading.
 
 ## IP allow list
 
@@ -131,6 +159,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 1.0.3 | 2026-10-16 | [89010](https://github.com/airbytehq/airbyte/pull/89010) | Promote to Certified (GA) |
+| 1.0.2 | 2026-10-15 | [88989](https://github.com/airbytehq/airbyte/pull/88989) | Declare `auto_run_mode`, `delay`, `folder`, `owning_team_ids` and `shortform` on workflows; restructure the documentation and link to the Incident.io API reference |
+| 1.0.1 | 2026-10-14 | [88962](https://github.com/airbytehq/airbyte/pull/88962) | Declare `filter_by`, `fixed_filter` and `helptext_catalog_attribute_id` on custom fields; update the base image |
+| 1.0.0 | 2026-10-14 | [88437](https://github.com/airbytehq/airbyte/pull/88437) | Type timestamp fields, move catalog_types and alert_routes to /v3, sync all incident modes. See the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) |
 | 0.4.2 | 2026-10-13 | [88435](https://github.com/airbytehq/airbyte/pull/88435) | Declare `external_issue_reference` on incidents and `holidays_public_config` on schedules |
 | 0.4.1 | 2026-10-13 | [88663](https://github.com/airbytehq/airbyte/pull/88663) | Update dependencies |
 | 0.4.0 | 2026-10-09 | [88418](https://github.com/airbytehq/airbyte/pull/88418) | Add five alerting and escalation path streams |

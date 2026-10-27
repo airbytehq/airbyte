@@ -44,7 +44,24 @@ Classes
 
     ### Class variables
 
-    `portfolio_id: str`
+    `include_extended_data_fields: str`
+    :   The type of the None singleton.
+
+    `portfolio_id_filter: airbyte_agent_sdk.connectors.amazon_ads.types.PortfoliosGetParamsPortfolioidfilter`
+    :   The type of the None singleton.
+
+<a id="PortfoliosGetParamsPortfolioidfilter"></a>
+
+`PortfoliosGetParamsPortfolioidfilter(*args, **kwargs)`
+:   Pass \{"include": ["&lt;portfolioId&gt;"]\} to fetch the portfolio with this ID.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `include: list[str]`
     :   The type of the None singleton.
 
 <a id="PortfoliosListParams"></a>
@@ -642,7 +659,21 @@ Classes
 
     ### Class variables
 
-    `campaign_id: str`
+    `campaign_id_filter: airbyte_agent_sdk.connectors.amazon_ads.types.SponsoredProductCampaignsGetParamsCampaignidfilter`
+    :   The type of the None singleton.
+
+<a id="SponsoredProductCampaignsGetParamsCampaignidfilter"></a>
+
+`SponsoredProductCampaignsGetParamsCampaignidfilter(*args, **kwargs)`
+:   Pass \{"include": ["&lt;campaignId&gt;"]\} to fetch the campaign with this ID.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `include: list[str]`
     :   The type of the None singleton.
 
 <a id="SponsoredProductCampaignsListParams"></a>

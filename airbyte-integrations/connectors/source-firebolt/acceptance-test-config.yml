@@ -23,7 +23,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
-        timeout_seconds: 120
         expect_trace_message_on_failure: false
         validate_state_messages: false
   full_refresh:

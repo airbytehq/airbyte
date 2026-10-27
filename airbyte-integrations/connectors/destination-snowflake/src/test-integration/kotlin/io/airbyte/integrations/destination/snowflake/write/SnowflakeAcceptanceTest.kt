@@ -326,11 +326,11 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
                 field = changeNode["field"].textValue().uppercase(),
                 change =
                     AirbyteRecordMessageMetaChange.Change.fromValue(
-                        changeNode["change"].textValue()
+                        changeNode["change"].textValue(),
                     ),
                 reason =
                     AirbyteRecordMessageMetaChange.Reason.fromValue(
-                        changeNode["reason"].textValue()
+                        changeNode["reason"].textValue(),
                     ),
             )
         }

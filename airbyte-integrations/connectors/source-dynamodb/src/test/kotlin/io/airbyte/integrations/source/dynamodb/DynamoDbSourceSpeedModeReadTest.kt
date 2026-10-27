@@ -89,8 +89,8 @@ class DynamoDbSourceSpeedModeReadTest {
                     INCREMENTAL_STREAM,
                     SyncMode.INCREMENTAL,
                     cursor = "v",
-                    namespace = namespace
-                )
+                    namespace = namespace,
+                ),
         )
 
     private val defaultState: List<AirbyteStateMessage> =
@@ -98,7 +98,7 @@ class DynamoDbSourceSpeedModeReadTest {
             streamState(
                 INCREMENTAL_STREAM,
                 """{"cursor_field":["v"],"cursor":"600","cursor_record_count":1}""",
-            )
+            ),
         )
 
     @Test
@@ -120,10 +120,9 @@ class DynamoDbSourceSpeedModeReadTest {
         run.assertMatchesStdio(records, protocolMessages)
 
         // The wire values of the exotic numbers: typed, plain notation, exact digits.
-        val exotic: AirbyteRecordMessageProtobuf =
-            protoRecords.first {
-                it.streamName == EXOTIC_NUMBERS && run.decode(it)["id"].asText() == "x1"
-            }
+        val exotic: AirbyteRecordMessageProtobuf = protoRecords.first {
+            it.streamName == EXOTIC_NUMBERS && run.decode(it)["id"].asText() == "x1"
+        }
         val slots: Map<String, Int> = run.slots(EXOTIC_NUMBERS)
         fun value(name: String): AirbyteValueProtobuf = exotic.getData(slots.getValue(name))
         fun text(name: String): String? = SpeedModeTestSupport.wireText(value(name))
@@ -135,7 +134,7 @@ class DynamoDbSourceSpeedModeReadTest {
             Assertions.assertEquals(
                 AirbyteValueProtobuf.ValueCase.BIG_DECIMAL,
                 value(name).valueCase,
-                name
+                name,
             )
         }
         Assertions.assertEquals("100000", text("n_exp"))
@@ -166,10 +165,9 @@ class DynamoDbSourceSpeedModeReadTest {
         // item 1 and a number in item 2, and the last sampled item wins): the JSONL channels send
         // the raw string, the protobuf slot is an integer and cannot hold it, so it is null with a
         // change record for the destination's `_airbyte_meta`.
-        val item1: AirbyteRecordMessageProtobuf =
-            protoRecords.first {
-                it.streamName == "all_types" && run.decode(it)["id"].asText() == "1"
-            }
+        val item1: AirbyteRecordMessageProtobuf = protoRecords.first {
+            it.streamName == "all_types" && run.decode(it)["id"].asText() == "1"
+        }
         Assertions.assertEquals(
             Jsons.textNode("integer"),
             run.configured.properties("all_types")["flexible"]["airbyte_type"],
@@ -195,10 +193,9 @@ class DynamoDbSourceSpeedModeReadTest {
                 .asText(),
         )
         // Item 2 holds the integer the schema declares.
-        val item2: AirbyteRecordMessageProtobuf =
-            protoRecords.first {
-                it.streamName == "all_types" && run.decode(it)["id"].asText() == "2"
-            }
+        val item2: AirbyteRecordMessageProtobuf = protoRecords.first {
+            it.streamName == "all_types" && run.decode(it)["id"].asText() == "2"
+        }
         // JsonNode equality is class-sensitive (IntNode vs BigIntegerNode): compare the text.
         Assertions.assertEquals("100", run.decode(item2)["flexible"].asText())
         // Item 2 carries no change record: the CDK's protobuf consumer reuses one record builder
@@ -237,7 +234,7 @@ class DynamoDbSourceSpeedModeReadTest {
                 .single { it.contains("\"$EXOTIC_NUMBERS\"") && it.contains("\"x1\"") }
         Assertions.assertTrue(
             line.contains("\"n_exp\":100000,") || line.endsWith("\"n_exp\":100000}}"),
-            line
+            line,
         )
         Assertions.assertTrue(line.contains("\"n_tiny\":-0.0000001"), line)
         Assertions.assertTrue(line.contains("\"n_big\":123456789012345678901234567890"), line)
@@ -332,7 +329,7 @@ class DynamoDbSourceSpeedModeReadTest {
                     streamState(
                         INCREMENTAL_STREAM,
                         """{"scan":{"exclusive_start_key":{"id":{"S":"${allIds[599]}"}}}}""",
-                    )
+                    ),
                 ),
             )
         val messages: List<AirbyteMessageProtobuf> =
@@ -377,7 +374,7 @@ class DynamoDbSourceSpeedModeReadTest {
         for (message in stateMessages) {
             Assertions.assertTrue(
                 message["partition_id"]?.asText()?.isNotBlank() == true,
-                message.toString()
+                message.toString(),
             )
         }
         val states: List<JsonNode> = stateMessages.map { it["stream"]["stream_state"] }
@@ -417,8 +414,9 @@ class DynamoDbSourceSpeedModeReadTest {
                 "ddb-sockets-",
             )
         val socketPaths: List<Path> = (1..NUM_SOCKETS).map { socketDir.resolve("socket-$it.sock") }
-        val readers: List<SpeedModeTestSupport.UnixSocketReader> =
-            socketPaths.map { SpeedModeTestSupport.UnixSocketReader(it) }
+        val readers: List<SpeedModeTestSupport.UnixSocketReader> = socketPaths.map {
+            SpeedModeTestSupport.UnixSocketReader(it)
+        }
         val properties: Map<String, String> =
             mapOf(
                 MEDIUM_PROPERTY to "SOCKET",
@@ -540,7 +538,7 @@ class DynamoDbSourceSpeedModeReadTest {
 
         fun socketStateMessages(
             messages: List<AirbyteMessageProtobuf>,
-            streamName: String
+            streamName: String,
         ): List<JsonNode> =
             messages
                 .filter { it.hasAirbyteProtocolMessage() }
@@ -553,7 +551,7 @@ class DynamoDbSourceSpeedModeReadTest {
 
         fun socketStates(
             messages: List<AirbyteMessageProtobuf>,
-            streamName: String
+            streamName: String,
         ): List<JsonNode> =
             socketStateMessages(messages, streamName).map { it["stream"]["stream_state"] }
 
@@ -588,12 +586,12 @@ class DynamoDbSourceSpeedModeReadTest {
             Assertions.assertEquals(
                 streams.toSet(),
                 socketRecords.keys,
-                "streams with records over the sockets"
+                "streams with records over the sockets",
             )
             Assertions.assertEquals(3, socketRecords.getValue("all_types").size)
             Assertions.assertEquals(
                 MANY_ITEMS - 600,
-                socketRecords.getValue(INCREMENTAL_STREAM).size
+                socketRecords.getValue(INCREMENTAL_STREAM).size,
             )
 
             // States are emitted to the destination over the sockets (and to the platform on
@@ -628,7 +626,7 @@ class DynamoDbSourceSpeedModeReadTest {
             }
             Assertions.assertEquals(
                 Jsons.readTree(
-                    """{"cursor_field":["v"],"cursor":"$MANY_ITEMS","cursor_record_count":1}"""
+                    """{"cursor_field":["v"],"cursor":"$MANY_ITEMS","cursor_record_count":1}""",
                 ),
                 socketStates.getValue(INCREMENTAL_STREAM).last(),
             )
@@ -731,8 +729,8 @@ class DynamoDbSourceSpeedModeReadTest {
             .withJsonSchema(
                 Jsons.readTree(
                     """{"type":"object","properties":{"id":{"type":["null","string"]},
-                        "filler":{"type":["null","string"]}}}"""
-                )
+                        "filler":{"type":["null","string"]}}}""",
+                ),
             )
             .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(listOf(listOf("id")))
@@ -786,11 +784,11 @@ class DynamoDbSourceSpeedModeReadTest {
                             """{"id": {"S": "x1"}, "n_exp": {"N": "1e5"}, "n_tiny": {"N": "-0.0000001"},
                                 "n_big": {"N": "123456789012345678901234567890"}, "n_dec": {"N": "12.34"},
                                 "nested": {"M": {"n": {"N": "1e5"}, "l": {"L": [{"N": "2.5e1"}]}}},
-                                "nset": {"NS": ["1e3", "2.5"]}}"""
-                        )
+                                "nset": {"NS": ["1e3", "2.5"]}}""",
+                        ),
                     ),
                     DynamoDbJson.itemFromDynamoDbJson(
-                        Jsons.readTree("""{"id": {"S": "x2"}, "n_exp": {"N": "7"}}""")
+                        Jsons.readTree("""{"id": {"S": "x2"}, "n_exp": {"N": "7"}}"""),
                     ),
                 ),
             )
@@ -802,15 +800,15 @@ class DynamoDbSourceSpeedModeReadTest {
                 listOf(
                     mapOf(
                         "id" to AttributeValue.fromS("s1"),
-                        "only_a" to AttributeValue.fromS("A")
+                        "only_a" to AttributeValue.fromS("A"),
                     ),
                     mapOf(
                         "id" to AttributeValue.fromS("s2"),
-                        "only_b" to AttributeValue.fromS("B")
+                        "only_b" to AttributeValue.fromS("B"),
                     ),
                     mapOf(
                         "id" to AttributeValue.fromS("s3"),
-                        "only_c" to AttributeValue.fromS("C")
+                        "only_c" to AttributeValue.fromS("C"),
                     ),
                 ),
             )

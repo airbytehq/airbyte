@@ -266,6 +266,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
+    def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
+        return False
+
     # Parse the `records` with respect to the `stream_state` for the `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
@@ -283,7 +286,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     filter_record_value = record.get(self.filter_field) if self.filter_field else None
                     self.track_checkpoint_cursor(record_value, filter_record_value)
                     if record_value:
-                        if record_value >= state_value:
+                        if record_value >= state_value or self.should_emit_record_older_than_state(record, state_value):
                             yield record
                         else:
                             if self.should_checkpoint(index):

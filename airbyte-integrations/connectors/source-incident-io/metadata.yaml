@@ -13,12 +13,35 @@ data:
       enabled: false
       packageName: airbyte-source-incident-io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0@sha256:d5f6ec97c5b4a13d5c8ac2d0bb783d3c85a98d0634386f901e4a601cb3abe1c7
   connectorSubtype: api
   connectorType: source
   definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
-  dockerImageTag: 0.4.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-incident-io
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Version 1.0.0 types 49 timestamp fields across 13 streams as timestamps with time zone instead of text, moves `catalog_types` to incident.io's v3 API because v2 is deprecated (removing the always-empty `semantic_type` and adding four fields), and syncs incidents of all five modes, so `incidents` and `incident_attachments` now include test, tutorial and stream incidents. Connections that sync none of the affected streams need no action. Otherwise, refresh the source schema after upgrading (not needed if `incident_attachments` is the only affected stream you sync). Destinations that can't change an existing column's type also need the affected incremental and full-refresh Append streams cleared; clearing deletes their destination data, so back it up first. See the migration guide: https://docs.airbyte.com/integrations/sources/incident-io-migrations#upgrading-to-100"
+        upgradeDeadline: "2026-11-09"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - actions
+              - alerts
+              - catalog_types
+              - custom_fields
+              - escalations
+              - follow-ups
+              - incident_roles
+              - incident_statuses
+              - incident_updates
+              - incidents
+              - incident_attachments
+              - schedules
+              - severities
+              - workflows
   githubIssueLabel: source-incident-io
   icon: icon.svg
   license: ELv2
@@ -45,15 +68,15 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   releaseDate: 2024-10-03
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/incident-io
   tags:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: incident.io API reference
       url: https://api-docs.incident.io/

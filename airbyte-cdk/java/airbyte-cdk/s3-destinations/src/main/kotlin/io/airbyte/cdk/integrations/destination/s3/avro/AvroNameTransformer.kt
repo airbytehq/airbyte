@@ -8,7 +8,6 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import java.util.Locale
 
 /**
- *
  * * An Avro name starts with [A-Za-z_], followed by [A-Za-z0-9_].
  * * An Avro namespace is a dot-separated sequence of such names.
  * * Reference: https://avro.apache.org/docs/current/spec.html#names

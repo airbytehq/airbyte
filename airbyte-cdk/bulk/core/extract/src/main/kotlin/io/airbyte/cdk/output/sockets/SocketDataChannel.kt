@@ -10,6 +10,7 @@ import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
@@ -20,7 +21,6 @@ import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -38,11 +38,16 @@ interface SocketDataChannel {
     }
 
     suspend fun initialize()
+
     fun shutdown()
+
     val status: SocketStatus
     var isBound: Boolean
+
     fun bind()
+
     fun unbind()
+
     var outputStream: OutputStream?
     val isAvailable: Boolean
 }
@@ -52,11 +57,11 @@ interface SocketDataChannel {
  *
  * @param socketFilePath The path to the Unix domain socket file.
  * @param probePacket A packet used to probe the socket state. The type of the packet is determined
- * by the configured format (JSONL or Protobuf).
+ *   by the configured format (JSONL or Protobuf).
  */
 class UnixDomainSocketDataChannel(
     private val socketFilePath: String,
-    private val probePacket: ProbePacket
+    private val probePacket: ProbePacket,
 ) : SocketDataChannel {
 
     private var socketStatus = AtomicReference(SOCKET_CLOSED)
@@ -69,6 +74,7 @@ class UnixDomainSocketDataChannel(
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
+
     override val isAvailable: Boolean
         @Synchronized
         get() {
@@ -113,7 +119,7 @@ class UnixDomainSocketDataChannel(
         launch(
             ThreadRenamingCoroutineName("socket-data-channel-$socketFilePath--") +
                 Dispatchers.IO +
-                Job()
+                Job(),
         ) {
             socketStatus.set(SOCKET_WAITING_LISTENER)
             logger.info { "Waiting to connect..." }

@@ -45,7 +45,10 @@ for more details.
 #### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
-to your MSSQL instance is via the check connection tool in the UI.
+to your MSSQL instance is via the check connection tool in the UI. If you use Airbyte Cloud, your
+firewall or security group must allow the
+[Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)
+and the connection must be encrypted; see [Airbyte Cloud](#airbyte-cloud) below.
 
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
@@ -85,8 +88,22 @@ plan to use CDC, this user also needs the additional CDC-related permissions des
 #### Airbyte Cloud
 
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
-configuration. You may either configure your connection using one of the supported SSL Methods or by
-using an SSH Tunnel.
+configuration. Airbyte Cloud never connects to a database without encryption: the connection must
+either use TLS/SSL, or go through an SSH tunnel, which encrypts the hop between Airbyte and your
+bastion host. In practice:
+
+| Setup                                                                                               | Supported on Airbyte Cloud                                                                   |
+| :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| **Encryption** set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`    | Yes, with or without an SSH tunnel.                                                          |
+| **Encryption** set to `Unencrypted` with an SSH tunnel                                              | Yes. The SSH tunnel provides the encryption.                                                 |
+| **Encryption** set to `Unencrypted` without an SSH tunnel                                           | No. The connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` |
+| Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database, which also provides the encryption Airbyte Cloud requires. With `No Tunnel`, `localhost`, `127.0.0.1` or `0.0.0.0` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` |
+| A URL, credentials or `host:port` pasted into **Host**                                              | No. The connection test fails with `Enter only the hostname in Host; put the port in the Port field.` Enter only the hostname or IP address in **Host** and the port in **Port**. |
+
+On Airbyte Cloud, the **Encryption** option defaults to `Encrypted (trust server certificate)`.
+
+See [Connection to MSSQL via an SSH Tunnel](#connection-to-mssql-via-an-ssh-tunnel) for how to set
+up the tunnel, and [IP allow list](#ip-allow-list) if your network restricts inbound connections.
 
 ## Authentication with Microsoft Entra ID
 
@@ -369,7 +386,17 @@ directly \(e.g. it does not have a public IP address\).
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a.
 a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion
-and then asks the bastion to connect directly to the server.
+and then asks the bastion to connect directly to the server. The `Host` and `Port` of the source are
+then the address of the database as seen from the bastion \(for example `localhost` and `1433` when
+SQL Server runs on the bastion itself\).
+
+:::note Airbyte Cloud
+Airbyte Cloud never connects to a database without encryption. An SSH tunnel satisfies this
+requirement because the hop between Airbyte and the bastion is encrypted, so on Airbyte Cloud a
+tunnel is the only way to use the `Unencrypted` encryption method, and the only way to reach a
+database on `localhost` or on a private network. Without a tunnel, Airbyte Cloud requires an
+encrypted SSL method; see [Airbyte Cloud](#airbyte-cloud).
+:::
 
 Using this feature requires additional configuration, when creating the source. We will talk through
 what each piece of configuration means.
@@ -534,6 +561,20 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+When Airbyte cannot open a TCP connection to your server, the connection test and syncs fail with:
+
+```text
+SQL Server Connection Error: Airbyte could not reach SQL Server at the configured host and port.
+Check the host and port, that the instance accepts remote TCP connections, and that your firewall
+or security group allows Airbyte's IP addresses.
+```
+
+This covers a wrong host or port, a host name that does not resolve, an instance that does not
+accept remote TCP connections, and a firewall or security group that does not allow the Airbyte
+Cloud IP addresses. A database on `localhost` or on a private network is not reachable from Airbyte
+Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel); Airbyte Cloud rejects
+`localhost` with `No Tunnel` before connecting, with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` A URL or `host:port` pasted into **Host** is rejected with `Enter only the hostname in Host; put the port in the Port field.`
+
 ## Changelog
 
 <details>
@@ -541,6 +582,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                 |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.2       | 2026-10-19 | [85353](https://github.com/airbytehq/airbyte/pull/85353)                                                          | Cold-start a stream when its saved state is an empty object or an unrecognized legacy format instead of skipping it.                                    |
+| 5.1.1       | 2026-10-12 | [88500](https://github.com/airbytehq/airbyte/pull/88500) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. Explain the `Discovered zero tables.` connection-test failure: say that no table is visible to the login and how to grant `SELECT`. On Airbyte Cloud, default the Encryption option to `Encrypted (trust server certificate)`. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 5.1.0       | 2026-10-12 | [86318](https://github.com/airbytehq/airbyte/pull/86318)                                                          | Add Debezium's `max_iteration_transactions` (`max.iteration.transactions`) as an advanced CDC option, defaulting to 500.                                |
 | 5.0.2       | 2026-10-09 | [88429](https://github.com/airbytehq/airbyte/pull/88429)                                                          | Upgrade to Bulk CDK 1.1.14.                                                                                                                             |
 | 5.0.1       | 2026-09-09 | [84356](https://github.com/airbytehq/airbyte/pull/84356)                                                          | Change Debezium data.query.mode from `direct` to `function` to prevent syncs from hanging on large tables.                                              |

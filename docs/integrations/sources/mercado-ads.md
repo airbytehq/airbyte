@@ -54,6 +54,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-10-27 | [89980](https://github.com/airbytehq/airbyte/pull/89980) | Update dependencies |
+| 0.0.48 | 2026-10-20 | [89290](https://github.com/airbytehq/airbyte/pull/89290) | Update dependencies |
 | 0.0.47 | 2026-10-13 | [88698](https://github.com/airbytehq/airbyte/pull/88698) | Update dependencies |
 | 0.0.46 | 2026-10-07 | [88243](https://github.com/airbytehq/airbyte/pull/88243) | Persist Mercado Libre's rotated single-use refresh token (`refresh_token_updater`), surface `invalid_grant` as a config error, fix double slash in `brand_keywords_metrics` path |
 | 0.0.45 | 2026-10-06 | [87946](https://github.com/airbytehq/airbyte/pull/87946) | Update dependencies |

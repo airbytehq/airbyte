@@ -37,6 +37,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.74 | 2026-10-27 | [89855](https://github.com/airbytehq/airbyte/pull/89855) | Update dependencies |
+| 0.0.73 | 2026-10-20 | [89157](https://github.com/airbytehq/airbyte/pull/89157) | Update dependencies |
 | 0.0.72 | 2026-10-13 | [88553](https://github.com/airbytehq/airbyte/pull/88553) | Update dependencies |
 | 0.0.71 | 2026-10-07 | [88311](https://github.com/airbytehq/airbyte/pull/88311) | Fix spec: `daily_data_items`/`hourly_data_items` enums moved under `items` (any selection previously failed config validation), send `dataItems` as a comma-delimited list, add `day-air-tmp-max` |
 | 0.0.70 | 2026-10-06 | [87788](https://github.com/airbytehq/airbyte/pull/87788) | Update dependencies |

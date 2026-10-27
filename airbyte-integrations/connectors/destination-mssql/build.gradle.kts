@@ -56,7 +56,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
-    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
