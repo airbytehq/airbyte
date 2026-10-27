@@ -22,7 +22,10 @@ def test_field_transformation():
 
 def test_date_time_paths_are_resolved_once_across_transforms():
     with patch.object(
-        CustomFieldTransformation, "_get_date_time_dpath_from_schema", wraps=CustomFieldTransformation._get_date_time_dpath_from_schema, autospec=True
+        CustomFieldTransformation,
+        "_get_date_time_dpath_from_schema",
+        wraps=CustomFieldTransformation._get_date_time_dpath_from_schema,
+        autospec=True,
     ) as resolve_paths:
         record_transformation = CustomFieldTransformation(config={}, parameters={"name": "page"})
         for _ in range(3):
