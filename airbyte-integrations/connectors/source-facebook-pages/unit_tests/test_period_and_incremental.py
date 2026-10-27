@@ -2,6 +2,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -60,3 +61,12 @@ def test_post_incremental_resumes_from_state_and_advances_cursor():
     output, query = _read("post", SyncMode.incremental, CONFIG, FEED_URL, {"data": [POST], "paging": {}}, state=state)
     assert query["since"] == ["2024-03-01T00:00:00+0000"]
     assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"created_time": "2024-06-01T00:00:00+0000"}
+
+
+def test_check_passes_when_page_has_no_insights_yet():
+    # Meta returns an empty data array for Pages under 100 likes; setup must still succeed for them.
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(INSIGHTS_URL, json={"data": []})
+        result = SourceFacebookPages(config=CONFIG).check(logging.getLogger("test"), CONFIG)
+    assert result.status.value == "SUCCEEDED", result.message
