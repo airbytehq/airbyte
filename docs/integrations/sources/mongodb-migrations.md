@@ -56,12 +56,12 @@ This version introduces multiple database support for the MongoDB V2 source conn
 
 The changes will require you to reconfigure your existing MongoDB V2 source connectors to use the new `databases` array field instead of the previous `database` field.
 
-### What to expect when upgrading:
+### What to expect when upgrading
 
 1. You will need to reconfigure your MongoDB source connector to use the new `databases` array field
 2. If you're using CDC incremental sync mode, we recommend testing this upgrade in a staging environment first
 
-### Migration steps:
+### Migration steps
 
 1. After upgrading, edit your MongoDB source configuration
 2. Add your existing database to the new `databases` array field
@@ -95,7 +95,7 @@ Worthy of specific mention, this version includes:
 - Sampling of fields for schema discovery
 - Required SSL/TLS connections
 
-Learn more about what's new in the connection, view the updated documentation [here](/integrations/sources/mongodb/).
+Learn more about what's new in the connector in the [MongoDB source documentation](/integrations/sources/mongodb/).
 
 ## Connector upgrade guide
 
