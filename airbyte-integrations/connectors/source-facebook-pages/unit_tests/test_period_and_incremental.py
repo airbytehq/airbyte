@@ -70,3 +70,16 @@ def test_check_passes_when_page_has_no_insights_yet():
         m.get(INSIGHTS_URL, json={"data": []})
         result = SourceFacebookPages(config=CONFIG).check(logging.getLogger("test"), CONFIG)
     assert result.status.value == "SUCCEEDED", result.message
+
+
+def test_invalid_metric_is_reported_as_config_error():
+    # Meta rejects the whole request when any metric is invalid; the user can always fix the list.
+    config = {**CONFIG, "page_insights_metrics": ["page_views_totl"]}
+    catalog = CatalogBuilder().with_stream("page_insights", SyncMode.full_refresh).build()
+    error = {"error": {"message": "(#100) The value must be a valid insights metric", "type": "OAuthException", "code": 100}}
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(INSIGHTS_URL, status_code=400, json=error)
+        output = read(SourceFacebookPages(catalog=catalog, config=config), config, catalog, expecting_exception=True)
+    assert output.errors[0].trace.error.failure_type.value == "config_error"
+    assert "Insights Metrics settings" in output.errors[0].trace.error.message

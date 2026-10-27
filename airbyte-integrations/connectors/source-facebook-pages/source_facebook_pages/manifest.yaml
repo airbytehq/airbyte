@@ -35,16 +35,18 @@ definitions:
         # Meta rejects the whole Insights request when any single requested metric is
         # invalid. This is permanent, so it must not fall through to the blanket 400 filter
         # below, which would otherwise hide the API's own message.
+        # A rejected metric is always fixable in the source settings now that metric lists are
+        # configurable, so it is a config_error rather than a system_error.
         - action: FAIL
           error_message_contains: must be a valid insights metric
-          failure_type: system_error
+          failure_type: config_error
           error_message: >-
-            Facebook rejected one or more of the Insights metrics this connector requested, so the
-            entire request failed. This usually means Meta deprecated a metric that the connector
-            still asks for, or that a metric in the Insights Metrics settings is misspelled or
-            deprecated. Remove or correct that metric in the source settings, or upgrade to the
-            latest connector version and report it at https://github.com/airbytehq/airbyte/issues. Facebook
-            returned: {{ response.get('error', {}).get('message', '') }}
+            Facebook rejected one or more of the requested Insights metrics, so the entire request
+            failed. If you set a custom list in the Insights Metrics settings, check it for misspelled
+            or deprecated metrics. If you are using the connector defaults, Meta has deprecated one of
+            them: set a custom list that leaves it out, upgrade to the latest connector version, and
+            report it at https://github.com/airbytehq/airbyte/issues. Facebook returned:
+            {{ response.get('error', {}).get('message', '') }}
         # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
         # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
         # Codes: https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
