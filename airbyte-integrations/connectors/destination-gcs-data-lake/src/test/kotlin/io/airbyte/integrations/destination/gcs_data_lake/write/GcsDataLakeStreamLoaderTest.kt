@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -83,6 +84,8 @@ internal class GcsDataLakeStreamLoaderTest {
         importType: ImportType,
         syncId: Long = 1,
         columnNames: Map<String, String> = emptyMap(),
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
     ): DestinationStream {
         val objectSchema =
             ObjectType(
@@ -93,8 +96,8 @@ internal class GcsDataLakeStreamLoaderTest {
             )
         val inputSchema = objectSchema.properties
         return DestinationStream(
-            generationId = 1,
-            minimumGenerationId = 0,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
             syncId = syncId,
             unmappedNamespace = "namespace",
             unmappedName = "name",
@@ -155,11 +158,14 @@ internal class GcsDataLakeStreamLoaderTest {
             .withAirbyteMeta(true)
             .toIcebergSchema(primaryKeys)
 
-    private fun createTable(schema: Schema): Table {
+    private fun createTable(
+        schema: Schema,
+        partitionSpec: PartitionSpec = PartitionSpec.unpartitioned(),
+    ): Table {
         (catalog as SupportsNamespaces).createNamespace(tableIdentifier.namespace())
         return catalog
             .buildTable(tableIdentifier, schema)
-            .withPartitionSpec(PartitionSpec.unpartitioned())
+            .withPartitionSpec(partitionSpec)
             .withProperty(TableProperties.FORMAT_VERSION, "2")
             .create()
     }
@@ -406,6 +412,38 @@ internal class GcsDataLakeStreamLoaderTest {
         }
 
         assertEquals(listOf("identity"), table.spec().fields().map { it.transform().toString() })
+    }
+
+    @Test
+    fun `overwrite removal defers partition evolution for deleted source column`() {
+        val tableSchema = makeTableSchema()
+        val table =
+            createTable(
+                tableSchema,
+                PartitionSpec.builderFor(tableSchema).identity("name").build(),
+            )
+        val incomingSchema =
+            ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
+                .withAirbyteMeta(true)
+                .toIcebergSchema(listOf(listOf("id")))
+        val partitionFields =
+            listOf(GcsPartitionFieldSpec("name", GcsPartitionTransform.IDENTITY))
+        val loader =
+            makeLoader(
+                makeStream(Overwrite, generationId = 1, minimumGenerationId = 1),
+                table,
+                incomingSchema = incomingSchema,
+                partitionFields = partitionFields,
+            )
+
+        runBlocking {
+            loader.start()
+            loader.teardown(completedSuccessfully = true)
+        }
+
+        table.refresh()
+        assertNull(table.schema().findField("name"))
+        assertTrue(table.spec().fields().isEmpty())
     }
 
     @Test

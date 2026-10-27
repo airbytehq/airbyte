@@ -222,7 +222,7 @@ Set `partition_fields` to enable partition pruning. For example, this partitions
 }
 ```
 
-Partition fields are added to existing tables through partition evolution. Old data files keep their original partition spec. Pruning applies to data written after the new partition field is added.
+Partition fields are added to existing tables through partition evolution. Old data files keep their original partition spec. Pruning applies to data written after the new partition field is added. Fields on columns added during an overwrite sync are picked up on the next sync.
 
 The connector does not compact tables. Each data file carries at most one deletion vector. Positional delete files accumulate on every Dedupe sync. Periodically compact with an Iceberg maintenance engine such as Spark. Run `rewrite_data_files`, `rewrite_position_delete_files`, and `expire_snapshots` to stay within BigQuery's delete-file limits.
 

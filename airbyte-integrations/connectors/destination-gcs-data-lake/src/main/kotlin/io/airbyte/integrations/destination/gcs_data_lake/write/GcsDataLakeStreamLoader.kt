@@ -198,7 +198,8 @@ class GcsDataLakeStreamLoader(
         // This is also intentional - the airbyte protocol requires that we commit data
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
-        targetSchema = computeOrExecuteSchemaUpdate().schema
+        val schemaUpdateResult = computeOrExecuteSchemaUpdate()
+        targetSchema = schemaUpdateResult.schema
 
         // After schema updates, refresh the table to ensure we have the latest schema with
         // identifier fields.
@@ -210,7 +211,16 @@ class GcsDataLakeStreamLoader(
             targetSchema = table.schema()
         }
         if (tableExisted) {
-            IcebergPartitioning.evolveSpec(createdTable, partitionFields)
+            if (schemaUpdateResult.pendingUpdates.isNotEmpty()) {
+                logger.info {
+                    "Deferring partition spec evolution to the next sync for " +
+                        "${stream.mappedDescriptor} because schema changes are pending."
+                }
+            } else {
+                val writerPartitionFields =
+                    partitionFields.filter { incomingSchema.findField(it.sourceColumn) != null }
+                IcebergPartitioning.evolveSpec(createdTable, writerPartitionFields)
+            }
         }
         val deleteMode = resolveDeleteMode(createdTable, effectiveFormatVersion)
 
