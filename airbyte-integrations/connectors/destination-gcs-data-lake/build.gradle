@@ -73,6 +73,7 @@ dependencies {
 
     // Integration testing
     integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    integrationTestImplementation("com.google.cloud:google-cloud-bigquery:2.50.0")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
     integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
 }
