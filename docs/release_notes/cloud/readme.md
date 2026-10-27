@@ -2,6 +2,21 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 27, 2026
+
+Connections
+
+- When you set up a source or destination, the buttons are now labeled **Save & Test** and **Save as a draft**. **Save & Test** stays disabled until you fill in every required field, and its tooltip lists the fields you still need to complete. You can still save an incomplete setup as a draft.
+- The buttons at the bottom of source and destination setup forms now stay visible while you scroll through the form.
+- Settings in source and destination setup forms that offer two to four options, such as choosing an authentication method, now appear as side-by-side buttons instead of a dropdown, so you can see every option at once.
+- While a new source or destination setup form loads, you now see the Airbyte logo animation. A message with a link to support appears only if loading takes more than 10 seconds.
+- The **Status** tab of a connection again shows the records and bytes from each stream's latest sync. Previously, these values could show as `-` for every stream.
+- Schema discovery and syncs no longer fail for sources with very wide schemas or large saved sync state. If Airbyte rejects a schema or sync result, the error message now explains why instead of showing a generic internal error.
+
+Platform
+
+- The **Install MCP** link in the sidebar now shows a **New** badge instead of a **Beta** badge.
+
 ## October 26, 2026
 
 Connections
