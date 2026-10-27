@@ -93,12 +93,14 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 | `labels_details`   | `id`        | Full Refresh                | Per-label metadata such as message and thread counts. Substream of `labels`.             |
 | `messages`         | `id`        | Full Refresh                | Stub records (`id`, `threadId`) returned by `users.messages.list`.                       |
 | `messages_details` | `id`        | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels.                                   |
-| `threads`          | `id`        | Full Refresh                | Stub records (`id`, `historyId`) returned by `users.threads.list`.                       |
+| `threads`          | `id`        | Full Refresh                | Stub records (`id`, `snippet`, `historyId`) returned by `users.threads.list`.            |
 | `threads_details`  | `id`        | Full Refresh                | Per-thread details and the messages in each thread. Substream of `threads`.              |
 
-The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. Other streams expose only `id` and `threadId` from the upstream `list` calls and have no record-level cursor field, so they run as full refresh.
+The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. The other streams have no record-level cursor field, so they run as full refresh.
 
 On incremental syncs, `messages_details` lists messages received since the previous sync, with a one-hour lookback, and fetches details only for those returned IDs. This re-emits messages received during the hour before the previous sync, so append-only destinations can receive duplicates; **Append + Deduped** avoids them. Gmail's `after:` filter uses received time rather than modification time, so incremental syncs don't pick up changes to older messages, such as new labels or read state. They also never fetch a message that enters the mailbox later with an older received time, such as mail moved out of Spam or Trash while **Include Spam & Trash** is off, or mail imported from another account. To keep labels and read state current for older messages, run a full refresh periodically. If you leave **Start date** blank, the initial lower bound is 2004-04-01, the date Gmail launched.
+
+The first incremental sync of `messages_details` reads every message since **Start date**. This includes the first sync after you upgrade to version 0.3.0, because state saved by earlier versions doesn't bound the list request. The connector lists messages in 30-day windows and saves state after each window, so if the sync fails, the next sync resumes from the last completed window.
 
 When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages` (including the internal list used by `messages_details`), `drafts`, and `threads` `list` requests so the API skips records older than that date.
 
@@ -134,7 +136,7 @@ A request is retried up to 10 times, and the connector stops retrying after abou
 
 ## Limitations & troubleshooting
 
-- **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
+- **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, snippet, historyId}`) per record. To replicate the full message body, headers, or labels, sync `messages_details` or `threads_details`. You don't need to also select `messages` or `threads`, and selecting `messages` adds a full mailbox list on every sync.
 - **Service account keys can't read a mailbox.** The connector doesn't set the `sub` claim that Google requires for a service account to impersonate a user, so the token belongs to the service account, which has no mailbox. Domain-wide delegation doesn't change this. Use OAuth instead.
 - **`Precondition check failed`.** The authenticated account has no Gmail mailbox. Either you used Service Account Key authentication, or you authorized a Google Workspace user who doesn't have Gmail enabled. Authenticate with OAuth as the user whose mailbox you want to sync.
 - **The Gmail API isn't enabled.** On Airbyte Open Source with your own OAuth client, the connector fails with a configuration error until you [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) in the Google Cloud project that owns the client.
