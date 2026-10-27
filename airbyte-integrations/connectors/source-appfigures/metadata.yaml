@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-appfigures
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorSubtype: api
   connectorType: source
   definitionId: e2fcf0a0-3f99-4938-ba34-3a6dd51fd4a4
-  dockerImageTag: 0.0.61
+  dockerImageTag: 0.0.62
   dockerRepository: airbyte/source-appfigures
   githubIssueLabel: source-appfigures
   icon: icon.svg
