@@ -124,9 +124,9 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert (
-            len(requested_fields) > 3
-        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        assert len(requested_fields) > 3, (
+            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        )
 
 
 def test_facebook_bad_request_fails_without_retrying():
@@ -279,7 +279,12 @@ def test_page_access_token_is_exchanged_once_per_sync():
         }
         for i in range(4)
     ]
-    pages.append({"json": {"data": [{"id": "1_4", "message": "post 4", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}}, "status_code": 200})
+    pages.append(
+        {
+            "json": {"data": [{"id": "1_4", "message": "post 4", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
+            "status_code": 200,
+        }
+    )
 
     with rm.Mocker() as m:
         token_request = m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
