@@ -63,4 +63,12 @@ data:
     - title: ClickUp Status
       url: https://status.clickup.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
