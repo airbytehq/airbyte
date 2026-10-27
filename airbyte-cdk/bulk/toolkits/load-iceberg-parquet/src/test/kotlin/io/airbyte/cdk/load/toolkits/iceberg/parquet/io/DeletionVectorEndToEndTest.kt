@@ -38,7 +38,7 @@ import org.junit.jupiter.params.provider.EnumSource
 
 class DeletionVectorEndToEndTest {
     @Test
-    fun `partitioned deletion vectors retain the old data file partition`() {
+    fun `interleaved partitioned deletion vectors retain the old data file partition`() {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "partitioned_dv_records")
         val schema =
@@ -61,15 +61,15 @@ class DeletionVectorEndToEndTest {
                 .withProperty(TableProperties.FORMAT_VERSION, "3")
                 .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
                 .create()
-        fun record(at: String, name: String) =
+        fun record(id: String, at: String, name: String) =
             GenericRecord.create(schema).apply {
-                setField("id", "key")
+                setField("id", id)
                 setField("updated_at", OffsetDateTime.parse(at))
                 setField("name", name)
             }
         val writerFactory = IcebergTableWriterFactory()
         val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
-        seedWriter.write(record("2025-01-01T12:00:00Z", "old"))
+        seedWriter.write(record("key", "2025-01-01T12:00:00Z", "old"))
         val seedResult = seedWriter.complete()
         val oldDataFile = seedResult.dataFiles().single()
         table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
@@ -84,9 +84,11 @@ class DeletionVectorEndToEndTest {
                 positionalDeleteState = PositionalDeleteResolutionState(),
                 deleteMode = IcebergDeleteMode.DELETION_VECTOR,
             ) as BasePositionDeltaTaskWriter
+        updateWriter.write(RecordWrapper(record("first", "2025-01-01T12:00:00Z", "one"), Operation.INSERT))
         updateWriter.write(
-            RecordWrapper(record("2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
+            RecordWrapper(record("key", "2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
         )
+        updateWriter.write(RecordWrapper(record("last", "2025-01-01T13:00:00Z", "two"), Operation.INSERT))
         val result = updateWriter.complete()
         assertThat(result.deleteFiles()).hasSize(1)
         assertThat(result.deleteFiles()).allMatch {
@@ -94,10 +96,18 @@ class DeletionVectorEndToEndTest {
                 it.partition() == oldDataFile.partition() &&
                 it.referencedDataFile() == oldDataFile.location()
         }
-        assertThat(result.dataFiles().single().partition()).isNotEqualTo(oldDataFile.partition())
+        assertThat(result.dataFiles()).hasSize(2)
+        assertThat(result.dataFiles().map { it.partition() }.toSet()).hasSize(2)
+        assertThat(result.dataFiles().single { it.partition() != oldDataFile.partition() }.partition())
+            .isNotEqualTo(oldDataFile.partition())
 
         commitWriter(table, updateWriter)
-        assertThat(rows(table)).containsExactly("key" to "latest")
+        assertThat(rows(table))
+            .containsExactlyInAnyOrder(
+                "key" to "latest",
+                "first" to "one",
+                "last" to "two",
+            )
     }
 
     private val schema =

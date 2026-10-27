@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test
 
 class PositionalDeleteEndToEndTest {
     @Test
-    fun `partitioned positional deletes retain the old data file partition`() {
+    fun `interleaved partitioned positional deletes retain the old data file partition`() {
         val warehouse = Files.createTempDirectory("positional-delete-partitioned")
         val catalog = HadoopCatalog(Configuration(), warehouse.toString())
         val tableId = TableIdentifier.of("db", "partitioned_records")
@@ -62,15 +62,15 @@ class PositionalDeleteEndToEndTest {
                 )
                 .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
                 .create()
-        fun record(at: String, name: String) =
+        fun record(id: String, at: String, name: String) =
             GenericRecord.create(schema).apply {
-                setField("id", "key")
+                setField("id", id)
                 setField("updated_at", OffsetDateTime.parse(at))
                 setField("name", name)
             }
         val writerFactory = IcebergTableWriterFactory()
         val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
-        seedWriter.write(record("2025-01-01T12:00:00Z", "old"))
+        seedWriter.write(record("key", "2025-01-01T12:00:00Z", "old"))
         val seedResult = seedWriter.complete()
         val oldDataFile = seedResult.dataFiles().single()
         table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
@@ -85,15 +85,20 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteState = PositionalDeleteResolutionState(),
                 deleteMode = IcebergDeleteMode.POSITIONAL,
             )
+        updateWriter.write(RecordWrapper(record("first", "2025-01-01T12:00:00Z", "one"), Operation.INSERT))
         updateWriter.write(
-            RecordWrapper(record("2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
+            RecordWrapper(record("key", "2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
         )
+        updateWriter.write(RecordWrapper(record("last", "2025-01-01T13:00:00Z", "two"), Operation.INSERT))
         val result = updateWriter.complete()
         val deleteFile = result.deleteFiles().single()
 
         assertThat(deleteFile.specId()).isEqualTo(oldDataFile.specId())
         assertThat(deleteFile.partition()).isEqualTo(oldDataFile.partition())
-        assertThat(result.dataFiles().single().partition()).isNotEqualTo(oldDataFile.partition())
+        assertThat(result.dataFiles()).hasSize(2)
+        assertThat(result.dataFiles().map { it.partition() }.toSet()).hasSize(2)
+        assertThat(result.dataFiles().single { it.partition() != oldDataFile.partition() }.partition())
+            .isNotEqualTo(oldDataFile.partition())
         IcebergTableCommitter.commit(
             table,
             "main",
@@ -106,7 +111,12 @@ class PositionalDeleteEndToEndTest {
             IcebergGenerics.read(table).build().use { records ->
                 records.map { it.getField("id").toString() to it.getField("name").toString() }
             }
-        assertThat(liveRows).containsExactly("key" to "latest")
+        assertThat(liveRows)
+            .containsExactlyInAnyOrder(
+                "key" to "latest",
+                "first" to "one",
+                "last" to "two",
+            )
         warehouse.toFile().deleteRecursively()
     }
 
