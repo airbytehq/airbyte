@@ -18,6 +18,7 @@ from airbyte_cdk import (
     ConnectorSpecification,
     emit_configuration_as_airbyte_control_message,
     is_cloud_environment,
+    launch,
 )
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
@@ -42,14 +43,13 @@ from airbyte_cdk.sources.file_based.stream.abstract_file_based_stream import (
 from airbyte_cdk.sources.file_based.stream.cursor.abstract_file_based_cursor import (
     AbstractFileBasedCursor,
 )
+from airbyte_cdk.sources.utils.check_section import CHECK_SECTION_KEY
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
-from source_s3.v4.check_section import CHECK_SECTION_KEY, requested_section, strip_check_section
-from source_s3.v4.config import SECTION_BUCKET, Config
+from source_s3.v4.config import SECTION_BUCKET, SECTION_FILES, Config
 from source_s3.v4.cursor import Cursor
-from source_s3.v4.entrypoint import launch
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
 from source_s3.v4.throttled_stream import ThrottledFileBasedStream
@@ -67,23 +67,25 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_section_connection(self, logger: logging.Logger, section: str, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        The full check of the file-based CDK, or, when the config carries `check-section`, the check of the configuration
-        collected up to that section of the stepped setup form (see `source_s3.v4.check_section`):
-        - `bucket`: the bucket exists and the credentials, endpoint and region let Airbyte list it;
-        - `files`: the streams are collected, which completes the connector's part of the configuration, so the full
-          check runs: every stream lists its files and parses one of them;
-        - `review`: the last section, so the full check, exactly as a CHECK without the key.
+        Section checks for the stepped setup form, see the `sections` declared by `Config` and the CDK's
+        `airbyte_cdk.sources.utils.check_section`. Each check validates the configuration collected up to its section:
+        - `bucket`: the bucket exists and the credentials, endpoint and region let Airbyte list it. Nothing about
+          streams is involved.
+        - `files`: the streams complete the connector's part of the configuration, so this is the full check: every
+          stream lists its files and parses one of them.
+        - `review` is the last section, so the CDK runs the full check for it.
         """
-        section = requested_section(config)
-        if section is None:
-            return super().check_connection(logger, config)
-        section_config = strip_check_section(config)
         if section == SECTION_BUCKET:
-            return self._check_bucket_section(logger, section_config)
-        logger.info(f"Section '{section}' completes the configuration, running the full config check.")
-        return super().check_connection(logger, section_config)
+            return self._check_bucket_section(logger, config)
+        if section == SECTION_FILES:
+            logger.info(f"Section '{section}' completes the connector configuration, running the full config check.")
+            return self.check_connection(logger, config)
+        raise AirbyteTracedException(
+            message=f"Section '{section}' has no section check.",
+            failure_type=FailureType.config_error,
+        )
 
     def _check_bucket_section(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         for field in ("bucket", "credentials"):

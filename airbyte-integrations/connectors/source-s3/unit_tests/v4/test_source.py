@@ -13,7 +13,7 @@ import pytest
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
 from source_s3.v4.throttled_stream import ThrottledFileBasedStream
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -127,7 +127,7 @@ class SourceTest(unittest.TestCase):
 
 
 class CheckSectionTest(unittest.TestCase):
-    """`check_connection` with the `check-section` key of the stepped setup form."""
+    """`check_section_connection`, the connector's part of the section-aware CHECK of the stepped setup form."""
 
     BUCKET_CONFIG = {
         "bucket": "acme-exports",
@@ -145,17 +145,9 @@ class CheckSectionTest(unittest.TestCase):
         self._source = SourceS3(self._stream_reader, Config, None, None, None)
         self._logger = logging.getLogger("test")
 
-    def test_given_no_key_when_check_then_full_check_with_the_same_config(self) -> None:
-        with patch("source_s3.v4.source.FileBasedSource.check_connection", return_value=(True, None)) as full_check:
-            assert self._source.check_connection(self._logger, self.FULL_CONFIG) == (True, None)
-        full_check.assert_called_once_with(self._logger, self.FULL_CONFIG)
-        self._stream_reader.check_bucket_access.assert_not_called()
-
     def test_given_bucket_section_when_check_then_bucket_access_is_checked_without_streams(self) -> None:
-        config = {"check-section": "bucket", **self.BUCKET_CONFIG}
-
         with patch("source_s3.v4.source.FileBasedSource.check_connection") as full_check:
-            assert self._source.check_connection(self._logger, config) == (True, None)
+            assert self._source.check_section_connection(self._logger, "bucket", self.BUCKET_CONFIG) == (True, None)
 
         full_check.assert_not_called()
         self._stream_reader.check_bucket_access.assert_called_once_with(self._logger)
@@ -173,22 +165,22 @@ class CheckSectionTest(unittest.TestCase):
         )
 
         with pytest.raises(AirbyteTracedException, match="The bucket acme-exports does not exist."):
-            self._source.check_connection(self._logger, {"check-section": "bucket", **self.BUCKET_CONFIG})
+            self._source.check_section_connection(self._logger, "bucket", self.BUCKET_CONFIG)
 
     def test_given_bucket_section_when_a_required_field_is_missing_then_error_names_it(self) -> None:
         for field in ("bucket", "credentials"):
             config = {key: value for key, value in self.BUCKET_CONFIG.items() if key != field}
             with pytest.raises(AirbyteTracedException) as exc_info:
-                self._source.check_connection(self._logger, {"check-section": "bucket", **config})
+                self._source.check_section_connection(self._logger, "bucket", config)
             assert exc_info.value.failure_type == FailureType.config_error
             assert exc_info.value.message == f"The 'bucket' section check requires the '{field}' field."
         self._stream_reader.check_bucket_access.assert_not_called()
 
     def test_given_bucket_section_when_credentials_are_invalid_then_config_error(self) -> None:
-        config = {"check-section": "bucket", **self.BUCKET_CONFIG, "credentials": {"auth_type": "iam_user"}}
+        config = {**self.BUCKET_CONFIG, "credentials": {"auth_type": "iam_user"}}
 
         with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check_connection(self._logger, config)
+            self._source.check_section_connection(self._logger, "bucket", config)
 
         assert exc_info.value.failure_type == FailureType.config_error
         assert exc_info.value.message.startswith("Invalid configuration for the 'bucket' section: ")
@@ -198,28 +190,36 @@ class CheckSectionTest(unittest.TestCase):
     @patch("source_s3.v4.source.is_cloud_environment", return_value=True)
     @patch("source_s3.v4.config.is_cloud_environment", return_value=True)
     def test_given_bucket_section_on_cloud_when_endpoint_is_http_then_config_error(self, *_) -> None:
-        config = {"check-section": "bucket", **self.BUCKET_CONFIG, "endpoint": "http://my-s3-endpoint.com"}  # ignore-https-check
+        config = {**self.BUCKET_CONFIG, "endpoint": "http://my-s3-endpoint.com"}  # ignore-https-check
 
         with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check_connection(self._logger, config)
+            self._source.check_section_connection(self._logger, "bucket", config)
 
         assert exc_info.value.failure_type == FailureType.config_error
         assert "The endpoint must be a secure HTTPS endpoint." in exc_info.value.message
         self._stream_reader.check_bucket_access.assert_not_called()
 
-    def test_given_files_or_review_section_when_check_then_full_check_without_the_key(self) -> None:
-        for section in ("files", "review"):
-            with patch("source_s3.v4.source.FileBasedSource.check_connection", return_value=(True, None)) as full_check:
-                assert self._source.check_connection(self._logger, {"check-section": section, **self.FULL_CONFIG}) == (True, None)
-            full_check.assert_called_once_with(self._logger, self.FULL_CONFIG)
+    def test_given_files_section_when_check_then_full_check(self) -> None:
+        with patch("source_s3.v4.source.FileBasedSource.check_connection", return_value=(True, None)) as full_check:
+            assert self._source.check_section_connection(self._logger, "files", self.FULL_CONFIG) == (True, None)
+
+        full_check.assert_called_once_with(self._logger, self.FULL_CONFIG)
         self._stream_reader.check_bucket_access.assert_not_called()
 
-    def test_given_unknown_section_when_check_then_config_error(self) -> None:
+    def test_given_review_section_when_check_section_then_config_error(self) -> None:
+        # The review section is the last one: the CDK runs the full check for it and never calls the section check.
         with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check_connection(self._logger, {"check-section": "credentials", **self.FULL_CONFIG})
+            self._source.check_section_connection(self._logger, "review", self.FULL_CONFIG)
 
         assert exc_info.value.failure_type == FailureType.config_error
-        assert exc_info.value.message == "Unknown check-section 'credentials'; the connector specification declares: bucket, files, review."
+        assert exc_info.value.message == "Section 'review' has no section check."
+
+    def test_given_section_when_check_section_then_status_is_wrapped(self) -> None:
+        self._stream_reader.check_bucket_access.return_value = None
+
+        status = self._source.check_section(self._logger, "bucket", self.BUCKET_CONFIG)
+
+        assert status.status == Status.SUCCEEDED
 
     @patch("source_s3.v4.source.emit_configuration_as_airbyte_control_message")
     def test_given_section_config_without_streams_when_read_config_then_it_is_a_v4_config(self, emit_config_mock) -> None:

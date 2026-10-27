@@ -15,8 +15,9 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 
 # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the groups it
 # shows, in form order. Properties opt into a group with `group="<id>"`. A CHECK whose config carries a top-level
-# `check-section` key validates the configuration up to that section only; see source_s3.v4.check_section. The last
-# section completes the configuration, so a CHECK for it is the full check.
+# `check-section` key validates the configuration up to that section only (see the CDK's
+# airbyte_cdk.sources.utils.check_section and SourceS3.check_section_connection). The last section completes the
+# configuration, so a CHECK for it is the full check.
 GROUP_BUCKET = "bucket"
 GROUP_ENDPOINT = "endpoint"
 GROUP_FILES = "files"
