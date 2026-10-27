@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "agent_id": 1,
+    "billable": false,
+    "note": "Worked on a ticket",
+    "start_time": "2024-03-01T09:00:00Z",
+    "executed_at": "2024-03-01T09:30:00Z",
+    "time_spent": "00:30",
+    "ticket_id": 1,
+    "company_id": 1,
+    "created_at": "2024-03-01T09:30:00Z",
+    "updated_at": "2024-03-01T09:30:00Z",
+    "timer_running": false
+  }
+]
