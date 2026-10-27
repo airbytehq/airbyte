@@ -77,6 +77,12 @@ def _api_requests(mocker, method, prefix):
     return [r for r in mocker.request_history if r.method == method and r.url.startswith(API + prefix)]
 
 
+def _requested_days(mocker):
+    requests = _api_requests(mocker, "POST", "/reports/campaigns/")
+    assert all(r.json()["startTime"] == r.json()["endTime"] for r in requests)
+    return sorted((int(urlparse(r.url).path.split("/")[-2]), r.json()["startTime"]) for r in requests)
+
+
 def test_discover_exposes_new_streams():
     output = discover(get_source(CONFIG), CONFIG)
     streams = {s.name: s for s in output.catalog.catalog.streams}
@@ -319,8 +325,7 @@ def test_search_terms_report_daily_resumes_from_state_minus_lookback(mocker, str
 
     output = _read_with_state(stream_state, dict(CONFIG, end_date="2024-01-05"))
 
-    starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
-    assert starts == ["2024-01-03", "2024-01-04", "2024-01-05"]
+    assert _requested_days(mocker) == [(campaign_id, day) for campaign_id in (1, 3) for day in ("2024-01-03", "2024-01-04", "2024-01-05")]
     # global_substream_cursor keeps one cursor for all campaigns instead of per-partition states.
     assert "states" not in output.most_recent_state.stream_state.__dict__
 
@@ -338,10 +343,27 @@ def test_search_terms_report_daily_without_end_date_requests_today_and_keeps_rec
 
     output = _read_with_state({}, dict(config, start_date="2024-01-05"))
 
-    starts = sorted({r.json()["startTime"] for r in _api_requests(mocker, "POST", "/reports/campaigns/")})
-    assert starts == ["2024-01-05", "2024-01-06"]
+    # Today (2024-01-06 on the frozen clock) is requested once per campaign, and tomorrow never.
+    assert _requested_days(mocker) == [(campaign_id, day) for campaign_id in (1, 3) for day in ("2024-01-05", "2024-01-06")]
     # The cursor ends one day after today, but the state keeps the newest record date.
     assert output.most_recent_state.stream_state.state == {"date": "2024-01-06"}
+
+
+@pytest.mark.parametrize(
+    "dates",
+    [
+        pytest.param({"start_date": "2024-01-04", "end_date": "2024-01-03"}, id="start_after_end_date"),
+        pytest.param({"start_date": "2024-01-07", "end_date": None}, id="start_tomorrow_without_end_date"),
+    ],
+)
+def test_search_terms_report_daily_sends_nothing_past_the_last_day(mocker, dates):
+    for campaign_id in (1, 3):
+        mocker.post(f"{API}/reports/campaigns/{campaign_id}/searchterms", json=EMPTY_REPORT)
+    config = {key: value for key, value in dict(CONFIG, **dates).items() if value is not None}
+
+    _read_with_state({}, config)
+
+    assert _api_requests(mocker, "POST", "/reports/campaigns/") == []
 
 
 def test_search_terms_report_daily_future_state_sends_no_report_requests(mocker):
