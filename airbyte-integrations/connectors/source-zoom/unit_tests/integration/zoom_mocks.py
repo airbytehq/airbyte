@@ -155,7 +155,7 @@ def read_stream(
 @lru_cache(maxsize=None)
 def _stream_schema_validators() -> Dict[str, Draft7Validator]:
     catalog = discover(get_source(config=CONFIG), CONFIG).catalog.catalog
-    return {stream.name: Draft7Validator(stream.json_schema) for stream in catalog.streams}
+    return {stream.name: Draft7Validator(stream.json_schema, format_checker=Draft7Validator.FORMAT_CHECKER) for stream in catalog.streams}
 
 
 def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:

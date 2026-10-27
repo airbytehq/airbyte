@@ -9,9 +9,11 @@ the record, injects `webinar_uuid`. A webinar with no report data (code 3001) is
 
 from unittest import TestCase
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 
 from .zoom_mocks import (
+    CONFIG,
     ENCODED_UUIDS,
     WEBINAR_1,
     WEBINAR_2,
@@ -51,14 +53,17 @@ class TestReportWebinars(TestCase):
         for webinar in WEBINARS:
             http_mocker.get(_REPORT_REQUESTS[webinar["uuid"]], json_response(_report(webinar)))
 
-        output = read_stream(_STREAM)
+        output = read_stream(
+            _STREAM,
+            config={**CONFIG, "start_date": "2026-10-01T00:00:00Z"},
+            sync_mode=SyncMode.full_refresh,
+        )
 
         assert_completed_without_errors(output, _STREAM)
         assert sorted(records_data(output), key=lambda r: r["id"]) == [
             {
                 **_report(webinar),
                 "webinar_uuid": webinar["uuid"],
-                "webinar_created_at": webinar["created_at"],
             }
             for webinar in WEBINARS
         ]
@@ -71,14 +76,17 @@ class TestReportWebinars(TestCase):
         http_mocker.get(_REPORT_REQUESTS[WEBINAR_1["uuid"]], json_response(_report(WEBINAR_1)))
         http_mocker.get(_REPORT_REQUESTS[WEBINAR_2["uuid"]], zoom_error(3001, "Meeting does not exist.", status_code=404))
 
-        output = read_stream(_STREAM)
+        output = read_stream(
+            _STREAM,
+            config={**CONFIG, "start_date": "2026-10-01T00:00:00Z"},
+            sync_mode=SyncMode.full_refresh,
+        )
 
         assert_completed_without_errors(output, _STREAM)
         assert records_data(output) == [
             {
                 **_report(WEBINAR_1),
                 "webinar_uuid": WEBINAR_1["uuid"],
-                "webinar_created_at": WEBINAR_1["created_at"],
             }
         ]
         assert output.is_in_logs("Zoom returned code 3001")

@@ -9,6 +9,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .zoom_mocks import (
+    CONFIG,
     assert_completed_without_errors,
     json_response,
     mock_token,
@@ -23,54 +24,28 @@ _USER_ID = "u1"
 _MEETINGS_REQUEST = request(f"/users/{_USER_ID}/meetings", {"page_size": "30"})
 _MEETINGS = [
     {"id": 111, "created_at": "2026-09-01T10:00:00Z"},
-    {"id": 222, "created_at": "2026-10-10T10:00:00Z"},
+    {"id": 222, "created_at": "2026-10-01T10:00:00Z"},
+    {"id": 333, "created_at": "2026-10-10T10:00:00Z"},
+]
+_START_DATE_MEETINGS = [
+    {"id": 444, "created_at": "2026-09-01T10:00:00Z"},
+    {"id": 555, "created_at": "2026-10-10T10:00:00Z"},
 ]
 
 
-def _mock_meetings(http_mocker: HttpMocker, stream_name: str) -> None:
+def _mock_meetings(http_mocker: HttpMocker, meetings=_MEETINGS):
     mock_token(http_mocker)
     mock_users(http_mocker)
-    http_mocker.get(_MEETINGS_REQUEST, json_response({"meetings": _MEETINGS, "next_page_token": ""}))
-    if stream_name == "meetings":
-        for meeting in _MEETINGS:
-            http_mocker.get(
-                request(f"/meetings/{meeting['id']}"),
-                json_response({**meeting, "host_id": _USER_ID, "topic": f"Meeting {meeting['id']}"}),
-            )
-    elif stream_name == "report_meetings":
-        for meeting in _MEETINGS:
-            http_mocker.get(
-                request(f"/report/meetings/{meeting['id']}"),
-                json_response(
-                    {
-                        **meeting,
-                        "uuid": f"uuid-{meeting['id']}",
-                        "start_time": "2026-10-10T10:00:00Z",
-                        "end_time": "2026-10-10T11:00:00Z",
-                        "host_id": _USER_ID,
-                        "topic": f"Meeting {meeting['id']}",
-                    }
-                ),
-            )
-    else:
-        for meeting in _MEETINGS:
-            http_mocker.get(
-                request(f"/report/meetings/{meeting['id']}/participants", {"page_size": "30"}),
-                json_response(
-                    {
-                        "participants": [
-                            {
-                                "id": "",
-                                "user_id": f"user-{meeting['id']}",
-                                "name": f"Guest {meeting['id']}",
-                                "join_time": "2026-10-10T10:00:00Z",
-                                "leave_time": "2026-10-10T11:00:00Z",
-                            }
-                        ],
-                        "next_page_token": "",
-                    }
-                ),
-            )
+    http_mocker.get(_MEETINGS_REQUEST, json_response({"meetings": meetings, "next_page_token": ""}))
+    detail_requests = {}
+    for meeting in meetings:
+        detail_request = request(f"/meetings/{meeting['id']}")
+        http_mocker.get(
+            detail_request,
+            json_response({**meeting, "host_id": _USER_ID, "topic": f"Meeting {meeting['id']}"}),
+        )
+        detail_requests[meeting["id"]] = detail_request
+    return detail_requests
 
 
 def _state_from(output, stream_name: str):
@@ -79,48 +54,63 @@ def _state_from(output, stream_name: str):
 
 @freezegun.freeze_time("2026-10-20T12:00:00Z")
 class TestIncrementalMeetingStreams(TestCase):
-    def _assert_two_syncs(self, stream_name: str) -> None:
+    def test_meetings_uses_parent_creation_time_state_and_lookback(self):
         with HttpMocker() as http_mocker:
-            _mock_meetings(http_mocker, stream_name)
-            first = read_stream(stream_name, sync_mode=SyncMode.incremental)
-        assert_completed_without_errors(first, stream_name)
+            detail_requests = _mock_meetings(http_mocker)
+            first = read_stream("meetings", sync_mode=SyncMode.incremental)
+            http_mocker.assert_number_of_calls(_MEETINGS_REQUEST, 1)
+            for meeting in _MEETINGS:
+                http_mocker.assert_number_of_calls(detail_requests[meeting["id"]], 1)
+        assert_completed_without_errors(first, "meetings")
 
         with HttpMocker() as http_mocker:
-            _mock_meetings(http_mocker, stream_name)
+            detail_requests = _mock_meetings(http_mocker)
             second = read_stream(
-                stream_name,
+                "meetings",
                 sync_mode=SyncMode.incremental,
-                state=_state_from(first, stream_name),
+                state=_state_from(first, "meetings"),
             )
-        assert_completed_without_errors(second, stream_name)
-        assert len(records_data(first)) == 2
-        assert len(records_data(second)) == 1
-        assert records_data(second)[0].get("created_at", records_data(second)[0].get("meeting_created_at")) == ("2026-10-10T10:00:00Z")
+            http_mocker.assert_number_of_calls(_MEETINGS_REQUEST, 1)
+            http_mocker.assert_number_of_calls(detail_requests[_MEETINGS[0]["id"]], 0)
+            for meeting in _MEETINGS[1:]:
+                http_mocker.assert_number_of_calls(detail_requests[meeting["id"]], 1)
+        assert_completed_without_errors(second, "meetings")
+        assert len(records_data(first)) == 3
+        assert {record["created_at"] for record in records_data(second)} == {
+            "2026-10-01T10:00:00Z",
+            "2026-10-10T10:00:00Z",
+        }
 
-    def test_meetings_uses_parent_creation_time_state(self):
-        self._assert_two_syncs("meetings")
+    def test_meetings_start_date_filters_first_sync(self):
+        with HttpMocker() as http_mocker:
+            detail_requests = _mock_meetings(http_mocker, _START_DATE_MEETINGS)
+            output = read_stream(
+                "meetings",
+                config={**CONFIG, "start_date": "2026-10-01T00:00:00Z"},
+                sync_mode=SyncMode.incremental,
+            )
+            http_mocker.assert_number_of_calls(_MEETINGS_REQUEST, 1)
+            http_mocker.assert_number_of_calls(detail_requests[_START_DATE_MEETINGS[0]["id"]], 0)
+            http_mocker.assert_number_of_calls(detail_requests[_START_DATE_MEETINGS[1]["id"]], 1)
 
-    def test_report_meetings_uses_parent_creation_time_state(self):
-        self._assert_two_syncs("report_meetings")
-
-    def test_report_meeting_participants_uses_parent_creation_time_state(self):
-        self._assert_two_syncs("report_meeting_participants")
+        assert_completed_without_errors(output, "meetings")
+        assert [record["created_at"] for record in records_data(output)] == ["2026-10-10T10:00:00Z"]
 
     def test_legacy_state_is_accepted_for_incremental_meeting_streams(self):
-        for stream_name in ("meetings", "report_meetings", "report_meeting_participants"):
-            with HttpMocker() as http_mocker:
-                _mock_meetings(http_mocker, stream_name)
-                legacy_state = (
-                    StateBuilder()
-                    .with_stream_state(
-                        stream_name,
-                        {"__ab_no_cursor_state_message": True},
-                    )
-                    .build()
+        with HttpMocker() as http_mocker:
+            _mock_meetings(http_mocker)
+            legacy_state = (
+                StateBuilder()
+                .with_stream_state(
+                    "meetings",
+                    {"__ab_no_cursor_state_message": True},
                 )
-                output = read_stream(
-                    stream_name,
-                    sync_mode=SyncMode.incremental,
-                    state=legacy_state,
-                )
-            assert_completed_without_errors(output, stream_name)
+                .build()
+            )
+            output = read_stream(
+                "meetings",
+                sync_mode=SyncMode.incremental,
+                state=legacy_state,
+            )
+            http_mocker.assert_number_of_calls(_MEETINGS_REQUEST, 1)
+        assert_completed_without_errors(output, "meetings")

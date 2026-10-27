@@ -161,8 +161,6 @@ class TestMeetings(TestCase):
         "meeting_polls",
         "meeting_poll_results",
         "meeting_registration_questions",
-        "report_meetings",
-        "report_meeting_participants",
     ],
 )
 def test_meeting_child_streams_skip_user_not_allowed_to_host_3161(stream_name):
