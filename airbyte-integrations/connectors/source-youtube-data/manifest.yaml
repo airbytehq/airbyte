@@ -27,6 +27,9 @@ definitions:
           http_method: GET
           request_parameters:
             part: snippet,contentDetails,statistics,player,status
+            # stream_partition.video_id is a list of up to 50 ids from the
+            # GroupingPartitionRouter below; videos.list accepts them comma-separated.
+            id: "{{ stream_partition.video_id | join(',') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -45,17 +48,22 @@ definitions:
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: videoId
-              request_option:
-                type: RequestOption
-                inject_into: request_parameter
-                field_name: id
-              partition_field: id
-              stream:
-                $ref: "#/definitions/streams/videos"
+          $ref: "#/definitions/grouped_video_ids_partition_router"
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: videoId
+                partition_field: video_id
+                stream:
+                  $ref: "#/definitions/streams/videos"
+                # Only fetch details for videos the parent has not yet emitted.
+                # Mutable fields (statistics) are covered by `video_engagement`.
+                incremental_dependency: true
+      incremental_sync:
+        $ref: "#/definitions/published_at_cursor"
+        is_data_feed: false
+        global_substream_cursor: true
       transformations:
         - type: DpathFlattenFields
           field_path:
@@ -70,7 +78,7 @@ definitions:
           fields:
             - path:
                 - videoId
-              value: "{{ stream_slice.id }}"
+              value: "{{ record['id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -136,7 +144,7 @@ definitions:
           path: commentThreads
           http_method: GET
           request_parameters:
-            part: snippet,replies
+            $ref: "#/definitions/comment_threads_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -167,12 +175,14 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/videos"
+              # No incremental_dependency: new comments land on old videos, so
+              # every video is re-visited; the per-video cursor below stops each
+              # visit after one page in steady state.
+      incremental_sync:
+        $ref: "#/definitions/published_at_cursor"
       transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - id
-              value: "{{ record.get('topLevelComment', {}).get('id') }}"
+        - $ref: "#/definitions/comment_thread_transformations/hoist_id"
+        - $ref: "#/definitions/comment_thread_transformations/hoist_published_at"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -189,7 +199,9 @@ definitions:
           path: playlistItems
           http_method: GET
           request_parameters:
-            part: snippet
+            # The uploads playlist comes from the `channels` parent (contentDetails.relatedPlaylists.uploads).
+            # `status` adds privacyStatus, which is `unlisted`/`private` only when the OAuth user owns the channel.
+            part: snippet,status
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,8 +209,6 @@ definitions:
             field_path:
               - items
               - "*"
-              - snippet
-              - resourceId
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -226,6 +236,39 @@ definitions:
               partition_field: playlistId
               stream:
                 $ref: "#/definitions/streams/channels"
+      # The uploads playlist lists newest first, so the data-feed cursor stops
+      # paginating at the first item already seen in a previous sync.
+      incremental_sync:
+        $ref: "#/definitions/published_at_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - videoId
+              value: "{{ record.get('snippet', {}).get('resourceId', {}).get('videoId') }}"
+            - path:
+                - channelId
+              value: "{{ record.get('snippet', {}).get('channelId') }}"
+            - path:
+                - title
+              value: "{{ record.get('snippet', {}).get('title') }}"
+            - path:
+                # Time the upload was added to the channel. Always present, unlike
+                # contentDetails.videoPublishedAt, which private videos lack.
+                - publishedAt
+              value: "{{ record.get('snippet', {}).get('publishedAt') }}"
+            - path:
+                - privacyStatus
+              value: "{{ record.get('status', {}).get('privacyStatus') }}"
+            - path:
+                - kind
+              value: "{{ record.get('snippet', {}).get('resourceId', {}).get('kind') }}"
+        - type: RemoveFields
+          field_pointers:
+            - ["etag"]
+            - ["id"]
+            - ["snippet"]
+            - ["status"]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -243,7 +286,7 @@ definitions:
           path: commentThreads
           http_method: GET
           request_parameters:
-            part: snippet,replies
+            $ref: "#/definitions/comment_threads_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -270,16 +313,125 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: allThreadsRelatedToChannelId
+      incremental_sync:
+        $ref: "#/definitions/published_at_cursor"
       transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - id
-              value: "{{ record.get('topLevelComment', {}).get('id') }}"
+        - $ref: "#/definitions/comment_thread_transformations/hoist_id"
+        - $ref: "#/definitions/comment_thread_transformations/hoist_published_at"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_comments"
+    video_engagement:
+      type: DeclarativeStream
+      name: video_engagement
+      primary_key:
+        - videoId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: videos
+          http_method: GET
+          request_parameters:
+            part: statistics
+            id: "{{ stream_partition.video_id | join(',') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+              - "*"
+        paginator:
+          type: NoPagination
+        partition_router:
+          $ref: "#/definitions/grouped_video_ids_partition_router"
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: videoId
+                partition_field: video_id
+                stream:
+                  $ref: "#/definitions/streams/videos"
+                # No incremental_dependency: counters move on every video, so
+                # every sync re-reads all of them (V/50 requests at 1 unit each).
+      # The cursor is the fetch time, so every sync appends a fresh snapshot per
+      # video: Incremental | Append gives a time series, Incremental | Deduped
+      # keeps the latest counters.
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2005-04-23T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        global_substream_cursor: true
+      transformations:
+        - type: DpathFlattenFields
+          field_path:
+            - "statistics"
+          delete_origin_value: true
+        - type: AddFields
+          fields:
+            - path:
+                - videoId
+              value: "{{ record['id'] }}"
+            - path:
+                - datetime
+              value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        - type: RemoveFields
+          field_pointers:
+            - ["id"]
+            - ["kind"]
+            - ["etag"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/video_engagement"
+  # Batches parent video ids so one videos.list request covers up to 50 videos
+  # instead of one request per video.
+  grouped_video_ids_partition_router:
+    type: GroupingPartitionRouter
+    group_size: 50
+    deduplicate: true
+  # Every endpoint this connector reads lists newest first and has no date
+  # filter, so `is_data_feed` stops pagination at the first record older than
+  # the stored cursor instead of re-reading the whole history each sync.
+  published_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: publishedAt
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      # YouTube's first upload; effectively "no lower bound".
+      datetime: "2005-04-23T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    is_data_feed: true
+  comment_threads_request_parameters:
+    part: snippet,replies
+    # Newest first, which the data-feed cursor relies on.
+    order: time
+    # The endpoint's maximum; the default is 20.
+    maxResults: "100"
+  comment_thread_transformations:
+    hoist_id:
+      type: AddFields
+      fields:
+        - path:
+            - id
+          value: "{{ record.get('topLevelComment', {}).get('id') }}"
+    hoist_published_at:
+      type: AddFields
+      fields:
+        - path:
+            - publishedAt
+          value: "{{ record.get('topLevelComment', {}).get('snippet', {}).get('publishedAt') }}"
   api_key_authenticator:
     type: ApiKeyAuthenticator
     api_token: '{{ config["credentials"]["api_key"] }}'
@@ -331,9 +483,20 @@ definitions:
                 is valid, the YouTube Data API v3 is enabled in your Google
                 Cloud project, and the configured Channel IDs exist.
             - type: HttpResponseFilter
+              # The daily quota resets at midnight Pacific, so no in-sync retry
+              # can succeed. Fail now: incremental state is already checkpointed
+              # and the next scheduled sync resumes from it.
+              action: FAIL
+              failure_type: transient_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'dailyLimitExceeded'] }}"
+              error_message: >-
+                The YouTube Data API daily quota for this Google Cloud project is
+                exhausted. It resets at midnight Pacific time; the next sync
+                resumes from the last checkpoint.
+            - type: HttpResponseFilter
               action: RETRY
               failure_type: transient_error
-              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'dailyLimitExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['RATE_LIMIT_EXCEEDED', 'QUOTA_EXCEEDED'] }}"
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['rateLimitExceeded', 'userRateLimitExceeded'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['RATE_LIMIT_EXCEEDED', 'QUOTA_EXCEEDED'] }}"
             - type: HttpResponseFilter
               action: RATE_LIMITED
               failure_type: transient_error
@@ -360,6 +523,7 @@ streams:
   - $ref: "#/definitions/streams/comments"
   - $ref: "#/definitions/streams/videos"
   - $ref: "#/definitions/streams/channel_comments"
+  - $ref: "#/definitions/streams/video_engagement"
 
 spec:
   type: Spec
@@ -517,23 +681,16 @@ concurrency_level:
   default_concurrency: 2
   max_concurrency: 10
 
-# The YouTube Data API v3 has a default quota of 10,000 units per day.
-# search.list costs 100 units per call; the other list endpoints cost 1 unit.
-# Per-minute windows keep the worst-case wait for a free slot (about one
+# The YouTube Data API v3 has a default quota of 10,000 units per day; every
+# endpoint this connector reads costs 1 unit per call. The per-minute window
+# is a burst guard: it keeps the worst-case wait for a free slot (about one
 # minute) far below the OAuth access-token lifetime (3600s) and the 5400s
-# heartbeat, and act as a burst guard. The daily 10,000-unit quota is
-# enforced by Google (403 quotaExceeded, handled by the RETRY filter),
+# heartbeat. The daily quota is enforced by Google (403 quotaExceeded, which
+# the FAIL filter surfaces so the next sync resumes from checkpointed state),
 # not by this budget.
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 3
-          interval: PT1M
-      matchers:
-        - type: HttpRequestRegexMatcher
-          url_path_pattern: /search
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 100
@@ -549,6 +706,7 @@ metadata:
     comments: true
     videos: true
     channel_comments: true
+    video_engagement: true
   testedStreams:
     video:
       streamHash: a3f8831f5f8a0ca3efed0972cab191cc181d2b4e
@@ -1301,6 +1459,11 @@ schemas:
         type:
           - number
           - "null"
+      publishedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
       videoId:
         type:
           - string
@@ -1318,6 +1481,56 @@ schemas:
         type:
           - string
           - "null"
+      channelId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      publishedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      privacyStatus:
+        type:
+          - string
+          - "null"
+  video_engagement:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      videoId:
+        type: string
+      datetime:
+        type: string
+        format: date-time
+      viewCount:
+        type:
+          - string
+          - "null"
+      likeCount:
+        type:
+          - string
+          - "null"
+      dislikeCount:
+        type:
+          - string
+          - "null"
+      favoriteCount:
+        type:
+          - string
+          - "null"
+      commentCount:
+        type:
+          - string
+          - "null"
+    required:
+      - videoId
+      - datetime
   channel_comments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1424,6 +1637,11 @@ schemas:
         type:
           - number
           - "null"
+      publishedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
       videoId:
         type:
           - string

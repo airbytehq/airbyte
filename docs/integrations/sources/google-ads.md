@@ -392,7 +392,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.7 | 2026-10-20 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Correct the suggested streams to the current stream names (13 of the 16 used names from before 2.0.0). |
+| 6.1.8 | 2026-10-27 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Correct the suggested streams to the current stream names (13 of the 16 used names from before 2.0.0). |
+| 6.1.7 | 2026-10-27 | [89917](https://github.com/airbytehq/airbyte/pull/89917) | Update dependencies |
 | 6.1.6 | 2026-10-20 | [78740](https://github.com/airbytehq/airbyte/pull/78740) | Update dependencies |
 | 6.1.5 | 2026-10-15 | [89011](https://github.com/airbytehq/airbyte/pull/89011) | Upgrade to Python 3.13 and python-connector-base 4.1.1; upgrade pendulum to 3.x. |
 | 6.1.4 | 2026-10-06 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
