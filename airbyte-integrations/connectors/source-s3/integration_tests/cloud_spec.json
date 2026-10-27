@@ -19,13 +19,14 @@
         "format": "date-time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$",
         "pattern_descriptor": "YYYY-MM-DD, YYYY-MM-DDTHH:mm:ssZ, or YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
-        "order": 3,
-        "type": "string"
+        "order": 6,
+        "type": "string",
+        "group": "start_date"
       },
       "streams": {
         "title": "Streams",
         "description": "Each instance of this configuration defines a <a href=\"https://docs.airbyte.com/cloud/core-concepts#stream\">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.",
-        "order": 2,
+        "order": 5,
         "type": "array",
         "items": {
           "title": "FileBasedStreamConfig",
@@ -389,15 +390,16 @@
             }
           },
           "required": ["name", "format"]
-        }
+        },
+        "group": "files"
       },
       "delivery_method": {
         "title": "Delivery Method",
         "default": "use_records_transfer",
         "type": "object",
-        "order": 7,
+        "order": 4,
         "display_type": "radio",
-        "group": "advanced",
+        "group": "files",
         "oneOf": [
           {
             "title": "Replicate Records",
@@ -441,7 +443,8 @@
         "title": "Authentication",
         "description": "Credentials for connecting to S3.",
         "type": "object",
-        "order": 0,
+        "order": 1,
+        "group": "bucket",
         "oneOf": [
           {
             "title": "IAM User",
@@ -517,7 +520,8 @@
       "bucket": {
         "title": "Bucket",
         "description": "Name of the S3 bucket where the file(s) exist.",
-        "order": 1,
+        "order": 0,
+        "group": "bucket",
         "type": "string"
       },
       "endpoint": {
@@ -525,14 +529,16 @@
         "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. The custom endpoint must be secure, but the 'https' prefix is not required.",
         "default": "",
         "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
-        "order": 4,
+        "order": 2,
+        "group": "endpoint",
         "type": "string",
         "pattern": "^(?!http://).*$"
       },
       "region_name": {
         "title": "AWS Region",
         "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
-        "order": 5,
+        "order": 3,
+        "group": "endpoint",
         "type": "string"
       },
       "dataset": {
@@ -814,6 +820,45 @@
         "airbyte_hidden": true
       }
     },
-    "required": ["streams", "credentials", "bucket"]
+    "required": ["streams", "credentials", "bucket"],
+    "groups": [
+      {
+        "id": "bucket"
+      },
+      {
+        "id": "endpoint",
+        "title": "More options"
+      },
+      {
+        "id": "files"
+      },
+      {
+        "id": "start_date",
+        "title": "Start date"
+      }
+    ],
+    "sections": [
+      {
+        "id": "bucket",
+        "title": "Connect bucket",
+        "order": 0,
+        "description": "Which bucket to read from, and how Airbyte gets access.",
+        "groups": ["bucket", "endpoint"]
+      },
+      {
+        "id": "files",
+        "title": "Choose files",
+        "order": 1,
+        "description": "How files are delivered, and which files become streams.",
+        "groups": ["files", "start_date"]
+      },
+      {
+        "id": "review",
+        "title": "Review & set up",
+        "order": 2,
+        "description": "Name your source and check the optional settings.",
+        "groups": []
+      }
+    ]
   }
 }
