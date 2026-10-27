@@ -24,5 +24,6 @@ object SnowflakeTestUtils {
         "secrets/config_with_auth_staging_and_raw_override.json"
 
     fun getConfig(configPath: String): String = Files.readString(getConfigPath(configPath))
+
     fun getConfigPath(configPath: String): Path = Path.of(configPath)
 }

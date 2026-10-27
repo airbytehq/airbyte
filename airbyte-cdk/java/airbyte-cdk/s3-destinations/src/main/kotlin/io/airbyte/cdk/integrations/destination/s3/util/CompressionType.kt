@@ -6,5 +6,5 @@ package io.airbyte.cdk.integrations.destination.s3.util
 
 enum class CompressionType(val fileExtension: String) {
     NO_COMPRESSION(""),
-    GZIP(".gz")
+    GZIP(".gz"),
 }

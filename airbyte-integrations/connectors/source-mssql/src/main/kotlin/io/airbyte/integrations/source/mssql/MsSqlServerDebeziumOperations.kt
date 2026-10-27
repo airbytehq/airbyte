@@ -157,7 +157,7 @@ class MsSqlServerDebeziumOperations(
                             // Binary: handle base64 string
                             fieldValue.isTextual && codec is BinaryCodec ->
                                 java.nio.ByteBuffer.wrap(
-                                    java.util.Base64.getDecoder().decode(fieldValue.asText())
+                                    java.util.Base64.getDecoder().decode(fieldValue.asText()),
                                 )
                             else -> codec.decode(fieldValue)
                         }
@@ -175,14 +175,14 @@ class MsSqlServerDebeziumOperations(
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 transactionOffsetDateTime,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
                 (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         // Set MSSQL-specific CDC meta-fields
@@ -191,13 +191,13 @@ class MsSqlServerDebeziumOperations(
             FieldValueEncoder(
                 commitLsn,
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id] =
             FieldValueEncoder(
                 cdcCursorGenerator.getAndIncrement(),
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         val eventSerialNo = source["event_serial_no"]?.asInt()?.let { "$it" } ?: "0"
@@ -205,7 +205,7 @@ class MsSqlServerDebeziumOperations(
             FieldValueEncoder(
                 eventSerialNo,
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         // Return a DeserializedRecord instance.
@@ -234,7 +234,7 @@ class MsSqlServerDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): JsonNode {
         // Sanitize offset before saving to state to fix heartbeat corruption
         val sanitizedOffset = sanitizeOffset(offset)
@@ -309,7 +309,7 @@ class MsSqlServerDebeziumOperations(
 
                     if (selectedEntry == null) {
                         throw RuntimeException(
-                            "Unable to select valid offset from multiple keys in $opaqueStateValue"
+                            "Unable to select valid offset from multiple keys in $opaqueStateValue",
                         )
                     }
 
@@ -322,7 +322,7 @@ class MsSqlServerDebeziumOperations(
                 }
                 else ->
                     throw RuntimeException(
-                        "Offset object must have at least 1 key in $opaqueStateValue"
+                        "Offset object must have at least 1 key in $opaqueStateValue",
                     )
             }
 
@@ -360,40 +360,37 @@ class MsSqlServerDebeziumOperations(
 
         if (!isLsnValid) {
             return abortCdcSync(
-                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs"
+                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs",
             )
         }
 
         val historyNode = stateNode[MSSQL_DB_HISTORY]
-        val schemaHistory: DebeziumSchemaHistory? =
-            historyNode?.let {
-                val isCompressed: Boolean = stateNode[MSSQL_IS_COMPRESSED]?.asBoolean() ?: false
-                val uncompressedString: String =
-                    if (isCompressed) {
-                        val textValue: String = it.textValue()
-                        val compressedBytes: ByteArray =
-                            textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
-                        val decoded = Base64.decodeBase64(compressedBytes)
+        val schemaHistory: DebeziumSchemaHistory? = historyNode?.let {
+            val isCompressed: Boolean = stateNode[MSSQL_IS_COMPRESSED]?.asBoolean() ?: false
+            val uncompressedString: String =
+                if (isCompressed) {
+                    val textValue: String = it.textValue()
+                    val compressedBytes: ByteArray =
+                        textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
+                    val decoded = Base64.decodeBase64(compressedBytes)
 
-                        GZIPInputStream(ByteArrayInputStream(decoded))
-                            .reader(Charsets.UTF_8)
-                            .readText()
-                    } else {
-                        it.textValue()
-                    }
-                val schemaHistoryList: List<HistoryRecord> =
-                    uncompressedString
-                        .lines()
-                        .filter { it.isNotBlank() }
-                        .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
-                DebeziumSchemaHistory(schemaHistoryList)
-            }
+                    GZIPInputStream(ByteArrayInputStream(decoded)).reader(Charsets.UTF_8).readText()
+                } else {
+                    it.textValue()
+                }
+            val schemaHistoryList: List<HistoryRecord> =
+                uncompressedString
+                    .lines()
+                    .filter { it.isNotBlank() }
+                    .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
+            DebeziumSchemaHistory(schemaHistoryList)
+        }
         // If the schema history is empty or null, we want to abort the sync
         // and run a recovery snapshot.
         if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
             return AbortDebeziumWarmStartState(
                 "Schema history missing with existing offset. " +
-                    "Previous snapshot was incomplete, please refresh the connection."
+                    "Previous snapshot was incomplete, please refresh the connection.",
             )
         }
 
@@ -466,7 +463,8 @@ class MsSqlServerDebeziumOperations(
         }
 
         val sanitizedValue = currentValue.deepCopy()
-        if (eventSerialNoRegressed && startEventSerialNo != null) {
+        if (eventSerialNoRegressed) {
+            // eventSerialNoRegressed implies startEventSerialNo != null.
             sanitizedValue.put("event_serial_no", startEventSerialNo)
         }
         if (changeLsnRegressed && !startChangeLsn.isNull) {
@@ -496,7 +494,7 @@ class MsSqlServerDebeziumOperations(
                             sourceSchema = rs.getString("source_schema"),
                             sourceTable = rs.getString("source_table"),
                             captureInstanceName = rs.getString("capture_instance"),
-                        )
+                        ),
                     )
                 }
             }
@@ -511,7 +509,7 @@ class MsSqlServerDebeziumOperations(
      * error and not a lost LSN.
      */
     private fun validateConfiguredStreamsAreAccessible(
-        captureInstances: List<CaptureInstance>
+        captureInstances: List<CaptureInstance>,
     ): List<CaptureInstance> {
         if (configuredCatalog == null) {
             log.warn { "Catalog not available, skipping capture instance validation" }
@@ -540,7 +538,7 @@ class MsSqlServerDebeziumOperations(
                 "CDC is not available for the following table(s): $missingFormatted. " +
                     "This usually means CDC is not enabled on the table, or the user lacks access. " +
                     "See https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql for setup instructions." +
-                    "After fixing access, refresh the connection to resume the sync."
+                    "After fixing access, refresh the connection to resume the sync.",
             )
         }
 
@@ -556,7 +554,7 @@ class MsSqlServerDebeziumOperations(
      */
     private fun validateLsnStillAvailable(
         lsn: Lsn,
-        configuredCaptureInstances: List<CaptureInstance>
+        configuredCaptureInstances: List<CaptureInstance>,
     ): Boolean {
         if (configuredCaptureInstances.isEmpty()) {
             log.warn { " No capture instances found, cannot validate LSN." }
@@ -579,7 +577,8 @@ class MsSqlServerDebeziumOperations(
                     sys.fn_cdc_get_max_lsn() as max_lsn
                 FROM cdc.change_tables
                 WHERE capture_instance IN ($placeholders)
-                """.trimIndent()
+                """
+                    .trimIndent()
 
             connection.prepareStatement(query).use { statement ->
                 instanceNames.forEachIndexed { index, name -> statement.setString(index + 1, name) }
@@ -641,14 +640,14 @@ class MsSqlServerDebeziumOperations(
                 AbortDebeziumWarmStartState(
                     "Saved offset no longer present on the server, please reset the connection. " +
                         "To prevent this, increase transaction log retention and/or increase sync frequency. " +
-                        "$reason."
+                        "$reason.",
                 )
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
                 ResetDebeziumWarmStartState(
                     "Saved offset no longer present on the server. " +
                         "Automatically resetting to current position. " +
                         "WARNING: Any changes between the saved position and current position will be lost. " +
-                        "$reason."
+                        "$reason.",
                 )
         }
     }
@@ -677,13 +676,13 @@ class MsSqlServerDebeziumOperations(
                             throw IllegalStateException(
                                 "CDC is not enabled or no max LSN available for database '${configuration.databaseName}'. " +
                                     "Please ensure: 1) CDC is enabled on the database, 2) At least one table has CDC enabled, " +
-                                    "3) The user has necessary permissions to query CDC functions."
+                                    "3) The user has necessary permissions to query CDC functions.",
                             )
                         }
                     } else {
                         throw IllegalStateException(
                             "Failed to query max LSN from database '${configuration.databaseName}'. " +
-                                "The query returned no results."
+                                "The query returned no results.",
                         )
                     }
                 }
@@ -703,7 +702,7 @@ class MsSqlServerDebeziumOperations(
                     Jsons.objectNode().apply {
                         put("server", databaseName)
                         put("database", databaseName)
-                    }
+                    },
                 )
             }
         val value =
@@ -771,7 +770,7 @@ class MsSqlServerDebeziumOperations(
             putAll(
                 configuration.jdbcProperties.filterKeys {
                     it !in DEBEZIUM_RESERVED_DB_KEYS && it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS
-                }
+                },
             )
             // `authentication` mode comes from the trusted resolved authentication, overriding
             // any stray value from jdbc_url_params.
@@ -818,12 +817,12 @@ class MsSqlServerDebeziumOperations(
             // the current max LSN in one pass.
             .with(
                 "max.iteration.transactions",
-                cdcConfiguration.maxIterationTransactions.toString()
+                cdcConfiguration.maxIterationTransactions.toString(),
             )
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
                 AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
-                cdcConfiguration.initialWaitingSeconds.toSeconds().toString()
+                cdcConfiguration.initialWaitingSeconds.toSeconds().toString(),
             )
             .buildMap()
     }

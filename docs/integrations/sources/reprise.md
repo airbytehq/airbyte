@@ -36,6 +36,7 @@ Access to the Reprise Data API must be included in your subscription. The connec
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2026-10-20 | [89406](https://github.com/airbytehq/airbyte/pull/89406) | Update dependencies |
 | 0.0.7 | 2026-10-13 | [88775](https://github.com/airbytehq/airbyte/pull/88775) | Update dependencies |
 | 0.0.6 | 2026-10-06 | [88008](https://github.com/airbytehq/airbyte/pull/88008) | Update dependencies |
 | 0.0.5 | 2026-09-29 | [87341](https://github.com/airbytehq/airbyte/pull/87341) | Update dependencies |

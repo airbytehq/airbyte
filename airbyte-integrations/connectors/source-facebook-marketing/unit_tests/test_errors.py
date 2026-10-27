@@ -721,3 +721,81 @@ def test_traced_exception_without_api_error():
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
     assert result.failure_type == FailureType.system_error
+
+
+ERROR_USER_TITLE = "First Dof Value Should Match Object Story Spec Field"
+ERROR_USER_MSG = (
+    "For a Degrees of freedom enabled ad, the first value of Asset Feed Spec field "
+    "should match the corresponding field in Object Story Spec."
+)
+
+
+@pytest.mark.parametrize(
+    "error_body, expected_message",
+    (
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_TITLE}. {ERROR_USER_MSG}",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100: Invalid parameter. Facebook details: {ERROR_USER_TITLE}. {ERROR_USER_MSG}",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_MSG}",
+        ),
+        (
+            {"message": "Invalid parameter", "code": 100, "error_subcode": 2446211},
+            "Error code 100: Invalid parameter.",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_TITLE,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_TITLE}.",
+        ),
+    ),
+    ids=(
+        "title_and_msg_with_subcode",
+        "title_and_msg_without_subcode",
+        "msg_only_with_subcode",
+        "no_user_fields_with_subcode",
+        "duplicate_title_and_msg",
+    ),
+)
+def test_traced_exception_fallback_includes_user_facing_details(error_body, expected_message):
+    error = FacebookRequestError(
+        message="Call was not successful",
+        request_context={},
+        http_status=400,
+        http_headers={},
+        body=json.dumps({"error": error_body}),
+    )
+
+    result = traced_exception(error)
+
+    assert isinstance(result, AirbyteTracedException)
+    assert result.message == expected_message
+    assert result.failure_type == FailureType.system_error
+    assert result.internal_message == "Invalid parameter"

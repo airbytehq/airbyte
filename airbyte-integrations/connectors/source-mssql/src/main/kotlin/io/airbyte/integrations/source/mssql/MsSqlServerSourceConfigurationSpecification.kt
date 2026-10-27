@@ -39,7 +39,7 @@ import jakarta.inject.Singleton
 @JsonSchemaTitle("MSSQL Source Spec")
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"entra_id","title":"Microsoft Entra ID"}]}"""
+        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"entra_id","title":"Microsoft Entra ID"}]}""",
 )
 @JsonPropertyOrder(
     value = ["host", "port", "database", "username", "replication_method"],
@@ -57,7 +57,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
     @JsonSchemaInject(
-        json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"],"group":"db"}"""
+        json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"],"group":"db"}""",
     )
     @JsonSchemaDefault("1433")
     @JsonPropertyDescription(
@@ -74,7 +74,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
     @JsonPropertyDescription(
-        "The list of schemas to sync from. If not specified, all schemas will be discovered. Case sensitive."
+        "The list of schemas to sync from. If not specified, all schemas will be discovered. Case sensitive.",
     )
     @JsonSchemaInject(json = """{"order":3, "minItems":0, "uniqueItems":true}""")
     var schemas: Array<String>? = null
@@ -95,7 +95,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
             "Not required if Microsoft Entra ID authentication is configured below.",
     )
     @JsonSchemaInject(
-        json = """{"order":5,"airbyte_secret":true,"always_show":true,"group":"auth"}"""
+        json = """{"order":5,"airbyte_secret":true,"always_show":true,"group":"auth"}""",
     )
     var password: String? = null
 
@@ -156,7 +156,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":10,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -248,12 +248,12 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 @JsonSubTypes(
     JsonSubTypes.Type(
         value = MsSqlServerEncryptionDisabledConfigurationSpecification::class,
-        name = "unencrypted"
+        name = "unencrypted",
     ),
     JsonSubTypes.Type(
         value =
             MsSqlServerEncryptionRequiredTrustServerCertificateConfigurationSpecification::class,
-        name = "encrypted_trust_server_certificate"
+        name = "encrypted_trust_server_certificate",
     ),
     JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "encrypted_verify_certificate"),
 )
@@ -263,20 +263,20 @@ sealed interface EncryptionSpecification
 
 @JsonSchemaTitle("Unencrypted")
 @JsonSchemaDescription(
-    "Data transfer will not be encrypted.",
+    "Data transfer will not be encrypted. " +
+        "Not available on Airbyte Cloud unless an SSH tunnel is configured.",
 )
 data object MsSqlServerEncryptionDisabledConfigurationSpecification : EncryptionSpecification
 
 @JsonSchemaTitle("Encrypted (trust server certificate)")
 @JsonSchemaDescription(
-    "Use the certificate provided by the server without verification. (For testing purposes only!)"
+    "Use the certificate provided by the server without verification. (For testing purposes only!)",
 )
 data object MsSqlServerEncryptionRequiredTrustServerCertificateConfigurationSpecification :
     EncryptionSpecification
 
 @JsonSchemaTitle("Encrypted (verify certificate)")
 @JsonSchemaDescription("Verify and use the certificate provided by the server.")
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
     @JsonProperty("hostNameInCertificate")
     @JsonSchemaTitle("Host Name In Certificate")
@@ -315,7 +315,7 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
-    JsonSubTypes.Type(value = Cdc::class, name = "CDC")
+    JsonSubTypes.Type(value = Cdc::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -332,7 +332,7 @@ class UserDefinedCursor : IncrementalConfigurationSpecification {
     @JsonProperty("exclude_todays_data")
     @JsonSchemaTitle("Exclude Today's Data")
     @JsonPropertyDescription(
-        "When enabled incremental syncs using a cursor of a temporal type (date or datetime) will include cursor values only up until the previous midnight UTC"
+        "When enabled incremental syncs using a cursor of a temporal type (date or datetime) will include cursor values only up until the previous midnight UTC",
     )
     @JsonSchemaDefault("false")
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
@@ -350,7 +350,7 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonProperty("initial_waiting_seconds")
     @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
     @JsonPropertyDescription(
-        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql\">initial waiting time</a>"
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql\">initial waiting time</a>",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     var initialWaitingSeconds: Int? = null
@@ -362,7 +362,7 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
-        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}""",
     )
     var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 
@@ -387,7 +387,7 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonProperty("max_iteration_transactions")
     @JsonSchemaTitle("Max Transactions per CDC Iteration (Advanced)")
     @JsonPropertyDescription(
-        "The maximum number of transactions Debezium reads from the CDC change tables in each streaming iteration. The limit counts transactions on every CDC-enabled table in the database, not only the tables in this connection, so busy CDC-enabled tables outside the connection can make syncs fall behind at the default. Raise it, or set 0 for no limit, to catch up faster on a large CDC backlog. Higher values can increase the connector's memory usage. Defaults to 500."
+        "The maximum number of transactions Debezium reads from the CDC change tables in each streaming iteration. The limit counts transactions on every CDC-enabled table in the database, not only the tables in this connection, so busy CDC-enabled tables outside the connection can make syncs fall behind at the default. Raise it, or set 0 for no limit, to catch up faster on a large CDC backlog. Higher values can increase the connector's memory usage. Defaults to 500.",
     )
     @JsonSchemaDefault("500")
     @JsonSchemaInject(json = """{"order":5, "min": 0, "always_show": true}""")

@@ -16,7 +16,7 @@ sealed interface CheckpointMessageWrapped
 data class StreamCheckpointWrapped(
     val stream: DestinationStream.Descriptor,
     val checkpointKey: CheckpointKey,
-    val checkpoint: CheckpointMessage
+    val checkpoint: CheckpointMessage,
 ) : CheckpointMessageWrapped
 
 data class GlobalCheckpointWrapped(

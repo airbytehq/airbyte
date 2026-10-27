@@ -38,7 +38,7 @@ class BigQuerySourceSpecTest {
             Assertions.assertEquals(
                 expected,
                 actual,
-                "$edition: ${Jsons.writeValueAsString(actual)}"
+                "$edition: ${Jsons.writeValueAsString(actual)}",
             )
         }
     }
@@ -70,14 +70,14 @@ class BigQuerySourceSpecTest {
         }
         Assertions.assertEquals(
             1,
-            selfManaged["properties"]["max_db_connections"]["default"].asInt()
+            selfManaged["properties"]["max_db_connections"]["default"].asInt(),
         )
         Assertions.assertFalse(
-            selfManaged["properties"]["use_storage_read_api"]["default"].asBoolean()
+            selfManaged["properties"]["use_storage_read_api"]["default"].asBoolean(),
         )
         for (spec in listOf(cloud, selfManaged)) {
             (spec["properties"] as ObjectNode).remove(
-                listOf("max_db_connections", "use_storage_read_api")
+                listOf("max_db_connections", "use_storage_read_api"),
             )
         }
         Assertions.assertEquals(cloud, selfManaged)
@@ -97,7 +97,7 @@ class BigQuerySourceSpecTest {
                 Assertions.assertEquals(
                     legacyProperty["type"],
                     property!!["type"],
-                    "$edition $name"
+                    "$edition $name",
                 )
                 Assertions.assertEquals(
                     legacyProperty["airbyte_secret"],
@@ -122,7 +122,7 @@ class BigQuerySourceSpecTest {
             for ((name, property) in actual["properties"].properties()) {
                 Assertions.assertTrue(
                     property["group"]?.asText() in groupIds,
-                    "$edition: group of '$name'"
+                    "$edition: group of '$name'",
                 )
                 Assertions.assertTrue(orders.add(property["order"].asInt()), "order of '$name'")
             }
@@ -130,15 +130,15 @@ class BigQuerySourceSpecTest {
             // short.
             Assertions.assertEquals(
                 "advanced",
-                actual["properties"]["job_project_id"]["group"].asText()
+                actual["properties"]["job_project_id"]["group"].asText(),
             )
             Assertions.assertEquals(
                 "advanced",
-                actual["properties"]["max_db_connections"]["group"].asText()
+                actual["properties"]["max_db_connections"]["group"].asText(),
             )
             Assertions.assertEquals(
                 "integer",
-                actual["properties"]["max_db_connections"]["type"].asText()
+                actual["properties"]["max_db_connections"]["type"].asText(),
             )
         }
     }

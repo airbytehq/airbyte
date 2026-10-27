@@ -92,7 +92,7 @@ object SpeedModeTestSupport {
                 // Sorted keys, so that the serialized form is canonical too.
                 val result: ObjectNode = Jsons.objectNode()
                 node
-                    .fields()
+                    .properties()
                     .asSequence()
                     .sortedBy { it.key }
                     .forEach { (k, v) -> result.set<JsonNode>(k, normalize(v)) }

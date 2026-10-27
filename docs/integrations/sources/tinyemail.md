@@ -35,6 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-20 | [89442](https://github.com/airbytehq/airbyte/pull/89442) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88830](https://github.com/airbytehq/airbyte/pull/88830) | Update dependencies |
 | 0.0.63 | 2026-10-07 | [88312](https://github.com/airbytehq/airbyte/pull/88312) | Use the renamed Audiences endpoints (`/audiences`, `/audiences/{id}/customers`) for the `contacts` and `contact_members` streams; declare newly documented fields; document Enterprise-only API access |
 | 0.0.62 | 2026-10-06 | [88046](https://github.com/airbytehq/airbyte/pull/88046) | Update dependencies |

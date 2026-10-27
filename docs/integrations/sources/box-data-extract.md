@@ -102,6 +102,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.18 | 2026-10-27 | [89818](https://github.com/airbytehq/airbyte/pull/89818) | Update dependencies |
+| 0.1.17 | 2026-10-20 | [89127](https://github.com/airbytehq/airbyte/pull/89127) | Update dependencies |
 | 0.1.16 | 2026-10-13 | [79220](https://github.com/airbytehq/airbyte/pull/79220) | Update dependencies |
 | 0.1.15 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88335) | Fix connector image build (0.1.14 was never published): migrate to airbyte-cdk 7 / Python 3.13 base image, drop `main.py` from packaged files; fix `TypeError` when triggering `extracted_text` generation |
 | 0.1.14 | 2026-06-02 | [78591](https://github.com/airbytehq/airbyte/pull/78591) | Update dependencies |

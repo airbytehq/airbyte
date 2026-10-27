@@ -22,7 +22,7 @@ class InsertLoaderRequestQueueFactory<Q : InsertLoaderRequest>() {
     @Named("insertLoaderClampedRequestSizeBytes")
     @Requires(bean = InsertLoader::class)
     fun insertLoaderClampedPartSizeBytes(
-        @Named("insertLoaderRequestQueue") queue: ResourceReservingPartitionedQueue<*>
+        @Named("insertLoaderRequestQueue") queue: ResourceReservingPartitionedQueue<*>,
     ) = queue.clampedMessageSize
 
     @Singleton
@@ -32,13 +32,14 @@ class InsertLoaderRequestQueueFactory<Q : InsertLoaderRequest>() {
         insertLoader: InsertLoader<Q>,
         @Named("globalMemoryManager") reservationManager: ReservationManager,
     ): ResourceReservingPartitionedQueue<
-        PipelineEvent<StreamKey, InsertLoaderRequestBuilderAccumulator.Result<Q>>> {
+        PipelineEvent<StreamKey, InsertLoaderRequestBuilderAccumulator.Result<Q>>,
+    > {
         return ResourceReservingPartitionedQueue(
             reservationManager = reservationManager,
             ratioOfTotalMemoryToReserve = insertLoader.maxMemoryRatioToUseForRequests,
             numConsumers = insertLoader.numRequestExecutors,
             numProducers = insertLoader.numRequestBuilders,
-            expectedResourceUsagePerUnit = insertLoader.estimatedByteSizePerRequest
+            expectedResourceUsagePerUnit = insertLoader.estimatedByteSizePerRequest,
         )
     }
 }

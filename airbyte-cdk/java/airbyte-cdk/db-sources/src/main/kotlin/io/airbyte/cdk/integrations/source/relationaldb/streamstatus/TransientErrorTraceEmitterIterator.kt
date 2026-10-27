@@ -24,7 +24,7 @@ class TransientErrorTraceEmitterIterator(private val e: Throwable) :
         return makeErrorTraceAirbyteMessage(
             e,
             e.message,
-            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR
+            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR,
         )
     }
 

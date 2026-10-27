@@ -29,6 +29,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.41 | 2026-10-27 | [89988](https://github.com/airbytehq/airbyte/pull/89988) | Update dependencies |
+| 0.0.40 | 2026-10-20 | [89316](https://github.com/airbytehq/airbyte/pull/89316) | Update dependencies |
 | 0.0.39 | 2026-10-13 | [88716](https://github.com/airbytehq/airbyte/pull/88716) | Update dependencies |
 | 0.0.38 | 2026-10-07 | [88304](https://github.com/airbytehq/airbyte/pull/88304) | Align `customers` page size with the documented API maximum (100) and point the API docs link at the Mantle Core API reference |
 | 0.0.37 | 2026-10-06 | [87924](https://github.com/airbytehq/airbyte/pull/87924) | Update dependencies |

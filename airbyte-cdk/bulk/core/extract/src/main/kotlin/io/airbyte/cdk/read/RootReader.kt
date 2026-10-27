@@ -64,7 +64,7 @@ class RootReader(
         if (dataChannelMedium == DataChannelMedium.STDIO) {
             if (dataChannelFormat != DataChannelFormat.JSONL) {
                 throw IllegalArgumentException(
-                    "Data channel format must be JSONL when medium is STDIO."
+                    "Data channel format must be JSONL when medium is STDIO.",
                 )
             }
         }
@@ -84,8 +84,9 @@ class RootReader(
                 outputConsumer.accept(it)
                 if (dataChannelMedium == DataChannelMedium.SOCKET)
                     PartitionReader.pendingStates.add(it)
-            }
+            },
         )
+
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
         log.info {
@@ -103,23 +104,22 @@ class RootReader(
         val exceptions = ConcurrentHashMap<T, Throwable>()
         supervisorScope {
             // Launch one coroutine per feed of same type.
-            val feedJobs: List<Job> =
-                feeds.map { feed: T ->
-                    val coroutineName = ThreadRenamingCoroutineName(feed.label)
-                    val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) {
-                        FeedReader(
-                                this@RootReader,
-                                feed,
-                                resourceAcquirer,
-                                dataChannelFormat,
-                                dataChannelMedium,
-                                bufferByteSizeThresholdForFlush,
-                                clock
-                            )
-                            .read()
-                    }
+            val feedJobs: List<Job> = feeds.map { feed: T ->
+                val coroutineName = ThreadRenamingCoroutineName(feed.label)
+                val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
+                launch(coroutineName + handler) {
+                    FeedReader(
+                            this@RootReader,
+                            feed,
+                            resourceAcquirer,
+                            dataChannelFormat,
+                            dataChannelMedium,
+                            bufferByteSizeThresholdForFlush,
+                            clock,
+                        )
+                        .read()
                 }
+            }
             // Call listener hook.
             listener(feedJobs)
             // Close the supervisorScope to join on all feeds.

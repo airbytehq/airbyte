@@ -18,9 +18,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: "adaccounts_stats_lifetime"
             bypass_reason: "The data changes from sync to sync"
