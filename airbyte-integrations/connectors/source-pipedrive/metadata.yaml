@@ -6,7 +6,7 @@ data:
     hosts:
       - api.pipedrive.com
       - oauth.pipedrive.com
-      - "*.pipedrive.com"
+      - "${credentials.api_domain}"
   remoteRegistries:
     pypi:
       enabled: false

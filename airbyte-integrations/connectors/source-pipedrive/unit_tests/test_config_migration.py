@@ -31,7 +31,7 @@ def _read_deals(config):
 def test_replication_start_date_is_optional_with_default():
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
     spec = manifest["spec"]["connection_specification"]
-    assert spec["required"] == ["credentials"]
+    assert "required" not in spec
     assert spec["properties"]["replication_start_date"]["default"] == DEFAULT_START_DATE
 
 
@@ -116,9 +116,11 @@ def test_flat_api_token_config_is_wrapped_into_credentials(capsys):
     assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]["api_token"] == "flat-token"
 
 
-def test_digit_only_flat_api_token_stays_a_string():
-    source = get_source({"api_token": "0123456789"})
-    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "0123456789"}
+@pytest.mark.parametrize("token", ["1234567890", "1e5", "True"])
+def test_flat_api_token_that_looks_like_a_literal_stays_a_string(token):
+    # Without value_type the CDK would turn these into an int, a float and a bool.
+    source = get_source({"api_token": token})
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": token}
 
 
 def test_oauth_config_with_a_leftover_api_token_is_not_rewrapped(capsys):

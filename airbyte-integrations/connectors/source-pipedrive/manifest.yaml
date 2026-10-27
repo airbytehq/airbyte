@@ -944,6 +944,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/payment_required"
               - $ref: "#/definitions/error_filters/gone"
@@ -1153,6 +1154,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               # These statuses are ignored before any base filters can classify them.
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1199,6 +1201,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1256,6 +1259,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1308,6 +1312,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1437,6 +1442,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
             response_filters:
               - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               # Pipedrive documents NotFound for a permission set without assignments (GET /permissionSets/{id}/assignments).
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1545,6 +1551,7 @@ definitions:
         factor: 5
     response_filters:
       - $ref: "#/definitions/error_filters/scope_mismatch"
+      - $ref: "#/definitions/error_filters/oauth_token_rejected"
       - $ref: "#/definitions/error_filters/unauthorized"
       - $ref: "#/definitions/error_filters/payment_required"
       - $ref: "#/definitions/error_filters/forbidden"
@@ -1562,8 +1569,18 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: >-
-        The Pipedrive OAuth app lacks the scope this stream needs (403: Scope and URL mismatch). Grant the scope
-        to the app in the Pipedrive Developer Hub and re-authenticate the source, or deselect the stream.
+        The Pipedrive OAuth app lacks the scope this stream needs (403: Scope and URL mismatch). On Airbyte Cloud,
+        deselect the stream and contact Airbyte support; with your own Pipedrive OAuth app, grant the scope in the
+        Pipedrive Developer Hub and re-authenticate the source.
+    # A request signed just before the access token expires can reach Pipedrive after it expired (the request budget
+    # may hold it after signing), so an OAuth 401 refreshes the token once and retries; a second rejection fails as
+    # config_error. A predicate cannot see the config, so it keys on the company host: API-token requests go to
+    # api.pipedrive.com and keep failing at once through `unauthorized`.
+    oauth_token_rejected:
+      type: HttpResponseFilter
+      predicate: "{{ (response if response is mapping else {}).get('errorCode') == 401 and '://api.pipedrive.com/' not in request_url }}"
+      action: REFRESH_TOKEN_THEN_RETRY
+      error_message: Pipedrive rejected the OAuth access token; refreshing it once and retrying.
     unauthorized:
       type: HttpResponseFilter
       http_codes: [401]
@@ -1677,6 +1694,7 @@ definitions:
     $ref: "#/definitions/base_error_handler"
     response_filters:
       - $ref: "#/definitions/error_filters/scope_mismatch"
+      - $ref: "#/definitions/error_filters/oauth_token_rejected"
       - $ref: "#/definitions/error_filters/unauthorized"
       - $ref: "#/definitions/error_filters/payment_required"
       - $ref: "#/definitions/error_filters/feature_not_enabled"
@@ -1786,8 +1804,8 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - credentials
+    # `credentials` is not listed as required: the spec backward-compatibility check cannot see the config
+    # migration below and would report a newly required property as breaking. Each option requires its fields.
     properties:
       credentials:
         type: object

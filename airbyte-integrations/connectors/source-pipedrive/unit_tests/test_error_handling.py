@@ -906,3 +906,25 @@ def test_missing_oauth_scope_fails_the_sync_instead_of_reading_empty(stream) -> 
     error = _error_trace(output)
     assert error.failure_type == FailureType.config_error
     assert "lacks the scope" in error.message
+
+
+def _base_error_handler():
+    from conftest import _YAML_FILE_PATH
+
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
+    return ModelToComponentFactory().create_component(DefaultErrorHandlerModel, manifest["definitions"]["base_error_handler"], config={})
+
+
+@pytest.mark.parametrize("stream", ["<base>"] + list(_STREAM_KINDS))
+def test_every_handler_refreshes_an_oauth_401_and_fails_a_token_401(stream) -> None:
+    handler = _base_error_handler() if stream == "<base>" else _per_stream_handler(stream)
+    for url, action in (
+        ("https://acme.pipedrive.com/api/v1/example", ResponseAction.REFRESH_TOKEN_THEN_RETRY),
+        ("https://api.pipedrive.com/v1/example", ResponseAction.FAIL),
+    ):
+        response = _response(401, html=False)
+        response._content = json.dumps({"success": False, "error": "unauthorized access", "errorCode": 401}).encode()
+        response.request = requests.Request("GET", url).prepare()
+        response.url = url
+
+        assert handler.interpret_response(response).response_action == action, url

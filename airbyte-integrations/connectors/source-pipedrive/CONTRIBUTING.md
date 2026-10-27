@@ -16,9 +16,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    the archived leads `GET /v1/leads` leaves out; `deal_products` asks for 100 deals per request;
    `product_variations` expands every product regardless of the Start Date; `goals` asks once per
    assignee type, because without one Pipedrive returns only the token owner's goals. `pipelines`,
-   `stages`, `filters` and `users` are full refresh on purpose. The base URL stays
-   `https://api.pipedrive.com/` with `v1/...` and `api/v2/...` paths; several v1 endpoints 404 under
-   `/api/v1/`. Archived deals are a separate stream because a cached parent must not have a
+   `stages`, `filters` and `users` are full refresh on purpose. With an API token the base
+   URL stays `https://api.pipedrive.com/` with `v1/...` and `api/v2/...` paths (several v1 endpoints
+   404 under `/api/v1/` there); with OAuth both go to the company host under `/api/`. Archived deals are a separate stream because a cached parent must not have a
    multi-value partition router. Details in AGENTS.md section 1.
 2. **API v2 Records Nest Custom Fields and Carry `is_deleted`** -- custom fields live under the
    nullable `custom_fields` object and schemas keep `additionalProperties: true`; tightening them
@@ -44,7 +44,7 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    section 4.
 5. **Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread** --
    `mailThreads` queries four folders (so threads can repeat) and `mail` makes one request per
-   thread; both only see the token owner's mailbox. `mailThreads` keeps `use_cache: false` because
+   thread; both only see the connected user's mailbox. `mailThreads` keeps `use_cache: false` because
    concurrent folder partitions corrupt the CDK's cached-parent sqlite file. Details in AGENTS.md
    section 5.
 6. **HTTP Errors Are Classified on the Shared Base Requester** -- every status code Pipedrive
@@ -80,7 +80,7 @@ stream to read; a missing scope surfaces as a `403 Scope and URL mismatch` confi
 
 | Developer Hub toggle | Scope | Streams |
 | :------------------- | :---- | :------ |
-| Access to basic information | `base` | `currencies` (check stream), `users/me` |
+| Access to basic information | `base` | `currencies` (check stream) |
 | Deals: Read only | `deals:read` | `deals`, `deals_archived`, `deal_fields`, `deal_products`, `deal_installments`, `pipelines`, `stages`, `filters`, `notes`, `files` |
 | Contacts: Read only | `contacts:read` | `persons`, `organizations`, `person_fields`, `organization_fields` |
 | Activities: Read only | `activities:read` | `activities`, `activity_fields`, `activity_types` |
