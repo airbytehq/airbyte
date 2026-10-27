@@ -161,3 +161,23 @@ def test_api_token_401_keeps_the_token_instructions() -> None:
     assert error.failure_type == FailureType.config_error
     assert "rejected the API token (401: unauthorized access)" in error.message
     assert "OAuth" not in error.message
+
+
+def test_oauth_rejects_an_api_domain_outside_pipedrive() -> None:
+    # The Bearer token goes to `api_domain`, so a host outside *.pipedrive.com must fail validation before any request.
+    config = {**_CONFIG_OAUTH, "credentials": {**_CONFIG_OAUTH["credentials"], "api_domain": "https://acme.pipedrive.com.example.io"}}
+    with requests_mock.Mocker() as mocker:
+        catalog = CatalogBuilder().with_stream("currencies", SyncMode.full_refresh).build()
+        output = read(get_source(config), config, catalog, expecting_exception=True)
+
+    assert mocker.request_history == []
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "does not match" in error.message
+
+
+def test_legacy_top_level_token_stays_a_hidden_secret() -> None:
+    # Migrated configs keep the top-level token; the spec must keep it masked.
+    api_token = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]["connection_specification"]["properties"]["api_token"]
+    assert api_token["airbyte_secret"] is True
+    assert api_token["airbyte_hidden"] is True

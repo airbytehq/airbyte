@@ -1846,6 +1846,9 @@ spec:
                   example https://mycompany.pipedrive.com. OAuth requests must go to this host.
                 examples:
                   - https://mycompany.pipedrive.com
+                # The Bearer token is sent to this host, so only a Pipedrive company host is accepted.
+                pattern: "^https://[A-Za-z0-9-]+\\.pipedrive\\.com$"
+                pattern_descriptor: "https://<company>.pipedrive.com"
                 order: 6
             additionalProperties: true
           - type: object
@@ -1869,6 +1872,14 @@ spec:
                 airbyte_secret: true
                 order: 1
             additionalProperties: true
+      # Configs saved before 4.2.0 keep their top-level token after the migration below copies it into
+      # `credentials`; declared as a hidden secret so the platform keeps it masked and 4.1.x can still read it.
+      api_token:
+        type: string
+        title: API Token (before 4.2.0)
+        description: The API token of configs saved before 4.2.0. The connector reads the token from Authentication.
+        airbyte_secret: true
+        airbyte_hidden: true
       replication_start_date:
         type: string
         title: Start Date
