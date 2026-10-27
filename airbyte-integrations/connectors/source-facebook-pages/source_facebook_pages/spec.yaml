@@ -51,7 +51,11 @@ connectionSpecification:
       items:
         type: string
       examples:
-        - ["page_post_engagements", "page_views_total", "page_actions_post_reactions_like_total"]
+        - [
+            "page_post_engagements",
+            "page_views_total",
+            "page_actions_post_reactions_like_total",
+          ]
       order: 4
     post_insights_metrics:
       type: array
