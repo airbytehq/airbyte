@@ -8,6 +8,24 @@ check:
     - accounts
 
 definitions:
+  jsonapi_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  jsonapi_flatten_transformations:
+    - type: AddFields
+      fields:
+        - type: AddedFieldDefinition
+          path: ["_flat"]
+          value: >-
+            {%- set ns = namespace(out=dict(record['attributes'] or {}, id=record['id'])) -%}
+            {%- for name, rel in (record.get('relationships') or {}).items() if rel is mapping and rel.get('data') -%}
+            {%- set ns.out = dict(ns.out, **{name: (([rel['data']] if rel['data'] is mapping else rel['data']) | map(attribute='id') | map('default', none) | list)}) -%}
+            {%- endfor -%}{{ ns.out }}
+    - type: DpathFlattenFields
+      field_path: ["_flat"]
+      replace_record: true
   streams:
     accounts:
       type: DeclarativeStream
@@ -26,10 +44,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -38,6 +53,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -72,10 +89,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -84,6 +98,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -118,10 +134,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -130,6 +143,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -164,10 +179,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -176,6 +188,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -210,10 +224,7 @@ definitions:
             page[size]: "100"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -222,6 +233,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -256,10 +269,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -268,6 +278,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -302,10 +314,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -314,6 +323,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -348,10 +359,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -360,6 +368,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -394,10 +404,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -406,6 +413,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -440,10 +449,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -452,6 +458,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -486,10 +494,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -498,6 +503,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -532,10 +539,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -544,6 +548,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -578,10 +584,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -590,6 +593,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -624,10 +629,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -636,6 +638,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -670,10 +674,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -682,6 +683,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -716,10 +719,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -728,6 +728,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -762,10 +764,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -774,6 +773,8 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
