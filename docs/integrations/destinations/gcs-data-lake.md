@@ -196,7 +196,7 @@ Tables are created at format v2 by default. Set `table_format_version` to `v3` t
 
 ### Reading from BigQuery
 
-BigQuery can read Iceberg tables through the [BigLake Lakehouse runtime catalog](https://docs.cloud.google.com/lakehouse/docs/query-table). Use the four-part table name `PROJECT.CATALOG.NAMESPACE.TABLE`.
+BigQuery can query Apache Iceberg tables in the [Lakehouse runtime catalog](https://docs.cloud.google.com/lakehouse/docs/query-table) using the four-part P.C.N.T name `PROJECT_NAME.CATALOG_ID.NAMESPACE_OR_SCHEMA_NAME.TABLE_NAME`.
 
 For Dedupe streams, use format v2 with positional deletes:
 
@@ -262,7 +262,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.2.0 | 2026-10-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add configurable Iceberg partition fields for BigQuery pruning. |
+| 1.2.0 | 2026-10-27 | [90121](https://github.com/airbytehq/airbyte/pull/90121) | Add configurable Iceberg partition fields for BigQuery pruning. |
 | 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. Refresh Google credentials for the BigLake catalog and GCS file I/O so syncs longer than one hour no longer fail. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |
