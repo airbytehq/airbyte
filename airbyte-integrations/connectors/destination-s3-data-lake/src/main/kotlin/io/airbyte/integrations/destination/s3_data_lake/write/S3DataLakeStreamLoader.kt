@@ -149,6 +149,17 @@ class S3DataLakeStreamLoader(
             "Planned format v$plannedVersion but reconciliation produced " +
                 "v$effectiveFormatVersion for ${createdTable.name()}."
         }
+        if (
+            tableExisted &&
+                stream.tableSchema.importType is Dedupe &&
+                deleteMode == IcebergDeleteMode.POSITIONAL
+        ) {
+            IcebergTableUpgrader.convertEqualityDeletesToPositional(
+                catalog,
+                tableIdGenerator.toTableIdentifier(stream.mappedDescriptor),
+            )
+            createdTable.refresh()
+        }
         failOnNormalizationRenames(createdTable.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema

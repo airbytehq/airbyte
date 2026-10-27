@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
+import org.apache.iceberg.FileFormat
+import org.apache.iceberg.FileScanTask
 import org.apache.iceberg.ManifestFiles
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.StructLike
@@ -18,6 +20,7 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.InternalRecordWrapper
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.data.parquet.GenericParquetReaders
@@ -26,6 +29,7 @@ import org.apache.iceberg.deletes.Deletes
 import org.apache.iceberg.deletes.PositionDeleteIndex
 import org.apache.iceberg.io.CloseableIterable
 import org.apache.iceberg.io.DeleteSchemaUtil
+import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.util.ContentFileUtil
@@ -40,6 +44,54 @@ private val logger = KotlinLogging.logger {}
  * This is a one-way upgrade: format version cannot be lowered afterwards.
  */
 object IcebergTableUpgrader {
+
+    /**
+     * Rewrites live equality delete files on every branch of an existing v2 table as v2 position
+     * delete files so readers that do not support equality deletes can read the table correctly.
+     *
+     * No-op when the table is already v3 or newer, or when no branch has a live equality delete
+     * file. Returns the (re)loaded table.
+     */
+    fun convertEqualityDeletesToPositional(catalog: Catalog, tableId: TableIdentifier): Table {
+        val table = catalog.loadTable(tableId)
+        val currentVersion = tableFormatVersion(table)
+        if (currentVersion >= 3) {
+            logger.info {
+                "Table $tableId is already at format version v$currentVersion; skipping equality-delete conversion."
+            }
+            return table
+        }
+        val branchSnapshots: Map<String, Long> =
+            table.refs().filterValues { it.isBranch }.mapValues { it.value.snapshotId() }
+        val liveDeletesBySnapshot =
+            branchSnapshots.values.toSet().associateWith { liveDeleteFiles(table, it) }
+        if (
+            liveDeletesBySnapshot.values.none { deletes ->
+                deletes.any { it.content() == FileContent.EQUALITY_DELETES }
+            }
+        ) {
+            logger.info { "Table $tableId has no live equality-delete files; skipping conversion." }
+            return table
+        }
+        val migrations = liveDeletesBySnapshot.mapValues { (snapshotId, deleteFiles) ->
+            planEqualityDeleteConversion(table, snapshotId, deleteFiles)
+        }
+        commitEqualityDeleteConversion(table, branchSnapshots, migrations)
+        table.refresh()
+        branchSnapshots.keys.forEach { branch ->
+            val remaining =
+                liveDeleteFiles(table, table.refs()[branch]!!.snapshotId()).filter {
+                    it.content() == FileContent.EQUALITY_DELETES
+                }
+            check(remaining.isEmpty()) {
+                "Table $tableId branch $branch still has ${remaining.size} " +
+                    "equality-delete file(s) after the positional-delete conversion: " +
+                    remaining.map { it.location() }
+            }
+        }
+        logger.info { "Converted legacy equality deletes to position deletes for table $tableId." }
+        return table
+    }
 
     /**
      * Upgrades the table identified by [tableId] to format v3. When [backup] is true, the current
@@ -116,21 +168,98 @@ object IcebergTableUpgrader {
         val rewrittenDeleteFiles: List<DeleteFile>,
     )
 
+    private data class SnapshotScanPlan(
+        val dataFileInfo: Map<String, FileScanTask>,
+        val applicability: Map<String, Set<String>>,
+    )
+
+    private data class PositionalDeleteConversion(
+        val equalityDeleteFiles: Set<DeleteFile>,
+        val positionDeleteFiles: List<DeleteFile>,
+    )
+
+    private fun planEqualityDeleteConversion(
+        table: Table,
+        snapshotId: Long,
+        deleteFiles: List<DeleteFile>,
+    ): PositionalDeleteConversion {
+        val scanPlan = planScan(table, snapshotId)
+        val equalityDeletes =
+            deleteFiles.filter { it.content() == FileContent.EQUALITY_DELETES }.toSet()
+        val locations =
+            equalityDeletes
+                .asSequence()
+                .flatMap { deleteFile ->
+                    val appliesTo = scanPlan.applicability[deleteFile.location()] ?: emptySet()
+                    val candidates = scanPlan.dataFileInfo.filterKeys { it in appliesTo }
+                    resolveEqualityDeletes(table, snapshotId, deleteFile, candidates)
+                }
+                .distinctBy { it.path.toString() to it.position }
+                .sortedWith(compareBy({ it.path.toString() }, { it.position }))
+                .toList()
+        val positionDeleteFiles =
+            if (locations.isEmpty()) {
+                emptyList()
+            } else {
+                val format =
+                    FileFormat.valueOf(
+                        table
+                            .properties()
+                            .getOrDefault(
+                                TableProperties.DEFAULT_FILE_FORMAT,
+                                TableProperties.DEFAULT_FILE_FORMAT_DEFAULT,
+                            )
+                            .uppercase(),
+                    )
+                val writerFactory =
+                    GenericFileWriterFactory.Builder(table)
+                        .dataSchema(table.schema())
+                        .writerProperties(table.properties())
+                        .build()
+                val outputFileFactory =
+                    OutputFileFactory.builderFor(table, 0, 1L)
+                        .defaultSpec(table.spec())
+                        .operationId(UUID.randomUUID().toString())
+                        .format(format)
+                        .suffix("equality-delete-migration")
+                        .build()
+                PositionalDeleteFiles(writerFactory, outputFileFactory)
+                    .writeAll(locations.asSequence(), emptySequence())
+            }
+        return PositionalDeleteConversion(equalityDeletes, positionDeleteFiles)
+    }
+
+    private fun commitEqualityDeleteConversion(
+        table: Table,
+        branchSnapshots: Map<String, Long>,
+        migrations: Map<Long, PositionalDeleteConversion>,
+    ) {
+        val transaction = table.newTransaction()
+        branchSnapshots.forEach { (branch, snapshotId) ->
+            val migration = migrations.getValue(snapshotId)
+            val delta =
+                transaction
+                    .newRowDelta()
+                    .toBranch(branch)
+                    .validateFromSnapshot(snapshotId)
+                    .validateNoConflictingDataFiles()
+                    .validateNoConflictingDeleteFiles()
+                    .validateDeletedFiles()
+            migration.equalityDeleteFiles.forEach(delta::removeDeletes)
+            migration.positionDeleteFiles.forEach(delta::addDeletes)
+            delta.commit()
+        }
+        transaction.commitTransaction()
+    }
+
     /**
      * Resolves every legacy delete file in [snapshotId] to deleted positions and writes a single
      * merged DV per referenced data file.
      */
     private fun planMigration(table: Table, snapshotId: Long): MigratedDeletes {
-        val tasks = table.newScan().useSnapshot(snapshotId).planFiles().use { it.toList() }
-        val dataFileInfo = tasks.associateBy { it.file().location() }
-        // A legacy delete applies to a data file iff Iceberg lists it in that file's scan-task
-        // deletes. This is the same applicability rule the read side uses, so it covers spec,
-        // partition, and sequence-number semantics for every delete-file kind.
-        val applicability: Map<String, Set<String>> =
-            tasks
-                .flatMap { task -> task.deletes().map { it.location() to task.file().location() } }
-                .groupBy({ it.first }, { it.second })
-                .mapValues { it.value.toSet() }
+        val scanPlan = planScan(table, snapshotId)
+        val dataFileInfo = scanPlan.dataFileInfo
+        val applicability = scanPlan.applicability
         // (data file path) -> positions to delete, alongside the spec/partition of the data file.
         class Positions(val spec: PartitionSpec, val partition: StructLike?) {
             val positions = mutableListOf<Long>()
@@ -214,6 +343,19 @@ object IcebergTableUpgrader {
         }
         val result = writer.result()
         return MigratedDeletes(legacyDeletes, result.deleteFiles(), result.rewrittenDeleteFiles())
+    }
+
+    private fun planScan(table: Table, snapshotId: Long): SnapshotScanPlan {
+        val tasks = table.newScan().useSnapshot(snapshotId).planFiles().use { it.toList() }
+        // A delete applies to a data file iff Iceberg lists it in that file's scan-task deletes.
+        // This is the same applicability rule the read side uses, so it covers spec, partition,
+        // and sequence-number semantics for every delete-file kind.
+        val applicability: Map<String, Set<String>> =
+            tasks
+                .flatMap { task -> task.deletes().map { it.location() to task.file().location() } }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { it.value.toSet() }
+        return SnapshotScanPlan(tasks.associateBy { it.file().location() }, applicability)
     }
 
     /**
