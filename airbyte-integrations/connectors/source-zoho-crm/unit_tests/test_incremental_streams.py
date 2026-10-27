@@ -152,6 +152,7 @@ def test_read_records_tolerates_state_keyed_by_other_cursor(mocker):
     assert len(records) == 1
     assert stream.state == {"Action_Performed_Time": "2026-02-01T00:00:00+00:00"}
 
+
 def _stream_for_module(api_name, include_converted):
     class _Stream(BaseIncrementalZohoCrmStream):
         url_base = "https://dummy.com"
@@ -181,4 +182,3 @@ def test_request_params_keeps_page_token_with_converted_leads():
     stream = _stream_for_module("Leads", True)
     result = stream.request_params(stream_state={}, stream_slice=None, next_page_token={"page": 3})
     assert result == {"page": 3, "converted": "both"}
-    
