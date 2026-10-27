@@ -787,6 +787,38 @@ def test_messages_details_second_sync_uses_parent_state_and_round_trips_ms(base_
     assert second_parent_end is not None and len(second_parent_end) == 10
     assert int(second_parent_end) >= previous_end
     assert _message_detail_paths(requests_mock, requests_before_second) == {f"{urlparse(_MESSAGES_LIST_URL).path}/m1"}
+    assert [record.record.data["id"] for record in second.records] == ["m1"]
+
+
+def test_messages_details_lookback_emits_mail_listed_late(base_config, requests_mock):
+    """Gmail can list a message after a newer one has already been synced.
+    The one-hour lookback must re-list and emit it even though its
+    `internalDate` is older than the child cursor, and must re-emit the
+    overlapping message rather than filter it out.
+    """
+    config, _ = _config_starting_days_ago(base_config, days_ago=5)
+    now = datetime.now(timezone.utc)
+    latest = str(int((now - timedelta(minutes=1)).timestamp() * 1000))
+    late = str(int((now - timedelta(minutes=10)).timestamp() * 1000))
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        [
+            {"json": {"messages": [{"id": "m_latest", "threadId": "t1"}]}},
+            {"json": {"messages": [{"id": "m_latest", "threadId": "t1"}, {"id": "m_late", "threadId": "t2"}]}},
+        ],
+    )
+    requests_mock.get(f"{_MESSAGES_LIST_URL}/m_latest", json={"id": "m_latest", "threadId": "t1", "internalDate": latest})
+    requests_mock.get(f"{_MESSAGES_LIST_URL}/m_late", json={"id": "m_late", "threadId": "t2", "internalDate": late})
+
+    first = _read_stream("messages_details", SyncMode.incremental, config)
+    first_state = _state_data(first)
+    assert first_state["state"]["internalDate"] == latest
+    state = StateBuilder().with_stream_state("messages_details", first_state).build()
+
+    second = _read_stream("messages_details", SyncMode.incremental, config, state=state)
+
+    assert sorted(record.record.data["id"] for record in second.records) == ["m_late", "m_latest"]
+    assert _state_data(second)["state"]["internalDate"] == latest
 
 
 def test_messages_details_parent_checkpoints_completed_slices_before_failed_child(base_config, requests_mock):
@@ -867,6 +899,47 @@ def test_messages_details_slice_queries_are_contiguous_epoch_seconds(base_config
     assert all(after < before for _, after, before in queries)
 
 
+def test_messages_details_parent_follows_next_page_token(base_config, requests_mock):
+    config, _ = _config_starting_days_ago(base_config, days_ago=5)
+    internal_date = str(int((datetime.now(timezone.utc) - timedelta(hours=1)).timestamp() * 1000))
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        [
+            {"json": {"messages": [{"id": "m1", "threadId": "t1"}], "nextPageToken": "page-2"}},
+            {"json": {"messages": [{"id": "m2", "threadId": "t2"}]}},
+        ],
+    )
+    for message_id in ("m1", "m2"):
+        requests_mock.get(
+            f"{_MESSAGES_LIST_URL}/{message_id}",
+            json={"id": message_id, "threadId": "t1", "internalDate": internal_date},
+        )
+
+    output = _read_stream("messages_details", SyncMode.incremental, config)
+
+    list_calls = _messages_list_requests(requests_mock)
+    assert len(list_calls) == 2
+    first_params = parse_qs(urlparse(list_calls[0].url).query)
+    second_params = parse_qs(urlparse(list_calls[1].url).query)
+    assert "pageToken" not in first_params
+    assert second_params["pageToken"] == ["page-2"]
+    assert first_params["maxResults"] == second_params["maxResults"] == ["100"]
+    assert first_params["q"] == second_params["q"]
+    assert sorted(record.record.data["id"] for record in output.records) == ["m1", "m2"]
+
+
+@pytest.mark.parametrize("include_spam_and_trash, expected", [(False, "False"), (True, "True")])
+def test_messages_details_parent_passes_include_spam_trash(include_spam_and_trash, expected, config_with_start_date, requests_mock):
+    config = {**config_with_start_date, "include_spam_and_trash": include_spam_and_trash}
+    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
+
+    _read_stream("messages_details", SyncMode.incremental, config)
+
+    list_calls = _messages_list_requests(requests_mock)
+    assert list_calls
+    assert all(parse_qs(urlparse(call.url).query)["includeSpamTrash"] == [expected] for call in list_calls)
+
+
 def test_messages_details_full_refresh_reads_all_listed_ids(base_config, requests_mock):
     config, _ = _config_starting_days_ago(base_config, days_ago=5)
     internal_date = str(int(datetime.now(timezone.utc).timestamp() * 1000))
@@ -889,7 +962,33 @@ def test_messages_details_full_refresh_reads_all_listed_ids(base_config, request
     }
 
 
-def test_messages_details_legacy_truncated_state_reads_from_start_date(config_with_start_date, requests_mock):
+@pytest.mark.parametrize(
+    "legacy_state",
+    [
+        pytest.param(
+            {
+                "state": {"internalDate": "1792710"},
+                "parent_state": {},
+                "lookback_window": 1173,
+                "use_global_cursor": True,
+            },
+            id="global_cursor",
+        ),
+        pytest.param(
+            {
+                "state": {"internalDate": "1792710"},
+                "states": [
+                    {"partition": {"message_id": "m0", "parent_slice": {}}, "cursor": {"internalDate": "1792710"}},
+                ],
+                "parent_state": {},
+                "lookback_window": 1173,
+                "use_global_cursor": False,
+            },
+            id="per_partition",
+        ),
+    ],
+)
+def test_messages_details_legacy_truncated_state_reads_from_start_date(legacy_state, config_with_start_date, requests_mock):
     requests_mock.get(
         _MESSAGES_LIST_URL,
         [
@@ -901,12 +1000,6 @@ def test_messages_details_legacy_truncated_state_reads_from_start_date(config_wi
         f"{_MESSAGES_LIST_URL}/m1",
         json={"id": "m1", "threadId": "t1", "internalDate": "1704067201000"},
     )
-    legacy_state = {
-        "state": {"internalDate": "1792710"},
-        "parent_state": {},
-        "lookback_window": 1173,
-        "use_global_cursor": True,
-    }
     state = StateBuilder().with_stream_state("messages_details", legacy_state).build()
 
     output = _read_stream("messages_details", SyncMode.incremental, config_with_start_date, state=state)
