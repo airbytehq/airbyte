@@ -270,12 +270,10 @@ jobs:
             https://github.com/${{ github.repository }}/pull/${{ steps.marker.outputs.pr }}
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            Process ONLY that PR. Skip Phase 1 and the Phase 2 collection queries entirely.
-            Re-read the PR's current state, apply the §2.5 decision tree, and take the single
-            next action if it is ready to advance (or no action if it is not). Do NOT run the
-            follow-up loop — this is a single pass (1 iteration). The next stage's result will
-            re-trigger this workflow. Do not post the
-            Phase 3 summary to #hands-free-ai-triage; per-item status via send_to_user is enough.
+            Process ONLY that PR. Re-read its current state, apply the §2.5 decision tree,
+            and take the single next action if it is ready to advance (or no action if it is
+            not). Do NOT run the follow-up loop — this is a single pass (1 iteration). The next
+            stage's result will re-trigger this workflow.
             ${{ steps.mode.outputs.dry_run == 'true' && 'DRY RUN MODE: state what you WOULD do, take no action.' || '' }}
 
       # The guard comment must not survive a failed launch: it would suppress
