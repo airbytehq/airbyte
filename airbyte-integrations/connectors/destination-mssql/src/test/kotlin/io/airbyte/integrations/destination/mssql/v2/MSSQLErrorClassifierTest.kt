@@ -27,6 +27,66 @@ import org.junit.jupiter.api.Test
 class MSSQLErrorClassifierTest {
 
     @Test
+    fun `size quota error code is a config error`() {
+        assertConfigError(
+            SQLException("", "S0001", 40544),
+            "The destination database has reached its maximum size. Increase the database's max size or service tier, or free up space, then retry the sync.",
+        )
+    }
+
+    @Test
+    fun `size quota message is a config error without a matching code`() {
+        assertConfigError(
+            SQLException("The database 'example' HAS REACHED ITS SIZE QUOTA.", "S0001", 0),
+            "The destination database has reached its maximum size. Increase the database's max size or service tier, or free up space, then retry the sync.",
+        )
+    }
+
+    @Test
+    fun `filegroup full error code is a config error`() {
+        assertConfigError(
+            SQLException("", "S0001", 1105),
+            "The destination database filegroup is full. Add space or files, enable autogrowth, or free disk space, then retry the sync.",
+        )
+    }
+
+    @Test
+    fun `filegroup full message is a config error without a matching code`() {
+        assertConfigError(
+            SQLException(
+                "Could not allocate space for object 'dbo.example' in database 'example' because the 'PRIMARY' filegroup is full.",
+                "S0001",
+                0,
+            ),
+            "The destination database filegroup is full. Add space or files, enable autogrowth, or free disk space, then retry the sync.",
+        )
+    }
+
+    @Test
+    fun `log full and empty SQL errors are rethrown unchanged`() {
+        listOf(
+                SQLException("The transaction log for database 'example' is full.", "S0001", 9002),
+                SQLException(),
+            )
+            .forEach { original ->
+                val exception =
+                    assertThrows(SQLException::class.java) {
+                        MSSQLErrorClassifier.rethrowClassified(original)
+                    }
+                assertSame(original, exception)
+            }
+    }
+
+    private fun assertConfigError(original: SQLException, message: String) {
+        val exception =
+            assertThrows(ConfigErrorException::class.java) {
+                MSSQLErrorClassifier.rethrowClassified(original)
+            }
+        assertEquals(message, exception.message)
+        assertSame(original, exception.cause)
+    }
+
+    @Test
     fun `permission denied error is a config error`() {
         val original =
             BatchUpdateException(

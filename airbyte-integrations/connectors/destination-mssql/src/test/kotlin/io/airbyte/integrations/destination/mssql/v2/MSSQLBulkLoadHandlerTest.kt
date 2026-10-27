@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -20,6 +21,7 @@ import java.sql.PreparedStatement
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
@@ -89,6 +91,40 @@ class MSSQLBulkLoadHandlerTest {
         val sqlStatements = mutableListOf<String>()
         verify(atLeast = 1) { connection.prepareStatement(capture(sqlStatements)) }
         return sqlStatements
+    }
+
+    @Test
+    fun `bulk append classifies size quota errors after rollback`() {
+        val original = SQLException("size limit", "S0001", 40544)
+        every { preparedStatement.executeUpdate() } throws original
+
+        val exception =
+            assertThrows(ConfigErrorException::class.java) {
+                bulkLoadHandler.bulkLoadForAppendOverwrite("data.csv", "format.fmt")
+            }
+
+        assertSame(original, exception.cause)
+        verify(exactly = 1) { connection.rollback() }
+    }
+
+    @Test
+    fun `bulk dedup classifies filegroup full errors after rollback`() {
+        val original = SQLException("space limit", "S0001", 1105)
+        every { preparedStatement.executeUpdate() } throws original
+
+        val exception =
+            assertThrows(ConfigErrorException::class.java) {
+                bulkLoadHandler.bulkLoadAndUpsertForDedup(
+                    primaryKeyColumns = listOf("Id"),
+                    cursorColumns = listOf("Id"),
+                    nonPkColumns = listOf("Name"),
+                    dataFilePath = "data.csv",
+                    formatFilePath = "format.fmt",
+                )
+            }
+
+        assertSame(original, exception.cause)
+        verify(exactly = 1) { connection.rollback() }
     }
 
     @Test
