@@ -27,13 +27,13 @@ data:
   icon: icon.svg
   license: ELv2
   maxSecondsBetweenMessages: 3600
-  name: Linkedin Pages
+  name: LinkedIn Pages
   releaseDate: 2022-08-11
   releaseStage: alpha
   releases:
     breakingChanges:
       2.0.0:
-        message: "Version 2.0.0 changes the declared type of epoch-millisecond fields from number to integer: `timeRangeStart` and `timeRangeEnd` in `follower_statistics_time_bound` and `share_statistics_time_bound`, and `id`, `created.time` and `lastModified.time` in `organization_lookup`. Values do not change. It also declares primary keys on the six streams that existed before 1.3.0. After upgrading, refresh the source schema. BigQuery, Snowflake, Databricks, ClickHouse, MS SQL Server and MotherDuck need nothing else. Postgres and Redshift fail the sync while views depend on these columns. S3 Data Lake and GCS Data Lake cannot change these columns and fail incremental and append syncs of the three streams until you refresh them with Remove records or clear them. LinkedIn only serves the last 12 months of time-bound statistics, so refreshing a time-bound stream with Remove records or clearing it permanently deletes older rows: back up those tables first. Connections that do not sync these three streams need no action. Migration guide: https://docs.airbyte.com/integrations/sources/linkedin-pages-migrations#upgrading-to-200"
+        message: "Version 2.0.0 changes the declared type of epoch-millisecond fields from number to integer: `timeRangeStart` and `timeRangeEnd` in `follower_statistics_time_bound` and `share_statistics_time_bound`, and `id`, `created.time` and `lastModified.time` in `organization_lookup`. Values do not change. It also declares primary keys on the six streams that existed before 1.3.0. After upgrading, refresh the source schema and save it without refreshing or clearing streams. BigQuery, Snowflake, Databricks, ClickHouse, MS SQL Server and MotherDuck need nothing else. Postgres and Redshift fail the sync while views depend on these columns. S3 Data Lake and GCS Data Lake cannot change these columns and fail incremental and append syncs of the three streams until you refresh them with Remove records or clear them. LinkedIn only serves the last 12 months of time-bound statistics, so refreshing a time-bound stream with Remove records or clearing it permanently deletes older rows: back up those tables first. Connections that do not sync these three streams need no action. Migration guide: https://docs.airbyte.com/integrations/sources/linkedin-pages-migrations#upgrading-to-200"
         upgradeDeadline: "2026-12-22"
         deadlineAction: disable
         scopedImpact:

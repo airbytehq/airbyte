@@ -1,4 +1,6 @@
-# Linkedin Pages Migration Guide
+# LinkedIn Pages Migration Guide
+
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 2.0.0
 
@@ -37,12 +39,12 @@ The cursor (`timeRangeEnd`) and saved state do not change.
 ### Who must act
 
 - **No action:** connections that sync none of `organization_lookup`, `follower_statistics_time_bound` and `share_statistics_time_bound`. The new keys and fields on the other streams need nothing.
-- **Everyone else:** follow the steps below. Most destinations only need the schema refresh in step 2.
+- **Everyone else:** follow the steps below. Most destinations only need the schema refresh in step 2. Upgrade before the deadline shown in Airbyte (2026-12-22): after that date, connections that sync the affected streams on 1.x are disabled until you upgrade.
 
 ### Steps
 
 1. Upgrade the connector to 2.0.0.
-2. In the connection, open **Schema**, select **Refresh source schema**, then review and save the changes.
+2. In the connection, open **Schema**, select **Refresh source schema**, then review and save the changes. Because primary keys changed, Airbyte may recommend refreshing or clearing streams when you save. Save without refreshing or clearing, unless your destination's row in step 3 says otherwise: a refresh that keeps records appends a second copy of the last 12 months to the time-bound streams, and a clear deletes rows older than 12 months for good.
 3. Find your destination below. "Affected streams" means `organization_lookup`, `follower_statistics_time_bound` and `share_statistics_time_bound`.
 
    | Destination | What the next sync does | Action |
@@ -64,12 +66,13 @@ The cursor (`timeRangeEnd`) and saved state do not change.
 - S3 Data Lake and GCS Data Lake: syncs of the affected streams keep failing until you refresh them with **Remove records** or clear them.
 - Avro and Parquet: new and old files under the same stream path declare different types for these fields.
 - If you don't refresh the source schema and your connection doesn't propagate schema changes automatically, the destination keeps the old types, and the new fields and keys don't appear.
+- After 2026-12-22, connections that still run 1.x and sync the affected streams are disabled until you upgrade.
 
 ### Downstream
 
 - Update SQL, dbt models, dashboards and exports that read `timeRangeStart` and `timeRangeEnd` in `follower_statistics_time_bound` and `share_statistics_time_bound`, or `id`, `created.time` and `lastModified.time` in `organization_lookup`, as floating-point or decimal values. Where the destination converts them, they are now integer columns.
 - Update table definitions for readers of S3 Data Lake, GCS Data Lake, and Avro or Parquet files.
-- If you changed **Time Granularity Type** in the past, the time-bound tables hold both day and month rows. They have separate keys. Filter on `timeRangeEnd - timeRangeStart` (86400000 for a day) before you aggregate. The first sync after a clear can also include a partial first month when 12 months ago falls inside a month.
+- If you changed **Time Granularity Type** in the past, the time-bound tables hold both day and month rows. They have separate keys. Filter on `timeRangeEnd - timeRangeStart` (86400000 for a day) before you aggregate. The first sync after a clear can also include a partial first month when 12 months ago or the Start Date falls inside a month.
 - `total_follower_count` rows written before 2.0.0 have no `organizationalEntity`.
 
 ### Rollback
@@ -80,8 +83,8 @@ Pinning back to 1.x declares these fields as `number` again. BigQuery, Snowflake
 
 - 2 new streams have been added which support time bound incremental sync. They need additional fields `start_date` and `time_granularity_type` to be defined in the config to work. `time_granularity_type` has a default value of `DAY` set, and `start_date` has a default value set 1 year prior to the current date.
 
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 ## Connector upgrade guide
+
+For 2.0.0, skip **Clear data from affected streams** in the general steps below. Clear only where your destination's row in [Upgrading to 2.0.0](#upgrading-to-200) tells you to.
 
 <MigrationGuide />

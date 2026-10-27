@@ -378,3 +378,35 @@ def test_page_statistics_time_bound_drops_zero_length_month_bucket():
 
     assert output.errors == [], output.get_formatted_error_message()
     assert [(r.record.data["timeRangeStart"], r.record.data["timeRangeEnd"]) for r in output.records] == [(september, october)]
+
+
+@freeze_time("2026-10-23T14:37:12Z")
+@pytest.mark.parametrize(
+    "start_date, expected_posts",
+    [
+        pytest.param(None, ["mid", "new"], id="default_two_years"),
+        pytest.param("2026-01-01T00:00:00Z", ["new"], id="start_date"),
+    ],
+)
+@pytest.mark.parametrize("stream_name", ["post_comments", "post_reactions"])
+def test_child_streams_request_only_posts_inside_the_window(stream_name, start_date, expected_posts):
+    # Each child request costs quota, so posts last modified before the window must not be requested.
+    config = {key: value for key, value in _CONFIG.items() if key != "start_date"}
+    if start_date:
+        config["start_date"] = start_date
+    posts = [
+        {"id": "urn:li:share:new", "lastModifiedAt": _day_start_millis(date(2026, 3, 1))},
+        {"id": "urn:li:share:mid", "lastModifiedAt": _day_start_millis(date(2025, 3, 1))},
+        {"id": "urn:li:share:old", "lastModifiedAt": _day_start_millis(date(2023, 3, 1))},
+    ]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(requests_mock.ANY, json={"elements": [], "paging": {"start": 0, "count": 100, "links": []}})
+        mocker.get(f"{_BASE_URL}/posts", json=_posts_response(*posts))
+
+        output = _read(stream_name, config=config)
+
+        child_paths = [urlsplit(request.url).path for request in mocker.request_history if not request.path.endswith("/posts")]
+
+    assert output.errors == []
+    requested_posts = sorted(name for name in ("new", "mid", "old") if any(f"urn%3Ali%3Ashare%3A{name}" in path for path in child_paths))
+    assert requested_posts == expected_posts
