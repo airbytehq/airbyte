@@ -4,7 +4,7 @@
 
 import logging
 from dataclasses import InitVar, dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
@@ -363,6 +363,48 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
 
         record.clear()
         record.update(transformed_record)
+
+
+@dataclass
+class HubspotPipelinesV3ToV1Transformation(RecordTransformation):
+    """
+    Maps a pipeline record from the Pipelines v3 API (`/crm/v3/pipelines/{objectType}`) back to the shape of the
+    sunset Pipelines v1 API, so that the `deal_pipelines` stream keeps its output fields and types:
+    `id` becomes `pipelineId` (and `stageId` for stages), `archived` becomes `active`, and the ISO 8601
+    `createdAt` and `updatedAt` of pipelines and stages become epoch milliseconds.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        self._to_v1(record, "pipelineId")
+        for stage in record.get("stages") or []:
+            self._to_v1(stage, "stageId")
+
+    def _to_v1(self, item: MutableMapping[str, Any], id_field: str) -> None:
+        if "id" in item:
+            item[id_field] = item.pop("id")
+        if "archived" in item:
+            archived = item.pop("archived")
+            item["active"] = None if archived is None else not archived
+        for date_field in ("createdAt", "updatedAt"):
+            if date_field in item:
+                item[date_field] = self._iso_to_epoch_ms(item[date_field])
+
+    @staticmethod
+    def _iso_to_epoch_ms(value: Any) -> Optional[int]:
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"Expected an ISO 8601 date-time string from the HubSpot Pipelines v3 API, got {value!r}")
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00" if value.endswith("Z") else value)
+        if parsed.tzinfo is None:
+            raise ValueError(f"Expected an ISO 8601 date-time string with a timezone from the HubSpot Pipelines v3 API, got {value!r}")
+        return (parsed - datetime(1970, 1, 1, tzinfo=timezone.utc)) // timedelta(milliseconds=1)
 
 
 class EngagementsHttpRequester(HttpRequester):
