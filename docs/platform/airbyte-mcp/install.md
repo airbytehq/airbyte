@@ -4,11 +4,9 @@ products: cloud
 
 # Install the Airbyte MCP
 
-:::info Open beta
-The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
-:::
-
 The Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
+
+To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
 
 ```text
 https://mcp.airbyte.com/mcp
