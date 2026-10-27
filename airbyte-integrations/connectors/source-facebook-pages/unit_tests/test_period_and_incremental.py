@@ -17,8 +17,8 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
-INSIGHTS_URL = "https://graph.facebook.com/v24.0/1/insights"
-FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+INSIGHTS_URL = "https://graph.facebook.com/v26.0/1/insights"
+FEED_URL = "https://graph.facebook.com/v26.0/1/feed"
 POST = {"id": "1_1", "created_time": "2024-06-01T00:00:00+0000"}
 
 
@@ -104,10 +104,10 @@ def test_comment_stream_reads_post_ids_then_comments_per_post():
     with rm.Mocker() as m:
         m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
         m.get(FEED_URL, json={"data": [{"id": "1_10"}, {"id": "1_11"}], "paging": {}})
-        m.get("https://graph.facebook.com/v24.0/1_10/comments", json={"data": [{"id": "c1", "message": "hi"}], "paging": {}})
-        m.get("https://graph.facebook.com/v24.0/1_11/comments", json={"data": [], "paging": {}})
+        m.get("https://graph.facebook.com/v26.0/1_10/comments", json={"data": [{"id": "c1", "message": "hi"}], "paging": {}})
+        m.get("https://graph.facebook.com/v26.0/1_11/comments", json={"data": [], "paging": {}})
         output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
-        feed = [parse_qs(urlparse(r.url).query) for r in m.request_history if urlparse(r.url).path == "/v24.0/1/feed"]
+        feed = [parse_qs(urlparse(r.url).query) for r in m.request_history if urlparse(r.url).path == "/v26.0/1/feed"]
         comments = [parse_qs(urlparse(r.url).query) for r in m.request_history if urlparse(r.url).path.endswith("/comments")]
     assert feed[0]["fields"] == ["id"], "parent read must only ask for post ids"
     assert len(comments) == 2 and comments[0]["filter"] == ["stream"] and "message" in comments[0]["fields"][0]
@@ -118,7 +118,7 @@ def test_rating_stream_requests_recommendation_fields():
     catalog = CatalogBuilder().with_stream("rating", SyncMode.full_refresh).build()
     with rm.Mocker() as m:
         m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
-        m.get("https://graph.facebook.com/v24.0/1/ratings", json={"data": [{"rating": 5, "recommendation_type": "positive"}], "paging": {}})
+        m.get("https://graph.facebook.com/v26.0/1/ratings", json={"data": [{"rating": 5, "recommendation_type": "positive"}], "paging": {}})
         output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
         query = parse_qs(urlparse(m.request_history[-1].url).query)
     assert "review_text" in query["fields"][0] and "reviewer" in query["fields"][0]

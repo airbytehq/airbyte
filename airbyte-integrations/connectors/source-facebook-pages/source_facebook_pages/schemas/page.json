@@ -726,39 +726,6 @@
         }
       }
     },
-    "commerce_orders": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "commerceorder.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "conversations": {
       "type": ["object", "null"],
       "properties": {
