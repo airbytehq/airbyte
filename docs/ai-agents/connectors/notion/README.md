@@ -19,13 +19,12 @@ The Notion connector is optimized to handle prompts like these.
 - Get the details of a specific page by ID
 - List child blocks of a specific page
 - Show me comments on a specific page
-- What is the schema of a specific data source?
+- What properties does the 'Roadmap' data source have?
 - Who are the bot users in my workspace?
 - Create a new page titled 'Meeting Notes' under page X
 - Update the icon of page X to a rocket emoji
 - Add a paragraph block saying 'Hello World' to page X
 - Mark the to-do block as completed
-- Add a comment to page X saying 'Looks good!'
 - Archive page X
 - Update the title of data source X to 'Project Tracker'
 - Find pages created in the last week
@@ -758,4 +757,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.12
+**Connector version:** 0.1.13

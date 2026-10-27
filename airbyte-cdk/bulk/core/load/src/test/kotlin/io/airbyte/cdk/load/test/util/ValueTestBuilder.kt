@@ -16,7 +16,7 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
     private val inputValues: ObjectValue = ObjectValue(linkedMapOf()),
     private val expectedValues: ObjectValue = ObjectValue(linkedMapOf()),
     private val schemaRecordBuilder: T = SchemaRecordBuilder<Root>() as T,
-    private val parent: ValueTestBuilder<*>? = null
+    private val parent: ValueTestBuilder<*>? = null,
 ) {
     fun with(
         inputValue: AirbyteValue,
@@ -30,7 +30,7 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
         expectedValues.values[name] = expectedValue
         (schemaRecordBuilder as SchemaRecordBuilder<*>).with(
             FieldType(inputSchema, nullable),
-            nameOverride = name
+            nameOverride = name,
         )
         return this
     }
@@ -48,7 +48,7 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
             schemaRecordBuilder =
                 ((schemaRecordBuilder as SchemaRecordBuilder<*>).withRecord(nameOverride = name)
                     as T),
-            parent = this
+            parent = this,
         )
     }
 
@@ -61,7 +61,7 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
             parent.inputValues,
             parent.expectedValues,
             ((schemaRecordBuilder as SchemaRecordBuilder<*>).endRecord() as T),
-            parent.parent
+            parent.parent,
         )
     }
 
@@ -72,7 +72,7 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
         return Triple(
             inputValues,
             (schemaRecordBuilder as SchemaRecordBuilder<*>).build().first,
-            expectedValues
+            expectedValues,
         )
     }
 }

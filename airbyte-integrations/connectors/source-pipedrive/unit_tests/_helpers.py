@@ -30,9 +30,8 @@ def read_stream(stream_name: str, config: Mapping[str, Any] = CONFIG, expecting_
 
 
 def request(path: str, params: Optional[Mapping[str, str]] = None) -> HttpRequest:
-    query = {"api_token": API_TOKEN}
-    query.update(params or {})
-    return HttpRequest(url=f"{BASE_URL}{path}", query_params=query)
+    # The token travels in the `x-api-token` header, never in the query string.
+    return HttpRequest(url=f"{BASE_URL}{path}", query_params=dict(params or {}), headers={"x-api-token": API_TOKEN})
 
 
 _DEALS_QUERY = {

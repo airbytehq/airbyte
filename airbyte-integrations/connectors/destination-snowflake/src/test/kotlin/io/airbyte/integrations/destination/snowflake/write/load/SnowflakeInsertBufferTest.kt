@@ -49,7 +49,7 @@ internal class SnowflakeInsertBufferTest {
                         "_AIRBYTE_RAW_ID" to ColumnType("VARCHAR", false),
                         "_AIRBYTE_EXTRACTED_AT" to ColumnType("TIMESTAMP_TZ", false),
                         "_AIRBYTE_META" to ColumnType("VARIANT", false),
-                        "_AIRBYTE_GENERATION_ID" to ColumnType("NUMBER", true)
+                        "_AIRBYTE_GENERATION_ID" to ColumnType("NUMBER", true),
                     )
                 every { getTableColumnNames(any()) } returns
                     listOf(
@@ -57,7 +57,7 @@ internal class SnowflakeInsertBufferTest {
                         "_AIRBYTE_EXTRACTED_AT",
                         "_AIRBYTE_META",
                         "_AIRBYTE_GENERATION_ID",
-                        "columnName"
+                        "columnName",
                     )
             }
     }
@@ -70,7 +70,7 @@ internal class SnowflakeInsertBufferTest {
             ColumnSchema(
                 inputToFinalColumnNames = mapOf(column to column.uppercase()),
                 finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
-                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true)),
             )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
@@ -96,7 +96,7 @@ internal class SnowflakeInsertBufferTest {
             ColumnSchema(
                 inputToFinalColumnNames = mapOf(column to column.uppercase()),
                 finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
-                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true)),
             )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
@@ -116,7 +116,7 @@ internal class SnowflakeInsertBufferTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "columnName"
+                "columnName",
             )
         runBlocking {
             buffer.accumulate(record)
@@ -136,7 +136,7 @@ internal class SnowflakeInsertBufferTest {
             ColumnSchema(
                 inputToFinalColumnNames = mapOf(column to column.uppercase()),
                 finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
-                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true)),
             )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -157,7 +157,7 @@ internal class SnowflakeInsertBufferTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "columnName"
+                "columnName",
             )
         runBlocking {
             buffer.accumulate(record)
@@ -178,7 +178,7 @@ internal class SnowflakeInsertBufferTest {
             ColumnSchema(
                 inputToFinalColumnNames = mapOf(column to column.uppercase()),
                 finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
-                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true)),
             )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
@@ -220,7 +220,7 @@ internal class SnowflakeInsertBufferTest {
             ColumnSchema(
                 inputToFinalColumnNames = mapOf(column to column.uppercase()),
                 finalSchema = mapOf(column.uppercase() to ColumnType("VARCHAR", true)),
-                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true)),
             )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record =
@@ -258,7 +258,7 @@ internal class SnowflakeInsertBufferTest {
             assertEquals(1, lines.size)
             assertTrue(
                 lines[0].endsWith(",hello   "),
-                "Default CSV output should stay unquoted so existing Snowflake TRIM_SPACE behavior is unchanged"
+                "Default CSV output should stay unquoted so existing Snowflake TRIM_SPACE behavior is unchanged",
             )
             file.delete()
         }

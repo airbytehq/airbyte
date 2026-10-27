@@ -121,6 +121,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.1.3 | 2026-10-27 | [90040](https://github.com/airbytehq/airbyte/pull/90040) | Update dependencies |
+| 0.1.2 | 2026-10-20 | [89361](https://github.com/airbytehq/airbyte/pull/89361) | Update dependencies |
 | 0.1.1 | 2026-10-13 | [88764](https://github.com/airbytehq/airbyte/pull/88764) | Update dependencies |
 | 0.1.0 | 2026-10-09 | [88227](https://github.com/airbytehq/airbyte/pull/88227) | Remove retired project assignments, read boards from folders, and fix organization header |
 | 0.0.63 | 2026-10-06 | [87985](https://github.com/airbytehq/airbyte/pull/87985) | Update dependencies |

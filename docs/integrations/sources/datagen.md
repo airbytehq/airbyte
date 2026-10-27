@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.2.4 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / extract 1.1.21 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
 | 0.2.3 | 2026-10-09 | [88425](https://github.com/airbytehq/airbyte/pull/88425) | Upgrade to Bulk CDK 1.1.14. |
 | 0.2.2 | 2026-07-10 | [81656](https://github.com/airbytehq/airbyte/pull/81656) | chore(source-datagen): dummy version bump for progressive rollout (autopilot) testing |
 | 0.2.1 | 2026-06-09 | [79330](https://github.com/airbytehq/airbyte/pull/79330) | Progressive rollout e2e test |

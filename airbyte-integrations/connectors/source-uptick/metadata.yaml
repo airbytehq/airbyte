@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
@@ -33,7 +33,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 1.3.3
+  dockerImageTag: 2.1.4
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
@@ -44,6 +44,18 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      2.0.0:
+        message: "This release upgrades the Uptick API from v2.15 to v2.16, which removes `properties.access_signaturereq` and `servicetasks.from_stock`. It also changes the type of `properties.address`, `properties.coords` and `branches.business_hours` from string to object and `servicequotes.product_subtotal` from string to number, and makes `majorservices` full refresh only because the endpoint has no `updated` timestamp. Users syncing these streams must update downstream references and refresh the source schema after upgrading. Users syncing `majorservices` incrementally must switch it to full refresh. See the [Uptick migration guide](https://docs.airbyte.com/integrations/sources/uptick-migrations#upgrading-to-200) for details."
+        upgradeDeadline: "2026-11-16"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - properties
+              - servicetasks
+              - branches
+              - servicequotes
+              - majorservices
       1.0.0:
         message: "This release upgrades the Uptick API from v2.14 to v2.15 and removes fields from the `branches`, `defectquotelineitems`, `servicetasks`, and `tasksessions` streams. Users syncing these streams must update downstream references and refresh the source schema after upgrading. See the [Uptick migration guide](https://docs.airbyte.com/integrations/sources/uptick-migrations#upgrading-to-100) for details and replacement fields."
         upgradeDeadline: "2026-08-20"
@@ -67,15 +79,24 @@ data:
       - users
       - routines
       - assets
-  supportLevel: community
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/uptick
   tags:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
-    - title: Uptick API documentation
-      url: https://developer.uptick.com/
+    - title: Uptick API overview and patch notes
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
       type: api_reference
+    - title: Uptick API patch notes
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
+      type: api_release_history
+    - title: Uptick API getting started
+      url: https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started
+      type: authentication_guide
+    - title: Uptick API sample Postman collection
+      url: https://support.uptickhq.com/en/articles/6728183-uptick-api-sample-postman-collection
+      type: other

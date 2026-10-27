@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.30.1"
+version = "7.37.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = "<3.14,>=3.10"
+python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.30.1-py3-none-any.whl", hash = "sha256:bc26e4bc843c3feea82c865f910d69e3b158a8e7ffca40080534ea17bc853671"},
-    {file = "airbyte_cdk-7.30.1.tar.gz", hash = "sha256:a17af6fa4ebd2c5ce8bdca45bf6b02d39ee489a152a2e50f295796165c8fd90b"},
+    {file = "airbyte_cdk-7.37.0-py3-none-any.whl", hash = "sha256:2fbfd3fbaef46ea146622c3f16f2be7f063358018921c1aea5b085ce578f8fc0"},
+    {file = "airbyte_cdk-7.37.0.tar.gz", hash = "sha256:38dbdc1c32e7a0dce9d2bf181e6ac9827996b85027f949bcad23f2c40f49f972"},
 ]
 
 [package.dependencies]
@@ -33,8 +33,8 @@ jsonschema = ">=4.17.3,<5.0"
 nltk = "3.9.4"
 orjson = ">=3.10.7,<4.0.0"
 packaging = "*"
-pandas = "2.2.3"
-pydantic = ">=2.7,<3.0"
+pandas = ">=2.2.3,<3.0"
+pydantic = ">=2.13,<3.0"
 pyjwt = ">=2.8.0,<3.0.0"
 pyrate-limiter = ">=3.1.0,<3.2.0"
 python-dateutil = ">=2.9.0,<3.0.0"
@@ -48,19 +48,20 @@ requests_cache = "*"
 rich = "*"
 rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
-setuptools = ">=80.9.0,<81.0.0"
+setuptools = ">=80.9.0"
 typing-extensions = "*"
 unidecode = ">=1.3.8,<2.0.0"
+urllib3 = "*"
 wcmatch = "10.0"
 whenever = ">=0.7.3,<0.9.0"
 xmltodict = ">=0.13,<0.15"
 
 [package.extras]
 dev = ["pytest (>=7,<8)"]
-file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<20.0.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<24.0.0)", "pytesseract (==0.3.10)", "python-calamine (>=0.2.3,<0.9.0)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
-vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
+vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (>=0.8.0,<0.15.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -3328,4 +3329,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "81186ddefe5e939513b0d40f82cac7f6be63dbcbab2e23f57b44cffa0397cede"
+content-hash = "c73a3a7f7727e7b1d5c82a92196985df04dfa31a62a51b754ae24ee022d47823"

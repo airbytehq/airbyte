@@ -229,7 +229,7 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(conn.createStatement()).thenReturn(stmt)
         return Fixture(
             querierFor(conn, tolerateObjectLevelFailures = true, checkPrivileges = true),
-            stmt
+            stmt,
         )
     }
 
@@ -332,7 +332,7 @@ class SnowflakeSourceMetadataQuerierTest {
         // Pins the errorCode branch of the allowlist independently of SQLSTATE.
         val fixture =
             fixtureWith(
-                SQLException("does not exist or not authorized", null, ERRORCODE_OBJECT_NOT_FOUND)
+                SQLException("does not exist or not authorized", null, ERRORCODE_OBJECT_NOT_FOUND),
             )
 
         assertTrue(fixture.querier.fields(streamId(BAD_VIEW)).isEmpty())
@@ -349,7 +349,7 @@ class SnowflakeSourceMetadataQuerierTest {
                     "does not exist or not authorized",
                     null,
                     ERRORCODE_OBJECT_UNAUTHORIZED,
-                )
+                ),
             )
 
         assertTrue(fixture.querier.fields(streamId(BAD_VIEW)).isEmpty())

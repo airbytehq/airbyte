@@ -3,6 +3,7 @@
  */
 package io.airbyte.workers.internal
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
@@ -31,6 +32,10 @@ internal class DefaultAirbyteStreamFactoryTest {
     private lateinit var logger: KLogger
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     fun setup() {
         protocolPredicate = Mockito.mock(AirbyteProtocolPredicate::class.java)
         Mockito.`when`(protocolPredicate.test(ArgumentMatchers.any())).thenReturn(true)
@@ -111,7 +116,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                     logger,
                     MdcScope.Builder(),
                     Optional.of(RuntimeException::class.java),
-                    1L
+                    1L,
                 )
                 .create(bufferedReader)
 
@@ -141,7 +146,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                 protocolPredicate,
                 logger,
                 MdcScope.Builder(),
-                Optional.empty()
+                Optional.empty(),
             )
             .create(bufferedReader)
             .toList()

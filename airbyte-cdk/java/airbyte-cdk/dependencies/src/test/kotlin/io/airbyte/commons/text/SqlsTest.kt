@@ -25,7 +25,7 @@ internal class SqlsTest {
     fun testInFragment() {
         Assertions.assertEquals(
             "('value_two','value_three')",
-            Sqls.toSqlInFragment(Lists.newArrayList(E1.VALUE_TWO, E1.value_three))
+            Sqls.toSqlInFragment(Lists.newArrayList(E1.VALUE_TWO, E1.value_three)),
         )
     }
 }

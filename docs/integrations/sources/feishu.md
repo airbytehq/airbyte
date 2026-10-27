@@ -75,6 +75,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.26 | 2026-10-27 | [89894](https://github.com/airbytehq/airbyte/pull/89894) | Update dependencies |
+| 0.0.25 | 2026-10-20 | [89219](https://github.com/airbytehq/airbyte/pull/89219) | Update dependencies |
 | 0.0.24 | 2026-10-13 | [88609](https://github.com/airbytehq/airbyte/pull/88609) | Update dependencies |
 | 0.0.23 | 2026-10-07 | [88298](https://github.com/airbytehq/airbyte/pull/88298) | Fix `SessionTokenAuthenticator` `expiration_duration` (`"7200"` is not a valid ISO 8601 duration, so every check/sync failed with "Unable to parse duration string"); surface Feishu auth errors as config errors |
 | 0.0.22 | 2026-10-06 | [87868](https://github.com/airbytehq/airbyte/pull/87868) | Update dependencies |

@@ -7,6 +7,7 @@ package io.airbyte.cdk.read.cdc
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
@@ -38,6 +39,7 @@ import java.util.function.Consumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -54,7 +56,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
-    val feedBootstrap: GlobalFeedBootstrap
+    val feedBootstrap: GlobalFeedBootstrap,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
@@ -78,6 +80,9 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     private val lastEventTime = AtomicReference(LocalDateTime.now())
     private var watchdogJob: Job? = null
     @Volatile private var watchdogShouldStop = false
+    // Record writes queued by the Debezium thread once the engine is shutting down (see
+    // emitRecord). run() performs them in order after the Debezium thread has ended.
+    private val shutdownWrites = Channel<() -> Unit>(Channel.UNLIMITED)
 
     private var partitionId: String = generatePartitionId(4)
 
@@ -87,7 +92,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         fun innerAcquireResources(
-            resourcesType: List<ResourceType>
+            resourcesType: List<ResourceType>,
         ): Map<ResourceType, AcquiredResource>? {
             val resources: Map<ResourceType, Resource.Acquired>? =
                 resourceAcquirer.tryAcquire(resourcesType)
@@ -96,6 +101,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                     it.key to
                         object : AcquiredResource {
                             override val resource: Resource.Acquired = it.value
+
                             override fun close() {
                                 resource.close()
                             }
@@ -127,7 +133,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -141,6 +147,10 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     override suspend fun run() {
         stateFilesAccessor.writeOffset(startingOffset)
         if (startingSchemaHistory != null) {
@@ -189,6 +199,27 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             watchdogShouldStop = true
             watchdogJob?.cancel()
         }
+
+        // The Dbz engine thread has ended, so nothing more gets queued: perform the queued writes,
+        // so that checkpoint() reads a numEmittedRecords that includes them.
+        shutdownWrites.close()
+        withContext(Dispatchers.IO) {
+            for (write in shutdownWrites) {
+                try {
+                    write()
+                } catch (e: Throwable) {
+                    engineException.compareAndSet(
+                        null,
+                        TransientErrorException(
+                            "A CDC record write failed while the Debezium engine was shutting down.",
+                            e,
+                        ),
+                    )
+                    break
+                }
+            }
+        }
+
         // Print a nice log message and re-throw any exception.
         val exception: Throwable? = engineException.get()
         val summary: Map<String, Any?> =
@@ -220,7 +251,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             throw ConfigErrorException(
                 "Watchdog timeout during initial snapshot. " +
                     "Please increase 'Initial Waiting Time' in the source configuration page. " +
-                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices"
+                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices",
             )
         }
         val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(startingOffset)
@@ -237,7 +268,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             when (feedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 
@@ -332,8 +363,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             val streamId = findStreamIdByRecord(event.key, event.value)
             val stream: Stream =
                 feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId }
-                    as? Stream
-                    ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+                    as? Stream ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
                     ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
@@ -348,15 +378,19 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             // Emit the record at the end of the happy path.
             when (engineShuttingDown.get()) {
-                // While the engine is shutting down, we emit records in our thread to prevent
-                // debezium from unexpectedly killing the thread.
-                // As this may lead to corrupt hald records or to causing an unexpected socket
-                // closure.
+                // While the engine is shutting down, engine.close() may interrupt this thread at
+                // any moment: queue the write and return at once. run() performs it before
+                // checkpoint().
                 true ->
-                    runBlocking(Dispatchers.IO) {
-                        recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
-                        updateCounters(event, EventType.RECORD_EMITTED)
-                    }
+                    shutdownWrites
+                        .trySend {
+                            recordAcceptor.invoke(
+                                deserializedRecord.data,
+                                deserializedRecord.changes,
+                            )
+                            updateCounters(event, EventType.RECORD_EMITTED)
+                        }
+                        .getOrThrow()
                 // While the engine is running normally, we can emit records synchronously for
                 // better performance.
                 false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
@@ -366,7 +400,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
         private fun findStreamIdByRecord(
             key: DebeziumRecordKey,
-            value: DebeziumRecordValue
+            value: DebeziumRecordValue,
         ): StreamIdentifier? {
             val name: String = readerOps.findStreamName(key, value) ?: return null
             val namespace: String? = readerOps.findStreamNamespace(key, value)
@@ -516,16 +550,16 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     enum class CloseReason(val message: String) {
         HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION(
-            "heartbeat or tombstone indicates that WAL consumption has reached the target position"
+            "heartbeat or tombstone indicates that WAL consumption has reached the target position",
         ),
         RECORD_REACHED_TARGET_POSITION(
-            "record indicates that WAL consumption has reached the target position"
+            "record indicates that WAL consumption has reached the target position",
         ),
         HEARTBEAT_NOT_PROGRESSING(
-            "heartbeat position has not progressed for an extended period, indicating database is idle"
+            "heartbeat position has not progressed for an extended period, indicating database is idle",
         ),
         WATCHDOG_TIMEOUT(
-            "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck"
+            "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck",
         ),
     }
 }

@@ -71,7 +71,7 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
                 .put(JdbcUtils.PASSWORD_KEY, db!!.password)
                 .put(JdbcUtils.DATABASE_KEY, db!!.databaseName)
                 .put(JdbcUtils.PORT_KEY, resolvePort(db!!))
-                .build()
+                .build(),
         )
     }
 
@@ -93,14 +93,14 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
             .stream()
             .map<JsonNode>(
                 Function<JsonNode, JsonNode> { r: JsonNode ->
                     r.get(JavaBaseConstants.COLUMN_NAME_DATA)
-                }
+                },
             )
             .collect(Collectors.toList<JsonNode>())
     }
@@ -116,9 +116,9 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
                     DatabaseDriver.MYSQL.urlFormatString,
                     db!!.host,
                     db!!.firstMappedPort,
-                    db!!.databaseName
+                    db!!.databaseName,
                 ),
-                SQLDialect.MYSQL
+                SQLDialect.MYSQL,
             )
         return Database(dslContext).query<List<JsonNode>> { ctx: DSLContext? ->
             ctx!!
@@ -127,8 +127,8 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
                         "SELECT * FROM %s.%s ORDER BY %s ASC;",
                         schemaName,
                         tableName,
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-                    )
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+                    ),
                 )
                 .stream()
                 .map<JsonNode> { record: Record -> this.getJsonFromRecord(record) }
@@ -141,7 +141,7 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
     override fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
-        namespace: String?
+        namespace: String?,
     ): List<JsonNode> {
         val tableName = namingResolver.getIdentifier(streamName!!)
         val schema = namingResolver.getIdentifier(namespace!!)
@@ -166,7 +166,7 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
 
     private fun grantCorrectPermissions() {
         executeQuery(
-            "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db!!.username + "@'%';"
+            "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db!!.username + "@'%';",
         )
     }
 
@@ -180,9 +180,9 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
                     DatabaseDriver.MYSQL.urlFormatString,
                     db!!.host,
                     db!!.firstMappedPort,
-                    db!!.databaseName
+                    db!!.databaseName,
                 ),
-                SQLDialect.MYSQL
+                SQLDialect.MYSQL,
             )
         try {
             Database(dslContext).query { ctx: DSLContext? -> ctx!!.execute(query) }
@@ -242,17 +242,17 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
                                         .put("id", 1)
                                         .put(
                                             "data",
-                                            "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}"
+                                            "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}",
                                         )
-                                        .build()
-                                )
-                            )
+                                        .build(),
+                                ),
+                            ),
                     ),
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
-                        AirbyteStateMessage().withData(jsonNode(ImmutableMap.of("checkpoint", 2)))
-                    )
+                        AirbyteStateMessage().withData(jsonNode(ImmutableMap.of("checkpoint", 2))),
+                    ),
             )
 
         val config = getConfig()
@@ -272,18 +272,18 @@ class MySQLStrictEncryptDestinationAcceptanceTest : JdbcDestinationAcceptanceTes
      * such, disabling the test case.
      */
     @Disabled(
-        "MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2."
+        "MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.",
     )
     @Throws(Exception::class)
     override fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
-        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
+        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility,
     ) {
         super.testDataTypeTestWithNormalization(
             messagesFilename,
             catalogFilename,
-            testCompatibility
+            testCompatibility,
         )
     }
 

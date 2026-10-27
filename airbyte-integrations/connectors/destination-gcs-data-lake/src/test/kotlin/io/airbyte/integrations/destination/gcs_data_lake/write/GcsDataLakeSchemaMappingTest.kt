@@ -17,8 +17,13 @@ internal class GcsDataLakeSchemaMappingTest {
         val schema =
             Schema(
                 listOf(
-                    Types.NestedField.optional(1, "col with space", Types.StringType.get(), "a doc")
-                )
+                    Types.NestedField.optional(
+                        1,
+                        "col with space",
+                        Types.StringType.get(),
+                        "a doc",
+                    ),
+                ),
             )
 
         val mapped =
@@ -69,7 +74,7 @@ internal class GcsDataLakeSchemaMappingTest {
                     Types.NestedField.optional(
                         4,
                         Meta.COLUMN_NAME_AB_RAW_ID,
-                        Types.StringType.get()
+                        Types.StringType.get(),
                     ),
                 ),
                 setOf(3),
