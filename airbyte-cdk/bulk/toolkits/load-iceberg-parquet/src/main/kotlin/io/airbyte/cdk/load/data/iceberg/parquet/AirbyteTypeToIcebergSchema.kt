@@ -32,13 +32,12 @@ import org.apache.iceberg.types.Types.NestedField
 class AirbyteTypeToIcebergSchema(private val timeColumnType: TimeColumnType = TimeColumnType.TIME) {
 
     /**
-     * @param insideList true when converting a list's element type. Everything inside a list is
-     *   optional, since Delta/Databricks rejects NOT NULL nested in arrays.
+     * @param forceOptionalFields relax all nested fields for metadata structs and array elements.
      */
     fun convert(
         airbyteSchema: AirbyteType,
         stringifyObjects: Boolean,
-        insideList: Boolean = false,
+        forceOptionalFields: Boolean = false,
     ): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
@@ -48,17 +47,17 @@ class AirbyteTypeToIcebergSchema(private val timeColumnType: TimeColumnType = Ti
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
                             .map { (name, field) ->
-                                if (insideList || field.nullable) {
+                                if (forceOptionalFields || field.nullable) {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(field.type, stringifyObjects, forceOptionalFields),
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(field.type, stringifyObjects, forceOptionalFields),
                                     )
                                 }
                             }
@@ -69,7 +68,7 @@ class AirbyteTypeToIcebergSchema(private val timeColumnType: TimeColumnType = Ti
             is ArrayType -> {
                 Types.ListType.ofOptional(
                     UUID.randomUUID().hashCode(),
-                    convert(airbyteSchema.items.type, stringifyObjects, insideList = true),
+                    convert(airbyteSchema.items.type, stringifyObjects, forceOptionalFields = true),
                 )
             }
             is BooleanType -> Types.BooleanType.get()
@@ -94,7 +93,11 @@ class AirbyteTypeToIcebergSchema(private val timeColumnType: TimeColumnType = Ti
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true),
+                        convert(
+                            airbyteSchema.options.first(),
+                            stringifyObjects,
+                            forceOptionalFields = true,
+                        ),
                     )
                 }
                 // We stringify nontrivial unions
@@ -126,7 +129,11 @@ fun ObjectType.toIcebergSchema(
                 // Iceberg identifier fields (float/double are disallowed as identifiers).
                 Types.StringType.get()
             } else {
-                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+                icebergTypeConverter.convert(
+                    field.type,
+                    stringifyObjects = stringifyObjects,
+                    forceOptionalFields = name == Meta.COLUMN_NAME_AB_META,
+                )
             }
         fields.add(
             NestedField.builder()

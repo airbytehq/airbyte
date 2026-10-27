@@ -236,9 +236,7 @@ Enable external data access in Unity Catalog and grant the principal the necessa
 
 Set `time_column_type=STRING` for Spark/Databricks readers: Iceberg `TIME` is unsupported. Time strings preserve the source offset when present. Existing `TIME` columns cannot be promoted to strings; run a full refresh to rebuild affected tables, or retain `TIME`.
 
-:::warning
-REST authentication alone does not guarantee table compatibility. This connector still writes `_airbyte_meta.sync_id` and `_airbyte_meta.changes` as required struct fields. Their compatibility with Unity Catalog table creation has not been verified yet.
-:::
+All nested fields under `_airbyte_meta`, including `sync_id` and `changes`, are optional. Existing tables are automatically relaxed in place on the next sync; top-level metadata columns retain their existing nullability.
 
 ## Changelog
 
@@ -247,7 +245,7 @@ REST authentication alone does not guarantee table compatibility. This connector
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.1.1 | 2026-10-27 | [90120](https://github.com/airbytehq/airbyte/pull/90120) | Add optional time strings and authenticated REST catalogs for Databricks interoperability. |
+| 1.1.1 | 2026-10-27 | [90120](https://github.com/airbytehq/airbyte/pull/90120) | Add optional time strings and authenticated REST catalogs for Databricks interoperability; automatically relax nested metadata fields to optional. |
 | 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. Refresh Google credentials for the BigLake catalog and GCS file I/O so syncs longer than one hour no longer fail. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |

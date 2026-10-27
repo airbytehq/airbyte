@@ -5,9 +5,14 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.message.Meta
 import io.mockk.confirmVerified
@@ -26,7 +31,11 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericFileWriterFactory
+import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.hadoop.HadoopCatalog
+import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.types.Type.PrimitiveType
 import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
@@ -616,6 +625,13 @@ class IcebergTableSynchronizerTest {
         val relaxedElement = relaxedList.elementType().asStructType()
 
         assertThat(relaxedMeta.fieldId()).isEqualTo(oldMeta.fieldId())
+        assertThat(relaxedMeta.isRequired).isTrue()
+        assertThat(relaxedSchema.findField("id").isRequired).isTrue()
+        assertThat(relaxedSchema.findField("${Meta.COLUMN_NAME_AB_META}.sync_id").isOptional)
+            .isTrue()
+        assertThat(relaxedChanges.isOptional).isTrue()
+        assertThat(relaxedSchema.findField("${Meta.COLUMN_NAME_AB_META}.sync_id").fieldId())
+            .isEqualTo(oldSchema.findField("${Meta.COLUMN_NAME_AB_META}.sync_id").fieldId())
         assertThat(relaxedChanges.fieldId()).isEqualTo(oldChanges.fieldId())
         assertThat(relaxedList.elementId()).isEqualTo(oldList.elementId())
         assertThat(relaxedList.isElementOptional).isTrue()
@@ -623,10 +639,59 @@ class IcebergTableSynchronizerTest {
         assertThat(relaxedElement.fields().associate { it.name() to it.fieldId() })
             .isEqualTo(oldNestedFields)
 
+        val metadataValues =
+            listOf(
+                ObjectValue(
+                    linkedMapOf(
+                        "sync_id" to IntegerValue(42),
+                        "changes" to ArrayValue(emptyList()),
+                    ),
+                ),
+                ObjectValue(linkedMapOf("sync_id" to NullValue, "changes" to NullValue)),
+                ObjectValue(linkedMapOf()),
+            )
+        val writerFactory =
+            GenericFileWriterFactory.Builder(reloadedTable).dataSchema(relaxedSchema).build()
+        val output =
+            OutputFileFactory.builderFor(reloadedTable, 0, 1L).format(FileFormat.PARQUET).build()
+        val writer = writerFactory.newDataWriter(output.newOutputFile(), reloadedTable.spec(), null)
+        writer.use {
+            metadataValues.forEachIndexed { index, metadata ->
+                val record = GenericRecord.create(relaxedSchema)
+                record.setField("id", index.toString())
+                record.setField(
+                    Meta.COLUMN_NAME_AB_META,
+                    AirbyteValueToIcebergRecord().convert(metadata, relaxedMeta.type()),
+                )
+                it.write(record)
+            }
+        }
+        reloadedTable.newAppend().appendFile(writer.toDataFile()).commit()
+        IcebergGenerics.read(reloadedTable).build().use { records ->
+            val byId = records.toList().associateBy { it.getField("id").toString() }
+            assertThat(byId).hasSize(3)
+            val populated = byId.getValue("0").getField(Meta.COLUMN_NAME_AB_META) as GenericRecord
+            assertThat(populated.getField("sync_id")).isEqualTo(42L)
+            assertThat(populated.getField("changes") as List<*>).isEmpty()
+            for (id in listOf("1", "2")) {
+                val metadata = byId.getValue(id).getField(Meta.COLUMN_NAME_AB_META) as GenericRecord
+                assertThat(metadata.getField("sync_id")).isNull()
+                assertThat(metadata.getField("changes")).isNull()
+            }
+        }
+
+        val metadataVersion = reloadedTable.schema().schemaId()
+        assertThat(
+                IcebergTypesComparator()
+                    .compareSchemas(nullableMetaIncomingSchema(), relaxedSchema)
+                    .hasChanges(),
+            )
+            .isFalse()
         val secondResult =
             createRealSynchronizer()
                 .maybeApplySchemaChanges(reloadedTable, incomingSchema, behavior)
         assertThat(secondResult.pendingUpdates).isEmpty()
+        assertThat(reloadedTable.schema().schemaId()).isEqualTo(metadataVersion)
         assertThat(reloadedTable.schema().toString()).isEqualTo(relaxedSchema.toString())
 
         catalog.dropTable(tableId)
@@ -634,7 +699,7 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
-    fun `real table relaxes nested list nullability with safe supertype`() {
+    fun `real table relaxes all nested metadata nullability with safe supertype`() {
         assertMetaSchemaRelaxedInPlace(
             "meta_safe_supertype",
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
