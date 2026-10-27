@@ -432,7 +432,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.1 | 2026-10-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | `POSITIONAL` delete file type now rewrites existing equality deletes as positional deletes so Snowflake reads deduplicated streams correctly. |
+| 0.5.1 | 2026-10-27 | [90119](https://github.com/airbytehq/airbyte/pull/90119) | `POSITIONAL` delete file type now rewrites existing equality deletes as positional deletes so Snowflake reads deduplicated streams correctly. |
 | 0.5.0 | 2026-10-14 | [88974](https://github.com/airbytehq/airbyte/pull/88974) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |

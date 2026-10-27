@@ -9,7 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 ### 1.1.10 — 2026-10-27
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Feat: add `IcebergTableUpgrader.convertEqualityDeletesToPositional`, which rewrites a v2 table's legacy equality deletes as position deletes on every branch so readers that ignore equality deletes (Snowflake) see deduplicated data.
+[#90119](https://github.com/airbytehq/airbyte/pull/90119) — Feat: add `IcebergTableUpgrader.convertEqualityDeletesToPositional`, which rewrites a v2 table's legacy equality deletes as position deletes on every branch so readers that ignore equality deletes (Snowflake) see deduplicated data.
 
 ### 1.1.9 — 2026-10-17
 
