@@ -322,6 +322,29 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           fields: "#/definitions/post_query_properties"
+          # Sent only when there is something to filter on (saved state or a start_date). A full
+          # refresh, and a first incremental sync without start_date, read the whole feed as before.
+          # ponytail: the epoch sentinel is the cursor's default start below; compare on it rather
+          # than on stream_state, which concurrent cursors do not expose to interpolation.
+          since: "{{ stream_interval['start_time'] if stream_interval['start_time'] != '1970-01-01T00:00:00+0000' else '' }}"
+    # Opt-in: the stream stays full refresh unless the connection selects Incremental.
+    # Facebook filters /feed with a Unix-timestamp `since`, applied to created_time, so posts
+    # edited after they were first synced are not re-read in incremental mode.
+    # https://developers.facebook.com/docs/graph-api/results/
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_time
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   post_insights_stream:
     $ref: "#/definitions/base_stream"
@@ -362,6 +385,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
+          period: "{{ config.get('page_insights_period', '') }}"
           metric: |
             {{
               ','.join(config.get('page_insights_metrics') or [
