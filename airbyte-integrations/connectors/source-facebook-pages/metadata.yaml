@@ -34,6 +34,7 @@ data:
         message: >-
           This version moves the connector from Graph API v24.0 to v26.0. Meta removed the video insights metrics `total_video_views_unique`, `total_video_impressions` and `total_video_impressions_unique` and the Reels metric `post_impressions_unique` from every API version when v26.0 launched, so this version stops requesting them by default in the `video_insights` and `reel_insights` streams; rows for those metrics no longer arrive, and a custom metric list that still names them fails the sync. Meta also removed the `/{page-id}/commerce_orders` endpoint from all API versions on 2026-10-27, so the `commerce_orders` column is removed from the `page` stream schema. Users syncing the `page` stream must refresh the stream schema and update downstream models that reference that column. See the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-pages-migrations#upgrading-to-400).
         upgradeDeadline: "2027-01-27"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["page", "video_insights", "reel_insights"]
