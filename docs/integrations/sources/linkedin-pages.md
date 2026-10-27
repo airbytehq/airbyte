@@ -65,7 +65,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 The API user account should be assigned the following permissions for the API endpoints:
 
 - `rw_organization_admin`: Organization Lookup, Follower Statistics, Share Statistics, Total Follower Count, Page Statistics and the time-bound statistics streams.
-- `r_organization_social` (LinkedIn's comments and reactions pages name `r_organization_social_feed`): Posts, Post Comments and Post Reactions.
+- `r_organization_social`: Posts and Post Reactions.
+- `r_organization_social_feed`: Post Comments. LinkedIn grants it with the Community Management API product. Without it, `post_comments` fails with a `403` error, while the other streams keep working.
 
 The API user account should be assigned the `ADMIN` role.
 
@@ -107,6 +108,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    * Navigate to the LinkedIn Developers' [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**
    * Select your newly created app and check the boxes for the following scopes:
      * `r_organization_social`
+     * `r_organization_social_feed`, if your app offers it (needed for Post Comments)
      * `rw_organization_admin`
    * Click **Request access token** and once generated, **save your Refresh token**
 
