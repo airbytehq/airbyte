@@ -261,7 +261,7 @@ def test_invalid_insights_metric_error_is_not_retried():
 
     invalid_metric_filter = invalid_metric_filters[0]
     assert invalid_metric_filter["action"] == "FAIL"
-    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+    assert invalid_metric_filter["failure_type"] == FailureType.config_error.value
 
     # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
     blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
