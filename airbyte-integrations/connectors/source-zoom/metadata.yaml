@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 1.4.1
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-zoom
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom
@@ -61,6 +61,11 @@ data:
       testSecrets:
         - name: SECRET_SOURCE-ZOOM__CREDS
           fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-ZOOM-OAUTH__CREDS
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
