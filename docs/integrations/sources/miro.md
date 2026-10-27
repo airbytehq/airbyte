@@ -46,6 +46,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.74 | 2026-10-27 | [89982](https://github.com/airbytehq/airbyte/pull/89982) | Update dependencies |
+| 0.0.73 | 2026-10-20 | [89319](https://github.com/airbytehq/airbyte/pull/89319) | Update dependencies |
 | 0.0.72 | 2026-10-13 | [88694](https://github.com/airbytehq/airbyte/pull/88694) | Update dependencies |
 | 0.0.71 | 2026-10-07 | [88181](https://github.com/airbytehq/airbyte/pull/88181) | Use cursor pagination for `board_items`, `board_connectors`, and `board_groups` to match the Miro API |
 | 0.0.70 | 2026-10-06 | [87950](https://github.com/airbytehq/airbyte/pull/87950) | Update dependencies |

@@ -95,52 +95,41 @@ definitions:
       path: "insights"
 
   events_stream:
+    type: DeclarativeStream
+    name: "events"
     $parameters:
       name: "events"
       path: "events"
     primary_key: "id"
+    # The cursor of this stream is built by `source_posthog.components.PosthogModelToComponentFactory`, which keeps
+    # one timestamp per project in the state. It uses the settings below, but not the per-partition cursor of the CDK.
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S+00:00"
+      cursor_granularity: "PT0.000001S"
+      step: "P{{ config.get('events_time_step', 30) }}D"
       cursor_field: timestamp
-      stream_slicers:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream: "#/definitions/projects_stream"
-              parent_key: "id"
-              partition_field: "project_id"
-        - type: DatetimeBasedCursor
-          start_datetime:
-            datetime: "{{ config['start_date'] }}"
-            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-          end_datetime:
-            datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-          cursor_datetime_formats:
-            - "%Y-%m-%dT%H:%M:%S.%f%z"
-            - "%Y-%m-%dT%H:%M:%S+00:00"
-          cursor_granularity: "PT0.000001S"
-          step: "P{{ config.get('events_time_step', 30) }}D"
-          cursor_field: timestamp
-          start_time_option:
-            field_name: after
-            inject_into: request_parameter
-          end_time_option:
-            field_name: before
-            inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: before
+        inject_into: request_parameter
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      transformations:
-        - class_name: "source_posthog.components.EventsSimpleRetriever"
-          fields:
-            - path: ["name"]
-              value: "{{ parameters['name'] }}"
-            - path: ["primary_key"]
-              value: "{{ parameters['primary_key'] }}"
-      name: "{{ parameters['name'] }}"
-      primary_key: "{{ parameters['primary_key'] }}"
+      type: SimpleRetriever
       record_selector:
         $ref: "#/definitions/selector"
       requester:
@@ -149,6 +138,7 @@ definitions:
       paginator:
         type: "DefaultPaginator"
         page_size_option:
+          type: RequestOption
           inject_into: "request_parameter"
           field_name: "limit"
         pagination_strategy:
@@ -158,6 +148,13 @@ definitions:
           type: RequestOption
           field_name: "offset"
           inject_into: "request_parameter"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/projects_stream"
+            parent_key: "id"
+            partition_field: "project_id"
 
 streams:
   - "#/definitions/projects_stream"

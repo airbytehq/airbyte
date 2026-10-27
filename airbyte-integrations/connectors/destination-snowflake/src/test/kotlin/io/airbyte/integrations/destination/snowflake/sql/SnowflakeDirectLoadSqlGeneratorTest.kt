@@ -74,7 +74,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
             "SELECT COUNT(*) AS TOTAL FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
-            sql
+            sql,
         )
     }
 
@@ -84,7 +84,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals(
             "CREATE SCHEMA IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedNamespace(namespace)}",
-            sql
+            sql,
         )
     }
 
@@ -98,16 +98,16 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnSchema(
                         inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
                         finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
-                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false)),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
                 tableName = tableName,
                 tableSchema = tableSchema,
-                replace = true
+                replace = true,
             )
 
         // The expected SQL should match the exact format
@@ -121,7 +121,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_GENERATION_ID" NUMBER,
                 "COLUMN_NAME" VARCHAR NOT NULL
             )
-            """.trimIndent()
+            """
+                .trimIndent()
         assertEquals(expectedSql, sql)
     }
 
@@ -135,16 +136,16 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnSchema(
                         inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
                         finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
-                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false)),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
                 tableName = tableName,
                 tableSchema = tableSchema,
-                replace = false
+                replace = false,
             )
 
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
@@ -157,7 +158,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_GENERATION_ID" NUMBER,
                 "COLUMN_NAME" VARCHAR NOT NULL
             )
-            """.trimIndent()
+            """
+                .trimIndent()
         assertEquals(expectedSql, sql)
     }
 
@@ -167,7 +169,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.showColumns(tableName)
         assertEquals(
             "SHOW COLUMNS IN TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
-            sql
+            sql,
         )
     }
 
@@ -179,7 +181,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "MAPPED_COLUMN_NAME"
+                "MAPPED_COLUMN_NAME",
             )
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
@@ -201,7 +203,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             SELECT
                 $columnList
             FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)}
-            """.trimIndent()
+            """
+                .trimIndent()
         assertEquals(expected, sql)
     }
 
@@ -211,7 +214,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
         assertEquals(
             "DROP TABLE IF EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
-            sql
+            sql,
         )
     }
 
@@ -224,7 +227,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
             FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}
             LIMIT 1
-        """.trimIndent()
+        """
+                .trimIndent()
         assertEquals(expectedSql, sql)
     }
 
@@ -248,7 +252,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             AUTO_COMPRESS = FALSE
             SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
-        """.trimIndent()
+        """
+                .trimIndent()
         assertEquals(expectedSql, sql)
     }
 
@@ -277,7 +282,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
             |files = ('test.csv.gz')
-        """.trimMargin()
+        """
+                .trimMargin()
         assertEquals(expectedSql, sql)
     }
 
@@ -308,7 +314,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
             |files = ('test.csv.gz')
-        """.trimMargin()
+        """
+                .trimMargin()
         assertEquals(expectedSql, sql)
     }
 
@@ -325,7 +332,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
                 "COL1",
-                "COL2"
+                "COL2",
             )
         val sql =
             snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", schemaColumns)
@@ -348,7 +355,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
             |files = ('test.csv.gz')
-        """.trimMargin()
+        """
+                .trimMargin()
         assertEquals(expectedSql, sql)
     }
 
@@ -365,7 +373,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_airbyte_meta",
                 "_airbyte_generation_id",
                 "_airbyte_loaded_at",
-                "_airbyte_data"
+                "_airbyte_data",
             )
         val sql =
             snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", rawColumns)
@@ -388,7 +396,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
             |files = ('test.csv.gz')
-        """.trimMargin()
+        """
+                .trimMargin()
         assertEquals(expectedSql, sql)
     }
 
@@ -399,7 +408,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.cloneTableWith(sourceTableName, targetTableName)
         assertEquals(
             "CREATE OR REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
-            sql
+            sql,
         )
     }
 
@@ -468,13 +477,15 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
+                RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";"""
+                    .trimIndent(),
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL3_${uuid}" TO "COL3";""".trimIndent(),
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
+                RENAME COLUMN "COL3_${uuid}" TO "COL3";"""
+                    .trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";""",
             ),
-            sql
+            sql,
         )
     }
 
@@ -491,7 +502,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnTypeChange(
                         ColumnType("FLOAT", true),
                         ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
-                    )
+                    ),
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =
@@ -503,13 +514,15 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """UPDATE $expectedTableName SET "COL1_${uuid}" = IFF(ABS("COL1") >= 1e29, NULL, CAST("COL1" AS NUMERIC(38,9)));""",
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";"""
+                    .trimIndent(),
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";"""
+                    .trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";""",
             ),
-            sql
+            sql,
         )
     }
 
@@ -526,7 +539,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnTypeChange(
                         ColumnType("NUMBER", true),
                         ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
-                    )
+                    ),
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =
@@ -538,13 +551,15 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """UPDATE $expectedTableName SET "COL1_${uuid}" = IFF(ABS("COL1") >= 1e29, NULL, CAST("COL1" AS NUMERIC(38,9)));""",
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";"""
+                    .trimIndent(),
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";"""
+                    .trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";""",
             ),
-            sql
+            sql,
         )
     }
 
@@ -560,7 +575,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnTypeChange(
                         ColumnType("TEXT", true),
                         ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
-                    )
+                    ),
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =
@@ -572,13 +587,15 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """UPDATE $expectedTableName SET "COL1_${uuid}" = CAST("COL1" AS NUMERIC(38,9));""",
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";"""
+                    .trimIndent(),
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";"""
+                    .trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";""",
             ),
-            sql
+            sql,
         )
     }
 
@@ -594,7 +611,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnTypeChange(
                         ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
                         ColumnType("FLOAT", true),
-                    )
+                    ),
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =
@@ -606,11 +623,13 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """UPDATE $expectedTableName SET "COL1_${uuid}" = CAST("COL1" AS FLOAT);""",
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";"""
+                    .trimIndent(),
                 """
                 ALTER TABLE $expectedTableName
-                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";"""
+                    .trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";""",
             ),
             sql,
         )
@@ -639,7 +658,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedSql =
             """
             ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
-        """.trimIndent()
+        """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -656,7 +676,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedSql =
             """
             ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
-        """.trimIndent()
+        """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -673,9 +694,9 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnSchema(
                         inputToFinalColumnNames = emptyMap(),
                         finalSchema = emptyMap(),
-                        inputSchema = emptyMap()
+                        inputSchema = emptyMap(),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
@@ -690,7 +711,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_META" VARIANT NOT NULL,
                 "_AIRBYTE_GENERATION_ID" NUMBER
             )
-            """.trimIndent()
+            """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -707,9 +729,9 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnSchema(
                         inputToFinalColumnNames = emptyMap(),
                         finalSchema = emptyMap(),
-                        inputSchema = emptyMap()
+                        inputSchema = emptyMap(),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
@@ -724,7 +746,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_META" VARIANT NOT NULL,
                 "_AIRBYTE_GENERATION_ID" NUMBER
             )
-            """.trimIndent()
+            """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -742,9 +765,9 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     ColumnSchema(
                         inputToFinalColumnNames = emptyMap(),
                         finalSchema = emptyMap(),
-                        inputSchema = emptyMap()
+                        inputSchema = emptyMap(),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
@@ -759,7 +782,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_META" VARIANT NOT NULL,
                 "_AIRBYTE_GENERATION_ID" NUMBER
             )
-            """.trimIndent()
+            """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -784,45 +808,45 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                                 "id" to "ID",
                                 "name" to "NAME",
                                 "updated_at" to "UPDATED_AT",
-                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
+                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT",
                             ),
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
                                 "NAME" to ColumnType("VARCHAR", true),
                                 "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
-                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true),
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
                                 "name" to FieldType(StringType, nullable = true),
                                 "updated_at" to FieldType(StringType, nullable = true),
-                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
-                            )
+                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true),
+                            ),
                     ),
                 importType =
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at")),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         // Should include the DELETE clause and skip insert clause
         assert(
             sql.contains(
-                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL"
-            )
+                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL",
+            ),
         )
         assert(sql.contains("THEN DELETE"))
         assert(
             sql.contains(
-                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT"
-            )
+                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT",
+            ),
         )
     }
 
@@ -846,32 +870,32 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                                 "id" to "ID",
                                 "name" to "NAME",
                                 "updated_at" to "UPDATED_AT",
-                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
+                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT",
                             ),
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
                                 "NAME" to ColumnType("VARCHAR", true),
                                 "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
-                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true),
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
                                 "name" to FieldType(StringType, nullable = true),
                                 "updated_at" to FieldType(StringType, nullable = true),
-                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
-                            )
+                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true),
+                            ),
                     ),
                 importType =
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at")),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         // Should NOT include DELETE clause in soft delete mode
@@ -899,23 +923,23 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
-                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
-                                "updated_at" to FieldType(StringType, nullable = true)
-                            )
+                                "updated_at" to FieldType(StringType, nullable = true),
+                            ),
                     ),
                 importType =
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at")),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         // Print the actual SQL for debugging
@@ -952,22 +976,22 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
-                                "DATA" to ColumnType("VARCHAR", true)
+                                "DATA" to ColumnType("VARCHAR", true),
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
-                                "data" to FieldType(StringType, nullable = true)
-                            )
+                                "data" to FieldType(StringType, nullable = true),
+                            ),
                     ),
-                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         // Print the actual SQL for debugging
@@ -985,8 +1009,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         // Simple extracted_at comparison in WHEN MATCHED
         assertTrue(
             sql.contains(
-                "target_table.\"_AIRBYTE_EXTRACTED_AT\" < new_record.\"_AIRBYTE_EXTRACTED_AT\""
-            )
+                "target_table.\"_AIRBYTE_EXTRACTED_AT\" < new_record.\"_AIRBYTE_EXTRACTED_AT\"",
+            ),
         )
         assertTrue(sql.contains("THEN UPDATE SET"))
         assertTrue(sql.contains("WHEN NOT MATCHED"))
@@ -1005,14 +1029,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "DATA_COL"
+                "DATA_COL",
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.copyTable(
                 columnNames = columnNames,
                 sourceTableName = sourceTableName,
-                targetTableName = targetTableName
+                targetTableName = targetTableName,
             )
 
         val expectedSourceTable =
@@ -1030,7 +1054,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             SELECT
                 $columnList
             FROM $expectedSourceTable
-        """.trimIndent()
+        """
+                .trimIndent()
 
         assertEquals(expectedSql, sql)
     }
@@ -1053,32 +1078,32 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                                 "id" to "ID",
                                 "name" to "NAME",
                                 "value" to "VALUE",
-                                "updated_at" to "UPDATED_AT"
+                                "updated_at" to "UPDATED_AT",
                             ),
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
                                 "NAME" to ColumnType("VARCHAR", true),
                                 "VALUE" to ColumnType("NUMBER", true),
-                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
                                 "name" to FieldType(StringType, nullable = true),
                                 "value" to FieldType(StringType, nullable = true),
-                                "updated_at" to FieldType(StringType, nullable = true)
-                            )
+                                "updated_at" to FieldType(StringType, nullable = true),
+                            ),
                     ),
                 importType =
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at")),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         // The MERGE statement should include UPDATE SET clause for all columns
@@ -1153,7 +1178,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 |  new_record."VALUE",
                 |  new_record."UPDATED_AT"
                 |)
-        """.trimMargin()
+        """
+                .trimMargin()
 
         assertEquals(expectedSql, sql)
     }
@@ -1190,27 +1216,27 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                                 "id" to FieldType(StringType, nullable = false),
                                 "org_id" to FieldType(StringType, nullable = true),
                                 "value" to FieldType(StringType, nullable = true),
-                            )
+                            ),
                     ),
                 importType =
                     Dedupe(
                         primaryKey = listOf(listOf("id"), listOf("org_id")),
-                        cursor = emptyList()
-                    )
+                        cursor = emptyList(),
+                    ),
             )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
                 tableSchema,
                 sourceTableName,
-                targetTableName
+                targetTableName,
             )
 
         val expectedOnClause =
             """ON (target_table."ID" = new_record."ID" OR (target_table."ID" IS NULL AND new_record."ID" IS NULL)) AND (target_table."ORG_ID" = new_record."ORG_ID" OR (target_table."ORG_ID" IS NULL AND new_record."ORG_ID" IS NULL))"""
         assertTrue(
             sql.contains(expectedOnClause),
-            "MERGE ON clause must use NULL-safe matching for every composite PK component; got:\n$sql"
+            "MERGE ON clause must use NULL-safe matching for every composite PK component; got:\n$sql",
         )
     }
 
@@ -1276,7 +1302,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             AUTO_COMPRESS = FALSE
             SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
-        """.trimIndent()
+        """
+                .trimIndent()
         assertEquals(expected, sql)
     }
 }

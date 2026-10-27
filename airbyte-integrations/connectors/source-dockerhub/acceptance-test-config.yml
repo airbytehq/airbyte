@@ -22,8 +22,4 @@ tests:
       empty_streams: []
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path:
-        "integration_tests/configured_catalog.json"
-        # testing sequentially for same results can fail because of pull counts increasing for an image between runs
-      ignored_fields:
-        "docker_hub": ["pull_count", "last_updated"]
+      configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -98,8 +98,9 @@ class RootReaderIntegrationTest {
 
     /** Simulates a READ operation for each test case, which corresponds to a one-stream catalog. */
     @TestFactory
-    fun testConcurrent(): Iterable<DynamicNode> =
-        testCases.map { DynamicTest.dynamicTest(it.name, it::run) }
+    fun testConcurrent(): Iterable<DynamicNode> = testCases.map {
+        DynamicTest.dynamicTest(it.name, it::run)
+    }
 
     /** Similar to [testConcurrent] but with a resource which forces serial execution. */
     @TestFactory
@@ -133,7 +134,7 @@ class RootReaderIntegrationTest {
                 NoOpMetaFieldDecorator,
                 ResourceAcquirer(emptyList()),
                 listOf(
-                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
                 ),
                 dcf,
                 dcm,
@@ -184,7 +185,7 @@ class RootReaderIntegrationTest {
                 NoOpMetaFieldDecorator,
                 ResourceAcquirer(emptyList()),
                 listOf(
-                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
                 ),
                 dcf,
                 dcm,
@@ -239,8 +240,8 @@ class RootReaderIntegrationTest {
                 listOf(
                     ConfigErrorThrowingGlobalPartitionsCreatorFactory(
                         Semaphore(CONSTRAINED),
-                        *testCases.toTypedArray()
-                    )
+                        *testCases.toTypedArray(),
+                    ),
                 ),
                 dcf,
                 dcm,
@@ -366,12 +367,12 @@ data class TestCase(
                             Assertions.assertFalse(
                                 hasCompleted,
                                 "Case $name cannot emit a STARTED trace " +
-                                    "message because it already emitted a COMPLETE."
+                                    "message because it already emitted a COMPLETE.",
                             )
                             Assertions.assertFalse(
                                 hasIncompleted,
                                 "Case $name cannot emit a STARTED trace " +
-                                    "message because it already emitted an INCOMPLETE."
+                                    "message because it already emitted an INCOMPLETE.",
                             )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
@@ -379,7 +380,7 @@ data class TestCase(
                             Assertions.assertTrue(
                                 hasStarted,
                                 "Case $name cannot emit a COMPLETE trace " +
-                                    "message because it hasn't emitted a STARTED yet."
+                                    "message because it hasn't emitted a STARTED yet.",
                             )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
@@ -387,7 +388,7 @@ data class TestCase(
                             Assertions.assertTrue(
                                 hasStarted,
                                 "Case $name cannot emit an INCOMPLETE trace " +
-                                    "message because it hasn't emitted a STARTED yet."
+                                    "message because it hasn't emitted a STARTED yet.",
                             )
                         }
                         else ->
@@ -405,27 +406,27 @@ data class TestCase(
         }
         Assertions.assertTrue(
             hasStarted,
-            "Case $name should have emitted a STARTED trace message, but hasn't."
+            "Case $name should have emitted a STARTED trace message, but hasn't.",
         )
         if (isSuccessful) {
             if (!hasCompleted) {
                 Assertions.assertTrue(
                     hasCompleted,
-                    "Case $name should have emitted a COMPLETE trace message, but hasn't."
+                    "Case $name should have emitted a COMPLETE trace message, but hasn't.",
                 )
             }
             Assertions.assertFalse(
                 hasIncompleted,
-                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway."
+                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway.",
             )
         } else {
             Assertions.assertFalse(
                 hasCompleted,
-                "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+                "Case $name should not have emitted a COMPLETE trace message, but did anyway.",
             )
             Assertions.assertTrue(
                 hasIncompleted,
-                "Case $name should have emitted an INCOMPLETE trace message, but hasn't."
+                "Case $name should have emitted an INCOMPLETE trace message, but hasn't.",
             )
         }
     }
@@ -462,7 +463,7 @@ data class TestCase(
             }
             Assertions.assertNotNull(
                 actual,
-                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected"
+                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected",
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
@@ -727,14 +728,14 @@ data object NoOpMetaFieldDecorator : MetaFieldDecorator {
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {}
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {}
 }
 

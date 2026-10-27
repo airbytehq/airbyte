@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 internal class S3DataLakeBeanWiringTest {
     private fun <T> withContext(
         normalizeColumnNames: Boolean,
-        block: (ApplicationContext) -> T
+        block: (ApplicationContext) -> T,
     ): T {
         val config =
             """
@@ -44,7 +44,8 @@ internal class S3DataLakeBeanWiringTest {
               },
               "normalize_column_names": $normalizeColumnNames
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         return ApplicationContext.run(
                 mapOf(
                     "airbyte.connector.operation" to "write",
@@ -83,7 +84,7 @@ internal class S3DataLakeBeanWiringTest {
         withContext(normalizeColumnNames = false) { context ->
             assertEquals(
                 "URLs",
-                context.getBean(TableSchemaMapper::class.java).toColumnName("URLs")
+                context.getBean(TableSchemaMapper::class.java).toColumnName("URLs"),
             )
         }
 }

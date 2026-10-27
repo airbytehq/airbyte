@@ -11,7 +11,7 @@ class GcsConfig(val projectId: String, val bucketName: String, val credentialsJs
             return GcsConfig(
                 config["loading_method"]["project_id"].asText(),
                 config["loading_method"]["bucket_name"].asText(),
-                config["loading_method"]["credentials_json"].asText()
+                config["loading_method"]["credentials_json"].asText(),
             )
         }
     }

@@ -165,6 +165,10 @@ definitions:
           url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors"
           request_parameters:
             include_subsidiary: "true"
+            # Sent only from saved state. A full refresh or first sync starts at the cursor's fixed 2000-01-01 start
+            # and sends no filter, so a vendor with a null `updated_at` is still read. The `vendor_contacts` parent
+            # has no cursor, so this renders empty and the CDK drops it.
+            from_updated_at: "{{ stream_interval.start_time if stream_interval.start_time and stream_interval.start_time != '2000-01-01T00:00:00Z' else '' }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -328,6 +332,12 @@ definitions:
                 - object
                 - "null"
               description: Total spend year-to-date for this vendor.
+            updated_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              description: The date and time when this vendor was last updated.
             vendor_owner_id:
               type:
                 - string
@@ -1871,7 +1881,29 @@ streams:
               - string
               - "null"
             description: Memo to the vendor.
+  # The cursor lives only on this stream entry. `vendor_contacts` uses the definition without it as its
+  # parent, so it still reads every vendor on each sync. The `from_updated_at` filter is a request parameter on
+  # the definition, not a `start_time_option`, so it is not sent when the slice starts at the fixed 2000 start.
   - $ref: "#/definitions/streams/vendors"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      # Vendors are reference data, so the first sync reads all of them whatever Start Date says. The vendors
+      # definition's request parameter compares against this exact value; change both together.
+      # Ramp documents `from_updated_at` as "after" and filters on a sub-second stored `updated_at`, but returns it
+      # truncated to whole seconds (probed 2026-10-14). The saved cursor is therefore never above the stored value,
+      # so the boundary vendor is re-read rather than lost. Do not add `step` with `to_updated_at` ("on or before"):
+      # a vendor stored a fraction of a second after a window's end would fall between two windows.
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2000-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: vendor_contacts
     $parameters:
@@ -2445,8 +2477,8 @@ spec:
         type: string
         description: >-
           Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the Client
-          Credentials grant and the scopes `transactions:read`, `cards:read` and `reimbursements:read`. Every
-          other stream needs its own read scope, such as `users:read` or `bills:read`, granted only if you sync it.
+          Credentials grant and the scopes transactions:read, cards:read and reimbursements:read. Every
+          other stream needs its own read scope, such as users:read or bills:read, granted only if you sync it.
         title: Ramp Client ID
         airbyte_secret: true
         order: 0
@@ -2465,6 +2497,7 @@ spec:
         format: date-time
         default: "2019-01-01T00:00:00Z"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2024-01-01T00:00:00Z"
         order: 2

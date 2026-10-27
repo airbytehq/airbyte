@@ -41,6 +41,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.61 | 2026-10-27 | [89796](https://github.com/airbytehq/airbyte/pull/89796) | Update dependencies |
+| 0.0.60 | 2026-10-20 | [89140](https://github.com/airbytehq/airbyte/pull/89140) | Update dependencies |
 | 0.0.59 | 2026-10-13 | [88547](https://github.com/airbytehq/airbyte/pull/88547) | Update dependencies |
 | 0.0.58 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88332) | Fix GraphQL queries rejected by the Bunny API (`quoteCharges` root field, removed fields on `tenants`/`entities`/`invoiceItems`/`transactions`, `subscriptions.cancellationDate`) and surface GraphQL errors instead of crashing |
 | 0.0.57 | 2026-10-06 | [87769](https://github.com/airbytehq/airbyte/pull/87769) | Update dependencies |
