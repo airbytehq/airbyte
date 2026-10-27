@@ -220,7 +220,9 @@ class GcsDataLakeStreamLoader(
                 val writerPartitionFields = partitionFields.filter {
                     incomingSchema.findField(it.sourceColumn) != null
                 }
-                IcebergPartitioning.evolveSpec(createdTable, writerPartitionFields)
+                if (IcebergPartitioning.evolveSpec(createdTable, writerPartitionFields)) {
+                    logger.info { "Evolved partition spec for ${stream.mappedDescriptor}." }
+                }
             }
         }
         val deleteMode = resolveDeleteMode(createdTable, effectiveFormatVersion)
