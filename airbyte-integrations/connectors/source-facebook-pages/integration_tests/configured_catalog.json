@@ -16,7 +16,11 @@
         "name": "post",
         "json_schema": {},
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh",
+          "incremental"
+        ],
+        "default_cursor_field": [
+          "created_time"
         ]
       },
       "sync_mode": "full_refresh",
