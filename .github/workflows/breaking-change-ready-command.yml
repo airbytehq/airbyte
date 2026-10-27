@@ -1,4 +1,4 @@
-name: AI Breaking Change Ready Command
+name: Breaking Change Ready Command
 
 on:
   workflow_dispatch:
@@ -18,10 +18,10 @@ on:
         description: "Git ref. Git ref (passed by slash command dispatcher)"
         required: false
 
-run-name: "AI Breaking Change Ready for PR #${{ inputs.pr }}"
+run-name: "Breaking Change Ready for PR #${{ inputs.pr }}"
 
 concurrency:
-  group: ai-breaking-change-ready-${{ inputs.pr || 'unknown' }}
+  group: breaking-change-ready-${{ inputs.pr || 'unknown' }}
   cancel-in-progress: false
 
 # The Slack user group of breaking-change reviewers, @-mentioned in the channel below. Edit the group in Slack to change who is paged.
@@ -36,7 +36,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  ai-breaking-change-ready:
+  breaking-change-ready:
     name: Check author conversations and notify reviewers
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +60,7 @@ jobs:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
           body: |
-            > `/ai-breaking-change-ready` can only be run on a pull request. Please run it from a PR comment.
+            > `/breaking-change-ready` can only be run on a pull request. Please run it from a PR comment.
 
       - name: Stop if not running on a PR
         id: require-pr
@@ -244,7 +244,7 @@ jobs:
           issue-number: ${{ inputs.pr || '' }}
           edit-mode: replace
           body: |
-            > **AI Breaking Change Ready Command Failed**
+            > **Breaking Change Ready Command Failed**
             >
             > An error occurred while checking review conversations or notifying reviewers.
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
