@@ -59,6 +59,9 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (`page_insights` stream only)
+
+The `page_insights` stream is full refresh by default, which asks Facebook for its default trailing window only. If you switch it to Incremental, the connector keeps the newest `end_time` it has seen and asks Facebook only for the days after it on the next sync. Set **Start Date** to backfill history on the first incremental sync, which the connector reads in 90-day windows because Facebook returns at most 90 days per request and keeps about two years of history. Each record is one metric and period for one window, so if your destination deduplicates on the primary key, use Incremental - Append rather than a deduplicated mode, or windows overwrite each other. If you leave **Start Date** empty, the first incremental sync reads Facebook's default window and the next syncs continue from there, so a connection paused for more than 90 days may need a reset or a **Start Date** before it can catch up.
 
 ## Supported Streams
 
@@ -66,7 +69,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 | :--- | :--- | :--- |
 | `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
 | `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
-| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
 | `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Requests a fixed set of metrics. |
 
 You can't choose which insights metrics to sync. The connector requests these:
@@ -181,6 +184,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2026-10-27 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add an optional incremental sync mode to the `page_insights` stream, which uses a `since` and `until` date range in 90-day windows and a new `start_date` setting to backfill history, while leaving full refresh requests unchanged. |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |
