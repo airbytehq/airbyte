@@ -21,7 +21,7 @@ check:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  default_concurrency: "{{ [config.get('num_workers') or 2, 2] | max }}"
   max_concurrency: 20
 
 definitions:
@@ -1261,7 +1261,8 @@ spec:
         description: >-
           The number of concurrent workers for syncing data. Increase this
           value to speed up syncs for accounts with many campaigns and ad
-          groups, at the cost of higher API usage. Valid values are 1 to 20.
+          groups, at the cost of higher API usage. Valid values are 1 to 20,
+          and values below 2 run as 2.
         order: 9
         title: Number of Workers
         default: 2
@@ -1450,7 +1451,11 @@ schemas:
       sapinLawResponse:
         type: string
       servingStateReasons:
-        type: "null"
+        type:
+          - array
+          - "null"
+        items:
+          type: string
       servingStatus:
         type: string
       startTime:
@@ -1492,7 +1497,18 @@ schemas:
       campaignId:
         type: integer
       cpaGoal:
-        type: "null"
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
       creationTime:
         type:
           - string
@@ -1569,7 +1585,9 @@ schemas:
                       type: object
                       properties:
                         maxAge:
-                          type: "null"
+                          type:
+                            - integer
+                            - "null"
                         minAge:
                           type:
                             - integer
@@ -1610,7 +1628,21 @@ schemas:
                     items:
                       type: string
           daypart:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              userTime:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  included:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type: integer
           deviceClass:
             type: object
             properties:
@@ -1619,7 +1651,16 @@ schemas:
                 items:
                   type: string
           gender:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              included:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: string
           locality:
             anyOf:
               - type: "null"
@@ -1629,6 +1670,10 @@ schemas:
                     type: array
                     items:
                       type: string
+      paymentModel:
+        type:
+          - string
+          - "null"
   keywords:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1722,7 +1767,11 @@ schemas:
           orgId:
             type: integer
           servingStateReasons:
-            type: "null"
+            type:
+              - array
+              - "null"
+            items:
+              type: string
           servingStatus:
             type: string
           supplySources:
@@ -1730,6 +1779,19 @@ schemas:
             items:
               type: string
           totalBudget:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  amount:
+                    type: string
+                  currency:
+                    type: string
+          biddingStrategy:
+            type:
+              - string
+              - "null"
+          targetCpa:
             anyOf:
               - type: "null"
               - type: object
@@ -1801,6 +1863,59 @@ schemas:
               type: integer
             ttr:
               type: number
+            tapPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - integer
+                - "null"
+            totalNewDownloads:
+              type:
+                - integer
+                - "null"
+            totalRedownloads:
+              type:
+                - integer
+                - "null"
+            totalPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewInstalls:
+              type:
+                - integer
+                - "null"
+            viewNewDownloads:
+              type:
+                - integer
+                - "null"
+            viewPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewRedownloads:
+              type:
+                - integer
+                - "null"
       other:
         type: boolean
   adgroups_report_daily:
@@ -1820,7 +1935,11 @@ schemas:
           adGroupName:
             type: string
           adGroupServingStateReasons:
-            type: "null"
+            type:
+              - array
+              - "null"
+            items:
+              type: string
           adGroupServingStatus:
             type: string
           adGroupStatus:
@@ -1832,7 +1951,18 @@ schemas:
           countryOrRegion:
             type: string
           cpaGoal:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
           defaultBidAmount:
             type: object
             properties:
@@ -1864,6 +1994,14 @@ schemas:
               - "null"
             format: date-time
             airbyte_type: timestamp_without_timezone
+          automatedKeywordsRequired:
+            type:
+              - boolean
+              - "null"
+          biddingStrategy:
+            type:
+              - string
+              - "null"
       adGroupId:
         type: integer
       date:
@@ -1927,6 +2065,59 @@ schemas:
               type: integer
             ttr:
               type: number
+            tapPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - integer
+                - "null"
+            totalNewDownloads:
+              type:
+                - integer
+                - "null"
+            totalRedownloads:
+              type:
+                - integer
+                - "null"
+            totalPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewInstalls:
+              type:
+                - integer
+                - "null"
+            viewNewDownloads:
+              type:
+                - integer
+                - "null"
+            viewPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewRedownloads:
+              type:
+                - integer
+                - "null"
       other:
         type: boolean
   keywords_report_daily:
@@ -1972,6 +2163,14 @@ schemas:
               - "null"
             format: date-time
             airbyte_type: timestamp_without_timezone
+          campaignId:
+            type:
+              - integer
+              - "null"
+          orgId:
+            type:
+              - integer
+              - "null"
       date:
         type:
           - string
@@ -2026,6 +2225,72 @@ schemas:
               type: integer
             ttr:
               type: number
+            avgCPM:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - integer
+                - "null"
+            totalNewDownloads:
+              type:
+                - integer
+                - "null"
+            totalRedownloads:
+              type:
+                - integer
+                - "null"
+            totalPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewInstalls:
+              type:
+                - integer
+                - "null"
+            viewNewDownloads:
+              type:
+                - integer
+                - "null"
+            viewPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewRedownloads:
+              type:
+                - integer
+                - "null"
       insights:
         type: object
         properties:
@@ -2081,7 +2346,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_without_timezone
+        airbyte_type: timestamp_with_timezone
       creativeId:
         type:
           - number
@@ -2101,7 +2366,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_without_timezone
+        airbyte_type: timestamp_with_timezone
       name:
         type:
           - string
@@ -2171,7 +2436,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_without_timezone
+            airbyte_type: timestamp_with_timezone
           creativeId:
             type:
               - number
@@ -2189,7 +2454,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_without_timezone
+            airbyte_type: timestamp_with_timezone
           orgId:
             type:
               - number
@@ -2199,6 +2464,14 @@ schemas:
               - string
               - "null"
           status:
+            type:
+              - string
+              - "null"
+          adServingStateReasons:
+            type:
+              - string
+              - "null"
+          language:
             type:
               - string
               - "null"
@@ -2336,6 +2609,31 @@ schemas:
             viewRedownloads:
               type:
                 - number
+                - "null"
+            avgCPM:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            totalPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewPreOrdersPlaced:
+              type:
+                - integer
                 - "null"
       other:
         type:
@@ -2512,7 +2810,8 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_without_timezone
+        # Apple's product page example ends in Z, unlike creationTime.
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   search_terms_report_daily:
@@ -2637,6 +2936,139 @@ schemas:
                 - string
                 - "null"
               format: date
+            avgCPM:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            avgCPT:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            impressions:
+              type:
+                - integer
+                - "null"
+            localSpend:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallRate:
+              type:
+                - number
+                - "null"
+            tapInstalls:
+              type:
+                - integer
+                - "null"
+            tapNewDownloads:
+              type:
+                - integer
+                - "null"
+            tapRedownloads:
+              type:
+                - integer
+                - "null"
+            taps:
+              type:
+                - integer
+                - "null"
+            tapPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - integer
+                - "null"
+            totalNewDownloads:
+              type:
+                - integer
+                - "null"
+            totalRedownloads:
+              type:
+                - integer
+                - "null"
+            totalPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            ttr:
+              type:
+                - number
+                - "null"
+            viewInstalls:
+              type:
+                - integer
+                - "null"
+            viewNewDownloads:
+              type:
+                - integer
+                - "null"
+            viewPreOrdersPlaced:
+              type:
+                - integer
+                - "null"
+            viewRedownloads:
+              type:
+                - integer
+                - "null"
       total:
         type:
           - object

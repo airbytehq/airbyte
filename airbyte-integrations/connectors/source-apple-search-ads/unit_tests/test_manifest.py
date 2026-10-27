@@ -201,7 +201,8 @@ def test_date_like_fields_are_typed(manifest, stream_name):
             elif name in date_time_fields:
                 found_fields.append(name)
                 assert field_schema["format"] == "date-time"
-                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
+                # test_timestamp_fields_declare_their_time_zone pins which fields carry a time zone.
+                assert field_schema["airbyte_type"] in ("timestamp_without_timezone", "timestamp_with_timezone")
                 types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
                 assert "string" in types
                 assert "null" in types
@@ -215,29 +216,39 @@ def test_date_like_fields_are_typed(manifest, stream_name):
     assert found_fields, f"{stream_name} must have at least one date-like field"
 
 
-def test_timestamp_fields_are_declared_without_timezone(manifest):
+def test_timestamp_fields_declare_their_time_zone(manifest):
+    # Apple's examples end in Z only for these fields; every other timestamp has no offset.
+    with_timezone = {
+        "ads.creationTime",
+        "ads.modificationTime",
+        "ads_report_daily.metadata.creationTime",
+        "ads_report_daily.metadata.modificationTime",
+        "product_pages.modificationTime",
+    }
     timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
-    found_fields = 0
+    found = {}
 
-    def walk(schema):
-        nonlocal found_fields
+    def walk(schema, path):
         if not isinstance(schema, dict):
             return
         for name, field_schema in schema.get("properties", {}).items():
+            field_path = f"{path}.{name}"
             if name in timestamp_fields:
-                found_fields += 1
-                assert field_schema["format"] == "date-time"
-                assert field_schema["airbyte_type"] == "timestamp_without_timezone"
-            walk(field_schema)
+                assert field_schema["format"] == "date-time", field_path
+                found[field_path] = field_schema["airbyte_type"]
+            walk(field_schema, field_path)
         if "items" in schema:
-            walk(schema["items"])
+            walk(schema["items"], path)
         for branch in schema.get("anyOf", []):
-            walk(branch)
+            walk(branch, path)
 
-    for schema in manifest["schemas"].values():
-        walk(schema)
+    for stream_name, schema in manifest["schemas"].items():
+        walk(schema, stream_name)
 
-    assert found_fields > 0
+    assert with_timezone <= set(found)
+    for field_path, airbyte_type in found.items():
+        expected = "timestamp_with_timezone" if field_path in with_timezone else "timestamp_without_timezone"
+        assert airbyte_type == expected, field_path
 
 
 @pytest.mark.parametrize(
@@ -320,3 +331,55 @@ def test_schemas_include_additive_campaign_and_adgroup_fields(manifest):
     ]
     assert adgroups["automatedKeywordsRequired"]["type"] == ["boolean", "null"]
     assert adgroups["biddingStrategy"]["type"] == ["string", "null"]
+
+
+def test_report_schemas_declare_apples_spend_row_metrics(manifest):
+    # Every metric of Apple's ExtendedSpendRow, so destinations stop seeing undeclared fields in granularity.
+    metrics = {
+        "avgCPM",
+        "avgCPT",
+        "impressions",
+        "localSpend",
+        "tapInstallCPI",
+        "tapInstallRate",
+        "tapInstalls",
+        "tapNewDownloads",
+        "tapRedownloads",
+        "taps",
+        "tapPreOrdersPlaced",
+        "totalAvgCPI",
+        "totalInstallRate",
+        "totalInstalls",
+        "totalNewDownloads",
+        "totalRedownloads",
+        "totalPreOrdersPlaced",
+        "ttr",
+        "viewInstalls",
+        "viewNewDownloads",
+        "viewPreOrdersPlaced",
+        "viewRedownloads",
+    }
+    for stream in (
+        "campaigns_report_daily",
+        "adgroups_report_daily",
+        "keywords_report_daily",
+        "ads_report_daily",
+        "search_terms_report_daily",
+    ):
+        declared = set(manifest["schemas"][stream]["properties"]["granularity"]["items"]["properties"])
+        assert metrics <= declared, (stream, sorted(metrics - declared))
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 2), (1, 2), (5, 5)])
+def test_concurrency_never_drops_below_two(manifest, num_workers, expected):
+    # The CDK's lowest safe concurrency is 2, and the spec still allows 1 for saved configs.
+    from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
+
+    config = {} if num_workers is None else {"num_workers": num_workers}
+    level = ConcurrencyLevel(
+        default_concurrency=manifest["concurrency_level"]["default_concurrency"],
+        max_concurrency=manifest["concurrency_level"]["max_concurrency"],
+        config=config,
+        parameters={},
+    )
+    assert level.get_concurrency_level() == expected

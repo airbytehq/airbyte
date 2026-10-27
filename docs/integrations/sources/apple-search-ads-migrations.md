@@ -8,18 +8,24 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 Do not clear the report streams unless the steps for your destination below require it. Apple serves daily reports for the last 90 days only, so a clear permanently deletes every report row older than that. Back up the affected tables before you clear any stream.
 :::
 
-This release types the date and time fields Apple returns and adds primary keys to the four entity report streams: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily` and `ads_report_daily`. The values themselves don't change. Only their declared types do. Apple documents `startTime` and `endTime` as UTC.
+This release types the date and time fields Apple returns, gives Apple's documented types to fields that were declared as always null, and adds primary keys to the four entity report streams: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily` and `ads_report_daily`. The values themselves don't change. Only their declared types do. Apple documents its timestamps as UTC; the `ads` timestamps carry a `Z` offset, so they become timestamps with time zone.
 
 ### What changed
 
 | Stream | Field | Before | After |
 | :-- | :-- | :-- | :-- |
 | `campaigns`, `adgroups` | `creationTime`, `modificationTime`, `startTime`, `endTime` | string (`endTime` untyped) | timestamp without time zone |
-| `keywords`, `ads` | `creationTime`, `modificationTime` | string | timestamp without time zone |
+| `keywords` | `creationTime`, `modificationTime` | string | timestamp without time zone |
+| `ads` | `creationTime`, `modificationTime` | string | timestamp with time zone |
 | the four entity report streams | `date`, `granularity[].date` | string | date |
 | `campaigns_report_daily`, `keywords_report_daily` | `metadata.modificationTime` | string | timestamp without time zone |
 | `adgroups_report_daily` | `metadata.modificationTime`, `metadata.startTime`, `metadata.endTime` | string (`endTime` untyped) | timestamp without time zone |
-| `ads_report_daily` | `metadata.creationTime`, `metadata.modificationTime` | string | timestamp without time zone |
+| `ads_report_daily` | `metadata.creationTime`, `metadata.modificationTime` | string | timestamp with time zone |
+| `campaigns`, `campaigns_report_daily` | `servingStateReasons`, `metadata.servingStateReasons` | untyped | array of strings |
+| `adgroups_report_daily` | `metadata.adGroupServingStateReasons` | untyped | array of strings |
+| `adgroups`, `adgroups_report_daily` | `cpaGoal`, `metadata.cpaGoal` | untyped | object with `amount` and `currency` |
+| `adgroups` | `targetingDimensions.age.included[].maxAge` | untyped | integer |
+| `adgroups` | `targetingDimensions.daypart`, `targetingDimensions.gender` | untyped | object |
 
 New primary keys:
 
@@ -54,7 +60,7 @@ Upgrade before the deadline shown in Airbyte (2026-12-22). After that date, conn
 
 Don't clear. On the next sync, the destination converts the existing top-level columns in place. Fields under `metadata` and `granularity` stay inside their JSON column, so they don't change.
 
-The exception is entity streams in **Full refresh | Append**. The sync fails if a stored value can't be converted. This happens on Postgres for the old untyped `endTime` column of `campaigns` and `adgroups`, and on BigQuery for `ads` timestamps that end in `Z`. For those streams, either switch to **Full refresh | Overwrite**, or back up the table and clear the stream. A clear removes the snapshots you appended, and Apple only serves current objects.
+The exception is entity streams in **Full refresh | Append**, where the destination converts columns that already hold data, and some conversions can fail: the old untyped `endTime` of `campaigns` and `adgroups` on Postgres, and `campaigns.servingStateReasons` and `adgroups.cpaGoal`, which change from untyped to array and object columns, on Snowflake and Redshift. For those streams, either switch to **Full refresh | Overwrite**, or back up the table and clear the stream. A clear removes the snapshots you appended, and Apple only serves current objects.
 
 #### S3 Data Lake, GCS Data Lake (Iceberg)
 

@@ -55,7 +55,7 @@ Apple accepts a client secret for at most 180 days. Before your client secret ex
 5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. **Start Date** is required. If **End Date** is blank, Airbyte syncs up to today. Apple serves daily reports for the last 90 days only ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)), so report streams never request more than the last 89 days, whatever the **Start Date**. If **End Date** is more than 89 days ago, report streams sync no rows. A connection paused for longer than that resumes 89 days back, and Apple can't serve the days in between.
 6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`. `search_terms_report_daily` always uses `ORTZ`, because Apple serves search term reports in the organization time zone only.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
-8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
+8. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`; values below 2 run as 2). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
 9. Click **Set up source**.
 
 The **Exponential Backoff Factor** and **Token Refresh Endpoint** fields are hidden in the UI. Set them through the API if you need to: see `backoff_factor` and `token_refresh_endpoint` in the parameter table below.
@@ -104,7 +104,9 @@ The Apple Ads source connector exposes the following streams. For full schema an
 - [`adgroup_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-ad-group-negative-keywords) — negative keywords set on each ad group.
 - [`product_pages`](https://developer.apple.com/documentation/apple_ads/get-product-pages) — custom product pages for each app advertised by a campaign.
 
-`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone. Apple documents `startTime` and `endTime` as UTC.
+`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone, except `creationTime` and `modificationTime` on `ads` and `modificationTime` on `product_pages`: Apple returns those with a `Z` offset, so they are timestamps with time zone. Apple documents its timestamps as UTC.
+
+Apple's list endpoints don't return deleted campaigns, ad groups, keywords, ads or negative keywords, so the connector doesn't sync them and `deleted` is always `false`. An object you delete in Apple Ads stays in your destination as it was last synced.
 
 ### Daily report streams
 
@@ -153,9 +155,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 2.0.0 | 2026-10-27 | [89709](https://github.com/airbytehq/airbyte/pull/89709) | Type date and timestamp fields, declare primary keys on the four entity report streams, request one day per report call and start report streams at most 89 days back |
-| 1.2.0 | 2026-10-26 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add `organization`, `creatives`, `campaign_negative_keywords`, `adgroup_negative_keywords`, `product_pages`, and `search_terms_report_daily` streams |
-| 1.1.22 | 2026-10-26 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Report expired client secrets and rejected report dates as configuration errors, explain missing API roles, show Apple's message on other API errors, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired`, make Time Zone and Token Refresh Endpoint optional, hide Exponential Backoff Factor and Token Refresh Endpoint in the UI, and update the base image |
+| 2.0.0 | 2026-10-27 | [89709](https://github.com/airbytehq/airbyte/pull/89709) | Type date and timestamp fields and add primary keys to the entity report streams |
+| 1.2.0 | 2026-10-26 | [89711](https://github.com/airbytehq/airbyte/pull/89711) | Add organization, creatives, negative keyword, product page and search term streams, and declare the report metrics Apple documents |
+| 1.1.22 | 2026-10-26 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Explain authentication, permission and request errors, add missing campaign and ad group fields, and simplify the spec |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
 | 1.1.19 | 2026-10-06 | [87754](https://github.com/airbytehq/airbyte/pull/87754) | Update dependencies |

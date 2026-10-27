@@ -198,7 +198,8 @@ def test_adgroups_request_one_partition_per_campaign() -> None:
 
         output = _read("adgroups")
 
-    assert [record.record.data["id"] for record in output.records] == [10, 20]
+    # Partitions run concurrently, so records arrive in any order.
+    assert sorted(record.record.data["id"] for record in output.records) == [10, 20]
 
 
 @pytest.mark.parametrize(
@@ -237,7 +238,7 @@ def test_report_stream_sends_one_request_per_daily_partition(stream: str) -> Non
         for request in partition_requests:
             http_mocker.assert_number_of_calls(request, 1)
 
-    assert [record.record.data["date"] for record in output.records] == list(_DAYS)
+    assert sorted(record.record.data["date"] for record in output.records) == list(_DAYS)
     assert not output.errors
 
 
@@ -355,7 +356,7 @@ def test_report_without_end_date_requests_today_once(stream: str) -> None:
         for request in requests:
             http_mocker.assert_number_of_calls(request, 1)
 
-    assert [record.record.data["date"] for record in output.records] == ["2024-01-05", "2024-01-06"]
+    assert sorted(record.record.data["date"] for record in output.records) == ["2024-01-05", "2024-01-06"]
     assert not output.errors
 
 
