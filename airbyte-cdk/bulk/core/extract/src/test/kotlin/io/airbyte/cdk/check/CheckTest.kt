@@ -2,6 +2,7 @@
 package io.airbyte.cdk.check
 
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.fakesource.FakeSourceCheckSectionHandler
 import io.airbyte.cdk.fakesource.FakeSourceConfigurationSpecification
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -17,6 +18,8 @@ class CheckTest {
     @Inject lateinit var checkOperation: CheckOperation<FakeSourceConfigurationSpecification>
 
     @Inject lateinit var outputConsumer: BufferingOutputConsumer
+
+    @Inject lateinit var sectionHandler: FakeSourceCheckSectionHandler
 
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -53,6 +56,72 @@ class CheckTest {
     @Property(name = "metadata.resource", value = "discover/metadata-column-query-fails.json")
     fun testBadTables() {
         assertFailed("Unable to query any of the [0-9]+ discovered table".toRegex())
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"localhost","check-section":"connection"}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testSectionCheckGoesToTheHandler() {
+        // The partial config lacks the required `database`: only the handler runs, not the factory.
+        assertSucceeded()
+        Assertions.assertEquals(listOf("connection"), sectionHandler.checkedSections)
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"unreachable","check-section":"connection"}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testSectionCheckFailureComesFromTheHandler() {
+        assertFailed("Host 'unreachable' cannot be reached".toRegex())
+        Assertions.assertEquals(listOf("connection"), sectionHandler.checkedSections)
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"localhost","database":"testdb","check-section":"sync_method"}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-empty.json")
+    fun testLastSectionRunsTheFullCheck() {
+        // "Discovered zero tables" can only come from the full check.
+        assertFailed("Discovered zero tables".toRegex())
+        Assertions.assertEquals(emptyList<String>(), sectionHandler.checkedSections)
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"localhost","check-section":"nope"}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testUnknownSection() {
+        assertFailed("Unknown check-section 'nope'; .* connection, sync_method".toRegex())
+        Assertions.assertEquals(emptyList<String>(), sectionHandler.checkedSections)
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"localhost","check-section":5}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testSectionMustBeAString() {
+        assertFailed("'check-section' must be a string".toRegex())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.database", value = "testdb")
+    @Property(name = "airbyte.connector.config.check-section", value = "connection")
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testSectionFromMicronautProperty() {
+        assertSucceeded()
+        Assertions.assertEquals(listOf("connection"), sectionHandler.checkedSections)
     }
 
     fun assertSucceeded() {

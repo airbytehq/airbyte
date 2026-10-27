@@ -30,7 +30,7 @@ class PostgresSourceMetadataQuerier(
 
     override fun extraChecks() {
         base.extraChecks()
-        validateSslConfiguration()
+        validateCloudSslConfiguration(postgresSourceConfig, featureFlags)
         if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
             base.conn.use { conn ->
                 if (dbNumWraparound(conn) > 0) {
@@ -40,28 +40,32 @@ class PostgresSourceMetadataQuerier(
         }
     }
 
-    /**
-     * Validates that the SSL/SSH configuration is sufficient for Airbyte Cloud. On Cloud, we
-     * require SSL encryption or an SSH tunnel; connections with ssl_mode in
-     * [disable, allow, prefer] and no tunnel are rejected.
-     */
-    private fun validateSslConfiguration() {
-        if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
-            return
-        }
-        val sslMode: String? = postgresSourceConfig.jdbcProperties["sslmode"]
-        val acceptableSslModes = listOf("require", "verify-ca", "verify-full")
-        val hasNoTunnel = postgresSourceConfig.sshTunnel is SshNoTunnelMethod
-        if (sslMode !in acceptableSslModes && hasNoTunnel) {
-            throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
-                    "Current SSL mode: $sslMode",
-            )
-        }
-    }
-
     companion object {
         private val log = KotlinLogging.logger {}
+
+        /**
+         * Validates that the SSL/SSH configuration is sufficient for Airbyte Cloud. On Cloud, we
+         * require SSL encryption or an SSH tunnel; connections with ssl_mode in
+         * [disable, allow, prefer] and no tunnel are rejected. Shared with the section checks,
+         * which apply it to the connection section.
+         */
+        fun validateCloudSslConfiguration(
+            config: PostgresSourceConfiguration,
+            featureFlags: Set<FeatureFlag>,
+        ) {
+            if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
+                return
+            }
+            val sslMode: String? = config.jdbcProperties["sslmode"]
+            val acceptableSslModes = listOf("require", "verify-ca", "verify-full")
+            val hasNoTunnel = config.sshTunnel is SshNoTunnelMethod
+            if (sslMode !in acceptableSslModes && hasNoTunnel) {
+                throw ConfigErrorException(
+                    "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
+                        "Current SSL mode: $sslMode",
+                )
+            }
+        }
 
         const val xminWraparoundError: String =
             "We detected XMIN transaction wraparound in the database, " +

@@ -30,6 +30,16 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
 
 /**
+ * Section ids of the stepped setup form, in order. A `check-section` value names one of them; the
+ * [io.airbyte.integrations.source.postgres.PostgresSourceCheckSectionHandler] checks the first
+ * three, the last one is the full check.
+ */
+const val SECTION_CONNECTION = "connection"
+const val SECTION_CREDENTIALS = "credentials"
+const val SECTION_SYNC_METHOD = "sync_method"
+const val SECTION_REVIEW = "review"
+
+/**
  * The object which is mapped to the Postgres source configuration JSON.
  *
  * Use [PostgresSourceConfiguration] instead wherever possible. This object also allows injecting
@@ -37,23 +47,33 @@ import jakarta.inject.Singleton
  * `MicronautPropertiesFriendly.*`.
  */
 @JsonSchemaTitle("Postgres Source Spec")
-// Setup-form layout: each step is one wizard step, each group one card inside it.
-// Properties opt into a group with `"group":"<id>"` in their own @JsonSchemaInject.
+// Stepped setup form ("Stepped Connector Forms" mini-spec): `groups` is the existing keyword and
+// `sections` the new one, each section listing the groups it shows, in form order. Properties opt
+// into a group with `"group":"<id>"` in their own @JsonSchemaInject. A CHECK whose config carries a
+// top-level `check-section` key validates the configuration up to that section only; see
+// PostgresSourceCheckSectionHandler. The last section completes the configuration, so a CHECK for
+// it is the full check.
 @JsonSchemaInject(
     json =
-        """{"steps":[
-  {"id":"connection","title":"Connection",
+        """{"groups":[
+  {"id":"db"},
+  {"id":"security","title":"Network & security"},
+  {"id":"auth"},
+  {"id":"sync","title":"Sync method"},
+  {"id":"advanced","title":"Advanced"}
+],"sections":[
+  {"id":"$SECTION_CONNECTION","title":"Connection","order":0,
    "description":"Where your Postgres database lives.",
-   "groups":[{"id":"db"},{"id":"security","title":"Network & security"}]},
-  {"id":"credentials","title":"Credentials",
+   "groups":["db","security"]},
+  {"id":"$SECTION_CREDENTIALS","title":"Credentials","order":1,
    "description":"The Postgres user Airbyte will read your data with.",
-   "groups":[{"id":"auth"}]},
-  {"id":"sync_method","title":"Sync method",
+   "groups":["auth"]},
+  {"id":"$SECTION_SYNC_METHOD","title":"Sync method","order":2,
    "description":"How Airbyte reads changes from your database.",
-   "groups":[{"id":"sync"}]},
-  {"id":"review","title":"Review & set up",
+   "groups":["sync"]},
+  {"id":"$SECTION_REVIEW","title":"Review & set up","order":3,
    "description":"Name your source and check the optional settings.",
-   "groups":[{"id":"advanced","title":"Advanced"}]}
+   "groups":["advanced"]}
 ]}""",
 )
 @JsonPropertyOrder(

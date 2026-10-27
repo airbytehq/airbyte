@@ -28,6 +28,17 @@ import jakarta.inject.Singleton
 
 /** [ConfigurationSpecification] implementation for a fake source. */
 @JsonSchemaTitle("Test Source Spec")
+// Stepped setup form: the sections, each listing the groups it shows. The last section completes
+// the configuration, so a CHECK for it is the full check; the others go to the
+// FakeSourceCheckSectionHandler.
+@JsonSchemaInject(
+    json =
+        """{"groups":[{"id":"db"},{"id":"sync","title":"Sync method"}],
+"sections":[
+  {"id":"connection","title":"Connection","groups":["db"]},
+  {"id":"sync_method","title":"Sync method","groups":["sync"]}
+]}""",
+)
 @JsonPropertyOrder(
     value =
         [

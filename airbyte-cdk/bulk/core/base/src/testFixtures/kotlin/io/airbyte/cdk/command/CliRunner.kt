@@ -51,6 +51,31 @@ data object CliRunner {
         return CliRunnable(runnable, out.results)
     }
 
+    /**
+     * Same as [source] but with the configuration JSON given verbatim, for a partial configuration
+     * or for keys the POJO does not expose, such as `check-section`.
+     */
+    fun source(
+        op: String,
+        configContents: String,
+        catalog: ConfiguredAirbyteCatalog? = null,
+        state: List<AirbyteStateMessage>? = null,
+        vararg featureFlags: FeatureFlag,
+    ): CliRunnable {
+        val out = CliRunnerOutputStream()
+        val configPath: Path? = inputFileFromString(configContents)
+        val runnable: Runnable =
+            makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
+                AirbyteSourceRunner(
+                    args,
+                    additionalMicronautEnvs = emptyList(),
+                    featureFlags.systemEnv,
+                    out.beanDefinition,
+                )
+            }
+        return CliRunnable(runnable, out.results)
+    }
+
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
