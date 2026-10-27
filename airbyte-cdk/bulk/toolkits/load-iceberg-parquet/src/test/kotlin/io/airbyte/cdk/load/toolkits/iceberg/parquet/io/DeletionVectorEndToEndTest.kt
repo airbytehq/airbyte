@@ -14,10 +14,12 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
 import java.nio.file.Files
+import java.time.OffsetDateTime
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties
@@ -35,6 +37,68 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class DeletionVectorEndToEndTest {
+    @Test
+    fun `partitioned deletion vectors retain the old data file partition`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "partitioned_dv_records")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "updated_at", Types.TimestampType.withZone()),
+                    Types.NestedField.required(3, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase(),
+                )
+                .withProperty(TableProperties.FORMAT_VERSION, "3")
+                .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
+                .create()
+        fun record(at: String, name: String) =
+            GenericRecord.create(schema).apply {
+                setField("id", "key")
+                setField("updated_at", OffsetDateTime.parse(at))
+                setField("name", name)
+            }
+        val writerFactory = IcebergTableWriterFactory()
+        val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        seedWriter.write(record("2025-01-01T12:00:00Z", "old"))
+        val seedResult = seedWriter.complete()
+        val oldDataFile = seedResult.dataFiles().single()
+        table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
+
+        val updateWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                dedupe,
+                schema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+                deleteMode = IcebergDeleteMode.DELETION_VECTOR,
+            ) as BasePositionDeltaTaskWriter
+        updateWriter.write(
+            RecordWrapper(record("2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
+        )
+        val result = updateWriter.complete()
+        assertThat(result.deleteFiles()).hasSize(1)
+        assertThat(result.deleteFiles()).allMatch {
+            it.specId() == oldDataFile.specId() &&
+                it.partition() == oldDataFile.partition() &&
+                it.referencedDataFile() == oldDataFile.location()
+        }
+        assertThat(result.dataFiles().single().partition()).isNotEqualTo(oldDataFile.partition())
+
+        commitWriter(table, updateWriter)
+        assertThat(rows(table)).containsExactly("key" to "latest")
+    }
 
     private val schema =
         Schema(

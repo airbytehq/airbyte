@@ -104,6 +104,7 @@ class IcebergTableSynchronizer(
                 addAll(diff.updatedDataTypes)
             }
         }
+        removePartitionFieldsIfNeeded(table, columnsBeingDeleted)
         replaceSortOrderIfNeeded(
             table = table,
             columnsBeingDeleted = columnsBeingDeleted,
@@ -292,6 +293,19 @@ class IcebergTableSynchronizer(
         } else {
             return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
+    }
+
+    private fun removePartitionFieldsIfNeeded(table: Table, columnsBeingDeleted: List<String>) {
+        val deletedSourceIds =
+            columnsBeingDeleted.mapNotNull { table.schema().findField(it)?.fieldId() }.toSet()
+        val fieldsToRemove = table.spec().fields().filter { it.sourceId() in deletedSourceIds }
+        if (fieldsToRemove.isEmpty()) {
+            return
+        }
+        val update = table.updateSpec()
+        fieldsToRemove.forEach { update.removeField(it.name()) }
+        update.commit()
+        table.refresh()
     }
 
     /**
