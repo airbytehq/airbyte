@@ -11,7 +11,7 @@ definitions:
     # Streams set a static `endpoint` suffix in $parameters. Parameters are not re-interpolated,
     # so the Page ID has to live here rather than in each endpoint. The comment stream overrides
     # `url` because it reads from a post id instead.
-    url: "https://graph.facebook.com/v24.0/{{ config['page_id'] }}{{ parameters['endpoint'] }}"
+    url: "https://graph.facebook.com/v26.0/{{ config['page_id'] }}{{ parameters['endpoint'] }}"
     http_method: "GET"
     error_handler:
       type: DefaultErrorHandler
@@ -429,12 +429,9 @@ definitions:
             {{
               'video_insights.metric(%s)' % ','.join(config.get('video_insights_metrics') or [
               'total_video_views',
-              'total_video_views_unique',
               'total_video_complete_views',
               'total_video_avg_time_watched',
               'total_video_view_total_time',
-              'total_video_impressions',
-              'total_video_impressions_unique',
               'total_video_reactions_by_type_total',
               ])
             }}
@@ -464,7 +461,6 @@ definitions:
               'blue_reels_play_count',
               'fb_reels_total_plays',
               'fb_reels_replay_count',
-              'post_impressions_unique',
               'post_video_avg_time_watched',
               'post_video_view_time',
               'post_video_likes_by_reaction_type',
@@ -508,7 +504,7 @@ definitions:
             partition_field: post_id
       requester:
         $ref: "#/definitions/requester"
-        url: "https://graph.facebook.com/v24.0/{{ stream_partition['post_id'] }}/comments"
+        url: "https://graph.facebook.com/v26.0/{{ stream_partition['post_id'] }}/comments"
         request_parameters:
           filter: stream
           fields: "id,message,created_time,from,like_count,comment_count,parent{id},is_hidden,is_private,can_comment,user_likes,permalink_url,attachment"

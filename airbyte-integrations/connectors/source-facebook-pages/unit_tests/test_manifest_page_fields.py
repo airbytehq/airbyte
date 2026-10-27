@@ -16,6 +16,7 @@ DEPRECATED_PAGE_FIELDS = [
     "parking",
     "start_info",
     "live_videos",
+    "commerce_orders",
 ]
 SCHEMAS_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "schemas"
 

@@ -2,6 +2,40 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Facebook Pages Migration Guide
 
+## Upgrading to 4.0.0
+
+This version moves the connector from Graph API v24.0 to v26.0. Every stream now calls `https://graph.facebook.com/v26.0`, which is the version Meta released on 2026-07-29 and the one with the longest remaining life, so the connector no longer sits close to a version retirement.
+
+Meta removed a set of video and Reels insights metrics from every API version when v26.0 launched, and this version stops requesting the ones that were in the connector defaults. The `video_insights` stream no longer requests `total_video_views_unique`, `total_video_impressions` or `total_video_impressions_unique`, and the `reel_insights` stream no longer requests `post_impressions_unique`. The stream schemas are unchanged, because each metric is a row rather than a column, so rows for those metrics simply stop arriving. If you set a custom **Video Insights Metrics** or **Reel Insights Metrics** list that still names one of them, Facebook rejects the whole request and the sync fails with the "must be a valid insights metric" error, so remove them from your list.
+
+This version also removes the `commerce_orders` column from the `page` stream schema. Meta removed the `/{page-id}/commerce_orders` endpoint from all API versions on 2026-10-27 as part of retiring the Commerce Order Management API, with no replacement, so the column could never be populated again. The connector never requested that edge by default, so the request it sends for the `page` stream is unchanged.
+
+:::caution
+If you need the last-known values of the removed video and Reels metrics, or of `page.commerce_orders`, export or snapshot them before upgrading and refreshing the schema. Meta no longer serves any of them on any API version.
+:::
+
+### Why this change?
+
+Meta retires each Graph API version roughly two years after release, and v24.0 is scheduled to be retired on 2028-02-18, so staying on it put a deadline on the connector. Moving to v26.0 resets that clock. The metric removals and the Commerce Order Management API retirement were announced in the [v25.0 changelog](https://developers.facebook.com/docs/graph-api/changelog/version25.0) and the [v26.0 changelog](https://developers.facebook.com/docs/graph-api/changelog/version26.0), and both apply to every API version, so they affect the connector whether or not it moves to v26.0. The other v26.0 changes, such as the removal of the legacy Page fields, were already handled in version 3.0.0, and the connector does not use the retired `pretty`, `debug`, `date_format` or `If-None-Match` request options.
+
+### Who is affected?
+
+- `video_insights` — rows for `total_video_views_unique`, `total_video_impressions` and `total_video_impressions_unique` are no longer emitted. The schema is unchanged.
+- `reel_insights` — rows for `post_impressions_unique` are no longer emitted. The schema is unchanged.
+- `page` — the `commerce_orders` column is removed from the schema.
+- `post`, `page_insights`, `post_insights`, `comment` and `rating` are unaffected beyond the API version change. The fields and metrics they request all exist in v26.0.
+
+No specification, configuration or state changes are required unless you set a custom video or Reels metric list that names a removed metric.
+
+### Migration steps
+
+1. Upgrade the connector to version `4.0.0`.
+2. Refresh the source schema for the `page` stream.
+3. Update downstream models or SQL that reference `page.commerce_orders`.
+4. If you set a custom **Video Insights Metrics** or **Reel Insights Metrics** list, remove `total_video_views_unique`, `total_video_impressions`, `total_video_impressions_unique` and `post_impressions_unique` from it.
+
+Clearing the streams is not required. Clear `video_insights` or `reel_insights` only if you prefer a history in your destination that does not contain rows for the removed metrics.
+
 ## Upgrading to 3.0.0
 
 This version removes the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` from the `page` stream schema. The connector no longer requests them.
