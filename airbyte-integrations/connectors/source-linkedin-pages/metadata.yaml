@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 200
-    sl: 100
+    ql: 300
+    sl: 200
   allowedHosts:
     hosts:
       - api.linkedin.com
@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
@@ -29,7 +29,7 @@ data:
   maxSecondsBetweenMessages: 3600
   name: LinkedIn Pages
   releaseDate: 2022-08-11
-  releaseStage: alpha
+  releaseStage: generally_available
   releases:
     breakingChanges:
       2.0.0:
@@ -49,7 +49,7 @@ data:
         autoStart: true
         autoPromoteStages: true
         strategy: fast
-  supportLevel: community
+  supportLevel: certified
   suggestedStreams:
     streams:
       - total_follower_count
