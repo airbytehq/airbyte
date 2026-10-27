@@ -1,0 +1,39 @@
+data:
+  allowedHosts:
+    hosts:
+      - jsonplaceholder.typicode.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 522069d3-5a18-40fa-b792-732ae2594ba9
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-jsonplaceholder
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jsonplaceholder
+  githubIssueLabel: source-jsonplaceholder
+  icon: jsonplaceholder.svg
+  license: MIT
+  name: JSONPlaceholder
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-jsonplaceholder
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-JSONPLACEHOLDER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
