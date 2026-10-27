@@ -233,6 +233,7 @@ def test_page_statistics_time_bound_aligns_midnight_and_removes_time_range():
         result = output.records[0].record.data
         assert result["timeRangeStart"] == start_millis
         assert result["timeRangeEnd"] == end_millis
+        assert result["date"] == datetime.fromtimestamp(start_millis / 1000, timezone.utc).strftime("%Y-%m-%d")
         assert "timeRange" not in result
         assert len(mocker.request_history) == 1
         _assert_params(
@@ -382,6 +383,37 @@ def test_page_statistics_time_bound_drops_zero_length_month_bucket():
 
 
 @freeze_time("2026-10-23T14:37:12Z")
+@pytest.mark.parametrize(
+    "start_date, expected_posts",
+    [
+        pytest.param(None, ["mid", "new", "old"], id="blank_start_date_every_post"),
+        pytest.param("2026-01-01T00:00:00Z", ["new"], id="start_date"),
+    ],
+)
+@pytest.mark.parametrize("stream_name", ["post_comments", "post_reactions"])
+def test_child_streams_request_only_posts_inside_the_window(stream_name, start_date, expected_posts):
+    # Each child request costs quota, so posts last modified before the window must not be requested.
+    config = {key: value for key, value in _CONFIG.items() if key != "start_date"}
+    if start_date:
+        config["start_date"] = start_date
+    posts = [
+        {"id": "urn:li:share:new", "lastModifiedAt": _day_start_millis(date(2026, 3, 1))},
+        {"id": "urn:li:share:mid", "lastModifiedAt": _day_start_millis(date(2025, 3, 1))},
+        {"id": "urn:li:share:old", "lastModifiedAt": _day_start_millis(date(2023, 3, 1))},
+    ]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(requests_mock.ANY, json={"elements": [], "paging": {"start": 0, "count": 100, "links": []}})
+        mocker.get(f"{_BASE_URL}/posts", json=_posts_response(*posts))
+
+        output = _read(stream_name, config=config)
+
+        child_paths = [urlsplit(request.url).path for request in mocker.request_history if not request.path.endswith("/posts")]
+
+    assert output.errors == []
+    requested_posts = sorted(name for name in ("new", "mid", "old") if any(f"urn%3Ali%3Ashare%3A{name}" in path for path in child_paths))
+    assert requested_posts == expected_posts
+
+
 def test_posts_full_refresh_with_blank_start_date_keeps_old_posts():
     # A rolling default would drop older posts from every full refresh, because the cursor also filters full refresh.
     config = {key: value for key, value in _CONFIG.items() if key != "start_date"}

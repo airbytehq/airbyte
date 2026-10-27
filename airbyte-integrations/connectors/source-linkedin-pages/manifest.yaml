@@ -608,6 +608,9 @@ definitions:
               type: ["null", integer]
             timeRangeEnd:
               type: ["null", integer]
+            date:
+              type: ["null", string]
+              format: date
       retriever:
         type: SimpleRetriever
         requester:
@@ -645,6 +648,12 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - timeRange
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ format_datetime(record['timeRangeStart'], '%Y-%m-%d', '%ms') }}"
+              type: AddedFieldDefinition
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: timeRangeEnd
@@ -680,7 +689,8 @@ check:
 streams:
   - type: DeclarativeStream
     name: organization_lookup
-    primary_key: []
+    primary_key:
+      - - id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -703,7 +713,7 @@ streams:
                   - "null"
               time:
                 type:
-                  - number
+                  - integer
                   - "null"
             type:
               - object
@@ -727,7 +737,7 @@ streams:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
           lastModified:
             properties:
@@ -737,7 +747,7 @@ streams:
                   - "null"
               time:
                 type:
-                  - number
+                  - integer
                   - "null"
             type:
               - object
@@ -848,7 +858,8 @@ streams:
       partition_router: []
   - type: DeclarativeStream
     name: follower_statistics
-    primary_key: []
+    primary_key:
+      - - organizationalEntity
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -929,7 +940,8 @@ streams:
       partition_router: []
   - type: DeclarativeStream
     name: share_statistics
-    primary_key: []
+    primary_key:
+      - - organizationalEntity
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1023,7 +1035,8 @@ streams:
       partition_router: []
   - type: DeclarativeStream
     name: total_follower_count
-    primary_key: []
+    primary_key:
+      - - organizationalEntity
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1033,6 +1046,10 @@ streams:
           firstDegreeSize:
             type:
               - number
+              - "null"
+          organizationalEntity:
+            type:
+              - string
               - "null"
         type: object
     retriever:
@@ -1072,9 +1089,19 @@ streams:
       paginator:
         type: NoPagination
       partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - organizationalEntity
+            value: "urn:li:organization:{{ config['org_id'] }}"
+            type: AddedFieldDefinition
   - type: DeclarativeStream
     name: follower_statistics_time_bound
-    primary_key: []
+    primary_key:
+      - - organizationalEntity
+      - - timeRangeStart
+      - - timeRangeEnd
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1126,15 +1153,20 @@ streams:
             type:
               - string
               - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
           timeRange:
             type:
               - object
               - "null"
           timeRangeEnd:
-            type: number
+            type: integer
           timeRangeStart:
             type:
-              - number
+              - integer
               - "null"
         required:
           - timeRangeEnd
@@ -1206,6 +1238,12 @@ streams:
         field_pointers:
           - - timeRange
             - end
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ format_datetime(record['timeRangeStart'], '%Y-%m-%d', '%ms') }}"
+            type: AddedFieldDefinition
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timeRangeEnd
@@ -1232,7 +1270,10 @@ streams:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: share_statistics_time_bound
-    primary_key: []
+    primary_key:
+      - - organizationalEntity
+      - - timeRangeStart
+      - - timeRangeEnd
     schema_loader:
       type: InlineSchemaLoader
       additionalProperties: true
@@ -1243,15 +1284,20 @@ streams:
             type:
               - string
               - "null"
+          date:
+            type:
+              - string
+              - "null"
+            format: date
           timeRange:
             type:
               - object
               - "null"
           timeRangeEnd:
-            type: number
+            type: integer
           timeRangeStart:
             type:
-              - number
+              - integer
               - "null"
           totalShareStatistics:
             properties:
@@ -1356,6 +1402,12 @@ streams:
         field_pointers:
           - - timeRange
             - end
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ format_datetime(record['timeRangeStart'], '%Y-%m-%d', '%ms') }}"
+            type: AddedFieldDefinition
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timeRangeEnd
