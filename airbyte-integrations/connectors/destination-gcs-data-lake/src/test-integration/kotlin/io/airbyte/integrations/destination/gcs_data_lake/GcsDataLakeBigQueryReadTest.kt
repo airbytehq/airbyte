@@ -41,10 +41,11 @@ class GcsDataLakeBigQueryReadTest {
         val bigLake =
             config.gcsCatalogConfiguration.catalogConfiguration as BigLakeCatalogConfiguration
         val catalog = GcsDataLakeTestUtil.getCatalog(config)
+        val namespaceSuffix = UUID.randomUUID().toString().replace("-", "").take(12)
         val tableId =
             TableIdentifier.of(
-                config.namespace,
-                "bigquery_read_${UUID.randomUUID().toString().replace("-", "").take(12)}",
+                "test_bigquery_read_$namespaceSuffix",
+                "bigquery_read_$namespaceSuffix",
             )
         if (catalog is SupportsNamespaces && !catalog.namespaceExists(tableId.namespace())) {
             catalog.createNamespace(tableId.namespace())
@@ -144,6 +145,9 @@ class GcsDataLakeBigQueryReadTest {
             assertEquals("latest", rows.single().get("value").stringValue)
         } finally {
             catalog.dropTable(tableId)
+            if (catalog is SupportsNamespaces) {
+                catalog.dropNamespace(tableId.namespace())
+            }
         }
     }
 }
