@@ -1291,12 +1291,13 @@ Classes
 
     ### Methods
 
-    `create(self, input: InventoryAdjustCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventoryAdjustQuantitiesPayload`
+    `create(self, input: InventoryAdjustCreateParamsInput, idempotency_key: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventoryAdjustQuantitiesPayload`
     :   Adjusts inventory quantities relatively (add/subtract) for items at locations via GraphQL mutation.
         
         
         Args:
             input: Parameter input
+            idempotency_key: Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation
             **kwargs: Additional parameters
         
         Returns:
@@ -1448,13 +1449,14 @@ Classes
 
     ### Methods
 
-    `create(self, input: InventorySetCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventorySetQuantitiesPayload`
+    `create(self, input: InventorySetCreateParamsInput, idempotency_key: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventorySetQuantitiesPayload`
     :   Sets absolute inventory quantities for items at locations via GraphQL mutation.
         Uses the inventorySetQuantities mutation with a required reason and reference document.
         
         
                 Args:
                     input: Parameter input
+                    idempotency_key: Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation
                     **kwargs: Additional parameters
         
                 Returns:

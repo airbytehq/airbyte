@@ -7,6 +7,7 @@ Covers the `base_url` normalization rule under `spec.config_normalization_rules`
 that are only evaluated at runtime, so these tests fail if a future manifest edit breaks them.
 """
 
+import logging
 from typing import Any
 
 import pytest
@@ -115,8 +116,9 @@ def test_spec_declares_oauth_advanced_auth() -> None:
         assert properties[field]["airbyte_hidden"] is True
     assert "airbyte_hidden" not in properties["base_url"]
     assert spec["connection_specification"]["required"] == ["base_url"]
-    assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
-    assert "minLength" not in spec["connection_specification"]["properties"]["base_url"]
+    assert spec["connection_specification"]["properties"]["base_url"]["pattern"] == r"\S"
+    assert spec["connection_specification"]["properties"]["base_url"]["minLength"] == 1
+    assert spec["connection_specification"]["properties"]["base_url"]["pattern_descriptor"] == "https://<workspace>.onuptick.com"
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
     assert user_input["required"] == ["base_url"]
     assert user_input["properties"]["base_url"]["path_in_connector_config"] == ["base_url"]
@@ -129,6 +131,49 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert oauth_input["scopes"] == [{"scope": "read"}]
     assert oauth_input["access_token_url"].startswith("{{ base_url | replace('.onuptick.com/', '.onuptick.com') }}/api/oauth2/")
     assert "regex_replace" not in oauth_input["access_token_url"]
+
+
+def test_discover_declares_tracking_categories_as_object() -> None:
+    config = base_config()
+    catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
+    streams = {stream.name: stream for stream in catalog.streams}
+
+    products_schema = streams["products"].json_schema["properties"]["tracking_categories"]
+    assert products_schema["type"] == ["object", "null"]
+    assert "items" not in products_schema
+
+    costcentres_schema = streams["costcentres"].json_schema["properties"]["tracking_categories"]
+    assert costcentres_schema["type"] == ["object", "null"]
+    assert "items" not in costcentres_schema
+
+
+def test_discover_declares_jsonapi_objects_and_missing_fields() -> None:
+    config = base_config()
+    catalog = get_source(config).discover(logging.getLogger("airbyte"), config)
+    streams = {stream.name: stream for stream in catalog.streams}
+    streams_that_remove_type = {
+        "accreditationtypes",
+        "billingcontracts",
+        "billingcontractlineitems",
+        "products",
+        "promptquestions",
+    }
+
+    for name, stream in streams.items():
+        if name == "task_profitability":
+            continue
+        properties = stream.json_schema["properties"]
+        assert properties["attributes"] == {"type": ["object", "null"], "additionalProperties": True}
+        assert properties["relationships"] == {"type": ["object", "null"], "additionalProperties": True}
+        if name not in streams_that_remove_type:
+            assert properties["type"] == {"type": ["string", "null"]}
+
+    assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["type"] == ["string", "null"]
+    assert streams["invoicelineitems"].json_schema["properties"]["subtotal"]["airbyte_type"] == "decimal"
+    assert streams["properties"].json_schema["properties"]["address"]["properties"]["place_id"]["type"] == [
+        "string",
+        "null",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -144,6 +189,20 @@ def test_legacy_base_url_shapes_validate_against_spec(base_url: Any) -> None:
     spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
 
     validate(instance=base_config(base_url=base_url), schema=spec_schema)
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        pytest.param("", id="empty"),
+        pytest.param("   ", id="whitespace_only"),
+    ],
+)
+def test_base_url_spec_rejects_empty_or_whitespace(base_url: str) -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+
+    with pytest.raises(ValidationError):
+        validate(instance=base_config(base_url=base_url), schema=spec_schema)
 
 
 def test_legacy_top_level_config_validates() -> None:

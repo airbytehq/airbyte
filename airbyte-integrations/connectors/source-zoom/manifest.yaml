@@ -1,22 +1,56 @@
 version: 5.14.0
 definitions:
   authenticator:
-    type: OAuthAuthenticator
-    token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
-    client_id: "{{ config['client_id'] }}"
-    client_secret: "{{ config['client_secret'] }}"
-    grant_type: account_credentials
-    send_refresh_request_as_query_params: true
-    refresh_request_headers:
-      Authorization: "Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) | base64encode }}"
-    refresh_request_body:
-      account_id: "{{ config['account_id'] }}"
-    refresh_token_error_status_codes: [400, 401, 404]
-    refresh_token_error_key: error
-    refresh_token_error_values:
-      - invalid_client
-      - invalid_request
-      - unsupported_grant_type
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - credentials
+      - auth_type
+    authenticators:
+      oauth2.0:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: https://zoom.us/oauth/token
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+        grant_type: refresh_token
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+            - credentials
+            - access_token
+          refresh_token_config_path:
+            - credentials
+            - refresh_token
+          token_expiry_date_config_path:
+            - credentials
+            - token_expiry_date
+        refresh_token_error_status_codes: [400, 401, 404]
+        refresh_token_error_key: error
+        refresh_token_error_values:
+          - invalid_grant
+          - invalid_client
+          - invalid_request
+          - unsupported_grant_type
+      server_to_server:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['credentials'].get('authorization_endpoint') or 'https://zoom.us/oauth/token' }}"
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        grant_type: account_credentials
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['credentials']['account_id'] }}"
+        refresh_token_error_status_codes: [400, 401, 404]
+        refresh_token_error_key: error
+        refresh_token_error_values:
+          - invalid_client
+          - invalid_request
+          - unsupported_grant_type
   zoom_error_handler:
     type: DefaultErrorHandler
     response_filters:
@@ -24,6 +58,11 @@ definitions:
         predicate: "{{ response.code == 124 }}"
         action: REFRESH_TOKEN_THEN_RETRY
         error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+      - type: HttpResponseFilter
+        predicate: "{{ response.code == 4711 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Zoom access token lacks a required scope ('{{ response.message }}'). Add the scopes listed in the Zoom source documentation to the Zoom app and re-authenticate the source."
   requester:
     url_base: "https://api.zoom.us/v2"
     http_method: "GET"
@@ -13648,6 +13687,752 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinar_participants"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator: "#/definitions/authenticator"
+      path: "/report/users/{{ stream_partition.parent_id }}/meetings"
+      request_parameters:
+        type: past
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - "#/definitions/zoom_error_handler"
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 4711 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:user:admin); add this scope to the app and reconnect."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 1001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 1001 ('{{ response.message }}'): this user was removed from the account after user discovery; skipping this user."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
+            action: IGNORE
+            error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this date window."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 200 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:user:admin); upgrade the plan and grant this scope."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 124 }}"
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+            type: HttpResponseFilter
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response.get('next_page_token') }}"
+        stop_condition: "{{ not response.get('next_page_token') }}"
+        page_size: 300
+      page_size_option:
+        field_name: page_size
+        inject_into: request_parameter
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: next_page_token
+        inject_into: request_parameter
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - meetings
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator: "#/definitions/authenticator"
+              path: "/users"
+              error_handler: "#/definitions/zoom_error_handler"
+              type: HttpRequester
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: CursorPagination
+                cursor_value: "{{ response.get('next_page_token') }}"
+                stop_condition: "{{ not response.get('next_page_token') }}"
+                page_size: 30
+              page_size_option:
+                field_name: page_size
+                inject_into: request_parameter
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: next_page_token
+                inject_into: request_parameter
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - users
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+              additionalProperties: true
+          type: DeclarativeStream
+          name: users
+          primary_key: id
+        parent_key: id
+        partition_field: parent_id
+    type: SimpleRetriever
+  incremental_sync:
+    type: DatetimeBasedCursor
+    global_substream_cursor: true
+    cursor_field: end_time
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%SZ"
+    - "%Y-%m-%d"
+    start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
+    end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+    step: P28D
+    cursor_granularity: P1D
+    lookback_window: P1D
+    start_time_option:
+      type: RequestOption
+      field_name: from
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: to
+      inject_into: request_parameter
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - user_id
+      value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        custom_keys:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              key:
+                type:
+                - 'null'
+                - string
+              value:
+                type:
+                - 'null'
+                - string
+            additionalProperties: true
+        duration:
+          type:
+          - 'null'
+          - integer
+        end_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        id:
+          type:
+          - 'null'
+          - integer
+        participants_count:
+          type:
+          - 'null'
+          - integer
+        session_key:
+          type:
+          - 'null'
+          - string
+        source:
+          type:
+          - 'null'
+          - string
+        start_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        topic:
+          type:
+          - 'null'
+          - string
+        total_minutes:
+          type:
+          - 'null'
+          - integer
+        type:
+          type:
+          - 'null'
+          - integer
+        user_email:
+          type:
+          - 'null'
+          - string
+        user_name:
+          type:
+          - 'null'
+          - string
+        uuid:
+          type:
+          - 'null'
+          - string
+        schedule_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        join_waiting_room_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        join_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        leave_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        host_organization:
+          type:
+          - 'null'
+          - string
+        host_name:
+          type:
+          - 'null'
+          - string
+        has_screen_share:
+          type:
+          - 'null'
+          - boolean
+        has_recording:
+          type:
+          - 'null'
+          - boolean
+        has_chat:
+          type:
+          - 'null'
+          - boolean
+        meeting_encryption_status:
+          type:
+          - 'null'
+          - integer
+        participants_count_my_account:
+          type:
+          - 'null'
+          - integer
+        user_id:
+          type:
+          - 'null'
+          - string
+      additionalProperties: true
+  primary_key:
+  - uuid
+  type: DeclarativeStream
+  name: "report_user_meetings"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator: "#/definitions/authenticator"
+      path: "/report/daily"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - "#/definitions/zoom_error_handler"
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 4711 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:daily_usage:admin); add this scope to the app and reconnect."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
+            action: IGNORE
+            error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this report month."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 200 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:daily_usage:admin); upgrade the plan and grant this scope."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 124 }}"
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+            type: HttpResponseFilter
+      request_parameters:
+        year: "{{ stream_partition.month[:4] }}"
+        month: "{{ stream_partition.month[5:7] | int }}"
+      type: HttpRequester
+    paginator:
+      type: NoPagination
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - dates
+      type: RecordSelector
+    partition_router:
+      type: ListPartitionRouter
+      cursor_field: month
+      values: "{{ [(now_utc() - duration('P5M')).strftime('%Y-%m'), (now_utc() - duration('P4M')).strftime('%Y-%m'), (now_utc() - duration('P3M')).strftime('%Y-%m'), (now_utc() - duration('P2M')).strftime('%Y-%m'), (now_utc() - duration('P1M')).strftime('%Y-%m'), now_utc().strftime('%Y-%m')] | select('ge', config.get('start_date', '')[:7]) | list }}"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        date:
+          type:
+          - 'null'
+          - string
+          format: date
+        meeting_minutes:
+          type:
+          - 'null'
+          - integer
+        meetings:
+          type:
+          - 'null'
+          - integer
+        new_users:
+          type:
+          - 'null'
+          - integer
+        participants:
+          type:
+          - 'null'
+          - integer
+      additionalProperties: true
+  primary_key:
+  - date
+  type: DeclarativeStream
+  name: "report_daily"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator: "#/definitions/authenticator"
+      path: "/chat/users/{{ stream_partition.parent_id }}/channels"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - "#/definitions/zoom_error_handler"
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 4711 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the chat_channel:read:admin scope (or granular team_chat:read:list_user_channels:admin); add this scope to the app and reconnect."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 1001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 1001 ('{{ response.message }}'): this user was removed from the account after user discovery; skipping this user."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 124 }}"
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+            type: HttpResponseFilter
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response.get('next_page_token') }}"
+        stop_condition: "{{ not response.get('next_page_token') }}"
+        page_size: 50
+      page_size_option:
+        field_name: page_size
+        inject_into: request_parameter
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: next_page_token
+        inject_into: request_parameter
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - channels
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator: "#/definitions/authenticator"
+              path: "/users"
+              error_handler: "#/definitions/zoom_error_handler"
+              type: HttpRequester
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: CursorPagination
+                cursor_value: "{{ response.get('next_page_token') }}"
+                stop_condition: "{{ not response.get('next_page_token') }}"
+                page_size: 30
+              page_size_option:
+                field_name: page_size
+                inject_into: request_parameter
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: next_page_token
+                inject_into: request_parameter
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - users
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+              additionalProperties: true
+          type: DeclarativeStream
+          name: users
+          primary_key: id
+        parent_key: id
+        partition_field: parent_id
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - user_id
+      value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        channel_settings:
+          type:
+          - 'null'
+          - object
+          properties:
+            add_member_permissions:
+              type:
+              - 'null'
+              - integer
+            new_members_can_see_previous_messages_files:
+              type:
+              - 'null'
+              - boolean
+            posting_permissions:
+              type:
+              - 'null'
+              - integer
+            mention_all_permissions:
+              type:
+              - 'null'
+              - integer
+            allow_to_add_external_users:
+              type:
+              - 'null'
+              - integer
+          additionalProperties: true
+        id:
+          type:
+          - 'null'
+          - string
+        jid:
+          type:
+          - 'null'
+          - string
+        name:
+          type:
+          - 'null'
+          - string
+        type:
+          type:
+          - 'null'
+          - integer
+        channel_url:
+          type:
+          - 'null'
+          - string
+        user_id:
+          type:
+          - 'null'
+          - string
+      additionalProperties: true
+  primary_key:
+  - id
+  - user_id
+  type: DeclarativeStream
+  name: "chat_channels"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator: "#/definitions/authenticator"
+      path: "/zoom_events/events"
+      request_parameters:
+        role_type: host
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - "#/definitions/zoom_error_handler"
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 4711 }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the zoom_events_basic:read:admin scope (or granular zoom_events:read:list_events:admin); add this scope to the app and reconnect."
+            type: HttpResponseFilter
+          - predicate: "{{ response.code == 124 }}"
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+            type: HttpResponseFilter
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response.get('next_page_token') }}"
+        stop_condition: "{{ not response.get('next_page_token') }}"
+        page_size: 300
+      page_size_option:
+        field_name: page_size
+        inject_into: request_parameter
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: next_page_token
+        inject_into: request_parameter
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - events
+      type: RecordSelector
+    partition_router:
+      type: ListPartitionRouter
+      values:
+      - upcoming
+      - past
+      - draft
+      - cancelled
+      cursor_field: event_status_type
+      request_option:
+        type: RequestOption
+        field_name: event_status_type
+        inject_into: request_parameter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        event_id:
+          type:
+          - 'null'
+          - string
+        name:
+          type:
+          - 'null'
+          - string
+        description:
+          type:
+          - 'null'
+          - string
+        timezone:
+          type:
+          - 'null'
+          - string
+        event_type:
+          type:
+          - 'null'
+          - string
+        recurrence:
+          type:
+          - 'null'
+          - object
+          properties:
+            type:
+              type:
+              - 'null'
+              - integer
+            repeat_interval:
+              type:
+              - 'null'
+              - integer
+            weekly_days:
+              type:
+              - 'null'
+              - string
+            monthly_days:
+              type:
+              - 'null'
+              - integer
+            monthly_week_day:
+              type:
+              - 'null'
+              - integer
+            end_times:
+              type:
+              - 'null'
+              - integer
+            end_date_time:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            monthly_week:
+              type:
+              - 'null'
+              - integer
+            duration:
+              type:
+              - 'null'
+              - integer
+          additionalProperties: true
+        access_level:
+          type:
+          - 'null'
+          - string
+        meeting_type:
+          type:
+          - 'null'
+          - string
+        categories:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        tags:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        calendar:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              start_time:
+                type:
+                - 'null'
+                - string
+                format: date-time
+              end_time:
+                type:
+                - 'null'
+                - string
+                format: date-time
+            additionalProperties: true
+        status:
+          type:
+          - 'null'
+          - string
+        hub_id:
+          type:
+          - 'null'
+          - string
+        start_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        end_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        contact_name:
+          type:
+          - 'null'
+          - string
+        contact_email:
+          type:
+          - 'null'
+          - string
+        lobby_start_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        lobby_end_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        event_url:
+          type:
+          - 'null'
+          - string
+        blocked_countries:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        attendance_type:
+          type:
+          - 'null'
+          - string
+        tagline:
+          type:
+          - 'null'
+          - string
+      additionalProperties: true
+  primary_key:
+  - event_id
+  type: DeclarativeStream
+  name: "zoom_events"
 check:
   stream_names:
   - "users"
@@ -13661,29 +14446,213 @@ spec:
     title: Zoom Spec
     type: object
     required:
-    - account_id
-    - client_id
-    - client_secret
-    - authorization_endpoint
+    - credentials
     additionalProperties: true
     properties:
-      account_id:
-        type: string
+      credentials:
+        type: object
+        title: Authentication
         order: 0
-        description: 'The account ID for your Zoom account. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
-      client_id:
+        description: Choose how to authenticate to Zoom.
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                title: Auth Type
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your admin-managed Zoom General app.
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your admin-managed Zoom General app.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The Refresh Token Zoom issues when an account owner or admin authorizes your Zoom General app.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                airbyte_secret: true
+                airbyte_hidden: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                format: date-time
+                airbyte_hidden: true
+                order: 5
+            additionalProperties: true
+          - type: object
+            title: Server-to-Server OAuth
+            required:
+              - auth_type
+              - account_id
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                title: Auth Type
+                const: server_to_server
+                order: 0
+              account_id:
+                type: string
+                title: Account ID
+                description: The Account ID shown on your Server-to-Server OAuth app's "App Credentials" page in the Zoom App Marketplace.
+                order: 1
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID shown on the same "App Credentials" page.
+                order: 2
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin, meeting:read:admin, webinar:read:admin and report:read:admin scopes, plus chat_channel:read:admin for chat_channels and zoom_events_basic:read:admin for zoom_events. Apps that use granular scopes need the scopes listed in the Zoom source documentation instead.
+                airbyte_secret: true
+                order: 3
+              authorization_endpoint:
+                type: string
+                title: Authorization Endpoint
+                description: Leave the default unless Zoom support has given you a different token URL.
+                default: https://zoom.us/oauth/token
+                airbyte_hidden: true
+                order: 4
+            additionalProperties: true
+      start_date:
         type: string
+        title: Start Date
         order: 1
-        description: 'The client ID for your Zoom app. You can find this in the Zoom
-          Marketplace under the "Manage" tab for your app.'
-      client_secret:
-        type: string
-        order: 2
-        description: 'The client secret for your Zoom app. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
-        airbyte_secret: true
-      authorization_endpoint:
-        type: string
-        order: 3
-        default: "https://zoom.us/oauth/token"
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+        - "2026-01-01T00:00:00Z"
+        description: "UTC date-time from which to replicate the report_user_meetings and report_daily streams (report_daily starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves."
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://zoom.us/oauth/authorize?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state_value}}"
+        access_token_url: https://zoom.us/oauth/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Migrates the existing flat Server-to-Server OAuth config to the nested credentials format.
+          OLD: {"account_id": ..., "client_id": ..., "client_secret": ..., "authorization_endpoint": ...}
+          NEW: {"credentials": {"auth_type": "server_to_server", "account_id": ..., "client_id": ..., "client_secret": ..., "authorization_endpoint": ...}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "account_id"]
+                value: "{{ config['account_id'] }}"
+                value_type: string
+            condition: "{{ config.get('account_id') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_id"]
+                value: "{{ config['client_id'] }}"
+                value_type: string
+            condition: "{{ config.get('client_id') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_secret"]
+                value: "{{ config['client_secret'] }}"
+                value_type: string
+            condition: "{{ config.get('client_secret') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "authorization_endpoint"]
+                value: "{{ config['authorization_endpoint'] }}"
+                value_type: string
+            condition: "{{ config.get('authorization_endpoint') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: server_to_server
+            condition: "{{ not config.get('credentials', {}).get('auth_type') and (config.get('client_id') or config.get('account_id')) }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - [account_id]
+              - [client_id]
+              - [client_secret]
+              - [authorization_endpoint]
+            condition: "{{ config.get('credentials', {}).get('auth_type') }}"
