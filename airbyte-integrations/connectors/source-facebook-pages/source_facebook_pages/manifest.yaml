@@ -8,10 +8,17 @@ definitions:
     extractor:
       field_path: ["data"]
   requester:
-    url_base: "https://graph.facebook.com/v24.0"
+    # Streams set a static `endpoint` suffix in $parameters. Parameters are not re-interpolated,
+    # so the Page ID has to live here rather than in each endpoint. The comment stream overrides
+    # `url` because it reads from a post id instead.
+    url: "https://graph.facebook.com/v24.0/{{ config['page_id'] }}{{ parameters['endpoint'] }}"
     http_method: "GET"
     error_handler:
       type: DefaultErrorHandler
+      # Returns None when Meta sends no regain-access estimate, so the CDK's usual backoff applies.
+      backoff_strategies:
+        - type: CustomBackoffStrategy
+          class_name: source_facebook_pages.components.MetaUsageBackoffStrategy
       response_filters:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
@@ -299,7 +306,7 @@ definitions:
     $parameters:
       name: "page"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}"
+      endpoint: ""
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -315,7 +322,7 @@ definitions:
     $parameters:
       name: "post"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/feed"
+      endpoint: "/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -353,7 +360,7 @@ definitions:
     $parameters:
       name: "post_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/feed"
+      endpoint: "/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -381,7 +388,7 @@ definitions:
     $parameters:
       name: "page_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/insights"
+      endpoint: "/insights"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -406,7 +413,7 @@ definitions:
     $parameters:
       name: "video_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/videos"
+      endpoint: "/videos"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -439,7 +446,7 @@ definitions:
     $parameters:
       name: "reel_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/video_reels"
+      endpoint: "/video_reels"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -464,6 +471,73 @@ definitions:
               'post_video_social_actions',
               ])
             }}
+  # Parent for the comment stream: post ids only, so the per-post comment requests are not
+  # preceded by a full ~60-field post read. Not exposed in `streams`.
+  post_id_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "post"
+      primary_key: "id"
+      endpoint: "/feed"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: "id"
+
+  # One request per post, so a Page with many posts uses many calls; filter=stream returns
+  # replies as well as top-level comments. https://developers.facebook.com/docs/graph-api/reference/post/comments/
+  comment_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "comment"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/post_id_stream"
+            parent_key: id
+            partition_field: post_id
+      requester:
+        $ref: "#/definitions/requester"
+        url: "https://graph.facebook.com/v24.0/{{ stream_partition['post_id'] }}/comments"
+        request_parameters:
+          filter: stream
+          fields: "id,message,created_time,from,like_count,comment_count,parent{id},is_hidden,is_private,can_comment,user_likes,permalink_url,attachment"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
+      - type: AddFields
+        fields:
+          - path: ["post_id"]
+            value: "{{ stream_partition['post_id'] }}"
+            # Post ids look like 1_10, which Python would otherwise read as the integer 110.
+            value_type: string
+
+  # Recommendation nodes have no id of their own, so this stream has no primary key.
+  # https://developers.facebook.com/docs/graph-api/reference/page/ratings/
+  rating_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "rating"
+      endpoint: "/ratings"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: "created_time,has_rating,has_review,rating,recommendation_type,review_text,reviewer"
+
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
@@ -471,6 +545,8 @@ streams:
   - "#/definitions/page_insights_stream"
   - "#/definitions/video_insights_stream"
   - "#/definitions/reel_insights_stream"
+  - "#/definitions/comment_stream"
+  - "#/definitions/rating_stream"
 
 check:
   stream_names:
