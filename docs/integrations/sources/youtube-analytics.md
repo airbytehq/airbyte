@@ -102,11 +102,15 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 ## Rate limits and quotas
 
-The connector limits its requests to 60 per minute. If YouTube returns a rate-limit error, the connector pauses all requests for about a minute and then retries. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
+The connector limits its requests to 60 per minute. YouTube may also return a rate-limit error. The connector retries these requests automatically after about a minute; repeated rate-limit errors fail the sync. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
 
 Airbyte Cloud uses an Airbyte Google Cloud project whose YouTube API quota is shared across Cloud connections. Airbyte Open Source uses the quota of the Google Cloud project configured for the source. Check your [project's quota page in Google Cloud](https://console.cloud.google.com/iam-admin/quotas) for current limits.
 
-### Performance considerations
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Performance considerations
 
 Each selected report stream makes requests to find its reporting job and available reports, then downloads each available report file. Selecting more report streams can therefore use more of your project's quota.
 
@@ -118,10 +122,6 @@ Each selected report stream makes requests to find its reporting job and availab
 - **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours.
 - **Refresh token expires after 7 days.** This applies to External OAuth apps in Testing status. Add the channel's Google account as a test user, or publish the app according to Google's requirements.
 - **Content-owner reports are not available as streams.** The available streams are channel and playlist reports. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
