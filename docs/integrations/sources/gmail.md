@@ -85,16 +85,16 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 
 ## Streams
 
-| Stream             | Primary Key | Sync Mode                   | Description                                                                              |
-|--------------------|:-----------:|-----------------------------|------------------------------------------------------------------------------------------|
-| `profile`          | _(none)_    | Full Refresh                | The authenticated user's Gmail profile, including email address and history ID.          |
-| `drafts`           | `id`        | Full Refresh                | Stub records (`id`, `message.id`, `message.threadId`) returned by `users.drafts.list`.   |
-| `labels`           | `id`        | Full Refresh                | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels.|
-| `labels_details`   | `id`        | Full Refresh                | Per-label metadata such as message and thread counts. Substream of `labels`.             |
-| `messages`         | `id`        | Full Refresh                | Stub records (`id`, `threadId`) returned by `users.messages.list`.                       |
-| `messages_details` | `id`        | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels.                                   |
-| `threads`          | `id`        | Full Refresh                | Stub records (`id`, `snippet`, `historyId`) returned by `users.threads.list`.            |
-| `threads_details`  | `id`        | Full Refresh                | Per-thread details and the messages in each thread. Substream of `threads`.              |
+| Stream             | Primary Key    | Sync Mode                     | Description                                                                               |
+|--------------------|:--------------:|-------------------------------|-------------------------------------------------------------------------------------------|
+| `profile`          | `emailAddress` | Full Refresh                  | The authenticated user's Gmail profile, including email address and history ID.           |
+| `drafts`           | `id`           | Full Refresh                  | Stub records (`id`, `message.id`, `message.threadId`) returned by `users.drafts.list`.    |
+| `labels`           | `id`           | Full Refresh                  | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels. |
+| `labels_details`   | `id`           | Full Refresh                  | Per-label metadata such as message and thread counts. Substream of `labels`.              |
+| `messages`         | `id`           | Full Refresh                  | Stub records (`id`, `threadId`) returned by `users.messages.list`.                        |
+| `messages_details` | `id`           | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels.                                      |
+| `threads`          | `id`           | Full Refresh                  | Stub records (`id`, `snippet`, `historyId`) returned by `users.threads.list`.             |
+| `threads_details`  | `id`           | Full Refresh                  | Per-thread details and the messages in each thread. Substream of `threads`.               |
 
 The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. The other streams have no record-level cursor field, so they run as full refresh.
 
@@ -168,6 +168,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-10-27 | [89502](https://github.com/airbytehq/airbyte/pull/89502) | Add profile primary key and type count and size fields as integers |
 | 0.3.0 | 2026-10-27 | [89756](https://github.com/airbytehq/airbyte/pull/89756) | Bound incremental `messages_details` reads to the previous sync with a one-hour lookback; label and read-state changes on older messages now need a full refresh |
 | 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota, using the previous quota for OAuth and the current quota and full-format read costs for service accounts |
 | 0.1.24 | 2026-10-27 | [89912](https://github.com/airbytehq/airbyte/pull/89912) | Update dependencies |
