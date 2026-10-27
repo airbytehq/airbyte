@@ -119,7 +119,6 @@ Classes
         - registry_type: Registry type if synced from an integration
         - required_integrations: Integrations required for this type
         - schema_: Schema definition for the catalog type
-        - semantic_type: Semantic type for special behavior
         - type_name: Programmatic type name
         - updated_at: When the catalog type was last updated
         
