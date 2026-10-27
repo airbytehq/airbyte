@@ -100,8 +100,7 @@ object SnowflakeLiveTestSupport {
         var text: String =
             javaClass.classLoader.getResourceAsStream(resource)?.use {
                 it.readAllBytes().decodeToString()
-            }
-                ?: throw IllegalArgumentException("missing test resource $resource")
+            } ?: throw IllegalArgumentException("missing test resource $resource")
         vars.forEach { (k, v) -> text = text.replace("\${$k}", v) }
         val statement = StringBuilder()
         for (line in text.lines()) {
@@ -134,21 +133,20 @@ object SnowflakeLiveTestSupport {
         syncMode: SyncMode = SyncMode.FULL_REFRESH,
         cursor: String? = null,
     ): ConfiguredAirbyteCatalog {
-        val streams =
-            names.map { name ->
-                val stream =
-                    catalog.streams.firstOrNull { it.name == name }
-                        ?: throw AssertionError("stream $name missing from discovered catalog")
-                ConfiguredAirbyteStream()
-                    .withStream(stream)
-                    .withSyncMode(syncMode)
-                    .withDestinationSyncMode(
-                        if (syncMode == SyncMode.INCREMENTAL) DestinationSyncMode.APPEND
-                        else DestinationSyncMode.OVERWRITE
-                    )
-                    .withPrimaryKey(stream.sourceDefinedPrimaryKey)
-                    .withCursorField(cursor?.let { listOf(it) } ?: emptyList())
-            }
+        val streams = names.map { name ->
+            val stream =
+                catalog.streams.firstOrNull { it.name == name }
+                    ?: throw AssertionError("stream $name missing from discovered catalog")
+            ConfiguredAirbyteStream()
+                .withStream(stream)
+                .withSyncMode(syncMode)
+                .withDestinationSyncMode(
+                    if (syncMode == SyncMode.INCREMENTAL) DestinationSyncMode.APPEND
+                    else DestinationSyncMode.OVERWRITE,
+                )
+                .withPrimaryKey(stream.sourceDefinedPrimaryKey)
+                .withCursorField(cursor?.let { listOf(it) } ?: emptyList())
+        }
         return ConfiguredAirbyteCatalog().withStreams(streams)
     }
 
@@ -164,9 +162,9 @@ object SnowflakeLiveTestSupport {
             .withStream(
                 AirbyteStreamState()
                     .withStreamDescriptor(
-                        StreamDescriptor().withName(name).withNamespace(namespace)
+                        StreamDescriptor().withName(name).withNamespace(namespace),
                     )
-                    .withStreamState(Jsons.readTree(state))
+                    .withStreamState(Jsons.readTree(state)),
             )
 
     fun BufferingOutputConsumer.recordsOf(stream: String): List<JsonNode> =

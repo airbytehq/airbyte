@@ -25,6 +25,11 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 logger = logging.Logger("")
 
+
+def _iam_user_credentials():
+    return {"auth_type": "iam_user", "aws_access_key_id": "test", "aws_secret_access_key": "test"}
+
+
 endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
     pytest.param([], [], False, set(), id="no-files-match-if-no-globs"),
@@ -118,8 +123,15 @@ def test_get_matching_files(
         aws_access_key_id = aws_secret_access_key = None if endpoint else "test"
         reader.config = Config(
             bucket="test",
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            credentials=(
+                {"auth_type": "default_credentials"}
+                if endpoint
+                else {
+                    "auth_type": "iam_user",
+                    "aws_access_key_id": aws_access_key_id,
+                    "aws_secret_access_key": aws_secret_access_key,
+                }
+            ),
             streams=[],
             endpoint=endpoint,
         )
@@ -192,8 +204,11 @@ def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_tok
     reader = SourceS3StreamReader()
     reader.config = Config(
         bucket="test",
-        aws_access_key_id="aws_access_key_id",
-        aws_secret_access_key="aws_secret_access_key",
+        credentials={
+            "auth_type": "iam_user",
+            "aws_access_key_id": "aws_access_key_id",
+            "aws_secret_access_key": "aws_secret_access_key",
+        },
         streams=[],
         endpoint=None,
     )
@@ -204,7 +219,7 @@ def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_tok
 
 def test_get_matching_files_exception():
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    reader.config = Config(bucket="test", credentials=_iam_user_credentials(), streams=[])
     stub = Stubber(reader.s3_client)
     stub.add_client_error("list_objects_v2")
     stub.activate()
@@ -229,12 +244,11 @@ def test_open_file_without_config_raises_exception():
 def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     smart_open_mock.return_value = io.BytesIO()
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    reader.config = Config(bucket="test", credentials=_iam_user_credentials(), streams=[])
     try:
         reader.config = Config(
             bucket="test",
-            aws_access_key_id="test",
-            aws_secret_access_key="test",
+            credentials=_iam_user_credentials(),
             streams=[],
             endpoint=None,
         )
@@ -263,8 +277,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     bucket_name = "test"
     reader.config = Config(
         bucket=bucket_name,
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
+        credentials=_iam_user_credentials(),
         streams=[],
         endpoint=None,
         delivery_method={"delivery_type": "use_file_transfer"},
@@ -318,17 +331,56 @@ def test_get_iam_s3_client(boto3_client_mock):
     reader = SourceS3StreamReader()
     reader.config = Config(
         bucket="test",
-        role_arn="arn:aws:iam::123456789012:role/my-role",
+        credentials={"auth_type": "iam_role", "role_arn": "arn:aws:iam::123456789012:role/my-role"},
         streams=[],
         endpoint=None,
     )
 
     # Call _get_iam_s3_client
-    with Stubber(reader.s3_client):
-        s3_client = reader._get_iam_s3_client({})
+    s3_client = reader._get_iam_s3_client({})
 
     # Assertions to validate the s3 client
     assert s3_client is not None
+
+
+@pytest.mark.parametrize(
+    "credentials, expected_kwargs",
+    [
+        pytest.param({"auth_type": "default_credentials"}, {}, id="default-credentials"),
+        pytest.param(
+            {
+                "auth_type": "iam_user",
+                "aws_access_key_id": "access",
+                "aws_secret_access_key": "secret",
+            },
+            {"aws_access_key_id": "access", "aws_secret_access_key": "secret"},
+            id="iam-user",
+        ),
+    ],
+)
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_s3_client_uses_selected_non_role_credentials(boto3_client_mock, credentials, expected_kwargs):
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", credentials=credentials, streams=[])
+
+    reader.s3_client
+
+    boto3_client_mock.assert_called_once_with("s3", **expected_kwargs)
+
+
+def test_s3_client_uses_assume_role_for_iam_role(mocker):
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        credentials={"auth_type": "iam_role", "role_arn": "arn:aws:iam::123456789012:role/my-role"},
+        streams=[],
+    )
+    get_iam_s3_client = mocker.patch.object(reader, "_get_iam_s3_client", return_value=Mock())
+
+    client = reader.s3_client
+
+    assert client is get_iam_s3_client.return_value
+    get_iam_s3_client.assert_called_once_with({})
 
 
 @pytest.mark.parametrize(
@@ -350,8 +402,7 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
 
     reader.config = Config(
         bucket="test",
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
+        credentials=_iam_user_credentials(),
         streams=[],
         start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
     )

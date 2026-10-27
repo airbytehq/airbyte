@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-incident-io
   releases:
     breakingChanges:
@@ -68,15 +68,15 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   releaseDate: 2024-10-03
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/incident-io
   tags:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: incident.io API reference
       url: https://api-docs.incident.io/

@@ -776,4 +776,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.10
+**Connector version:** 0.1.11

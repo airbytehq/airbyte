@@ -29,6 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-20 | [89441](https://github.com/airbytehq/airbyte/pull/89441) | Update dependencies |
 | 0.0.65 | 2026-10-13 | [88814](https://github.com/airbytehq/airbyte/pull/88814) | Update dependencies |
 | 0.0.64 | 2026-10-07 | [88310](https://github.com/airbytehq/airbyte/pull/88310) | Fix dead external documentation URL in metadata (`systeme.io/api` -> `developer.systeme.io/reference/api`); API and manifest re-verified against current docs |
 | 0.0.63 | 2026-10-06 | [88084](https://github.com/airbytehq/airbyte/pull/88084) | Update dependencies |

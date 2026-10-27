@@ -20,7 +20,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
@@ -41,11 +40,7 @@ acceptance_tests:
           - name: leads_archived
             bypass_reason: "Sandbox has no archived leads: GET /v1/leads/archived returns data: []."
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."

@@ -42,8 +42,8 @@ class PostgresSourceMetadataQuerier(
 
     /**
      * Validates that the SSL/SSH configuration is sufficient for Airbyte Cloud. On Cloud, we
-     * require SSL encryption or an SSH tunnel; connections with ssl_mode in [disable, allow,
-     * prefer] and no tunnel are rejected.
+     * require SSL encryption or an SSH tunnel; connections with ssl_mode in
+     * [disable, allow, prefer] and no tunnel are rejected.
      */
     private fun validateSslConfiguration() {
         if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
@@ -72,8 +72,9 @@ class PostgresSourceMetadataQuerier(
             log.info { "Querying server xmin wraparound status" }
             val query =
                 """
-            select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
-        """.trimIndent()
+                select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
+                """
+                    .trimIndent()
             conn.createStatement().use { stmt ->
                 stmt.executeQuery(query).use { rs ->
                     if (rs.next()) {

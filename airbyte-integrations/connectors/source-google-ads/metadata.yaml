@@ -7,11 +7,11 @@ data:
       - accounts.google.com
       - googleads.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 6.1.4
+  dockerImageTag: 6.1.7
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
@@ -24,6 +24,12 @@ data:
     - title: Feature deprecations and unversioned changes
       url: https://developers.google.com/google-ads/api/docs/deprecations
       type: api_deprecations
+    - title: OAuth2 authentication overview
+      url: https://developers.google.com/google-ads/api/docs/oauth/overview
+      type: authentication_guide
+    - title: OAuth security requirements
+      url: https://developers.google.com/google-ads/api/docs/oauth/security-requirements
+      type: authentication_guide
     - title: Developer token sunset and API access management guide
       url: https://developers.google.com/google-ads/api/docs/api-policy/developer-token
       type: authentication_guide
@@ -55,7 +61,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
     breakingChanges:
       1.0.0:
         message: This release introduces fixes to custom query schema creation. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.

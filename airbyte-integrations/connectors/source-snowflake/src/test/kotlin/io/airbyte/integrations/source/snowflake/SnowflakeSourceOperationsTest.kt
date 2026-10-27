@@ -28,7 +28,7 @@ class SnowflakeSourceOperationsTest {
                 type =
                     SystemType(typeName = typeName, typeCode = 0, precision = null, scale = scale),
                 nullable = true,
-            )
+            ),
         )
 
     @Test

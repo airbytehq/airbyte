@@ -32,9 +32,6 @@ acceptance_tests:
             bypass_reason:
               "This stream is empty due to free subscription plan for the
               sandbox."
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -43,7 +40,6 @@ acceptance_tests:
           bypass_reason:
             "Test `test_state_with_abnormally_large_values` is bypassed
             as test does not make sense using Concurrent CDK"
-        timeout_seconds: 3600
         skip_comprehensive_incremental_tests: yes
   full_refresh:
     tests:

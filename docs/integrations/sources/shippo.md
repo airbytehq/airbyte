@@ -33,6 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.64 | 2026-10-20 | [89390](https://github.com/airbytehq/airbyte/pull/89390) | Update dependencies |
 | 0.0.63 | 2026-10-13 | [88801](https://github.com/airbytehq/airbyte/pull/88801) | Update dependencies |
 | 0.0.62 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `shippo_token` as `airbyte_secret` |
 | 0.0.61 | 2026-10-06 | [88031](https://github.com/airbytehq/airbyte/pull/88031) | Update dependencies |

@@ -177,7 +177,7 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
         val out =
             read(
                 spec(),
-                configured(catalog, listOf("EMPTY_TABLE"), SyncMode.INCREMENTAL, cursor = "ID")
+                configured(catalog, listOf("EMPTY_TABLE"), SyncMode.INCREMENTAL, cursor = "ID"),
             )
         out.assertNoErrors()
         assertEquals(0, out.recordsOf("EMPTY_TABLE").size)

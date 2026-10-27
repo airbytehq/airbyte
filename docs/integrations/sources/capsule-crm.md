@@ -44,6 +44,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.62 | 2026-10-27 | [89821](https://github.com/airbytehq/airbyte/pull/89821) | Update dependencies |
+| 0.0.61 | 2026-10-20 | [89158](https://github.com/airbytehq/airbyte/pull/89158) | Update dependencies |
 | 0.0.60 | 2026-10-13 | [88551](https://github.com/airbytehq/airbyte/pull/88551) | Update dependencies |
 | 0.0.59 | 2026-10-07 | [88223](https://github.com/airbytehq/airbyte/pull/88223) | Wait until `X-RateLimit-Reset` on HTTP 429 instead of failing with "Too many requests" |
 | 0.0.58 | 2026-10-06 | [87791](https://github.com/airbytehq/airbyte/pull/87791) | Update dependencies |

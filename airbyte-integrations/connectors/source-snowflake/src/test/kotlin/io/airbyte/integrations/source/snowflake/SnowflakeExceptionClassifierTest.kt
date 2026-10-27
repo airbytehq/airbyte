@@ -37,7 +37,7 @@ class SnowflakeExceptionClassifierTest {
             SQLException(
                 "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]",
                 "08001",
-                390144
+                390144,
             )
         val result = regexClassifier.classify(exception)
         Assertions.assertInstanceOf(ConfigError::class.java, result)
@@ -48,7 +48,7 @@ class SnowflakeExceptionClassifierTest {
         Assertions.assertTrue(message.contains("clock"), message)
         Assertions.assertTrue(
             message.contains("SYSTEM\$GET_LOGIN_FAILURE_DETAILS('<id>')"),
-            message
+            message,
         )
         Assertions.assertTrue(message.contains("key-pair-auth-troubleshooting"), message)
         Assertions.assertFalse(message.contains("temporary"), message)
@@ -63,12 +63,12 @@ class SnowflakeExceptionClassifierTest {
                 SQLException(
                     "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]",
                     "08001",
-                    390144
-                )
+                    390144,
+                ),
             )
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            handler.handle(exception).failureType
+            handler.handle(exception).failureType,
         )
     }
 
@@ -93,7 +93,7 @@ class SnowflakeExceptionClassifierTest {
             SQLException(
                 "SQL compilation error: Database 'NOPE' does not exist or not authorized.",
                 "02000",
-                2043
+                2043,
             )
         val result = jdbcClassifier.classify(exception)
         Assertions.assertInstanceOf(ConfigError::class.java, result)
@@ -105,7 +105,7 @@ class SnowflakeExceptionClassifierTest {
         val result = jdbcClassifier.classify(wrapped)
         Assertions.assertInstanceOf(SystemError::class.java, result)
         Assertions.assertTrue(
-            (result as SystemError).displayMessage!!.contains("Error code: 999999")
+            (result as SystemError).displayMessage!!.contains("Error code: 999999"),
         )
     }
 }
