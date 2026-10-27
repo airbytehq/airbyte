@@ -119,6 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.0.1 | 2026-10-27 | [90110](https://github.com/airbytehq/airbyte/pull/90110) | Mark the connector as certified |
 | 2.0.0 | 2026-10-27 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys, type epoch-millisecond fields as integers and add a date field to time-bound statistics |
 | 1.3.0 | 2026-10-26 | [89713](https://github.com/airbytehq/airbyte/pull/89713) | Add posts, comments, reactions, post statistics and page statistics streams |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors, explain auth and API version errors, and request whole statistics windows |
