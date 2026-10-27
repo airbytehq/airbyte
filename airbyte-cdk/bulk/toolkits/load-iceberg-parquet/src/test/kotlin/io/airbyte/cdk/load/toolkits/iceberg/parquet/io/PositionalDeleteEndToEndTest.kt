@@ -85,11 +85,15 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteState = PositionalDeleteResolutionState(),
                 deleteMode = IcebergDeleteMode.POSITIONAL,
             )
-        updateWriter.write(RecordWrapper(record("first", "2025-01-01T12:00:00Z", "one"), Operation.INSERT))
+        updateWriter.write(
+            RecordWrapper(record("first", "2025-01-01T12:00:00Z", "one"), Operation.INSERT),
+        )
         updateWriter.write(
             RecordWrapper(record("key", "2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
         )
-        updateWriter.write(RecordWrapper(record("last", "2025-01-01T13:00:00Z", "two"), Operation.INSERT))
+        updateWriter.write(
+            RecordWrapper(record("last", "2025-01-01T13:00:00Z", "two"), Operation.INSERT),
+        )
         val result = updateWriter.complete()
         val deleteFile = result.deleteFiles().single()
 
@@ -97,7 +101,9 @@ class PositionalDeleteEndToEndTest {
         assertThat(deleteFile.partition()).isEqualTo(oldDataFile.partition())
         assertThat(result.dataFiles()).hasSize(2)
         assertThat(result.dataFiles().map { it.partition() }.toSet()).hasSize(2)
-        assertThat(result.dataFiles().single { it.partition() != oldDataFile.partition() }.partition())
+        assertThat(
+                result.dataFiles().single { it.partition() != oldDataFile.partition() }.partition(),
+            )
             .isNotEqualTo(oldDataFile.partition())
         IcebergTableCommitter.commit(
             table,

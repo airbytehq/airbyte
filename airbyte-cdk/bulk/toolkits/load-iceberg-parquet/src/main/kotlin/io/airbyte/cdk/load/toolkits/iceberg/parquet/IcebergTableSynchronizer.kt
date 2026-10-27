@@ -300,9 +300,12 @@ class IcebergTableSynchronizer(
         val deletedSourceIds =
             columnsBeingDeleted
                 .flatMap { columnName ->
-                    table.schema().findField(columnName)?.let { field ->
-                        TypeUtil.getProjectedIds(field.type()) + field.fieldId()
-                    }
+                    table
+                        .schema()
+                        .findField(columnName)
+                        ?.let { field ->
+                            TypeUtil.getProjectedIds(field.type()) + field.fieldId()
+                        }
                         .orEmpty()
                 }
                 .toSet()

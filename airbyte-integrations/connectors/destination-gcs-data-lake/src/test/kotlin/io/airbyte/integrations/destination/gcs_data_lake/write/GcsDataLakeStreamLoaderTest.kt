@@ -188,6 +188,8 @@ internal class GcsDataLakeStreamLoaderTest {
                 {
                     onCreateTable?.invoke(arg<PartitionSpec>(4)) ?: table
                 }
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
+                "test-generation-id-1-e"
             every { toIcebergSchema(any()) } returns incomingSchema
         }
         return GcsDataLakeStreamLoader(
@@ -426,8 +428,7 @@ internal class GcsDataLakeStreamLoaderTest {
             ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
                 .withAirbyteMeta(true)
                 .toIcebergSchema(listOf(listOf("id")))
-        val partitionFields =
-            listOf(GcsPartitionFieldSpec("name", GcsPartitionTransform.IDENTITY))
+        val partitionFields = listOf(GcsPartitionFieldSpec("name", GcsPartitionTransform.IDENTITY))
         val loader =
             makeLoader(
                 makeStream(Overwrite, generationId = 1, minimumGenerationId = 1),

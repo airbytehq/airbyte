@@ -217,8 +217,9 @@ class GcsDataLakeStreamLoader(
                         "${stream.mappedDescriptor} because schema changes are pending."
                 }
             } else {
-                val writerPartitionFields =
-                    partitionFields.filter { incomingSchema.findField(it.sourceColumn) != null }
+                val writerPartitionFields = partitionFields.filter {
+                    incomingSchema.findField(it.sourceColumn) != null
+                }
                 IcebergPartitioning.evolveSpec(createdTable, writerPartitionFields)
             }
         }

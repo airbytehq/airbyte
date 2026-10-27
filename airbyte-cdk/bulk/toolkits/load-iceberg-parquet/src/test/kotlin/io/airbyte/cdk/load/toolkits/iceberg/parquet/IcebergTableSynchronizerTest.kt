@@ -706,7 +706,9 @@ class IcebergTableSynchronizerTest {
             catalog
                 .buildTable(tableId, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
-                .withPartitionSpec(PartitionSpec.builderFor(schema).day("payload.updated_at").build())
+                .withPartitionSpec(
+                    PartitionSpec.builderFor(schema).day("payload.updated_at").build(),
+                )
                 .create()
         val incomingSchema =
             Schema(listOf(Types.NestedField.required(1, "id", Types.StringType.get())))

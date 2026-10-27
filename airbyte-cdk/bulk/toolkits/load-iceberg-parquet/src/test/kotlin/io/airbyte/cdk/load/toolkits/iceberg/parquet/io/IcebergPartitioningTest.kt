@@ -144,7 +144,9 @@ class IcebergPartitioningTest {
             .isTrue()
         assertThat(table.spec().fields().map { it.transform().toString() })
             .contains("bucket[8]", "bucket[16]")
-        assertThat(table.spec().fields().single { it.transform().toString() == "bucket[16]" }.name())
+        assertThat(
+                table.spec().fields().single { it.transform().toString() == "bucket[16]" }.name(),
+            )
             .isEqualTo("id_bucket_16_1")
 
         catalog.dropTable(tableId)
