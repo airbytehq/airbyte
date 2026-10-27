@@ -121,13 +121,18 @@ class GcsDataLakeBigQueryReadTest {
                     .build()
                     .service
             val tableName =
-                "`${config.projectId}.${bigLake.catalogName}." +
-                    "${tableId.namespace()}.${tableId.name()}`"
+                listOf(
+                        config.projectId,
+                        bigLake.catalogName,
+                        tableId.namespace(),
+                        tableId.name(),
+                    )
+                    .joinToString(".")
             val rows =
                 bigQuery
                     .query(
                         QueryJobConfiguration.newBuilder(
-                                "SELECT id, value FROM $tableName WHERE id = 'key'",
+                                "SELECT id, value FROM `$tableName` WHERE id = 'key'",
                             )
                             .setUseLegacySql(false)
                             .build(),
