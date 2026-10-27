@@ -104,6 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.5.1 | 2026-10-27 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |
