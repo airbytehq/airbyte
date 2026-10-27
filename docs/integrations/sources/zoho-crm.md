@@ -195,7 +195,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.0 | 2026-10-27 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add optional `Include Converted Leads` setting to also sync converted leads |
+| 0.4.0 | 2026-10-27 | [90133](https://github.com/airbytehq/airbyte/pull/90133) | Add optional `Include Converted Leads` setting to also sync converted leads |
 | 0.3.6 | 2026-10-27 | [90099](https://github.com/airbytehq/airbyte/pull/90099) | Update dependencies |
 | 0.3.5 | 2026-10-20 | [89462](https://github.com/airbytehq/airbyte/pull/89462) | Update dependencies |
 | 0.3.4 | 2026-10-13 | [88877](https://github.com/airbytehq/airbyte/pull/88877) | Update dependencies |
