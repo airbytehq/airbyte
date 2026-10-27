@@ -1060,6 +1060,8 @@ definitions:
           # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
           datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
+        # The end is one day past the range, so a start equal to it must not become a one-day request.
+        is_compare_strictly: true
         step: P1D
         cursor_granularity: P1D
         global_substream_cursor: true

@@ -260,7 +260,8 @@ campaigns without `supplySources` are kept. Terms under Apple's 10-impression li
 with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
 slice start), so a row's `date` always matches its metrics. The CDK folds the last day into the
 final slice, so the cursor ends one day after the End Date (or today) to give that day its own
-request. The first window starts at most 89 days back, because Apple serves `DAILY`
+request; `is_compare_strictly` keeps a start equal to that end from requesting a day past the range.
+The first window starts at most 89 days back, because Apple serves `DAILY`
 reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
 zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
 handler reports it as a system error.
