@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.3 — 2026-10-27
+
+[#89691](https://github.com/airbytehq/airbyte/pull/89691) — Section-aware CHECK for the stepped setup form: a top-level `check-section` key in the config JSON names one of the `sections` the spec declares; `CheckOperation` runs the full check for the last section and delegates the others to a new connector-provided `CheckSectionHandler` bean; without the key CHECK is unchanged.
+
 ### 1.2.2 — 2026-10-21
 
 [#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.

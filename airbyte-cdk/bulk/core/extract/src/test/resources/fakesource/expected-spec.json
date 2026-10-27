@@ -16,16 +16,12 @@
       {
         "id": "connection",
         "title": "Connection",
-        "groups": [
-          "db"
-        ]
+        "groups": ["db"]
       },
       {
         "id": "sync_method",
         "title": "Sync method",
-        "groups": [
-          "sync"
-        ]
+        "groups": ["sync"]
       }
     ],
     "type": "object",

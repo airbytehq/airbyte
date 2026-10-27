@@ -1,3 +1,7 @@
+## Version 1.0.8
+
+[#89691](https://github.com/airbytehq/airbyte/pull/89691) — `CliRunner.source` overload taking the configuration JSON verbatim (test fixtures only), for partial configurations and keys the POJO does not expose such as `check-section`; no runtime change.
+
 ## Version 1.0.7
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
