@@ -10,7 +10,7 @@ To set up the Facebook Pages source connector, you need a Facebook app, a long-l
 This connector calls v24.0 of the Facebook Graph API.
 :::
 
-Meta only returns Page Insights data for Pages with 100 or more likes, and the connector checks the connection by reading the `page_insights` stream. If your Page has fewer than 100 likes, expect the connection check and both insights streams to return no data or fail.
+Meta only returns Page Insights data for Pages with 100 or more likes. The connector checks the connection by reading the `page_insights` stream, and an empty response still passes, so a Page with fewer than 100 likes can be set up and will sync `page` and `post`, but its insights streams return no records until it reaches 100 likes.
 
 ## Setup guide
 
