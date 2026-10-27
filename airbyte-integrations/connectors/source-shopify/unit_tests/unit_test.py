@@ -12,7 +12,7 @@ from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import BalanceTransactions, Countries, DeletedProducts, DiscountCodes, MarketCountries, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -330,6 +330,24 @@ DELETED_PRODUCT_EVENT = {
 
 def deleted_products_page(nodes, end_cursor: Optional[str] = None) -> Mapping[str, Any]:
     return {"data": {"events": {"pageInfo": {"hasNextPage": end_cursor is not None, "endCursor": end_cursor}, "nodes": nodes}}}
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_query",
+    [
+        pytest.param({}, "action:destroy AND subject_type:Product", id="no_state"),
+        pytest.param(
+            {"deleted_at": "2026-10-01T00:00:00Z"},
+            "action:destroy AND subject_type:Product AND created_at:>='2026-10-01T00:00:00Z'",
+            id="inclusive_lower_bound_from_state",
+        ),
+    ],
+)
+def test_deleted_products_query_filter(requests_mock, auth_config, stream_state, expected_query):
+    """From Admin API 2026-10, `>` on a second-precision cursor skips the rest of that second, so the lower bound must be `>=`."""
+    requests_mock.post(GRAPHQL_URL, json=deleted_products_page([DELETED_PRODUCT_EVENT]))
+    list(DeletedProducts(auth_config).read_records(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    assert requests_mock.last_request.json()["variables"]["query"] == expected_query
 
 
 @pytest.mark.parametrize(
