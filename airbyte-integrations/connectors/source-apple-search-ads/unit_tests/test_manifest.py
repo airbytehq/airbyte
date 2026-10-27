@@ -235,3 +235,55 @@ def test_schemas_include_additive_campaign_and_adgroup_fields(manifest):
     ]
     assert adgroups["automatedKeywordsRequired"]["type"] == ["boolean", "null"]
     assert adgroups["biddingStrategy"]["type"] == ["string", "null"]
+
+
+def test_report_schemas_declare_apples_spend_row_metrics(manifest):
+    # Every metric of Apple's ExtendedSpendRow, so destinations stop seeing undeclared fields in granularity.
+    metrics = {
+        "avgCPM",
+        "avgCPT",
+        "impressions",
+        "localSpend",
+        "tapInstallCPI",
+        "tapInstallRate",
+        "tapInstalls",
+        "tapNewDownloads",
+        "tapRedownloads",
+        "taps",
+        "tapPreOrdersPlaced",
+        "totalAvgCPI",
+        "totalInstallRate",
+        "totalInstalls",
+        "totalNewDownloads",
+        "totalRedownloads",
+        "totalPreOrdersPlaced",
+        "ttr",
+        "viewInstalls",
+        "viewNewDownloads",
+        "viewPreOrdersPlaced",
+        "viewRedownloads",
+    }
+    for stream in (
+        "campaigns_report_daily",
+        "adgroups_report_daily",
+        "keywords_report_daily",
+        "ads_report_daily",
+        "search_terms_report_daily",
+    ):
+        declared = set(manifest["schemas"][stream]["properties"]["granularity"]["items"]["properties"])
+        assert metrics <= declared, (stream, sorted(metrics - declared))
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 2), (1, 2), (5, 5)])
+def test_concurrency_never_drops_below_two(manifest, num_workers, expected):
+    # The CDK's lowest safe concurrency is 2, and the spec still allows 1 for saved configs.
+    from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
+
+    config = {} if num_workers is None else {"num_workers": num_workers}
+    level = ConcurrencyLevel(
+        default_concurrency=manifest["concurrency_level"]["default_concurrency"],
+        max_concurrency=manifest["concurrency_level"]["max_concurrency"],
+        config=config,
+        parameters={},
+    )
+    assert level.get_concurrency_level() == expected

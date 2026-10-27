@@ -427,7 +427,9 @@ def test_search_terms_report_daily_400_is_a_system_error(mocker):
         ("creatives", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
         ("campaign_negative_keywords", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
         ("adgroup_negative_keywords", ("creationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
-        ("product_pages", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
+        # Apple's product page example has Z on modificationTime only.
+        ("product_pages", ("modificationTime",), {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}),
+        ("product_pages", ("creationTime",), {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}),
         ("search_terms_report_daily", ("date",), {"format": "date"}),
         ("search_terms_report_daily", ("granularity", "items", "date"), {"format": "date"}),
         (

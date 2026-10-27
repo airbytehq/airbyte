@@ -24,12 +24,11 @@ identified by the reporting entity id plus `date` plus `countryorregion` — all
 the connector from its own request parameters — so no stable API-provided primary key exists to
 declare. Dedupe on that tuple in the destination if needed; for `search_terms_report_daily`, add `adGroupId`, `keywordId` and `searchTermText`.
 
-### 3. Deletions are replicated as a `deleted` flag on the entity streams
+### 3. The `GET` list endpoints never return deleted entities
 
-The canonical pattern for this connector is a deletion flag on the primary streams
-(`campaigns`, `adgroups`, `keywords`, `ads` and the two negative keyword streams all carry Apple's `deleted` boolean), not dedicated
-`deleted_*` streams. The connector does not explicitly request deleted records, and whether Apple's
-`GET` list endpoints include soft-deleted rows is unverified.
+Apple only returns deleted campaigns, ad groups, keywords, ads and negative keywords through its
+find endpoints, so the connector does not sync them and `deleted` is always `false`. Moving to the
+find endpoints is planned with the Campaign Management API v5 retirement.
 
 ### 4. Entity streams are full refresh even though records carry `modificationTime`
 
@@ -47,12 +46,11 @@ Apple publishes only backoff advice for v5, so there is no `api_budget`. Campaig
 sunsets on 2027-01-26 and the Platform API that replaces it publishes `RateLimit-*` headers, so
 revisit this during that migration.
 
-### 6. Stream coverage versus Fivetran (parity table)
+### 6. Stream coverage against the market (parity table)
 
-All ten of Fivetran's Apple Search Ads tables have a matching stream, including `organization`
-(`GET /acls`) and `search_terms_report_daily` (`POST /reports/campaigns/{campaignId}/searchterms`).
-Impression-share reports are not covered. See the parity table in [AGENTS.md](./AGENTS.md) for the
-row-by-row verdicts and caveats.
+Every resource other Apple Ads connectors sync has a stream or a field here, except impression share
+reports and product page locales, which are planned with the API v5 retirement. See the table in
+[AGENTS.md](./AGENTS.md).
 
 ### 7. `search_terms_report_daily` always uses ORTZ and only Search Results campaigns
 
