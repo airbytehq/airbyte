@@ -123,6 +123,23 @@ class PostgresSourceCheckSectionIntegrationTest {
         assertSucceeded(check(complete()))
     }
 
+    @Test
+    fun testFullCheckAppliesTheCdcPrerequisites() {
+        assertSucceeded(check(complete(cdc(testdb.replicationSlotName, testdb.publicationName))))
+        assertFailedWith(
+            check(complete(cdc("no_such_slot", testdb.publicationName))),
+            "Replication slot 'no_such_slot' does not exist in database '${testdb.databaseName}'.",
+        )
+        assertFailedWith(
+            check(
+                complete(cdc(testdb.replicationSlotName, "no_such_publication"))
+                    .put("check-section", SECTION_REVIEW),
+            ),
+            "Publication 'no_such_publication' does not exist " +
+                "in database '${testdb.databaseName}'.",
+        )
+    }
+
     /** The connection section: host, port and SSL mode; no database, user or password. */
     private fun connection(db: PostgresTestDatabase = testdb): ObjectNode =
         Jsons.createObjectNode().apply {
@@ -150,8 +167,8 @@ class PostgresSourceCheckSectionIntegrationTest {
         }
 
     /** The complete configuration, as the review section or a plain CHECK sends it. */
-    private fun complete(): ObjectNode =
-        syncMethod(replicationMethod("Standard")).apply {
+    private fun complete(replication: ObjectNode = replicationMethod("Standard")): ObjectNode =
+        syncMethod(replication).apply {
             remove("check-section")
             putArray("schemas").add("public")
         }
