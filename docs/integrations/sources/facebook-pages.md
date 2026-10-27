@@ -69,15 +69,21 @@ The `page_insights` stream is full refresh by default, which asks Facebook for i
 | :--- | :--- | :--- |
 | `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
 | `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
-| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
-| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Requests a fixed set of metrics. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Metrics are configurable. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `video_insights` | [`/{page-id}/videos`](https://developers.facebook.com/docs/graph-api/reference/page/videos/) with a `video_insights.metric(...)` field selection | Lifetime [video insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/) per Page video, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `reel_insights` | [`/{page-id}/video_reels`](https://developers.facebook.com/docs/video-api/guides/reels-publishing/) with a `video_insights.metric(...)` field selection | Lifetime [Reels insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/#reels-metrics) per Page reel, such as `blue_reels_play_count`, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
 
-You can't choose which insights metrics to sync. The connector requests these:
+You can choose which metrics each insights stream requests with the **Page Insights Metrics**, **Post Insights Metrics**, **Video Insights Metrics**, and **Reel Insights Metrics** settings. If you leave a setting empty, the connector requests these defaults:
 
 - `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
 - `post_insights`: `post_media_view`, `post_total_media_view_unique`, `post_clicks`, `post_clicks_by_type`, `post_reactions_by_type_total`
+- `video_insights`: `total_video_views`, `total_video_views_unique`, `total_video_complete_views`, `total_video_avg_time_watched`, `total_video_view_total_time`, `total_video_impressions`, `total_video_impressions_unique`, `total_video_reactions_by_type_total`
+- `reel_insights`: `blue_reels_play_count`, `fb_reels_total_plays`, `fb_reels_replay_count`, `post_impressions_unique`, `post_video_avg_time_watched`, `post_video_view_time`, `post_video_likes_by_reaction_type`, `post_video_social_actions`
 
-Both insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
+A setting replaces the defaults instead of adding to them, so include every metric you want. Facebook rejects the whole request when any one metric is misspelled or deprecated, so if a sync fails with the "must be a valid insights metric" error after you change a setting, check that list first. Each extra metric also adds to the response size and to your Graph API usage.
+
+All insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
 
 ## Reference
 
@@ -184,6 +190,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.0 | 2026-10-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Make the `page_insights` and `post_insights` metrics configurable, and add the `video_insights` and `reel_insights` streams. |
 | 3.1.0 | 2026-10-27 | [90124](https://github.com/airbytehq/airbyte/pull/90124) | Add an optional incremental sync mode to the `page_insights` stream, which uses a `since` and `until` date range in 90-day windows and a new `start_date` setting to backfill history, while leaving full refresh requests unchanged. |
 | 3.0.1 | 2026-10-27 | [90130](https://github.com/airbytehq/airbyte/pull/90130) | Exchange the Page access token once per sync instead of before every Graph API request, and resolve the schema's date-time field paths once per stream instead of re-reading the schema for every record. Neither change alters the query strings sent to Meta or the records produced. |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
