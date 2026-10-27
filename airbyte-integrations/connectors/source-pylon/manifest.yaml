@@ -155,6 +155,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/issue_messages"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - issue_id
+              value: "{{ stream_partition.issue_id }}"
 
     issue_threads:
       type: DeclarativeStream
@@ -362,6 +368,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/knowledge_base_articles"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - knowledge_base_id
+              value: "{{ stream_partition.knowledge_base_id }}"
 
     ticket_forms:
       type: DeclarativeStream
@@ -865,6 +877,10 @@ schemas:
     properties:
       id:
         type: string
+      issue_id:
+        type:
+          - "null"
+          - string
       message_html:
         type:
           - "null"
@@ -1085,6 +1101,10 @@ schemas:
     properties:
       id:
         type: string
+      knowledge_base_id:
+        type:
+          - "null"
+          - string
       title:
         type:
           - "null"
