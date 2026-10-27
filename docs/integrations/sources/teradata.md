@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                     |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
 | 0.2.7 | 2026-10-07 | [88282](https://github.com/airbytehq/airbyte/pull/88282) | Fix JDBC URL built when a port is configured (`host/DBS_PORT=<port>`); previously every connection with a port failed with `UnknownHostException` |
 | 0.2.6 | 2025-07-10 | [62926](https://github.com/airbytehq/airbyte/pull/62926) | Convert to new gradle build flow |
