@@ -115,8 +115,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
+| Version | Date | Subject |
+| ------------------ | ------------ | ---------------- |
 | 4.3.22 | 2026-10-20 | Update dependencies |
 | 4.3.21 | 2026-10-13 | Update dependencies |
 | 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
