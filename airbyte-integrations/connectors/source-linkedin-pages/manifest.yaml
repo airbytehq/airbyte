@@ -253,7 +253,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config.get('start_date') or '2003-05-05T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -400,6 +400,74 @@ definitions:
               - elements
         paginator:
           $ref: "#/definitions/offset_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: post_urn
+              incremental_dependency: false
+              stream:
+                $ref: "#/definitions/streams/posts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - post_urn
+              value: "{{ stream_partition.post_urn }}"
+              type: AddedFieldDefinition
+    post_statistics:
+      type: DeclarativeStream
+      name: post_statistics
+      primary_key:
+        - post_urn
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            organizationalEntity:
+              type: ["null", string]
+            share:
+              type: ["null", string]
+            ugcPost:
+              type: ["null", string]
+            totalShareStatistics:
+              type: ["null", object]
+              properties:
+                clickCount:
+                  type: ["null", integer]
+                commentCount:
+                  type: ["null", integer]
+                engagement:
+                  type: ["null", number]
+                impressionCount:
+                  type: ["null", integer]
+                likeCount:
+                  type: ["null", integer]
+                shareCount:
+                  type: ["null", integer]
+                uniqueImpressionsCount:
+                  type: ["null", integer]
+            post_urn:
+              type: ["null", string]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/community_requester"
+          # Rest.li 2.0 list syntax: each URN is encoded inside a literal List(...), and share and ugcPost URNs take different parameters.
+          path: >-
+            /organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity={{ ('urn:li:organization:' ~ config['org_id']) | urlencode }}&{{ 'ugcPosts' if 'urn:li:ugcPost:' in stream_partition.post_urn else 'shares' }}=List({{ stream_partition.post_urn | urlencode }})
+          error_handler:
+            $ref: "#/definitions/child_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -603,7 +671,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ [config.get('num_workers') or 3, 2] | max }}"
   max_concurrency: 10
 check:
   type: CheckStream
@@ -1110,6 +1178,10 @@ streams:
           type: DpathExtractor
           field_path:
             - elements
+        # MONTH windows end on a month boundary, and LinkedIn can answer with a zero-length bucket at that boundary.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['timeRange']['start'] < record['timeRange']['end'] }}"
       paginator:
         type: NoPagination
       partition_router: []
@@ -1256,6 +1328,10 @@ streams:
           type: DpathExtractor
           field_path:
             - elements
+        # MONTH windows end on a month boundary, and LinkedIn can answer with a zero-length bucket at that boundary.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['timeRange']['start'] < record['timeRange']['end'] }}"
       paginator:
         type: NoPagination
       partition_router: []
@@ -1307,6 +1383,7 @@ streams:
   - $ref: "#/definitions/streams/posts"
   - $ref: "#/definitions/streams/post_comments"
   - $ref: "#/definitions/streams/post_reactions"
+  - $ref: "#/definitions/streams/post_statistics"
   - $ref: "#/definitions/streams/page_statistics"
   - $ref: "#/definitions/streams/page_statistics_time_bound"
 spec:
@@ -1386,8 +1463,9 @@ spec:
           YYYY-MM-DDT00:00:00Z. Time-bound statistics are only available from the
           last 12 months up to 2 days before today, so an earlier date is clamped
           to 12 months ago for them. Posts, and the comments and reactions on
-          them, are synced for posts last modified since this date, or the last
-          2 years if you leave it blank.
+          them, are synced for posts last modified since this date, or all posts
+          if you leave it blank. Comments and reactions send requests for every
+          post in that range on each sync, so a later date saves daily quota.
       time_granularity_type:
         enum:
           - DAY
@@ -1407,8 +1485,9 @@ spec:
         default: 3
         order: 4
         description: >-
-          Number of concurrent requests. LinkedIn enforces a per-application
-          daily quota, so increase this only if you understand your quota.
+          Number of concurrent requests. Values below 2 run as 2. LinkedIn
+          enforces a per-application daily quota, so increase this only if you
+          understand your quota.
     additionalProperties: true
   config_normalization_rules:
     type: ConfigNormalizationRules

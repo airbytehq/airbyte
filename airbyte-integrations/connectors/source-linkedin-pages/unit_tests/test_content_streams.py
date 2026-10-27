@@ -296,7 +296,7 @@ def test_posts_403_is_a_config_error_with_scope_remediation():
     "start_date, expected_ids",
     [
         pytest.param("2026-01-01T00:00:00Z", {"this_year"}, id="start_date"),
-        pytest.param(None, {"this_year", "last_year"}, id="two_year_default"),
+        pytest.param(None, {"this_year", "last_year", "three_years_ago"}, id="blank_start_date_keeps_every_post"),
     ],
 )
 def test_posts_first_incremental_sync_drops_posts_before_start(start_date, expected_ids):
@@ -320,6 +320,7 @@ def test_posts_first_incremental_sync_drops_posts_before_start(start_date, expec
     [
         ("post_comments", "/socialActions/urn%3Ali%3Ashare%3A1/comments"),
         ("post_reactions", "/reactions/(entity:urn%3Ali%3Ashare%3A1)"),
+        ("post_statistics", "/organizationalEntityShareStatistics"),
     ],
 )
 def test_child_streams_ignore_deleted_post_and_fail_403_as_config_error(stream_name, child_path):
@@ -345,11 +346,12 @@ def test_new_streams_primary_keys_and_cursors():
 
     assert {
         name: (streams[name].source_defined_primary_key, streams[name].default_cursor_field)
-        for name in ("posts", "post_comments", "post_reactions", "page_statistics", "page_statistics_time_bound")
+        for name in ("posts", "post_comments", "post_reactions", "post_statistics", "page_statistics", "page_statistics_time_bound")
     } == {
         "posts": ([["id"]], ["lastModifiedAt"]),
         "post_comments": ([["object"], ["id"]], None),
         "post_reactions": ([["id"]], None),
+        "post_statistics": ([["post_urn"]], None),
         "page_statistics": ([["organization"]], None),
         "page_statistics_time_bound": ([["organization"], ["timeRangeStart"], ["timeRangeEnd"]], ["timeRangeEnd"]),
     }
@@ -377,3 +379,83 @@ def test_page_statistics_time_bound_drops_zero_length_month_bucket():
 
     assert output.errors == [], output.get_formatted_error_message()
     assert [(r.record.data["timeRangeStart"], r.record.data["timeRangeEnd"]) for r in output.records] == [(september, october)]
+
+
+@freeze_time("2026-10-23T14:37:12Z")
+def test_posts_full_refresh_with_blank_start_date_keeps_old_posts():
+    # A rolling default would drop older posts from every full refresh, because the cursor also filters full refresh.
+    config = {key: value for key, value in _CONFIG.items() if key != "start_date"}
+    posts = [
+        {"id": "recent", "lastModifiedAt": _day_start_millis(date(2026, 3, 1))},
+        {"id": "old", "lastModifiedAt": _day_start_millis(date(2015, 3, 1))},
+    ]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/posts", json=_posts_response(*posts))
+
+        output = _read("posts", SyncMode.full_refresh, config=config)
+
+    assert output.errors == [], output.get_formatted_error_message()
+    assert {record.record.data["id"] for record in output.records} == {"recent", "old"}
+
+
+@freeze_time("2026-10-23T14:37:12Z")
+@pytest.mark.parametrize(
+    "stream_name, path, payload",
+    [
+        (
+            "follower_statistics_time_bound",
+            "organizationalEntityFollowerStatistics",
+            {"followerGains": {"organicFollowerGain": 1, "paidFollowerGain": 0}},
+        ),
+        ("share_statistics_time_bound", "organizationalEntityShareStatistics", {"totalShareStatistics": {"clickCount": 1}}),
+    ],
+)
+def test_time_bound_statistics_drop_zero_length_month_bucket(stream_name, path, payload):
+    september, october = 1788220800000, 1790812800000
+    record = {"organizationalEntity": _ORGANIZATION, **payload}
+    config = {**_CONFIG, "time_granularity_type": "MONTH"}
+    state = StateBuilder().with_stream_state(stream_name, {"timeRangeEnd": september}).build()
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/{path}",
+            json={
+                "elements": [
+                    {**record, "timeRange": {"start": september, "end": october}},
+                    # Seen live on follower statistics: a zero-length bucket at the end of a MONTH window.
+                    {**record, "timeRange": {"start": october, "end": october}},
+                ]
+            },
+        )
+
+        output = _read(stream_name, SyncMode.incremental, state, config=config)
+
+    assert output.errors == [], output.get_formatted_error_message()
+    assert [(r.record.data["timeRangeStart"], r.record.data["timeRangeEnd"]) for r in output.records] == [(september, october)]
+
+
+def test_post_statistics_picks_the_list_parameter_by_urn_type():
+    statistics = {"clickCount": 1, "commentCount": 1, "engagement": 0.5, "impressionCount": 4, "likeCount": 1, "shareCount": 0}
+    base = f"{_BASE_URL}/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A12345678"
+    responses = {
+        "shares=List(urn%3Ali%3Ashare%3A1)": [
+            {"organizationalEntity": _ORGANIZATION, "share": "urn:li:share:1", "totalShareStatistics": statistics}
+        ],
+        "ugcPosts=List(urn%3Ali%3AugcPost%3A2)": [
+            {"organizationalEntity": _ORGANIZATION, "ugcPost": "urn:li:ugcPost:2", "totalShareStatistics": statistics}
+        ],
+        # LinkedIn leaves out posts without impressions or actions.
+        "shares=List(urn%3Ali%3Ashare%3A3)": [],
+    }
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/posts", json=_posts_response({"id": "urn:li:share:1"}, {"id": "urn:li:ugcPost:2"}, {"id": "urn:li:share:3"})
+        )
+        matchers = {
+            param: mocker.get(f"{base}&{param}", json={"elements": elements}, complete_qs=True) for param, elements in responses.items()
+        }
+
+        output = _read("post_statistics")
+
+    assert output.errors == [], output.get_formatted_error_message()
+    assert {param: matcher.call_count for param, matcher in matchers.items()} == {param: 1 for param in responses}
+    assert sorted(record.record.data["post_urn"] for record in output.records) == ["urn:li:share:1", "urn:li:ugcPost:2"]

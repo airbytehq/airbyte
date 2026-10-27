@@ -31,6 +31,7 @@ _STREAMS = [
     pytest.param("posts", "GET", "/posts", {"elements": [{"id": "urn:li:share:1"}]}),
     pytest.param("post_comments", "GET", "/socialActions/urn%3Ali%3Ashare%3A1/comments", {"elements": [{"id": "comment-1"}]}),
     pytest.param("post_reactions", "GET", "/reactions/(entity:urn%3Ali%3Ashare%3A1)", {"elements": [{"id": "reaction-1"}]}),
+    pytest.param("post_statistics", "GET", "/organizationalEntityShareStatistics", {"elements": []}),
     pytest.param("page_statistics", "GET", "/organizationPageStatistics", {"elements": []}),
     pytest.param("page_statistics_time_bound", "GET", "/organizationPageStatistics", {"elements": []}),
 ]
@@ -40,7 +41,7 @@ _STREAMS = [
 def test_requests_use_linkedin_api_version(stream_name: str, method: str, path: str, response: dict[str, Any]) -> None:
     with requests_mock.Mocker() as mocker:
         mocker.register_uri(method, f"{_BASE_URL}{path}", json=response)
-        if stream_name in ("post_comments", "post_reactions"):
+        if stream_name in ("post_comments", "post_reactions", "post_statistics"):
             mocker.get(f"{_BASE_URL}/posts", json={"elements": [{"id": "urn:li:share:1"}]})
         catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
         output = read(get_source(_CONFIG), _CONFIG, catalog)
