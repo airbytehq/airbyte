@@ -102,7 +102,7 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 ## Rate limits and quotas
 
-The connector limits its requests to 60 per minute. YouTube may also return a rate-limit error; those requests are retried after a 30-second wait. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
+The connector limits its requests to 60 per minute. If YouTube returns a rate-limit error, the connector pauses all requests for about a minute and then retries. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
 
 Airbyte Cloud uses an Airbyte Google Cloud project whose YouTube API quota is shared across Cloud connections. Airbyte Open Source uses the quota of the Google Cloud project configured for the source. Check your [project's quota page in Google Cloud](https://console.cloud.google.com/iam-admin/quotas) for current limits.
 

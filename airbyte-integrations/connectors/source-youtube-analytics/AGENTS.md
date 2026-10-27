@@ -24,7 +24,7 @@ YouTube can re-issue a report with corrected data for an earlier day. That file 
 
 The source applies a moving-window budget of 60 requests per minute to all API requests. Each selected report stream independently lists jobs, may create a job if none matches, lists reports for that job, and downloads each report file. Selecting more report streams therefore increases both API calls and downloaded files.
 
-On Airbyte Cloud, the YouTube API quota belongs to Airbyte's Google Cloud project and is shared across Cloud connections. On Open Source, requests use the quota of the user's Google Cloud project. A response identifying `FreeQuotaRequestsPerDayPerProject` is treated as daily quota exhaustion: the source fails with `Daily YouTube API project quota is exhausted.` as a `transient_error` without an immediate request retry. Other 429 responses are marked `RATE_LIMITED` and retried after a constant 30-second backoff. Responses whose JSON `error.code` is in the 5xx range are retried.
+On Airbyte Cloud, the YouTube API quota belongs to Airbyte's Google Cloud project and is shared across Cloud connections. On Open Source, requests use the quota of the user's Google Cloud project. A response identifying `FreeQuotaRequestsPerDayPerProject` is treated as daily quota exhaustion: the source fails with `Daily YouTube API project quota is exhausted.` as a `transient_error` without an immediate request retry. Other 429 responses are marked `RATE_LIMITED` and retried after a constant 30-second backoff. The `api_budget` also lists 429 under `status_codes_for_ratelimit_hit`, so on the CDK the connector runs on (7.35.0) a 429 fills the shared 60-requests-per-minute window too. The retry then waits for the 30-second backoff and for that window to clear, about a minute in total, and every stream pauses, not only the one that got the 429. Unit tests pinned to an older CDK (7.23.8 in `unit_tests/poetry.lock`) only show the 30-second wait. Retries stop after the default `max_retries` (5) and `max_time` (600 seconds). Responses whose JSON `error.code` is in the 5xx range are retried.
 
 **Why this matters:** A daily quota failure on Cloud may be caused by another connection sharing Airbyte's project, and adding report streams increases the quota consumed by each sync.
 
@@ -42,9 +42,9 @@ For any successful HTTP response whose JSON body contains an `error` key, `JobRe
 
 `ContentOwnerRequester` adds `onBehalfOfContentOwner` only when `content_owner_id` is set. It also merges the manifest's `extra_request_parameters` as static values; these values are not interpolated.
 
-The custom component deliberately calls this field `extra_request_parameters`, not `request_parameters`. The `report` stream uses `request_parameters` for a Jinja-templated `startTimeAtOrAfter` value, which the CDK interpolates. If the custom field were named `request_parameters`, the factory would pass that template to the component and it would be sent literally to YouTube.
+Do not rename `extra_request_parameters` to `request_parameters`. The factory forwards manifest keys that match a component's type hints, so a `request_parameters` field on this class would also receive any Jinja-templated `request_parameters` a stream declares later. `ContentOwnerRequester` merges values verbatim without interpolation, so such a template would reach YouTube as literal `{{ ... }}` text. No stream sets `request_parameters` today; the `report` stream sends `createdAfter` through its incremental `start_time_option`.
 
-**Why this matters:** Keep content-owner context conditional and extra parameters static. Renaming the custom field can cause every report request to send an uninterpolated template.
+**Why this matters:** Keep content-owner context conditional and extra parameters static. Renaming the custom field would make any future templated request parameter reach the API uninterpolated.
 
 ## 6. Two Chained State Migrations
 
