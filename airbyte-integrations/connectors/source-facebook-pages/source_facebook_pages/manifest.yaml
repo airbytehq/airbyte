@@ -41,8 +41,9 @@ definitions:
           error_message: >-
             Facebook rejected one or more of the Insights metrics this connector requested, so the
             entire request failed. This usually means Meta deprecated a metric that the connector
-            still asks for. Upgrade to the latest connector version; if you are already on the
-            latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
+            still asks for, or that a metric in the Insights Metrics settings is misspelled or
+            deprecated. Remove or correct that metric in the source settings, or upgrade to the
+            latest connector version and report it at https://github.com/airbytehq/airbyte/issues. Facebook
             returned: {{ response.get('error', {}).get('message', '') }}
         # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
         # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
@@ -340,8 +341,8 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           fields: |
-            {{ 
-              'insights.metric(%s)' % ','.join([
+            {{
+              'insights.metric(%s)' % ','.join(config.get('post_insights_metrics') or [
               'post_media_view',
               'post_total_media_view_unique',
               'post_clicks',
@@ -363,7 +364,7 @@ definitions:
         request_parameters:
           metric: |
             {{
-              ','.join([
+              ','.join(config.get('page_insights_metrics') or [
               'page_total_actions',
               'page_post_engagements',
               'page_fan_adds_by_paid_non_paid_unique',
@@ -371,11 +372,79 @@ definitions:
               'page_total_media_view_unique',
               ])
             }}
+
+  # Reads each Page video's lifetime insights through field expansion, like post_insights.
+  # https://developers.facebook.com/docs/graph-api/reference/video/video_insights/
+  video_insights_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "video_insights"
+      primary_key: "id"
+      path: "/{{ config['page_id'] }}/videos"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: ["data", "*", "video_insights", "data", "*"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{
+              'video_insights.metric(%s)' % ','.join(config.get('video_insights_metrics') or [
+              'total_video_views',
+              'total_video_views_unique',
+              'total_video_complete_views',
+              'total_video_avg_time_watched',
+              'total_video_view_total_time',
+              'total_video_impressions',
+              'total_video_impressions_unique',
+              'total_video_reactions_by_type_total',
+              ])
+            }}
+
+  # Reels are listed on their own Page edge and have their own metric set.
+  # https://developers.facebook.com/docs/video-api/guides/reels-publishing/
+  reel_insights_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "reel_insights"
+      primary_key: "id"
+      path: "/{{ config['page_id'] }}/video_reels"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: ["data", "*", "video_insights", "data", "*"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{
+              'video_insights.metric(%s)' % ','.join(config.get('reel_insights_metrics') or [
+              'blue_reels_play_count',
+              'fb_reels_total_plays',
+              'fb_reels_replay_count',
+              'post_impressions_unique',
+              'post_video_avg_time_watched',
+              'post_video_view_time',
+              'post_video_likes_by_reaction_type',
+              'post_video_social_actions',
+              ])
+            }}
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
   - "#/definitions/post_insights_stream"
   - "#/definitions/page_insights_stream"
+  - "#/definitions/video_insights_stream"
+  - "#/definitions/reel_insights_stream"
 
 check:
   stream_names:

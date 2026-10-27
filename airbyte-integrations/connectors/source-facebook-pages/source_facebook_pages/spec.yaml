@@ -27,6 +27,50 @@ connectionSpecification:
       minimum: 1
       maximum: 100
       order: 2
+    page_insights_metrics:
+      type: array
+      title: Page Insights Metrics
+      description: >-
+        Metrics requested by the page_insights stream. Leave empty to use the connector defaults. See
+        https://developers.facebook.com/docs/graph-api/reference/insights/ for valid metrics. Facebook
+        rejects the whole request if any metric is invalid or deprecated.
+      items:
+        type: string
+      examples:
+        - ["page_post_engagements", "page_views_total", "page_actions_post_reactions_like_total"]
+      order: 3
+    post_insights_metrics:
+      type: array
+      title: Post Insights Metrics
+      description: >-
+        Metrics requested by the post_insights stream. Leave empty to use the connector defaults.
+      items:
+        type: string
+      examples:
+        - ["post_media_view", "post_clicks"]
+      order: 4
+    video_insights_metrics:
+      type: array
+      title: Video Insights Metrics
+      description: >-
+        Lifetime metrics requested for each Page video by the video_insights stream. Leave empty to use
+        the connector defaults. See https://developers.facebook.com/docs/graph-api/reference/video/video_insights/
+      items:
+        type: string
+      examples:
+        - ["total_video_views", "total_video_complete_views"]
+      order: 5
+    reel_insights_metrics:
+      type: array
+      title: Reel Insights Metrics
+      description: >-
+        Lifetime metrics requested for each Page reel by the reel_insights stream. Leave empty to use the
+        connector defaults. See https://developers.facebook.com/docs/graph-api/reference/video/video_insights/#reels-metrics
+      items:
+        type: string
+      examples:
+        - ["blue_reels_play_count", "fb_reels_total_plays"]
+      order: 6
 advanced_auth:
   auth_flow_type: oauth2.0
   oauth_config_specification:
