@@ -98,3 +98,10 @@ def test_edition_is_not_a_config_field():
     assert "edition" not in SPEC["connectionSpecification"]["required"]
     assert "max_concurrent_requests" in CONNECTION_PROPERTIES
     assert "max_concurrent_requests" not in SPEC["connectionSpecification"]["required"]
+
+def test_include_converted_leads_is_optional_boolean_defaulting_to_false():
+    prop = CONNECTION_PROPERTIES["include_converted_leads"]
+    assert prop["type"] == "boolean"
+    assert prop["default"] is False
+    assert "include_converted_leads" not in SPEC["connectionSpecification"]["required"]
+    

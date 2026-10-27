@@ -151,3 +151,34 @@ def test_read_records_tolerates_state_keyed_by_other_cursor(mocker):
     records = list(stream.read_records(SyncMode.incremental))
     assert len(records) == 1
     assert stream.state == {"Action_Performed_Time": "2026-02-01T00:00:00+00:00"}
+
+def _stream_for_module(api_name, include_converted):
+    class _Stream(BaseIncrementalZohoCrmStream):
+        url_base = "https://dummy.com"
+        primary_key = "id"
+
+    config = {} if include_converted is None else {"include_converted_leads": include_converted}
+    stream = _Stream(config=config)
+    stream.module = SimpleNamespace(api_name=api_name, fields=[])
+    return stream
+
+
+@pytest.mark.parametrize(
+    ("include_converted", "api_name", "expected"),
+    (
+        (True, "Leads", {"converted": "both"}),
+        (False, "Leads", {}),
+        (None, "Leads", {}),
+        (True, "Contacts", {}),
+    ),
+)
+def test_request_params_converted_leads(include_converted, api_name, expected):
+    stream = _stream_for_module(api_name, include_converted)
+    assert stream.request_params(stream_state={}, stream_slice=None, next_page_token=None) == expected
+
+
+def test_request_params_keeps_page_token_with_converted_leads():
+    stream = _stream_for_module("Leads", True)
+    result = stream.request_params(stream_state={}, stream_slice=None, next_page_token={"page": 3})
+    assert result == {"page": 3, "converted": "both"}
+    
