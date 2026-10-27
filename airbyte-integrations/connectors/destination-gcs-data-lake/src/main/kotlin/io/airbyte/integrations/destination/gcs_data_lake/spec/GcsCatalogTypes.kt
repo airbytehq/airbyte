@@ -21,12 +21,14 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 @JsonSubTypes(
     JsonSubTypes.Type(value = BigLakeCatalogSpec::class, name = "BIGLAKE"),
     JsonSubTypes.Type(value = PolarisCatalogSpec::class, name = "POLARIS"),
+    JsonSubTypes.Type(value = RestCatalogSpec::class, name = "REST"),
 )
 @JsonSchemaTitle("Catalog Type")
 sealed class GcsCatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: Type) {
     enum class Type(@get:JsonValue val typeName: String) {
         BIGLAKE("BIGLAKE"),
         POLARIS("POLARIS"),
+        REST("REST"),
     }
 }
 

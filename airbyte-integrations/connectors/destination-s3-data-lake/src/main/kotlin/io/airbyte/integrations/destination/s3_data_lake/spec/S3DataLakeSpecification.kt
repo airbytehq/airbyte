@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.iceberg.parquet.CatalogType
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogSpecification
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogSpecifications
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergTimeSpecification
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
@@ -24,7 +26,8 @@ class S3DataLakeSpecification :
     ConfigurationSpecification(),
     AWSAccessKeySpecification,
     S3BucketSpecification,
-    IcebergCatalogSpecifications {
+    IcebergCatalogSpecifications,
+    IcebergTimeSpecification {
 
     @get:JsonSchemaTitle("AWS Access Key ID")
     @get:JsonPropertyDescription(
@@ -44,6 +47,8 @@ class S3DataLakeSpecification :
     @get:JsonPropertyDescription("The name of the S3 bucket that will host the Iceberg data.")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":2}""")
     override val s3BucketName: String = ""
+
+    override val timeColumnType: TimeColumnType? = TimeColumnType.TIME
 
     @get:JsonSchemaInject(json = """{"always_show": true,"examples":["us-east-1"], "order":3}""")
     override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION

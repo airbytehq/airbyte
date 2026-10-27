@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.spec
 
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
+
 data class GcsCatalogConfiguration(
     val warehouseLocation: String,
     val mainBranchName: String,
@@ -11,6 +13,8 @@ data class GcsCatalogConfiguration(
 )
 
 sealed interface GcsCatalogConfig
+
+data class GcsRestCatalogConfiguration(val rest: RestCatalogConfiguration) : GcsCatalogConfig
 
 data class BigLakeCatalogConfiguration(val catalogName: String, val gcpLocation: String) :
     GcsCatalogConfig

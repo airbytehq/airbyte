@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.FieldType
@@ -82,6 +83,60 @@ internal class S3DataLakeUtilTest {
     fun setup() {
         icebergUtil = IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         s3DataLakeUtil = S3DataLakeUtil(icebergUtil, assumeRoleCredentials = null)
+    }
+
+    private fun restProperties(rest: RestCatalogConfiguration): Map<String, String> =
+        s3DataLakeUtil.toCatalogProperties(
+            S3DataLakeConfiguration(
+                awsAccessKeyConfiguration =
+                    AWSAccessKeyConfiguration(accessKeyId = "access", secretAccessKey = "secret"),
+                s3BucketConfiguration =
+                    S3BucketConfiguration(
+                        s3BucketName = "bucket",
+                        s3BucketRegion = "us-east-1",
+                        s3Endpoint = null,
+                    ),
+                icebergCatalogConfiguration =
+                    IcebergCatalogConfiguration("s3://bucket/warehouse", "main", rest),
+                flushBatchSizeMb = null,
+            ),
+        )
+
+    @Test
+    fun testRestProperties() {
+        val unauthenticated = restProperties(RestCatalogConfiguration("https://catalog", "default"))
+        Assertions.assertEquals("s3://bucket/warehouse", unauthenticated["warehouse"])
+        Assertions.assertFalse(unauthenticated.containsKey("token"))
+        Assertions.assertFalse(unauthenticated.containsKey("credential"))
+        val token =
+            restProperties(
+                RestCatalogConfiguration(
+                    "https://catalog",
+                    "default",
+                    warehouse = "uc",
+                    token = "token",
+                ),
+            )
+        Assertions.assertEquals("uc", token["warehouse"])
+        Assertions.assertEquals("token", token["token"])
+        val oauth =
+            restProperties(
+                RestCatalogConfiguration(
+                    "https://catalog",
+                    "default",
+                    warehouse = "uc",
+                    clientId = "id",
+                    clientSecret = "secret",
+                    oauth2ServerUri = "https://catalog/token",
+                    scope = "all-apis",
+                ),
+            )
+        Assertions.assertEquals("https://catalog", oauth["uri"])
+        Assertions.assertEquals("uc", oauth["warehouse"])
+        Assertions.assertEquals("id:secret", oauth["credential"])
+        Assertions.assertEquals("https://catalog/token", oauth["oauth2-server-uri"])
+        Assertions.assertEquals("all-apis", oauth["scope"])
+        Assertions.assertFalse(oauth.containsKey("token"))
     }
 
     @Test

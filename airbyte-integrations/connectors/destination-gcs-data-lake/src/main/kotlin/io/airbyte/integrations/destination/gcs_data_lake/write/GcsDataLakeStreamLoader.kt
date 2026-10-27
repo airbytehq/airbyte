@@ -61,15 +61,17 @@ class GcsDataLakeStreamLoader(
     private val incomingSchema = computeIncomingSchema(false)
 
     private fun computeIncomingSchema(withIdentifierFields: Boolean) =
-        icebergUtil.toIcebergSchema(stream = stream).let { schema ->
-            // Transform the schema to use mapped column names for BigLake compatibility.
-            // BigLake rejects table creation with special characters in column names.
-            transformSchemaWithMappedNames(
-                schema,
-                stream.tableSchema.columnSchema.inputToFinalColumnNames,
-                withIdentifierFields,
-            )
-        }
+        icebergUtil
+            .toIcebergSchema(stream = stream, timeColumnType = icebergConfiguration.timeColumnType)
+            .let { schema ->
+                // Transform the schema to use mapped column names for BigLake compatibility.
+                // BigLake rejects table creation with special characters in column names.
+                transformSchemaWithMappedNames(
+                    schema,
+                    stream.tableSchema.columnSchema.inputToFinalColumnNames,
+                    withIdentifierFields,
+                )
+            }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",

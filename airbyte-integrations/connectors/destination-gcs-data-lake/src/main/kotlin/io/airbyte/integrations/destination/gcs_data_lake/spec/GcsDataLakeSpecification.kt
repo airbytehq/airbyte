@@ -11,6 +11,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergTimeSpecification
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
@@ -18,13 +20,15 @@ import jakarta.inject.Singleton
 @Singleton
 @JsonSchemaTitle("GCS Data Lake Destination Specification")
 @JsonSchemaDescription("Configuration for GCS Data Lake destination using Apache Iceberg format")
-class GcsDataLakeSpecification : ConfigurationSpecification() {
+class GcsDataLakeSpecification : ConfigurationSpecification(), IcebergTimeSpecification {
 
     @get:JsonSchemaTitle("GCS Bucket Name")
     @get:JsonPropertyDescription("The name of the GCS bucket that will host the Iceberg data.")
     @get:JsonProperty("gcs_bucket_name")
     @get:JsonSchemaInject(json = """{"always_show": true, "order": 0}""")
     val gcsBucketName: String = ""
+
+    override val timeColumnType: TimeColumnType? = TimeColumnType.TIME
 
     @get:JsonSchemaTitle("Service Account JSON")
     @get:JsonPropertyDescription(
@@ -103,7 +107,9 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     val namespace: String = "default"
 
     @get:JsonSchemaTitle("Catalog Type")
-    @get:JsonPropertyDescription("Specifies the type of Iceberg catalog (BigLake or Polaris).")
+    @get:JsonPropertyDescription(
+        "Specifies the type of Iceberg catalog (BigLake, Polaris, or REST).",
+    )
     @get:JsonProperty("catalog_type")
     @get:JsonSchemaInject(json = """{"always_show": true, "order": 7}""")
     val catalogType: GcsCatalogType = BigLakeCatalogSpec(catalogName = "integration-test-biglake")
@@ -184,6 +190,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
             when (val spec = catalogType) {
+                is RestCatalogSpec -> GcsRestCatalogConfiguration(spec.toConfiguration(namespace))
                 is BigLakeCatalogSpec ->
                     BigLakeCatalogConfiguration(
                         catalogName = spec.catalogName,

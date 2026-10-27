@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfigurationProvider
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.nio.charset.StandardCharsets
@@ -42,6 +43,7 @@ data class S3DataLakeConfiguration(
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
     val normalizeColumnNames: Boolean = false,
+    val timeColumnType: TimeColumnType = TimeColumnType.TIME,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -80,6 +82,7 @@ class S3DataLakeConfigurationFactory :
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
             normalizeColumnNames = pojo.normalizeColumnNames ?: false,
+            timeColumnType = pojo.timeColumnType ?: TimeColumnType.TIME,
         )
     }
 }

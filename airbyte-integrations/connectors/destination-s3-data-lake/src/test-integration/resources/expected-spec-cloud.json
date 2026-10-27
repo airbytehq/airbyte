@@ -7,6 +7,13 @@
     "additionalProperties" : true,
     "description" : "Defines the configurations required to connect to an Iceberg catalog, including warehouse location, main branch name, and catalog type specifics.",
     "properties" : {
+      "time_column_type" : {
+        "type" : "string",
+        "enum" : [ "TIME", "STRING" ],
+        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
+        "title" : "Time Column Type",
+        "default" : "TIME"
+      },
       "access_key_id" : {
         "type" : "string",
         "description" : "The AWS Access Key ID with permissions for S3 and Glue operations.",
@@ -144,6 +151,38 @@
               "type" : "string",
               "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Default namespace"
+            },
+            "warehouse" : {
+              "type" : "string",
+              "description" : "Optional catalog warehouse identifier, such as a Unity Catalog catalog name. Overrides Warehouse Location for REST requests.",
+              "title" : "Warehouse"
+            },
+            "token" : {
+              "type" : "string",
+              "description" : "Optional bearer token. Do not combine with OAuth client credentials.",
+              "title" : "Bearer Token",
+              "airbyte_secret" : true
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "Optional OAuth client ID. Requires client_secret.",
+              "title" : "Client ID"
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "Optional OAuth client secret. Requires client_id.",
+              "title" : "Client Secret",
+              "airbyte_secret" : true
+            },
+            "oauth2_server_uri" : {
+              "type" : "string",
+              "description" : "Optional OAuth2 token endpoint URI.",
+              "title" : "OAuth2 Server URI"
+            },
+            "scope" : {
+              "type" : "string",
+              "description" : "Optional OAuth scope, such as all-apis for Databricks.",
+              "title" : "OAuth Scope"
             }
           },
           "required" : [ "catalog_type", "server_uri", "namespace" ]

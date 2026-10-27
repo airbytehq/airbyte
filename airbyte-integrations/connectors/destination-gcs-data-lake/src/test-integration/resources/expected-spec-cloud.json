@@ -7,6 +7,13 @@
     "additionalProperties" : true,
     "description" : "Configuration for GCS Data Lake destination using Apache Iceberg format",
     "properties" : {
+      "time_column_type" : {
+        "type" : "string",
+        "enum" : [ "TIME", "STRING" ],
+        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
+        "title" : "Time Column Type",
+        "default" : "TIME"
+      },
       "gcs_bucket_name" : {
         "type" : "string",
         "description" : "The name of the GCS bucket that will host the Iceberg data.",
@@ -120,8 +127,62 @@
             }
           },
           "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret" ]
+        }, {
+          "title" : "REST Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "REST" ],
+              "default" : "REST"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Iceberg REST catalog.",
+              "title" : "REST Server URI"
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The default namespace for destination-defined tables. Defaults to the top-level namespace.",
+              "title" : "Default Namespace"
+            },
+            "warehouse" : {
+              "type" : "string",
+              "description" : "Optional catalog warehouse identifier, such as a Unity Catalog catalog name. Overrides Warehouse Location for REST requests.",
+              "title" : "Warehouse"
+            },
+            "token" : {
+              "type" : "string",
+              "description" : "Optional bearer token. Do not combine with OAuth client credentials.",
+              "title" : "Bearer Token",
+              "airbyte_secret" : true
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "Optional OAuth client ID. Requires client_secret.",
+              "title" : "Client ID"
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "Optional OAuth client secret. Requires client_id.",
+              "title" : "Client Secret",
+              "airbyte_secret" : true
+            },
+            "oauth2_server_uri" : {
+              "type" : "string",
+              "description" : "Optional OAuth2 token endpoint URI.",
+              "title" : "OAuth2 Server URI"
+            },
+            "scope" : {
+              "type" : "string",
+              "description" : "Optional OAuth scope, such as all-apis for Databricks.",
+              "title" : "OAuth Scope"
+            }
+          },
+          "required" : [ "catalog_type", "server_uri" ]
         } ],
-        "description" : "Specifies the type of Iceberg catalog (BigLake or Polaris).",
+        "description" : "Specifies the type of Iceberg catalog (BigLake, Polaris, or REST).",
         "title" : "Catalog Type",
         "always_show" : true,
         "order" : 7,

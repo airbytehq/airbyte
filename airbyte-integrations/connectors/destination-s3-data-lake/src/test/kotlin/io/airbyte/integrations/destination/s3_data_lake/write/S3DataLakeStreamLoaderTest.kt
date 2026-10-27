@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -150,7 +151,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns icebergSchema
+            every { toIcebergSchema(any(), any()) } returns icebergSchema
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -217,7 +218,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns icebergSchema
+            every { toIcebergSchema(any(), any()) } returns icebergSchema
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -291,7 +292,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns icebergSchema
+            every { toIcebergSchema(any(), any()) } returns icebergSchema
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -353,7 +354,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns icebergSchema
+            every { toIcebergSchema(any(), any()) } returns icebergSchema
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -470,6 +471,7 @@ internal class S3DataLakeStreamLoaderTest {
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
+            every { timeColumnType } returns TimeColumnType.TIME
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
@@ -485,7 +487,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } answers
+            every { toIcebergSchema(any(), any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
@@ -547,6 +549,7 @@ internal class S3DataLakeStreamLoaderTest {
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
+            every { timeColumnType } returns TimeColumnType.TIME
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
@@ -585,7 +588,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } answers
+            every { toIcebergSchema(any(), any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
@@ -712,6 +715,7 @@ internal class S3DataLakeStreamLoaderTest {
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
+            every { timeColumnType } returns TimeColumnType.TIME
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
@@ -754,7 +758,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } answers
+            every { toIcebergSchema(any(), any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
@@ -812,10 +816,12 @@ internal class S3DataLakeStreamLoaderTest {
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
                 tableSchema = makeTableSchema(objectSchema, Append),
             )
-        val icebergConfiguration: S3DataLakeConfiguration = mockk()
+        val icebergConfiguration: S3DataLakeConfiguration = mockk {
+            every { timeColumnType } returns TimeColumnType.TIME
+        }
         val s3DataLakeUtil: S3DataLakeUtil = mockk()
         val icebergUtil: IcebergUtil = mockk {
-            every { toIcebergSchema(any()) } answers
+            every { toIcebergSchema(any(), any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
@@ -874,7 +880,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns mockk<Catalog>()
             every { createTable(any(), any(), capture(createdSchema)) } returns table
-            every { toIcebergSchema(any()) } returns inputNameSchema
+            every { toIcebergSchema(any(), any()) } returns inputNameSchema
         }
         val streamLoader =
             makeStreamLoader(
@@ -925,7 +931,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns mockk<Catalog>()
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns existingSchema
+            every { toIcebergSchema(any(), any()) } returns existingSchema
         }
         val streamLoader =
             makeStreamLoader(
@@ -979,7 +985,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns mockk<Catalog>()
             every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns existingSchema
+            every { toIcebergSchema(any(), any()) } returns existingSchema
         }
         val streamLoader =
             makeStreamLoader(
@@ -1067,6 +1073,7 @@ internal class S3DataLakeStreamLoaderTest {
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         return mockk {
+            every { timeColumnType } returns TimeColumnType.TIME
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration

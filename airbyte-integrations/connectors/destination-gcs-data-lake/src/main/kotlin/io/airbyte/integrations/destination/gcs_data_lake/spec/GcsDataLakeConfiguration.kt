@@ -9,6 +9,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
@@ -48,6 +49,7 @@ data class GcsDataLakeConfiguration(
     val allowNonReversibleUpgrades: AllowNonReversibleUpgrades = AllowNonReversibleUpgrades.NO,
     val optimizePriorIcebergDeleteFiles: Boolean = true,
     val maxRecordsPerFlush: Long? = null,
+    val timeColumnType: TimeColumnType = TimeColumnType.TIME,
 ) : DestinationConfiguration() {
 
     object Defaults {
@@ -135,7 +137,8 @@ class GcsDataLakeConfigurationFactory :
             gcpProjectId = pojo.gcpProjectId,
             gcpLocation = pojo.gcpLocation,
             gcsEndpoint = pojo.gcsEndpoint,
-            namespace = pojo.namespace,
+            namespace = (pojo.catalogType as? RestCatalogSpec)?.namespace ?: pojo.namespace,
+            timeColumnType = pojo.timeColumnType ?: TimeColumnType.TIME,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
             tableFormatVersion = pojo.tableFormatVersion ?: IcebergTableFormatVersion.V2,
             icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
