@@ -104,18 +104,25 @@ When **Start date** is set, the connector applies the Gmail `after:<epoch_second
 
 ## Performance considerations
 
-The Gmail API enforces two simultaneous quota limits, measured in [quota units](https://developers.google.com/gmail/api/reference/quota):
+The Gmail API enforces a per-project and a per-user rate limit, measured in [quota units](https://developers.google.com/gmail/api/reference/quota). The limits and the cost of each call depend on when the Google Cloud project behind your credentials started using the Gmail API:
 
-| Limit type              | Limit                                  | Error code              |
-|-------------------------|----------------------------------------|-------------------------|
-| Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
-| Per user rate limit     | 6,000 quota units per minute per user  | `userRateLimitExceeded` |
+| Quota                                    | Earlier projects (used the API November 2025 to April 2026) | Projects created on or after May 1, 2026 |
+|------------------------------------------|-------------------------------------------------------------|------------------------------------------|
+| Per-project limit (`rateLimitExceeded`)  | 1,200,000 units per minute                                  | 1,200,000 units per minute               |
+| Per-user limit (`userRateLimitExceeded`) | 15,000 units per minute per user                            | 6,000 units per minute per user          |
+| `threads.get`                            | 10 units                                                    | 120 units                                |
+| `messages.get`                           | 5 units                                                     | 60 units                                 |
+| `threads.list`                           | 10 units                                                    | 10 units                                 |
+| `messages.list`                          | 5 units                                                     | 5 units                                  |
 
-Each `threads.get` call costs 120 units, `messages.get` 60 (the connector reads full messages and threads), `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+On projects created on or after May 1, 2026, `drafts.list` costs 5 units, and `labels` and `profile` calls cost 1 unit. The `get` costs for these projects apply to full-format reads, which is what the connector requests. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
 
-These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10.
+The connector paces its requests to stay under the per-user limit, based on the authentication method:
 
-The connector paces its requests to stay under the per-user quota. With OAuth, it uses the previous quota (15,000 units per minute, `messages.get` at 5 and `threads.get` at 10), because Airbyte Cloud's OAuth app belongs to a project that kept it. If you use your own OAuth client on a project with the newer quota, the connector can send more than that quota allows and relies on Gmail's rate-limit responses instead. With a service account, it uses the newer quota and costs. The per-project limit is shared with every other user of the project, so the connector can't track it and relies on Gmail's rate-limit responses for it.
+- **OAuth**: the connector assumes the earlier quota, because Airbyte Cloud's OAuth app belongs to a project that kept it. If you use your own OAuth client on a project created on or after May 1, 2026, the connector can send more requests than your quota allows, and relies on Gmail's rate-limit responses instead.
+- **Service Account Key**: the connector assumes the newer quota, since the service account belongs to your own project. Service Account Key authentication can't currently read a mailbox, so this has no effect yet.
+
+The per-project limit is shared with every other user of the project, so the connector can't track it and relies on Gmail's rate-limit responses for it.
 
 The connector retries `429 Too Many Requests` and `403` quota-saturation errors. It decides how long to wait before each retry as follows:
 
@@ -159,7 +166,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.2.0 | 2026-10-23 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota, using the previous quota for OAuth and the current quota and full-format read costs for service accounts |
+| 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota, using the previous quota for OAuth and the current quota and full-format read costs for service accounts |
 | 0.1.24 | 2026-10-27 | [89912](https://github.com/airbytehq/airbyte/pull/89912) | Update dependencies |
 | 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
