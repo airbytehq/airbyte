@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.38.0@sha256:36a3f1e2519a13f216331303c14dbe94ba325a9fa6489c5fa6f3c9eb51680246
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
