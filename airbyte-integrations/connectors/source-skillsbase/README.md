@@ -234,3 +234,13 @@ pipeline:
 To manually rebuild and publish (e.g. backfilling an image after a CD fix),
 trigger the `Canonical Generate Image` workflow from the GitHub Actions UI
 with `connectors=source-skillsbase`.
+
+## Changelog
+
+| Version | Date       | Summary                                                                                     |
+| ------- | ---------- | ------------------------------------------------------------------------------------------- |
+| 1.3.0   | 2026-10-21 | Add `competencies` stream (person-linked competency via the Skill Query API).               |
+| 1.2.0   | 2026-10-08 | Update `courses` to the `/2.0/courses` schema; migrate `training_completions` to Skill Query. |
+| 1.1.0   |            | Add `hire_date` field to the `people` stream.                                               |
+| 1.0.0   | 2026-05-12 | Initial Skills Base source connector.                                                        |
+

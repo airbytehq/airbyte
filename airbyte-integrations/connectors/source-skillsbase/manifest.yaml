@@ -530,6 +530,74 @@ streams:
         additionalProperties: true
 
   - type: DeclarativeStream
+    name: competencies
+    # Competency is a computed measure (skill level vs target) on the Skill Query `person skills` collection.
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config['api_host'] }}/2.0/skillquery"
+        http_method: POST
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_body_json:
+          query: "find person skills show person.id, skill.id, competency, competency.self, competency.supervisor sorted by person.id"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - rows
+    transformations:
+      # values[] is positional; indexes must match the `show` clause order.
+      - type: AddFields
+        fields:
+          # id values arrive as strings; cast to int. Competency percentages are already numeric (or null).
+          - type: AddedFieldDefinition
+            path: ["person_id"]
+            value: "{{ (record['values'][0]['data'] | int) if record['values'][0]['data'] is not none else none }}"
+          - type: AddedFieldDefinition
+            path: ["skill_id"]
+            value: "{{ (record['values'][1]['data'] | int) if record['values'][1]['data'] is not none else none }}"
+          - type: AddedFieldDefinition
+            path: ["competency"]
+            value: "{{ record['values'][2]['data'] }}"
+          - type: AddedFieldDefinition
+            path: ["competency_self"]
+            value: "{{ record['values'][3]['data'] }}"
+          - type: AddedFieldDefinition
+            path: ["competency_supervisor"]
+            value: "{{ record['values'][4]['data'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["values"]
+    primary_key:
+      - person_id
+      - skill_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          person_id:
+            type: [integer, "null"]
+          skill_id:
+            type: [integer, "null"]
+          competency:
+            type: [number, "null"]
+          competency_self:
+            type: [number, "null"]
+          competency_supervisor:
+            type: [number, "null"]
+        additionalProperties: true
+
+  - type: DeclarativeStream
     name: skill_rating_averages
     retriever:
       type: SimpleRetriever
