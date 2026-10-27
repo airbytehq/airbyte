@@ -190,7 +190,7 @@ An unknown number of API sources have streams that don't meet these conditions. 
 
 ### Delete file encodings
 
-Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on format v2 tables and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version.
+Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on unpartitioned format v2 tables, positional deletes on partitioned format v2 tables, and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Equality deletes cannot remove rows across partitions. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version. Partitioned tables cannot use `EQUALITY`.
 
 Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors. Deletion vectors are required by some readers, such as Databricks foreign Iceberg reads, but Amazon Athena does not support format v3 today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
 

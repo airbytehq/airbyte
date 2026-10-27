@@ -131,9 +131,10 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Iceberg Delete File Type")
     @get:JsonPropertyDescription(
         "The delete-file encoding used by Dedupe streams. AUTOMATIC uses equality deletes on " +
-            "format v2 tables and deletion vectors on format v3 tables, and may change in a " +
-            "future version. Choose EQUALITY to always use equality deletes, POSITIONAL for " +
-            "v2 readers that do not support equality-delete files, or DELETION_VECTOR for " +
+            "unpartitioned format v2 tables, positional deletes on partitioned format v2 tables, " +
+            "and deletion vectors on format v3 tables, and may change in a future version. " +
+            "Choose EQUALITY to always use equality deletes on unpartitioned tables, POSITIONAL " +
+            "for v2 readers that do not support equality-delete files, or DELETION_VECTOR for " +
             "v3 deletion vectors.",
     )
     @get:JsonProperty("iceberg_delete_file_type", required = false)

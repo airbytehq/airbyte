@@ -40,6 +40,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -141,11 +142,15 @@ internal class GcsDataLakeDeleteModeResolutionTest {
             .withAirbyteMeta(true)
             .toIcebergSchema(listOf(listOf("id")))
 
-    private fun createTableAt(version: Int, schema: Schema): Table {
+    private fun createTableAt(
+        version: Int,
+        schema: Schema,
+        partitionSpec: PartitionSpec = PartitionSpec.unpartitioned(),
+    ): Table {
         (catalog as SupportsNamespaces).createNamespace(tableIdentifier.namespace())
         val builder = catalog.buildTable(tableIdentifier, schema)
         return builder
-            .withPartitionSpec(PartitionSpec.unpartitioned())
+            .withPartitionSpec(partitionSpec)
             .withProperty(TableProperties.FORMAT_VERSION, version.toString())
             .create()
     }
@@ -206,6 +211,50 @@ internal class GcsDataLakeDeleteModeResolutionTest {
         val state = captureState(makeLoader(stream, makeConfiguration(), table))
         assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
         assertNull(state.positionalDeleteState)
+    }
+
+    @Test
+    fun `partitioned v2 table resolves AUTOMATIC to POSITIONAL`() {
+        val stream = makeStream()
+        val schema = icebergSchema()
+        val table =
+            createTableAt(
+                2,
+                schema,
+                PartitionSpec.builderFor(schema).identity("id").build(),
+            )
+
+        val state = captureState(makeLoader(stream, makeConfiguration(), table))
+
+        assertEquals(IcebergDeleteMode.POSITIONAL, state.deleteMode)
+        assertNotNull(state.positionalDeleteState)
+    }
+
+    @Test
+    fun `partitioned table rejects explicit EQUALITY`() {
+        val stream = makeStream()
+        val schema = icebergSchema()
+        val table =
+            createTableAt(
+                2,
+                schema,
+                PartitionSpec.builderFor(schema).identity("id").build(),
+            )
+
+        val error =
+            assertFailsWith<ConfigErrorException> {
+                runBlocking {
+                    makeLoader(
+                            stream,
+                            makeConfiguration(deleteFileType = IcebergDeleteFileType.EQUALITY),
+                            table,
+                        )
+                        .start()
+                }
+            }
+
+        assertContains(error.message.orEmpty(), "cannot remove rows across partitions")
+        assertContains(error.message.orEmpty(), "Use POSITIONAL (v2) or DELETION_VECTOR (v3)")
     }
 
     @Test

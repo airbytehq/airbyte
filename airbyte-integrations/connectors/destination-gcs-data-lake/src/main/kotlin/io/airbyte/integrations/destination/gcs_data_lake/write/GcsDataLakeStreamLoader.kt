@@ -123,7 +123,6 @@ class GcsDataLakeStreamLoader(
             } else {
                 targetFormatVersion
             }
-        val deleteMode = resolveDeleteMode(createdTable, plannedVersion)
         val effectiveFormatVersion =
             reconcileFormatVersion(
                 table = createdTable,
@@ -213,6 +212,7 @@ class GcsDataLakeStreamLoader(
         if (tableExisted) {
             IcebergPartitioning.evolveSpec(createdTable, partitionFields)
         }
+        val deleteMode = resolveDeleteMode(createdTable, effectiveFormatVersion)
 
         logger.info {
             "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
@@ -353,9 +353,19 @@ class GcsDataLakeStreamLoader(
         }
         return when (icebergConfiguration.icebergDeleteFileType) {
             IcebergDeleteFileType.AUTOMATIC ->
-                if (effectiveVersion >= 3) IcebergDeleteMode.DELETION_VECTOR
-                else IcebergDeleteMode.EQUALITY
+                when {
+                    effectiveVersion >= 3 -> IcebergDeleteMode.DELETION_VECTOR
+                    !table.spec().isUnpartitioned -> IcebergDeleteMode.POSITIONAL
+                    else -> IcebergDeleteMode.EQUALITY
+                }
             IcebergDeleteFileType.EQUALITY -> {
+                if (!table.spec().isUnpartitioned) {
+                    throw ConfigErrorException(
+                        "Equality deletes cannot remove rows across partitions. Use POSITIONAL " +
+                            "(v2) or DELETION_VECTOR (v3), or remove the partition fields for " +
+                            "this stream.",
+                    )
+                }
                 if (effectiveVersion >= 3) {
                     throw ConfigErrorException(
                         "iceberg_delete_file_type EQUALITY requires an Iceberg format v2 " +
