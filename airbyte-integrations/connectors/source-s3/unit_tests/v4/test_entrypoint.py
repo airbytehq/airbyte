@@ -94,6 +94,18 @@ def test_check_of_an_unknown_section_fails(tmp_path):
     s3_client.list_objects_v2.assert_not_called()
 
 
+def test_check_of_the_review_section_is_rejected_as_it_has_no_check(tmp_path):
+    config = {**FULL_CONFIG, "check-section": "review"}
+
+    status, s3_client = _run_check(tmp_path, config, MagicMock())
+
+    assert status == (
+        Status.FAILED.value,
+        "Section 'review' has no check: the connector specification does not declare \"check\": true for it.",
+    )
+    s3_client.list_objects_v2.assert_not_called()
+
+
 def test_check_without_the_key_validates_the_full_spec(tmp_path):
     config = {key: value for key, value in FULL_CONFIG.items() if key != "bucket"}
 

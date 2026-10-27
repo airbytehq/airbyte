@@ -76,7 +76,7 @@ vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)",
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "feat/check-section"
-resolved_reference = "bc62c1725029391b05535475f53fc11e96d918fa"
+resolved_reference = "27a68d0ffe0d2d1fa816df0a4cb5e5db520823bf"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"

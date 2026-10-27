@@ -843,14 +843,16 @@
         "title": "Connect bucket",
         "order": 0,
         "description": "Which bucket to read from, and how Airbyte gets access.",
-        "groups": ["bucket", "endpoint"]
+        "groups": ["bucket", "endpoint"],
+        "check": true
       },
       {
         "id": "files",
         "title": "Choose files",
         "order": 1,
         "description": "How files are delivered, and which files become streams.",
-        "groups": ["files", "start_date"]
+        "groups": ["files", "start_date"],
+        "check": true
       },
       {
         "id": "review",

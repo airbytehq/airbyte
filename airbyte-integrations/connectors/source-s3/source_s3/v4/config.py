@@ -14,10 +14,11 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 
 
 # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the groups it
-# shows, in form order. Properties opt into a group with `group="<id>"`. A CHECK whose config carries a top-level
-# `check-section` key validates the configuration up to that section only (see the CDK's
-# airbyte_cdk.sources.utils.check_section and SourceS3.check_section_connection). The last section completes the
-# configuration, so a CHECK for it is the full check.
+# shows, in form order. Properties opt into a group with `group="<id>"`. A section with `"check": True` is checked when
+# the user completes it: the platform sends a CHECK whose config carries a top-level `check-section` key, and the
+# connector validates the configuration up to that section only (see the CDK's airbyte_cdk.sources.utils.check_section
+# and SourceS3.check_section_connection). The review section has no check of its own: the full check the platform runs
+# before creating the source covers it.
 GROUP_BUCKET = "bucket"
 GROUP_ENDPOINT = "endpoint"
 GROUP_FILES = "files"
@@ -41,6 +42,7 @@ SECTIONS: List[Dict[str, Any]] = [
         "order": 0,
         "description": "Which bucket to read from, and how Airbyte gets access.",
         "groups": [GROUP_BUCKET, GROUP_ENDPOINT],
+        "check": True,
     },
     {
         "id": SECTION_FILES,
@@ -48,6 +50,7 @@ SECTIONS: List[Dict[str, Any]] = [
         "order": 1,
         "description": "How files are delivered, and which files become streams.",
         "groups": [GROUP_FILES, GROUP_START_DATE],
+        "check": True,
     },
     {
         "id": SECTION_REVIEW,
