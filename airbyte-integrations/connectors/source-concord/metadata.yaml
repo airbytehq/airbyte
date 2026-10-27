@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-concord
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorSubtype: api
   connectorType: source
   definitionId: dc50b4e6-862e-4b49-8ed7-3c988f4b1db0
