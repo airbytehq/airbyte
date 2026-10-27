@@ -3,6 +3,31 @@
   "title": "Test Source Spec",
   "type": "object",
   "additionalProperties": true,
+  "groups": [
+    {
+      "id": "db"
+    },
+    {
+      "id": "sync",
+      "title": "Sync method"
+    }
+  ],
+  "sections": [
+    {
+      "id": "connection",
+      "title": "Connection",
+      "groups": [
+        "db"
+      ]
+    },
+    {
+      "id": "sync_method",
+      "title": "Sync method",
+      "groups": [
+        "sync"
+      ]
+    }
+  ],
   "properties": {
     "host": {
       "type": "string",
@@ -47,11 +72,15 @@
           "properties": {
             "tunnel_method": {
               "type": "string",
-              "enum": ["NO_TUNNEL"],
+              "enum": [
+                "NO_TUNNEL"
+              ],
               "default": "NO_TUNNEL"
             }
           },
-          "required": ["tunnel_method"]
+          "required": [
+            "tunnel_method"
+          ]
         },
         {
           "title": "SSH Key Authentication",
@@ -61,7 +90,9 @@
           "properties": {
             "tunnel_method": {
               "type": "string",
-              "enum": ["SSH_KEY_AUTH"],
+              "enum": [
+                "SSH_KEY_AUTH"
+              ],
               "default": "SSH_KEY_AUTH"
             },
             "tunnel_host": {
@@ -110,7 +141,9 @@
           "properties": {
             "tunnel_method": {
               "type": "string",
-              "enum": ["SSH_PASSWORD_AUTH"],
+              "enum": [
+                "SSH_PASSWORD_AUTH"
+              ],
               "default": "SSH_PASSWORD_AUTH"
             },
             "tunnel_host": {
@@ -166,11 +199,15 @@
           "properties": {
             "cursor_method": {
               "type": "string",
-              "enum": ["user_defined"],
+              "enum": [
+                "user_defined"
+              ],
               "default": "user_defined"
             }
           },
-          "required": ["cursor_method"]
+          "required": [
+            "cursor_method"
+          ]
         },
         {
           "title": "Read Changes using Change Data Capture (CDC)",
@@ -180,11 +217,15 @@
           "properties": {
             "cursor_method": {
               "type": "string",
-              "enum": ["cdc"],
+              "enum": [
+                "cdc"
+              ],
               "default": "cdc"
             }
           },
-          "required": ["cursor_method"]
+          "required": [
+            "cursor_method"
+          ]
         }
       ],
       "description": "Configures how data is extracted from the database.",
@@ -205,5 +246,9 @@
       "order": 8
     }
   },
-  "required": ["host", "port", "database"]
+  "required": [
+    "host",
+    "port",
+    "database"
+  ]
 }
