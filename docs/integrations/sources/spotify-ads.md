@@ -52,7 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-10-27 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Support syncing multiple ad accounts in one connection |
+| 0.1.0 | 2026-10-27 | [90128](https://github.com/airbytehq/airbyte/pull/90128) | Support syncing multiple ad accounts in one connection |
 | 0.0.47 | 2026-10-20 | [89436](https://github.com/airbytehq/airbyte/pull/89436) | Update dependencies |
 | 0.0.46 | 2026-10-13 | [88823](https://github.com/airbytehq/airbyte/pull/88823) | Update dependencies |
 | 0.0.45 | 2026-10-06 | [88081](https://github.com/airbytehq/airbyte/pull/88081) | Update dependencies |
