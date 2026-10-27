@@ -4,10 +4,6 @@ products: cloud, oss-community
 
 # Airbyte MCP
 
-:::info Open beta
-The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. You can also [run the Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known issues.
-:::
-
 The Airbyte MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) server that connects AI agents, like Claude, ChatGPT, and VS Code Copilot, to your Airbyte organization. Your agent works with Airbyte on your behalf, using the same permissions you have in Airbyte.
 
 With the Airbyte MCP, your agent can:
@@ -32,7 +28,7 @@ After you connect the Airbyte MCP, ask your agent to do things in plain language
 
 ## Usage limits
 
-During the beta, each organization can make up to 100,000 direct reads per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
+Each organization can make up to 100,000 direct reads per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
 
 Direct reads also count toward the API rate limits of the source you read from, and can incur compute costs from your destination.
 
@@ -45,7 +41,7 @@ Direct reads also count toward the API rate limits of the source you read from, 
 
 ## Feedback
 
-The Airbyte MCP is in active development. To report a problem or request a feature, [open an Airbyte MCP beta issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml) on GitHub. Don't include secrets or credentials in these issues, because they're publicly viewable.
+The Airbyte MCP is in active development. To report a problem or request a feature, [open an Airbyte MCP issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml) on GitHub. Don't include secrets or credentials in these issues, because they're publicly viewable.
 
 ## Appendix
 

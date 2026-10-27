@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 26, 2026
+
+Connections
+
+- Source and destination setup forms are easier to scan. All of a connector's settings now appear together in a single card, and the collapsible section that holds optional settings is now called **Advanced** instead of **Optional fields**.
+
+Platform
+
+- If you belong to more than one organization, the **Members** page and the invite dialog now show the correct pending invitations right after you switch organizations or workspaces. Previously, they could briefly show pending invitations from the organization or workspace you just left.
+
 ## October 23, 2026
 
 Connections
