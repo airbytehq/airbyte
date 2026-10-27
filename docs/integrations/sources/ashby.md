@@ -151,6 +151,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 2.0.1 | 2026-10-27 | [89792](https://github.com/airbytehq/airbyte/pull/89792) | Update dependencies |
 | 2.0.0 | 2026-10-23 | [87726](https://github.com/airbytehq/airbyte/pull/87726) | Breaking: correct the `applications`, `job_postings`, `application_criteria_evaluations`, and `interviews` schemas to match the Ashby API. See the [migration guide](/integrations/sources/ashby-migrations). |
 | 1.7.3 | 2026-10-20 | [89142](https://github.com/airbytehq/airbyte/pull/89142) | Update dependencies |
 | 1.7.2 | 2026-10-13 | [88502](https://github.com/airbytehq/airbyte/pull/88502) | Update dependencies |
