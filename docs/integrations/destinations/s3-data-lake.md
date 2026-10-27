@@ -440,7 +440,7 @@ Enable external data access in Unity Catalog and grant the principal the necessa
 Set `time_column_type=STRING` for Spark/Databricks readers: Iceberg `TIME` is unsupported. Time strings preserve the source offset when present. Existing `TIME` columns cannot be promoted to strings; run a full refresh to rebuild affected tables, or retain `TIME`.
 
 :::warning
-REST authentication alone does not guarantee table compatibility. Databricks also rejects nested structs with required fields; this connector still writes required `_airbyte_meta.sync_id` and `_airbyte_meta.changes` fields. Direct Unity Catalog table creation may therefore require additional schema compatibility work.
+REST authentication alone does not guarantee table compatibility. This connector still writes `_airbyte_meta.sync_id` and `_airbyte_meta.changes` as required struct fields. Their compatibility with Unity Catalog table creation has not been verified yet.
 :::
 
 Alternatively, keep the tables in AWS Glue and use Databricks catalog federation to query them as foreign Iceberg tables. Reader support for the table format version and delete encoding still applies.
@@ -452,7 +452,7 @@ Alternatively, keep the tables in AWS Glue and use Databricks catalog federation
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.1 | 2026-10-27 | — | Add optional time strings and authenticated REST catalogs for Databricks interoperability. |
+| 0.5.1 | 2026-10-27 | [90120](https://github.com/airbytehq/airbyte/pull/90120) | Add optional time strings and authenticated REST catalogs for Databricks interoperability. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
