@@ -680,6 +680,48 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `deleting a struct removes partition fields sourced from nested fields`() {
+        val warehousePath = Files.createTempDirectory("iceberg-nested-partition-column-delete")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "nested_partition_column_delete")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "payload",
+                        Types.StructType.of(
+                            Types.NestedField.required(
+                                3,
+                                "updated_at",
+                                Types.TimestampType.withZone(),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .withPartitionSpec(PartitionSpec.builderFor(schema).day("payload.updated_at").build())
+                .create()
+        val incomingSchema =
+            Schema(listOf(Types.NestedField.required(1, "id", Types.StringType.get())))
+
+        createRealSynchronizer()
+            .maybeApplySchemaChanges(table, incomingSchema, ColumnTypeChangeBehavior.SAFE_SUPERTYPE)
+
+        table.refresh()
+        assertThat(table.schema().findField("payload")).isNull()
+        assertThat(table.spec().fields()).isEmpty()
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    @Test
     fun `overwrite type change removes the source partition field before replacing column`() {
         val warehousePath = Files.createTempDirectory("iceberg-partition-column-overwrite")
         val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
