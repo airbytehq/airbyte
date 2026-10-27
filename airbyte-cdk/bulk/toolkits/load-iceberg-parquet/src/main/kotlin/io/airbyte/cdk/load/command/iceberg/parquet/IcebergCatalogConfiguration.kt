@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.command.iceberg.parquet
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 
@@ -102,7 +103,35 @@ data class RestCatalogConfiguration(
            `Destination-defined` or `Source-defined`""",
     )
     val namespace: String,
-) : CatalogConfiguration
+    val warehouse: String? = null,
+    val token: String? = null,
+    val clientId: String? = null,
+    val clientSecret: String? = null,
+    val oauth2ServerUri: String? = null,
+    val scope: String? = null,
+) : CatalogConfiguration {
+    init {
+        if (token != null && (clientId != null || clientSecret != null)) {
+            throw ConfigErrorException(
+                "REST token and OAuth client credentials cannot be combined. Configure either token or client_id and client_secret.",
+            )
+        }
+        if ((clientId == null) != (clientSecret == null)) {
+            throw ConfigErrorException(
+                "REST OAuth requires both client_id and client_secret. Provide both fields or remove both.",
+            )
+        }
+    }
+
+    fun toProperties(): Map<String, String> = buildMap {
+        put("uri", serverUri)
+        warehouse?.let { put("warehouse", it) }
+        token?.let { put("token", it) }
+        clientId?.let { put("credential", "$it:$clientSecret") }
+        oauth2ServerUri?.let { put("oauth2-server-uri", it) }
+        scope?.let { put("scope", it) }
+    }
+}
 
 /**
  * Polaris catalog configuration details.

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
@@ -178,7 +179,10 @@ class IcebergUtil(
         return record
     }
 
-    fun toIcebergSchema(stream: DestinationStream): Schema {
+    fun toIcebergSchema(
+        stream: DestinationStream,
+        timeColumnType: TimeColumnType = TimeColumnType.TIME,
+    ): Schema {
         val importType = stream.tableSchema.importType
         val primaryKeys =
             when (importType) {
@@ -186,7 +190,7 @@ class IcebergUtil(
                 else -> emptyList()
             }
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys, timeColumnType)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
