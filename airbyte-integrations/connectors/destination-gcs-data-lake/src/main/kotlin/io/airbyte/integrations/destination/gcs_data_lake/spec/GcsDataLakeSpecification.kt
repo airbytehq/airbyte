@@ -181,6 +181,16 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"default":10000000000,"order":13,"airbyte_hidden":true}""")
     val maxRecordsPerFlush: Long? = null
 
+    @get:JsonSchemaTitle("Partition Fields")
+    @get:JsonPropertyDescription(
+        "Partitioning enables pruning in BigQuery and other query engines. YEAR, MONTH, DAY, and " +
+            "HOUR transforms require a date or timestamp column. _airbyte_extracted_at is stored " +
+            "as an epoch-millis long, so time transforms do not apply to it.",
+    )
+    @get:JsonProperty("partition_fields", required = false)
+    @get:JsonSchemaInject(json = """{"order":14}""")
+    val partitionFields: List<GcsPartitionFieldSpec>? = null
+
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
             when (val spec = catalogType) {
@@ -204,6 +214,39 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
             catalogConfiguration = catalogConfig,
         )
     }
+}
+
+data class GcsPartitionFieldSpec(
+    @get:JsonSchemaTitle("Column")
+    @get:JsonPropertyDescription("The source column name as it appears in the stream.")
+    @get:JsonProperty("column", required = true)
+    val column: String,
+    @get:JsonSchemaTitle("Transform")
+    @get:JsonPropertyDescription("The Iceberg partition transform to apply to the source column.")
+    @get:JsonProperty("transform", required = true)
+    val transform: GcsPartitionTransform,
+    @get:JsonSchemaTitle("Transform Argument")
+    @get:JsonPropertyDescription(
+        "The bucket count for BUCKET or the width for TRUNCATE. Do not set this for other transforms.",
+    )
+    @get:JsonProperty("transform_argument", required = false)
+    val transformArgument: Int? = null,
+    @get:JsonSchemaTitle("Streams")
+    @get:JsonPropertyDescription(
+        "The stream names that use this field. Empty or omitted means all streams.",
+    )
+    @get:JsonProperty("streams", required = false)
+    val streams: List<String>? = null,
+)
+
+enum class GcsPartitionTransform(@get:JsonValue val value: String) {
+    IDENTITY("IDENTITY"),
+    YEAR("YEAR"),
+    MONTH("MONTH"),
+    DAY("DAY"),
+    HOUR("HOUR"),
+    BUCKET("BUCKET"),
+    TRUNCATE("TRUNCATE"),
 }
 
 enum class IcebergDeleteFileType(@get:JsonValue val value: String) {

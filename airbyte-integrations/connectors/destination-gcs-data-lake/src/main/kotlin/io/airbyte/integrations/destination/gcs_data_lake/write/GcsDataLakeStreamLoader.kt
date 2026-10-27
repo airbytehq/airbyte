@@ -13,6 +13,9 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitionField
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitionTransform
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitioning
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableUpgrader
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -25,8 +28,10 @@ import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCata
 import io.airbyte.integrations.destination.gcs_data_lake.spec.AllowNonReversibleUpgrades
 import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsPartitionTransform
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -34,6 +39,8 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
+
+private fun GcsPartitionTransform.toIcebergTransform() = IcebergPartitionTransform.valueOf(name)
 
 class GcsDataLakeStreamLoader(
     private val icebergConfiguration: GcsDataLakeConfiguration,
@@ -86,12 +93,20 @@ class GcsDataLakeStreamLoader(
         val targetFormatVersion = icebergConfiguration.tableFormatVersion.formatVersion
         val tableExisted =
             catalog.tableExists(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
+        val partitionFields = partitionFieldsForStream()
+        val partitionSpec =
+            if (tableExisted) {
+                PartitionSpec.unpartitioned()
+            } else {
+                IcebergPartitioning.buildSpec(incomingSchema, partitionFields)
+            }
         val createdTable =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
                 formatVersion = targetFormatVersion,
+                partitionSpec = partitionSpec,
             )
         table = createdTable
         val actualVersion = tableFormatVersion(createdTable)
@@ -195,6 +210,9 @@ class GcsDataLakeStreamLoader(
             table.refresh()
             targetSchema = table.schema()
         }
+        if (tableExisted) {
+            IcebergPartitioning.evolveSpec(createdTable, partitionFields)
+        }
 
         logger.info {
             "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
@@ -265,6 +283,26 @@ class GcsDataLakeStreamLoader(
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }
+
+    private fun partitionFieldsForStream(): List<IcebergPartitionField> =
+        icebergConfiguration.partitionFields
+            .filter {
+                it.streams.isNullOrEmpty() || stream.mappedDescriptor.name in it.streams
+            }
+            .map { field ->
+                val sourceColumn =
+                    if (Meta.COLUMN_NAMES.contains(field.column)) {
+                        field.column
+                    } else {
+                        stream.tableSchema.columnSchema.inputToFinalColumnNames[field.column]
+                            ?: field.column
+                    }
+                IcebergPartitionField(
+                    sourceColumn = sourceColumn,
+                    transform = field.transform.toIcebergTransform(),
+                    argument = field.transformArgument,
+                )
+            }
 
     private fun reconcileFormatVersion(
         table: Table,

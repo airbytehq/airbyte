@@ -48,6 +48,7 @@ data class GcsDataLakeConfiguration(
     val allowNonReversibleUpgrades: AllowNonReversibleUpgrades = AllowNonReversibleUpgrades.NO,
     val optimizePriorIcebergDeleteFiles: Boolean = true,
     val maxRecordsPerFlush: Long? = null,
+    val partitionFields: List<GcsPartitionFieldSpec> = emptyList(),
 ) : DestinationConfiguration() {
 
     object Defaults {
@@ -55,6 +56,33 @@ data class GcsDataLakeConfiguration(
     }
 
     init {
+        partitionFields.forEachIndexed { index, field ->
+            if (field.column.isBlank()) {
+                throw ConfigErrorException(
+                    "partition_fields[$index].column must not be blank. Set a source column name.",
+                )
+            }
+            when (field.transform) {
+                GcsPartitionTransform.BUCKET,
+                GcsPartitionTransform.TRUNCATE -> {
+                    if (field.transformArgument == null || field.transformArgument < 1) {
+                        throw ConfigErrorException(
+                            "partition_fields[$index].transform_argument is required for " +
+                                "${field.transform} and must be at least 1. Set a positive " +
+                                "bucket count or truncate width.",
+                        )
+                    }
+                }
+                else -> {
+                    if (field.transformArgument != null) {
+                        throw ConfigErrorException(
+                            "partition_fields[$index].transform_argument is only supported for " +
+                                "BUCKET and TRUNCATE. Remove it for ${field.transform}.",
+                        )
+                    }
+                }
+            }
+        }
         if (
             icebergDeleteFileType == IcebergDeleteFileType.POSITIONAL &&
                 tableFormatVersion == IcebergTableFormatVersion.V3
@@ -143,6 +171,7 @@ class GcsDataLakeConfigurationFactory :
                 pojo.allowNonReversibleUpgrades ?: AllowNonReversibleUpgrades.NO,
             optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
             maxRecordsPerFlush = pojo.maxRecordsPerFlush,
+            partitionFields = pojo.partitionFields.orEmpty(),
         )
     }
 }

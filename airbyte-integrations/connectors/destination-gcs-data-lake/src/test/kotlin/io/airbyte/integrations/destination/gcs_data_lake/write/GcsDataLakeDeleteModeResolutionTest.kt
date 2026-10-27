@@ -162,7 +162,7 @@ internal class GcsDataLakeDeleteModeResolutionTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns table.schema()
         }
         return GcsDataLakeStreamLoader(
