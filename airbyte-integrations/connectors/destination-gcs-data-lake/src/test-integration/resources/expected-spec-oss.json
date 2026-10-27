@@ -7,19 +7,19 @@
     "additionalProperties" : true,
     "description" : "Configuration for GCS Data Lake destination using Apache Iceberg format",
     "properties" : {
-      "time_column_type" : {
-        "type" : "string",
-        "enum" : [ "TIME", "STRING" ],
-        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
-        "title" : "Time Column Type",
-        "default" : "TIME"
-      },
       "gcs_bucket_name" : {
         "type" : "string",
         "description" : "The name of the GCS bucket that will host the Iceberg data.",
         "title" : "GCS Bucket Name",
         "always_show" : true,
         "order" : 0
+      },
+      "time_column_type" : {
+        "type" : "string",
+        "enum" : [ "TIME", "STRING" ],
+        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
+        "title" : "Time Column Type",
+        "default" : "TIME"
       },
       "service_account_json" : {
         "type" : "string",

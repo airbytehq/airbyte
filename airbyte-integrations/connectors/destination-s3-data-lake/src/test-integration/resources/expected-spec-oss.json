@@ -7,13 +7,6 @@
     "additionalProperties" : true,
     "description" : "Defines the configurations required to connect to an Iceberg catalog, including warehouse location, main branch name, and catalog type specifics.",
     "properties" : {
-      "time_column_type" : {
-        "type" : "string",
-        "enum" : [ "TIME", "STRING" ],
-        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
-        "title" : "Time Column Type",
-        "default" : "TIME"
-      },
       "access_key_id" : {
         "type" : "string",
         "description" : "The AWS Access Key ID with permissions for S3 and Glue operations.",
@@ -36,6 +29,13 @@
         "title" : "S3 Bucket Name",
         "always_show" : true,
         "order" : 2
+      },
+      "time_column_type" : {
+        "type" : "string",
+        "enum" : [ "TIME", "STRING" ],
+        "description" : "Store time columns as TIME (default) or ISO-8601 STRING for Spark/Databricks readers, which do not support Iceberg time. Changing existing TIME columns to STRING requires a full refresh.",
+        "title" : "Time Column Type",
+        "default" : "TIME"
       },
       "s3_bucket_region" : {
         "type" : "string",
