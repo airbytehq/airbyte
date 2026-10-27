@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "created_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "has_rating": {
+      "type": ["null", "boolean"]
+    },
+    "has_review": {
+      "type": ["null", "boolean"]
+    },
+    "rating": {
+      "type": ["null", "integer"]
+    },
+    "recommendation_type": {
+      "type": ["null", "string"]
+    },
+    "review_text": {
+      "type": ["null", "string"]
+    },
+    "reviewer": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

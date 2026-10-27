@@ -83,3 +83,43 @@ def test_invalid_metric_is_reported_as_config_error():
         output = read(SourceFacebookPages(catalog=catalog, config=config), config, catalog, expecting_exception=True)
     assert output.errors[0].trace.error.failure_type.value == "config_error"
     assert "Insights Metrics settings" in output.errors[0].trace.error.message
+
+
+def test_backoff_waits_for_meta_estimated_time_to_regain_access():
+    import requests
+    from source_facebook_pages.components import MetaUsageBackoffStrategy
+
+    strategy = MetaUsageBackoffStrategy(config=CONFIG, parameters={})
+    throttled = requests.Response()
+    throttled.headers["X-Business-Use-Case-Usage"] = '{"123": [{"type": "pages", "call_count": 100, "estimated_time_to_regain_access": 2}]}'
+    assert strategy.backoff_time(throttled, 1) == 120
+
+    plain = requests.Response()
+    assert strategy.backoff_time(plain, 1) is None
+    assert strategy.backoff_time(requests.ConnectionError(), 1) is None
+
+
+def test_comment_stream_reads_post_ids_then_comments_per_post():
+    catalog = CatalogBuilder().with_stream("comment", SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(FEED_URL, json={"data": [{"id": "1_10"}, {"id": "1_11"}], "paging": {}})
+        m.get("https://graph.facebook.com/v24.0/1_10/comments", json={"data": [{"id": "c1", "message": "hi"}], "paging": {}})
+        m.get("https://graph.facebook.com/v24.0/1_11/comments", json={"data": [], "paging": {}})
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
+        feed = [parse_qs(urlparse(r.url).query) for r in m.request_history if urlparse(r.url).path == "/v24.0/1/feed"]
+        comments = [parse_qs(urlparse(r.url).query) for r in m.request_history if urlparse(r.url).path.endswith("/comments")]
+    assert feed[0]["fields"] == ["id"], "parent read must only ask for post ids"
+    assert len(comments) == 2 and comments[0]["filter"] == ["stream"] and "message" in comments[0]["fields"][0]
+    assert [r.record.data for r in output.records] == [{"id": "c1", "message": "hi", "post_id": "1_10"}]
+
+
+def test_rating_stream_requests_recommendation_fields():
+    catalog = CatalogBuilder().with_stream("rating", SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get("https://graph.facebook.com/v24.0/1/ratings", json={"data": [{"rating": 5, "recommendation_type": "positive"}], "paging": {}})
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
+        query = parse_qs(urlparse(m.request_history[-1].url).query)
+    assert "review_text" in query["fields"][0] and "reviewer" in query["fields"][0]
+    assert len(output.records) == 1
