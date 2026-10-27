@@ -1,9 +1,3 @@
-const sectionHeader = (title) => ({
-  type: "html",
-  value: title,
-  className: "navbar__category",
-});
-
 const contributeToAirbyte = {
   type: "category",
   label: "Contribute to Airbyte",

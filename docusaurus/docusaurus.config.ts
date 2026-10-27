@@ -304,41 +304,33 @@ const config: Config = {
         height: 40,
       },
       items: [
-        // "Data Replication" dropdown groups the five sub-sections
-        // `to` makes the label itself clickable (navigates to Platform)
         {
-          type: "dropdown",
+          type: "docSidebar",
           position: "left",
-          label: "Data Replication",
-          to: "/platform",
-          items: [
-            {
-              type: "docSidebar",
-              docsPluginId: "platform",
-              sidebarId: "platform",
-              label: "Platform",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "connectors",
-              sidebarId: "connectors",
-              label: "Connectors",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "developers",
-              sidebarId: "developers",
-              label: "Developers",
-            },
-          ],
+          docsPluginId: "platform",
+          sidebarId: "platform",
+          label: "Platform",
         },
-        // "Release notes" and "Community" are tier-one nav items
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "connectors",
+          sidebarId: "connectors",
+          label: "Connectors",
+        },
         {
           type: "docSidebar",
           position: "left",
           docsPluginId: "release_notes",
           sidebarId: "releaseNotes",
           label: "Release notes",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "developers",
+          sidebarId: "developers",
+          label: "Developers",
         },
         {
           type: "docSidebar",

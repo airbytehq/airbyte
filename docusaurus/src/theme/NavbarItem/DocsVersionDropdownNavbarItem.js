@@ -3,7 +3,7 @@ import DocsVersionDropdownNavbarItem from "@theme-original/NavbarItem/DocsVersio
 import { useLocation } from "@docusaurus/router";
 
 export default function DocsVersionDropdownNavbarItemWrapper(props) {
-  const { docsPluginId, className, type } = props;
+  const { docsPluginId } = props;
   const { pathname } = useLocation();
 
   // Check if the current page belongs to this docs plugin by verifying the pathname

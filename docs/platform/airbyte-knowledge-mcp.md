@@ -1,4 +1,5 @@
 ---
+products: oss-community
 sidebar_label: Knowledge MCP server
 ---
 

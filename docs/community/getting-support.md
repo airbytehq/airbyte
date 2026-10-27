@@ -2,34 +2,32 @@
 
 If you can't find an answer to your question in the docs, use one of the following options:
 
-## Data Replication
-
-### In-app support agent bot
+## In-app support agent bot
 
 **The in-app support agent bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
 
-### Support Center
+## Support Center
 
 **For additional help, create a ticket in Airbyte's [Support Center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 
 - For account or billing inquiries, [contact sales](https://airbyte.com/talk-to-sales).
 - We suggest signing up for Airbyte with your company email address, and not a personal one.
 
-### Core (open source)
+## Core (open source)
 
 Core users don't have access to paid support but can use the [Community Slack](#community-slack). If you need personalized help, consider upgrading to one of Airbyte's [paid plans](https://www.airbyte.com/pricing).
 
-### Connector support levels
+## Connector support levels
 
 Connector support depends on the connector's support level. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
 If you don't see a connector you need, see [Custom or New Connector](/integrations/custom-connectors) to request or build one.
 
-### GitHub discussions
+## GitHub discussions
 
 [GitHub discussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss data replication improvements.
 
-### Report an issue
+## Report an issue
 
 If you've found a bug or issue with Airbyte or its documentation, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub.
 
