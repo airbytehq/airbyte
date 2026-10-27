@@ -130,7 +130,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         val objectStorageConfig =
             ValidatedJsonUtils.parseUnvalidated(
                     config.get("object_storage_config"),
-                    ObjectStorageSpec::class.java
+                    ObjectStorageSpec::class.java,
                 )
                 .toObjectStorageConfig()
         return DeclarativeCdkConfiguration(objectStorageConfig)
@@ -144,7 +144,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         return CompositeDlqChecker(
             createChecker(manifest.checker),
             dlqChecker,
-            cdkConfiguration.objectStorageConfig
+            cdkConfiguration.objectStorageConfig,
         )
     }
 
@@ -154,7 +154,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         //  component required until connectors like Hubspot can define it.
         if (manifest.discover == null) {
             throw IllegalArgumentException(
-                "manifest.yaml is missing expected 'discovery' component"
+                "manifest.yaml is missing expected 'discovery' component",
             )
         } else {
             return createOperationProvider(manifest.discover)
@@ -185,10 +185,10 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
                     model.objectName,
                     mapImportMode(model.destinationImportMode),
                     JsonSchemaToAirbyteType(
-                            unionBehavior = JsonSchemaToAirbyteType.UnionBehavior.DEFAULT
+                            unionBehavior = JsonSchemaToAirbyteType.UnionBehavior.DEFAULT,
                         )
                         .convert(model.schema),
-                    model.matchingKeys ?: emptyList()
+                    model.matchingKeys ?: emptyList(),
                 )
             is DynamicCatalogOperationModel -> model.toProvider()
         }
@@ -204,7 +204,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         }
 
     fun BasicAccessAuthenticatorModel.toInterceptor(
-        interpolationContext: Map<String, Any>
+        interpolationContext: Map<String, Any>,
     ): BasicAccessAuthenticator =
         BasicAccessAuthenticator(
             stringInterpolator.interpolate(this.username, interpolationContext),
@@ -212,7 +212,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         )
 
     fun OAuthAuthenticatorModel.toInterceptor(
-        interpolationContext: Map<String, Any>
+        interpolationContext: Map<String, Any>,
     ): OAuthAuthenticator =
         OAuthAuthenticator(
             stringInterpolator.interpolate(this.url, interpolationContext),
@@ -256,24 +256,24 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         val dynamicOperation = this
         return DynamicOperationProvider(
             createDestinationObjectProvider(dynamicOperation.objects),
-            createDestinationOperationAssembler(dynamicOperation)
+            createDestinationOperationAssembler(dynamicOperation),
         )
     }
 
     private fun createDestinationObjectProvider(
-        model: DestinationObjectsModel
+        model: DestinationObjectsModel,
     ): DestinationObjectProvider =
         when (model) {
             is StaticDestinationObjectsModel -> StaticDestinationObjectProvider(model.objects)
             is DynamicDestinationObjectsModel ->
                 DynamicDestinationObjectProvider(
                     model.retriever.toRetriever(),
-                    model.namePath ?: emptyList()
+                    model.namePath ?: emptyList(),
                 )
         }
 
     private fun createDestinationOperationAssembler(
-        model: DynamicCatalogOperationModel
+        model: DynamicCatalogOperationModel,
     ): DestinationOperationAssembler {
         val propertiesPath: List<String> = model.schema.propertiesPath
         val insertionMethods: List<InsertionMethod> =
@@ -290,7 +290,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
 
     private fun createInsertionMethod(
         schemaModel: SchemaConfigurationModel,
-        model: InsertionMethodModel
+        model: InsertionMethodModel,
     ): InsertionMethod =
         InsertionMethod(
             mapImportMode(model.destinationImportMode),
@@ -314,7 +314,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         model.forEach { mapping ->
             if (mapping.airbyteType.size != 1) {
                 throw IllegalArgumentException(
-                    "Mapping with api_type(s) ${mapping.apiType} maps to ${mapping.airbyteType.size}, but only 1 airbyte_type is allowed."
+                    "Mapping with api_type(s) ${mapping.apiType} maps to ${mapping.airbyteType.size}, but only 1 airbyte_type is allowed.",
                 )
             }
         }
@@ -348,14 +348,14 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
                         }
                         .toMap() as LinkedHashMap,
                     this.additionalProperties,
-                    this.required ?: emptyList()
+                    this.required ?: emptyList(),
                 )
             is ObjectTypeWithEmptySchemaModel -> ObjectTypeWithEmptySchema
             is ObjectTypeWithoutSchemaModel -> ObjectTypeWithoutSchema
             is UnionTypeModel ->
                 UnionType(
                     this.options.map { option -> option.toAirbyteType() }.toSet(),
-                    this.isLegacyUnion
+                    this.isLegacyUnion,
                 )
             is UnknownTypeModel -> UnknownType(this.schema)
         }

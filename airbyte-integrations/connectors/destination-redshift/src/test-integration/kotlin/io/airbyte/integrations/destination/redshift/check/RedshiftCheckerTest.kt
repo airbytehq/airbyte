@@ -78,8 +78,8 @@ class RedshiftCheckerTest {
             val ex = assertThrows<IllegalStateException> { checker.check() }
             assertTrue(
                 ex.message!!.contains(
-                    "Please verify the host and port are correct and the server is reachable"
-                )
+                    "Please verify the host and port are correct and the server is reachable",
+                ),
             )
             assertDoesNotThrow { checker.cleanup() }
         } finally {
@@ -126,7 +126,7 @@ class RedshiftCheckerTest {
 
         val ex = assertThrows<IllegalStateException> { checker.check() }
         assertTrue(
-            ex.message!!.contains("AWS Access Key Id you provided does not exist in our records.")
+            ex.message!!.contains("AWS Access Key Id you provided does not exist in our records."),
         )
         assertDoesNotThrow { checker.cleanup() }
     }

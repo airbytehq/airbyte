@@ -471,6 +471,7 @@ module.exports = {
           items: [
             "airbyte-mcp/install",
             "airbyte-mcp/tools",
+            "airbyte-mcp/advanced-configuration",
             "airbyte-mcp/self-managed",
           ],
         },

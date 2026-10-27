@@ -91,11 +91,11 @@ def test_malformed_start_date_fails_config_validation(requests_mock):
 
 def test_legacy_authorization_config_is_migrated(capsys):
     source = get_source({"authorization": {"auth_type": "Token", "api_token": "legacy-token"}})
-    assert source._config["api_token"] == "legacy-token"
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "legacy-token"}
     control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
     assert len(control_messages) == 1
     assert control_messages[0]["type"] == Type.CONTROL.value
-    assert control_messages[0]["control"]["connectorConfig"]["config"]["api_token"] == "legacy-token"
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]["api_token"] == "legacy-token"
 
 
 def test_current_config_is_not_migrated(capsys):
@@ -104,13 +104,52 @@ def test_current_config_is_not_migrated(capsys):
         "replication_start_date": "2017-01-25T00:00:00Z",
     }
     source = get_source(config)
-    assert source._config["credentials"]["api_token"] == "current-token"
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "current-token"}
     assert "CONTROL" not in capsys.readouterr().out
 
 
 def test_flat_api_token_config_is_wrapped_into_credentials(capsys):
-    source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
-    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "current-token"}
+    source = get_source({"api_token": "flat-token", "replication_start_date": "2017-01-25T00:00:00Z"})
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "flat-token"}
     control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
     assert len(control_messages) == 1
-    assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]["api_token"] == "current-token"
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]["api_token"] == "flat-token"
+
+
+def test_digit_only_flat_api_token_stays_a_string():
+    source = get_source({"api_token": "0123456789"})
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "0123456789"}
+
+
+def test_oauth_config_with_a_leftover_api_token_is_not_rewrapped(capsys):
+    credentials = {
+        "auth_type": "oauth2.0",
+        "client_id": "c",
+        "client_secret": "s",
+        "refresh_token": "r",
+        "api_domain": "https://acme.pipedrive.com",
+    }
+    source = get_source({"api_token": "old-token", "credentials": dict(credentials)})
+    assert source._config["credentials"] == credentials
+
+
+@pytest.mark.parametrize("saved_value", [20, 40])
+def test_num_workers_above_the_current_maximum_is_lowered(capsys, saved_value):
+    source = get_source({"credentials": {"auth_type": "api_token", "api_token": "t"}, "num_workers": saved_value})
+    assert source._config["num_workers"] == 10
+    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["num_workers"] == 10
+
+
+@pytest.mark.parametrize("saved_value", [1, 10])
+def test_num_workers_within_the_maximum_is_kept(capsys, saved_value):
+    source = get_source({"credentials": {"auth_type": "api_token", "api_token": "t"}, "num_workers": saved_value})
+    assert source._config["num_workers"] == saved_value
+    assert "CONTROL" not in capsys.readouterr().out
+
+
+def test_config_saved_by_2_3_x_with_40_workers_still_syncs(requests_mock):
+    requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
+    output = _read_deals({"credentials": {"auth_type": "api_token", "api_token": "t"}, "num_workers": 40})
+    assert output.errors == []

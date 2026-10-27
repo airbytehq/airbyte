@@ -25,6 +25,30 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: Mozilla/5.0 (X11; Linux x86_64)
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Yahoo Finance returned no data for one of the configured tickers
+                  ({{ response.chart.error.description if response.chart is mapping
+                  and response.chart.error is mapping else 'Not Found' }}). Check the
+                  'Tickers' setting: remove unknown or delisted symbols and any empty
+                  entries (e.g. a trailing comma).
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 422
+                error_message: >-
+                  Yahoo Finance rejected the requested 'Interval' / 'Range' combination
+                  ({{ response.chart.error.description if response.chart is mapping
+                  and response.chart.error is mapping else 'Unprocessable Entity' }}).
+                  Choose a shorter range or a coarser interval.
         record_selector:
           type: RecordSelector
           extractor:

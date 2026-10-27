@@ -72,8 +72,9 @@ airbyte:
             error: config
           - pattern: "(?i).*bigquery\\.readsessions\\.(create|getData).*"
             # The Storage Read API (readapi package, or the JDBC driver's EnableHighThroughputAPI)
-            # without the BigQuery Read Session User role. Normally caught by the availability
-            # probe at the start of the READ, which falls back to the query API.
+            # without the BigQuery Read Session User role. Normally caught earlier by
+            # BigQueryReadApiPermissionProbe: CHECK fails on it with the fix spelled out, and READ
+            # probes once at its start and falls back to the query API.
             input-example: >-
               com.google.api.gax.rpc.PermissionDeniedException: io.grpc.StatusRuntimeException: PERMISSION_DENIED:
               request failed: the user does not have 'bigquery.readsessions.create' permission for 'projects/my-project'

@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_instatus"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+python = "^3.10,<3.13"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-instatus = "source_instatus.run:run"

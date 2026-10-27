@@ -51,11 +51,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -137,11 +143,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -266,11 +278,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -309,11 +327,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -360,11 +384,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -463,7 +493,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 1000
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -503,11 +533,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -642,11 +678,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:

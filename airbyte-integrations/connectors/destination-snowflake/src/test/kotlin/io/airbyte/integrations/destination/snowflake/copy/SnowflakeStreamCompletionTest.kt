@@ -46,17 +46,17 @@ class SnowflakeStreamCompletionTest {
                 copy.prepare(DestinationCatalog(listOf(fixture.stream)))
                 assertEquals(
                     listOf("schema.json"),
-                    fixture.uploader.keys.map { it.substringAfterLast('/') }
+                    fixture.uploader.keys.map { it.substringAfterLast('/') },
                 )
                 copy.complete(fixture.stream)
                 val key = copy.context(fixture.stream)!!.runPath + "batches/stream_complete.json"
                 assertEquals(
                     listOf("schema.json", "stream_complete.json"),
-                    fixture.uploader.keys.map { it.substringAfterLast('/') }
+                    fixture.uploader.keys.map { it.substringAfterLast('/') },
                 )
                 assertEquals(
                     "{\"job_id\":12345,\"min_generation_id\":42}",
-                    fixture.uploader.json.getValue(key)
+                    fixture.uploader.json.getValue(key),
                 )
             }
         }
@@ -79,7 +79,7 @@ class SnowflakeStreamCompletionTest {
             val key = copy.context(fixture.stream)!!.runPath + "batches/stream_complete.json"
             assertEquals(
                 "{\"job_id\":12345,\"min_generation_id\":0}",
-                fixture.uploader.json.getValue(key)
+                fixture.uploader.json.getValue(key),
             )
             assertEquals(2, fixture.uploader.keys.count { it == key })
         }
@@ -94,7 +94,7 @@ class SnowflakeStreamCompletionTest {
                         AirbyteStream()
                             .withName("Orders/日本")
                             .withNamespace("public")
-                            .withJsonSchema(Jsons.readTree("{}"))
+                            .withJsonSchema(Jsons.readTree("{}")),
                     )
                     .withPrimaryKey(listOf(listOf("id"), listOf("nested", "key")))
                     .withCursorField(listOf("updated_at"))
@@ -104,7 +104,7 @@ class SnowflakeStreamCompletionTest {
                 val schema = Jsons.readTree(fixture.uploader.json.values.single())
                 assertEquals(
                     listOf(listOf("id"), listOf("nested", "key")),
-                    schema["primary_key"].map { it.map { field -> field.asText() } }
+                    schema["primary_key"].map { it.map { field -> field.asText() } },
                 )
                 assertEquals(listOf("updated_at"), schema["cursor"].map { it.asText() })
             }
@@ -129,7 +129,7 @@ class SnowflakeStreamCompletionTest {
                         AirbyteStream()
                             .withName("Orders/日本")
                             .withNamespace("public")
-                            .withJsonSchema(sourceSchema)
+                            .withJsonSchema(sourceSchema),
                     )
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
                     .withPrimaryKey(listOf(listOf("id")))
@@ -177,7 +177,7 @@ class SnowflakeStreamCompletionTest {
                     "id":{"type":"integer", "description":"Source identifier", "minimum":0},
                     "nested":{"type":"object", "properties":{"key":{"type":"string", "enum":["a","b"]}}}
                   }
-                }"""
+                }""",
                 )
             val configured =
                 ConfiguredAirbyteStream()
@@ -185,7 +185,7 @@ class SnowflakeStreamCompletionTest {
                         AirbyteStream()
                             .withName("Orders/日本")
                             .withNamespace("public")
-                            .withJsonSchema(originalSchema)
+                            .withJsonSchema(originalSchema),
                     )
             // A same-name stream in another namespace must not be selected.
             val other =
@@ -194,7 +194,7 @@ class SnowflakeStreamCompletionTest {
                         AirbyteStream()
                             .withName("Orders/日本")
                             .withNamespace("other")
-                            .withJsonSchema(Jsons.readTree("{}"))
+                            .withJsonSchema(Jsons.readTree("{}")),
                     )
             val catalog =
                 if (withCatalog) ConfiguredAirbyteCatalog().withStreams(listOf(other, configured))
@@ -210,9 +210,9 @@ class SnowflakeStreamCompletionTest {
                             .convert(
                                 ObjectType(
                                     LinkedHashMap(
-                                        fixture.stream.tableSchema.columnSchema.inputSchema
-                                    )
-                                )
+                                        fixture.stream.tableSchema.columnSchema.inputSchema,
+                                    ),
+                                ),
                             )
                 assertEquals(expected, schema["source_schema"])
                 assertTrue(schema["source_schema"]["properties"].has("id"))
@@ -225,7 +225,7 @@ class SnowflakeStreamCompletionTest {
                         Jsons.readTree(
                             originalSchema
                                 .toString()
-                                .replace("Source identifier", "Updated description")
+                                .replace("Source identifier", "Updated description"),
                         )
                     val changed = Fixture(0, catalog, raw)
                     changed.copy.use { next ->
@@ -242,11 +242,11 @@ class SnowflakeStreamCompletionTest {
         runBlocking {
             val publicSchema =
                 Jsons.readTree(
-                    """{"type":"object","properties":{"public_id":{"type":"integer"}}}"""
+                    """{"type":"object","properties":{"public_id":{"type":"integer"}}}""",
                 )
             val billingSchema =
                 Jsons.readTree(
-                    """{"type":"object","properties":{"billing_id":{"type":"string"}}}"""
+                    """{"type":"object","properties":{"billing_id":{"type":"string"}}}""",
                 )
             fun configured(namespace: String, schema: com.fasterxml.jackson.databind.JsonNode) =
                 ConfiguredAirbyteStream()
@@ -254,7 +254,7 @@ class SnowflakeStreamCompletionTest {
                         AirbyteStream()
                             .withName("Orders/日本")
                             .withNamespace(namespace)
-                            .withJsonSchema(schema)
+                            .withJsonSchema(schema),
                     )
             val fixture =
                 Fixture(
@@ -263,9 +263,9 @@ class SnowflakeStreamCompletionTest {
                         .withStreams(
                             listOf(
                                 configured("public", publicSchema),
-                                configured("billing", billingSchema)
-                            )
-                        )
+                                configured("billing", billingSchema),
+                            ),
+                        ),
                 )
             val billingFixture = Fixture(0)
             val billing = billingFixture.stream
@@ -279,31 +279,31 @@ class SnowflakeStreamCompletionTest {
                 val billingContext = copy.context(billing)!!
                 assertEquals(
                     publicContext.runPath.substringAfter("/runs/"),
-                    billingContext.runPath.substringAfter("/runs/")
+                    billingContext.runPath.substringAfter("/runs/"),
                 )
                 assertNotEquals(publicContext.runPath, billingContext.runPath)
                 assertTrue(
                     publicContext.runPath.contains(
-                        "/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/"
-                    )
+                        "/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/",
+                    ),
                 )
                 assertTrue(
                     billingContext.runPath.contains(
-                        "/streams/billing/Orders%2F%E6%97%A5%E6%9C%AC/runs/"
-                    )
+                        "/streams/billing/Orders%2F%E6%97%A5%E6%9C%AC/runs/",
+                    ),
                 )
                 assertEquals(2, fixture.uploader.json.size)
                 assertEquals(
                     publicSchema,
                     Jsons.readTree(
-                            fixture.uploader.json.getValue(publicContext.runPath + "schema.json")
-                        )["source_schema"]
+                            fixture.uploader.json.getValue(publicContext.runPath + "schema.json"),
+                        )["source_schema"],
                 )
                 assertEquals(
                     billingSchema,
                     Jsons.readTree(
-                            fixture.uploader.json.getValue(billingContext.runPath + "schema.json")
-                        )["source_schema"]
+                            fixture.uploader.json.getValue(billingContext.runPath + "schema.json"),
+                        )["source_schema"],
                 )
                 val path = java.nio.file.Files.createTempFile("namespace-copy", ".csv.gz")
                 try {
@@ -327,8 +327,8 @@ class SnowflakeStreamCompletionTest {
                     assertEquals(batchId, fixture.uploader.metadata.getValue(batch)["batch-id"])
                     assertTrue(
                         fixture.uploader.keys.contains(
-                            context.runPath + "batches/stream_complete.json"
-                        )
+                            context.runPath + "batches/stream_complete.json",
+                        ),
                     )
                 }
             }
@@ -356,7 +356,7 @@ class SnowflakeStreamCompletionTest {
     private class Fixture(
         minimum: Long,
         configuredCatalog: ConfiguredAirbyteCatalog? = null,
-        raw: Boolean = false
+        raw: Boolean = false,
     ) {
         private val configuration =
             mockk<SnowflakeConfiguration>(relaxed = true) {
@@ -379,18 +379,18 @@ class SnowflakeStreamCompletionTest {
                                 "nested" to
                                     FieldType(
                                         ObjectType(
-                                            linkedMapOf("key" to FieldType(StringType, true))
+                                            linkedMapOf("key" to FieldType(StringType, true)),
                                         ),
-                                        true
-                                    )
+                                        true,
+                                    ),
                             ),
                             mapOf("id" to "ID", "nested" to "NESTED"),
                             if (raw) mapOf("_airbyte_data" to ColumnType("VARIANT", false))
                             else
                                 mapOf(
                                     "ID" to ColumnType("NUMBER", false),
-                                    "NESTED" to ColumnType("VARIANT", true)
-                                )
+                                    "NESTED" to ColumnType("VARIANT", true),
+                                ),
                         ),
                         Append,
                     )
@@ -416,26 +416,30 @@ class SnowflakeStreamCompletionTest {
                 configuredCatalog,
             )
     }
+
     private class FakeUploader : FusionUploader {
         val keys = mutableListOf<String>()
         val json = mutableMapOf<String, String>()
         val metadata = mutableMapOf<String, Map<String, String>>()
         var markerResult: CompletableFuture<*> = CompletableFuture.completedFuture(Unit)
+
         override fun upload(
             path: Path,
             key: String,
-            metadata: Map<String, String>
+            metadata: Map<String, String>,
         ): CompletableFuture<*> {
             keys.add(key)
             this.metadata[key] = metadata
             return CompletableFuture.completedFuture(Unit)
         }
+
         override fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*> {
             keys.add(key)
             json[key] = Jsons.writeValueAsString(Jsons.readTree(String(bytes, Charsets.UTF_8)))
             return if (key.endsWith("stream_complete.json")) markerResult
             else CompletableFuture.completedFuture(Unit)
         }
+
         override fun close() = Unit
     }
 }

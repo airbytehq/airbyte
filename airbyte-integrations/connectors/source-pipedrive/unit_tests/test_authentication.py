@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Authentication tests for source-pipedrive.
 
@@ -16,7 +16,7 @@ import requests_mock
 import yaml
 from conftest import _YAML_FILE_PATH, get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -84,8 +84,8 @@ def test_no_api_token_request_parameter_remains():
     for stream in manifest["definitions"]["streams"].values():
         for request_parameters in _request_parameters(stream):
             assert "api_token" not in request_parameters
-    # The only remaining reference reads the flat legacy key to wrap it into `credentials`.
-    assert raw_text.count("config['api_token']") == 1
+    # Only the migrations read the flat key (with `config.get`); requests read `credentials`.
+    assert "config['api_token']" not in raw_text
 
 
 def test_migrated_config_sends_header_to_both_api_versions():
@@ -135,3 +135,29 @@ def test_oauth_reuses_a_stored_access_token_until_the_platform_expiry_instant():
     assert len(output.records) == 1
     assert [r.method for r in mocker.request_history] == ["GET"]
     assert mocker.request_history[0].headers["Authorization"] == "Bearer stored"
+
+
+def test_oauth_401_asks_to_re_authenticate() -> None:
+    with requests_mock.Mocker() as mocker:
+        mocker.post("https://oauth.pipedrive.com/oauth/token", json=_TOKEN_RESPONSE)
+        mocker.get("https://acme.pipedrive.com/api/v1/currencies", status_code=401, json={"success": False, "error": "unauthorized access"})
+        catalog = CatalogBuilder().with_stream("currencies", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG_OAUTH), _CONFIG_OAUTH, catalog, expecting_exception=True)
+
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "OAuth access token (401: unauthorized access)" in error.message
+    assert "Re-authenticate the source" in error.message
+    assert "API token" not in error.message
+
+
+def test_api_token_401_keeps_the_token_instructions() -> None:
+    with requests_mock.Mocker() as mocker:
+        mocker.get("https://api.pipedrive.com/v1/currencies", status_code=401, json={"success": False, "error": "unauthorized access"})
+        catalog = CatalogBuilder().with_stream("currencies", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG_MIGRATED), _CONFIG_MIGRATED, catalog, expecting_exception=True)
+
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "rejected the API token (401: unauthorized access)" in error.message
+    assert "OAuth" not in error.message

@@ -1,6 +1,12 @@
 {
   "trailingSlash": false,
   "cleanUrls": true,
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "master": true
+    }
+  },
   "redirects": [
     {
       "source": "/ai-agents/interfaces/ui/automations",

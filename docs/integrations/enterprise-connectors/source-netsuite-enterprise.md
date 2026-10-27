@@ -104,8 +104,19 @@ The process of setting up OAuth 2.0 for NetSuite SuiteAnalytics Connect is as fo
 
 Please consult the [NetSuite OAuth 2.0 for Connect documentation](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_0907012138.html) for further details.
 
+## Changelog
 
+<details>
+  <summary>Expand to review</summary>
 
+| Version | Date       | Pull Request                                                    | Subject                                                                                              |
+|:--------|:-----------|:----------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.3.2   | 2026-10-07 | [466](https://github.com/airbytehq/airbyte-enterprise/pull/466) | Persist the `transactionLine` cursor ceiling in grid checkpoints so a retried attempt does not miss rows |
+| 0.3.1   | 2026-08-17 | [461](https://github.com/airbytehq/airbyte-enterprise/pull/461) | Non-splittable `transactionLine` grid partitions                                                     |
+| 0.3.0   | 2026-08-17 | [455](https://github.com/airbytehq/airbyte-enterprise/pull/455) | Read `transactionLine` through a fixed `uniquekey` range grid                                        |
+| 0.2.7   | 2026-05-06 | [429](https://github.com/airbytehq/airbyte-enterprise/pull/429) | Make spec `additionalPropertiesMap` non-required                                                     |
+| 0.2.6   | 2026-01-08 | [339](https://github.com/airbytehq/airbyte-enterprise/pull/339) | Fix `transactionLine` incremental sync timing out on `SELECT MAX`                                    |
+| 0.2.5   | 2026-01-07 | [301](https://github.com/airbytehq/airbyte-enterprise/pull/301) | Set a max limit on the number of rows pulled by each query                                           |
+| 0.2.4   | -          | -                                                               | Previous changes                                                                                     |
 
-
-
+</details>
