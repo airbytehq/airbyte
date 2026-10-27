@@ -119,6 +119,23 @@ class JdbcMetadataQuerierTest {
     }
 
     @Test
+    fun testSearchedNamespacesIncludesConfiguredSchemaWithoutTables() {
+        h2.execute("CREATE SCHEMA EMPTY_SCHEMA")
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+                schemas = listOf("EMPTY_SCHEMA")
+            }
+        val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+
+        factory.session(config).use { mdq: MetadataQuerier ->
+            Assertions.assertEquals(emptyList<String>(), mdq.streamNamespaces())
+            Assertions.assertEquals(listOf("EMPTY_SCHEMA"), mdq.searchedNamespaces())
+        }
+    }
+
+    @Test
     fun testIgnoredStreamsFiltersTablesAndViews() {
         h2.execute("CREATE TABLE hidden (id INT PRIMARY KEY)")
         h2.execute("CREATE VIEW kv_view AS SELECT * FROM kv")

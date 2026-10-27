@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.3 — 2026-10-22
+
+[#88493](https://github.com/airbytehq/airbyte/pull/88493) — The connection check's zero-tables error now names the databases or schemas that were searched and the usual causes (wrong name, empty database, missing permissions, or table filters), and the unqueryable-tables error suggests checking SELECT permission.
+
 ### 1.2.2 — 2026-10-21
 
 [#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.
