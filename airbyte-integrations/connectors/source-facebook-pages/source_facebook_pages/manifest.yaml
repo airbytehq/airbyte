@@ -371,6 +371,44 @@ definitions:
               'page_total_media_view_unique',
               ])
             }}
+          # Sent only when there is something to filter on (saved state or a start_date). A full
+          # refresh, and a first incremental sync without start_date, keep requesting Meta's default
+          # window as before. Meta accepts strtotime values here, so the cursor's own format is fine.
+          # ponytail: the epoch sentinel is the cursor's default start below; compare on it rather
+          # than on stream_state, which concurrent cursors do not expose to interpolation.
+          since: "{{ stream_interval['start_time'] if stream_interval['start_time'] != '1970-01-01T00:00:00+0000' else '' }}"
+          until: "{{ stream_interval['end_time'] if stream_interval['start_time'] != '1970-01-01T00:00:00+0000' else '' }}"
+    transformations:
+      # Each record carries its daily points in `values`; the cursor needs a top-level field, so
+      # copy the newest point's end_time up before the date-time normalization below.
+      - type: AddFields
+        fields:
+          - path: ["end_time"]
+            value: "{{ record['values'][-1]['end_time'] if record.get('values') else None }}"
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
+    # Opt-in: the stream stays full refresh unless the connection selects Incremental.
+    # Meta serves at most 90 days per since/until request and keeps about two years of history.
+    # https://developers.facebook.com/docs/graph-api/reference/page/insights/
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: end_time
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # Only slice when a start_date is set; otherwise the epoch default would fan a full refresh
+      # out into hundreds of identical requests. Without start_date the stream reads one slice from
+      # its saved state to now, which stays under 90 days unless the connection sat idle longer.
+      step: "{{ 'P90D' if config.get('start_date') else '' }}"
+      cursor_granularity: PT1S
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
