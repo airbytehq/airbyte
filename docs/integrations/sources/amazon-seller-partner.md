@@ -500,6 +500,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
 | 6.1.3 | 2026-10-20 | [89131](https://github.com/airbytehq/airbyte/pull/89131) | Update dependencies |
 | 6.1.2 | 2026-10-13 | [88532](https://github.com/airbytehq/airbyte/pull/88532) | Update dependencies |
