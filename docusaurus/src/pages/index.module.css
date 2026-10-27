@@ -48,30 +48,12 @@
   padding: 0 2rem;
 }
 
-.sectionHeader {
-  margin-bottom: 2.5rem;
-}
-
-.sectionSubtitle {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  margin: 0;
-  opacity: 0.85;
-}
-
 /* ===========================
-   Section 2: Data Replication
+   Section 2: Connectors
    =========================== */
 .drSection {
   padding: 4rem 0;
   background: var(--color-ae-bg);
-}
-
-.drSectionTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--ifm-font-color-base);
 }
 
 /* Connectors row */

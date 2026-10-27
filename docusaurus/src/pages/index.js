@@ -120,17 +120,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Section 2: Data Replication */}
+        {/* Section 2: Connectors */}
         <section className={styles.drSection}>
           <div className={styles.sectionInner}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.drSectionTitle}>Data Replication</h2>
-              <p className={styles.sectionSubtitle}>
-                Consolidate data from hundreds of sources into your data warehouses, data lakes, and databases.
-                Then, move data into the operational tools where work happens.
-              </p>
-            </div>
-
             {/* Popular connectors */}
             <div className={styles.connectorsRow}>
               <div className={styles.connectorGroup}>
