@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 620ee20c-a153-4af2-bbfa-092bb9e34b7e
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-openai
   githubIssueLabel: source-openai
   icon: icon.svg
