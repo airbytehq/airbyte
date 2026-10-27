@@ -369,7 +369,7 @@ An unknown number of API sources have streams that don't meet these conditions. 
 
 ### Delete file encodings
 
-Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on format v2 tables and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version.
+Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on format v2 tables and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version. `POSITIONAL` is for format v2 readers that ignore equality deletes, such as [Snowflake](#snowflake). When a deduplicated stream switches to `POSITIONAL`, the connector rewrites the table's existing equality deletes as positional deletes on its next sync.
 
 Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors — required by some readers such as Databricks foreign Iceberg reads, but not readable by Amazon Athena today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
 
@@ -404,29 +404,22 @@ This section documents known considerations and limitations about how this Icebe
 
 ### Snowflake
 
-Airbyte uses Iceberg row-level deletes to mark older versions of records as outdated. If you're using Iceberg tables for Snowflake, Snowflake doesn't recognize native Iceberg row-level deletes for Iceberg tables with external catalogs like Glue ([see Snowflake's docs](https://docs.snowflake.com/en/user-guide/tables-iceberg#considerations-and-limitations)). As a result, your query results return all versions of a record.
+Snowflake can read tables from this destination as [externally managed Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg), through a catalog integration for AWS Glue or Snowflake Open Catalog (Polaris). Append and overwrite streams need no extra configuration.
 
-For example, the following table contains three versions of the 'Alice' record.
+Deduplicated streams need positional deletes. Snowflake doesn't apply Iceberg equality deletes for tables with an external catalog ([see Snowflake's docs](https://docs.snowflake.com/en/user-guide/tables-iceberg#considerations-and-limitations)), and `AUTOMATIC` writes equality deletes on format v2 tables. As a result, Snowflake returns every version of a deduplicated record. To make deduplicated streams read correctly in Snowflake:
 
-| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` |
-|:-----|:-------|:-----------------|:------------------------|
-| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        |
-| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        |
-| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        |
+1. Keep `table_format_version` at `v2`.
+2. Set `iceberg_delete_file_type` to `POSITIONAL`.
 
-To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../platform/understanding-airbyte/airbyte-metadata-fields) that assists with this.
+On the next sync of each deduplicated stream, the connector rewrites any equality deletes that earlier syncs left in the table as positional deletes, on every branch, before it writes new data. After that sync, Snowflake returns only the latest version of each record.
+
+Each positional delete file adds work for every read. Snowflake recommends regular table maintenance for tables with row-level deletes. The connector doesn't compact tables or expire snapshots, so schedule compaction and snapshot expiration with your catalog or query engine, for example AWS Glue table optimizers or Spark's `rewrite_data_files` and `expire_snapshots` procedures. Follow the [compaction](#compaction) caution and don't compact a table during a truncate refresh sync.
+
+If you can't change the delete file type, detect outdated records in your queries instead. Airbyte generates an `_airbyte_extracted_at` [metadata field](../../platform/understanding-airbyte/airbyte-metadata-fields) that helps with this.
 
 ```sql
-row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extracted_at)) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated;
+row_number() over (partition by {primary_key} order by {cursor} desc, _airbyte_extracted_at desc) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated
 ```
-
-Now, you can identify the latest version of the 'Alice' record by querying whether `is_outdated` is false.
-
-| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `row_number` | `is_outdated` |
-|:-----|:-------|:-----------------|:------------------------|--------------|---------------|
-| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | 3            | True          |
-| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | True          |
-| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | False         |
 
 ## Namespace support
 
@@ -439,6 +432,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.1 | 2026-10-27 | [90119](https://github.com/airbytehq/airbyte/pull/90119) | `POSITIONAL` delete file type now rewrites existing equality deletes as positional deletes so Snowflake reads deduplicated streams correctly. |
 | 0.5.0 | 2026-10-14 | [88974](https://github.com/airbytehq/airbyte/pull/88974) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |

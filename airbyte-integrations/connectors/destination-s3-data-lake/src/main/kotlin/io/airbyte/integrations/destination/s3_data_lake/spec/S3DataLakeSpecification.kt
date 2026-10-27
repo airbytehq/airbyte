@@ -115,8 +115,9 @@ class S3DataLakeSpecification :
         "The delete-file encoding used by Dedupe streams. AUTOMATIC uses equality deletes on " +
             "format v2 tables and deletion vectors on format v3 tables, and may change in a " +
             "future version. Choose EQUALITY to always use equality deletes, POSITIONAL for " +
-            "v2 readers that do not support equality-delete files, or DELETION_VECTOR for " +
-            "v3 deletion vectors.",
+            "v2 readers that do not support equality-delete files, such as Snowflake (existing " +
+            "equality deletes are rewritten as position deletes on the next sync), or " +
+            "DELETION_VECTOR for v3 deletion vectors.",
     )
     @get:JsonProperty("iceberg_delete_file_type", required = false)
     @get:JsonSchemaInject(

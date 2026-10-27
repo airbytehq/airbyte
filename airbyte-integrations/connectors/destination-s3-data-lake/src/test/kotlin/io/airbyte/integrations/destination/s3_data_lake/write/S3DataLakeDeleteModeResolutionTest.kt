@@ -27,7 +27,10 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.tableFormatVersion
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
@@ -44,10 +47,16 @@ import io.mockk.runs
 import io.mockk.slot
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
+import org.apache.iceberg.DeleteFile
+import org.apache.iceberg.FileContent
+import org.apache.iceberg.FileFormat
+import org.apache.iceberg.ManifestFiles
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -55,7 +64,9 @@ import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.inmemory.InMemoryCatalog
+import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -151,9 +162,65 @@ internal class S3DataLakeDeleteModeResolutionTest {
         val builder = catalog.buildTable(tableIdentifier, schema)
         return builder
             .withPartitionSpec(PartitionSpec.unpartitioned())
+            .withProperty(TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
             .withProperty(TableProperties.FORMAT_VERSION, version.toString())
             .create()
     }
+
+    private fun dedupeSchema(): Schema =
+        Schema(
+            listOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
+            ),
+            setOf(1),
+        )
+
+    private fun seedEqualityDelete(table: Table) {
+        val writerFactory = IcebergTableWriterFactory()
+        val schema = table.schema()
+        val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        seedWriter.write(
+            GenericRecord.create(schema).apply {
+                setField("id", 1)
+                setField("name", "existing")
+            },
+        )
+        val seedResult = seedWriter.complete()
+        table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
+
+        val equalityWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                Dedupe(listOf(listOf("id")), emptyList()),
+                schema,
+            )
+        equalityWriter.write(
+            RecordWrapper(
+                GenericRecord.create(schema).apply {
+                    setField("id", 1)
+                    setField("name", "ignored")
+                },
+                Operation.DELETE,
+            ),
+        )
+        val equalityResult = equalityWriter.complete()
+        table
+            .newRowDelta()
+            .apply {
+                equalityResult.dataFiles().forEach(::addRows)
+                equalityResult.deleteFiles().forEach(::addDeletes)
+            }
+            .commit()
+    }
+
+    private fun liveDeleteFiles(table: Table): List<DeleteFile> =
+        table.currentSnapshot().deleteManifests(table.io()).flatMap { manifest ->
+            ManifestFiles.readDeleteManifest(manifest, table.io(), table.specs()).use { reader ->
+                reader.toList()
+            }
+        }
 
     private fun makeLoader(
         stream: DestinationStream,
@@ -209,6 +276,34 @@ internal class S3DataLakeDeleteModeResolutionTest {
         val state = captureState(makeLoader(stream, makeConfiguration(), table))
         assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
         assertNull(state.positionalDeleteState)
+    }
+
+    @Test
+    fun `existing v2 Dedupe table converts equality deletes when POSITIONAL is configured`() {
+        val table = createTableAt(2, dedupeSchema())
+        seedEqualityDelete(table)
+        assertTrue(liveDeleteFiles(table).any { it.content() == FileContent.EQUALITY_DELETES })
+
+        captureState(
+            makeLoader(
+                makeStream(),
+                makeConfiguration(deleteFileType = IcebergDeleteFileType.POSITIONAL),
+                table,
+            ),
+        )
+
+        assertFalse(liveDeleteFiles(table).any { it.content() == FileContent.EQUALITY_DELETES })
+    }
+
+    @Test
+    fun `existing v2 Dedupe table keeps equality deletes when AUTOMATIC is configured`() {
+        val table = createTableAt(2, dedupeSchema())
+        seedEqualityDelete(table)
+        assertTrue(liveDeleteFiles(table).any { it.content() == FileContent.EQUALITY_DELETES })
+
+        captureState(makeLoader(makeStream(), makeConfiguration(), table))
+
+        assertTrue(liveDeleteFiles(table).any { it.content() == FileContent.EQUALITY_DELETES })
     }
 
     @Test
@@ -343,9 +438,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
             runBlocking {
                 makeLoader(
                         stream,
-                        makeConfiguration(
-                            deleteFileType = IcebergDeleteFileType.POSITIONAL,
-                        ),
+                        makeConfiguration(deleteFileType = IcebergDeleteFileType.POSITIONAL),
                         table,
                     )
                     .start()
@@ -361,9 +454,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
             runBlocking {
                 makeLoader(
                         stream,
-                        makeConfiguration(
-                            deleteFileType = IcebergDeleteFileType.EQUALITY,
-                        ),
+                        makeConfiguration(deleteFileType = IcebergDeleteFileType.EQUALITY),
                         table,
                     )
                     .start()
