@@ -12,7 +12,7 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 3. **No API budget: LinkedIn does not publish its rate limits** -- only the Development-tier ceiling is public and Standard-tier limits vary per app, so the connector retries `429` with backoff instead of pacing itself.
 4. **Cursorless full-refresh streams** -- the organization profile and the four lifetime totals have nothing a cursor could track, so they are always synced in full.
 5. **Posts pagination follows LinkedIn's next link** -- LinkedIn can return a short page of posts before the last one, so the connector keeps paging until LinkedIn stops sending a next link.
-6. **Comments and reactions send requests per post on every sync** -- each sync re-reads comments and reactions for every post modified since the Start Date, so request volume grows with the number of posts.
+6. **Comments, reactions and post statistics send requests per post on every sync** -- each sync re-reads comments, reactions and statistics for every post modified since the Start Date (every post when it is blank), so request volume grows with the number of posts. LinkedIn takes no time filter on these endpoints, so a cursor would save nothing.
 
 ## Notes for reviewers
 
