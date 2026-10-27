@@ -27,6 +27,7 @@ class IcebergPartitioningTest {
                 Types.NestedField.required(5, "month_at", Types.TimestampType.withZone()),
                 Types.NestedField.required(6, "hour_at", Types.TimestampType.withZone()),
                 Types.NestedField.required(7, "bucket_id", Types.IntegerType.get()),
+                Types.NestedField.required(8, "id_bucket_16", Types.StringType.get()),
             ),
         )
 
@@ -102,6 +103,49 @@ class IcebergPartitioningTest {
         assertThat(IcebergPartitioning.evolveSpec(table, fields)).isFalse()
         assertThat(table.spec().fields().map { it.transform().toString() })
             .containsExactly("identity", "day", "bucket[8]")
+
+        catalog.dropTable(tableId)
+        warehouse.toFile().deleteRecursively()
+    }
+
+    @Test
+    fun `evolves bucket width with unique partition field names`() {
+        val warehouse = Files.createTempDirectory("iceberg-partition-bucket-evolution")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "bucket_records")
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema())
+                .withPartitionSpec(
+                    PartitionSpec.builderFor(schema())
+                        .bucket("id", 8)
+                        .identity("id_bucket_16")
+                        .build(),
+                )
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase(),
+                )
+                .create()
+
+        assertThat(
+                IcebergPartitioning.evolveSpec(
+                    table,
+                    listOf(
+                        IcebergPartitionField(
+                            "id",
+                            IcebergPartitionTransform.BUCKET,
+                            argument = 16,
+                        ),
+                    ),
+                ),
+            )
+            .isTrue()
+        assertThat(table.spec().fields().map { it.transform().toString() })
+            .contains("bucket[8]", "bucket[16]")
+        assertThat(table.spec().fields().single { it.transform().toString() == "bucket[16]" }.name())
+            .isEqualTo("id_bucket_16_1")
 
         catalog.dropTable(tableId)
         warehouse.toFile().deleteRecursively()

@@ -65,6 +65,7 @@ object IcebergPartitioning {
             table.spec().fields().mapTo(mutableSetOf()) {
                 it.sourceId() to it.transform().toString()
             }
+        val currentFieldNames = table.spec().fields().mapTo(mutableSetOf()) { it.name() }
         val update = table.updateSpec()
         var changed = false
         fields.forEach { field ->
@@ -87,7 +88,7 @@ object IcebergPartitioning {
                 return@forEach
             }
             currentFields.add(key)
-            addField(update, field)
+            addField(update, field, currentFieldNames)
             changed = true
         }
         if (changed) {
@@ -152,6 +153,7 @@ object IcebergPartitioning {
     private fun addField(
         update: org.apache.iceberg.UpdatePartitionSpec,
         field: IcebergPartitionField,
+        currentFieldNames: MutableSet<String>,
     ) {
         val expression =
             when (field.transform) {
@@ -165,6 +167,33 @@ object IcebergPartitioning {
                 IcebergPartitionTransform.TRUNCATE ->
                     Expressions.truncate<Any?>(field.sourceColumn, requireArgument(field))
             }
-        update.addField(expression)
+        val defaultName =
+            when (field.transform) {
+                IcebergPartitionTransform.BUCKET -> "${field.sourceColumn}_bucket"
+                IcebergPartitionTransform.TRUNCATE -> "${field.sourceColumn}_trunc"
+                else -> null
+            }
+        if (defaultName != null && defaultName in currentFieldNames) {
+            val explicitBaseName =
+                when (field.transform) {
+                    IcebergPartitionTransform.BUCKET ->
+                        "${field.sourceColumn}_bucket_${requireArgument(field)}"
+                    IcebergPartitionTransform.TRUNCATE ->
+                        "${field.sourceColumn}_truncate_${requireArgument(field)}"
+                    else -> error("Only bucket and truncate fields need explicit names.")
+                }
+            var explicitName = explicitBaseName
+            var suffix = 1
+            while (explicitName in currentFieldNames) {
+                explicitName = "${explicitBaseName}_${suffix++}"
+            }
+            update.addField(explicitName, expression)
+            currentFieldNames.add(explicitName)
+        } else {
+            update.addField(expression)
+            if (defaultName != null) {
+                currentFieldNames.add(defaultName)
+            }
+        }
     }
 }
