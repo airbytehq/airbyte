@@ -69,10 +69,10 @@ class BigQueryBulkLoaderTest {
         loader.load(GcsBlob("staged.csv", storageConfig))
 
         assertEquals(JobInfo.WriteDisposition.WRITE_APPEND, configuration!!.writeDisposition)
-        assertSame(schema, configuration!!.schema)
+        assertSame(schema, configuration.schema)
         assertEquals(
             listOf(JobInfo.SchemaUpdateOption.ALLOW_FIELD_ADDITION),
-            configuration!!.schemaUpdateOptions,
+            configuration.schemaUpdateOptions,
         )
     }
 
