@@ -218,15 +218,46 @@ class TestEventsStream(TestCase):
         ), f"Expected state to advance to latest record date, got {new_state}"
 
     @HttpMocker()
-    def test_incremental_sync_uses_config_start_date(self, http_mocker: HttpMocker):
-        """Start date connection setting maps to Sentry events `start` query parameter."""
+    def test_incremental_sync_uses_config_event_start_date(self, http_mocker: HttpMocker):
+        """event_start_date maps to Sentry events `start` query parameter."""
         config_start = "2024-06-01T00:00:00Z"
         config = (
             ConfigBuilder()
             .with_organization(_ORGANIZATION)
             .with_project(_PROJECT)
             .with_auth_token(_AUTH_TOKEN)
-            .with_start_date(config_start)
+            .with_event_start_date(config_start)
+            .build()
+        )
+
+        http_mocker.get(
+            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params(
+                {
+                    "full": "true",
+                    "start": "2024-06-01T00:00:00Z",
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
+            )
+            .build(),
+            create_response("events", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_incremental_sync_legacy_start_date_fallback(self, http_mocker: HttpMocker):
+        """Legacy start_date is used for events when event_start_date is unset."""
+        config = (
+            ConfigBuilder()
+            .with_organization(_ORGANIZATION)
+            .with_project(_PROJECT)
+            .with_auth_token(_AUTH_TOKEN)
+            .with_start_date("2024-06-01T00:00:00Z")
             .build()
         )
 

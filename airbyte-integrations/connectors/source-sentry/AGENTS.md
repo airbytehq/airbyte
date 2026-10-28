@@ -10,9 +10,14 @@ Sentry applies a **fixed-window requests-per-second limit** and a **concurrent i
 
 The manifest `api_budget` reads **Remaining** and **Reset** (UTC epoch seconds) to pause before hitting 429, treats **429** as a rate-limit hit, and applies a stricter fallback on **`GET …/events/`** (2/s, 60/min) plus **3/s** for other endpoints. `base_requester.error_handler` backs off on **Retry-After** first, then **X-Sentry-Rate-Limit-Reset** (up to ~61 minutes), then a **60s** constant wait. The **events** stream slices time in **7-day** steps to limit request volume on backfills. Lower **`num_workers`** when syncing **`events`** (especially with `full=true`) or when partitions multiply traffic across project slugs.
 
-## Start and end dates
+## Start dates
 
-The **`start_date`** connection setting is the replication lower bound (default `1900-01-01T00:00:00Z`). Use **UTC without fractional seconds** (e.g. `2026-06-01T00:00:00Z`); this matches the Airbyte UI date-time control and Sentry's [`start`](https://docs.sentry.io/api/events/list-a-projects-error-events/) query parameter. The upper bound is always the current time (`end`). Incremental runs still advance from saved state when state is newer than `start_date`. Issues, projects, and releases use the same `start_date` for their cursors or filters.
+See also `manifests/sentry.yaml` for the spec text and stream mapping.
+
+- **`event_start_date`** (default `1900-01-01T00:00:00Z`) — **events** stream only; maps to Sentry's [`start`](https://docs.sentry.io/api/events/list-a-projects-error-events/) query parameter. Use UTC without fractional seconds (e.g. `2026-06-01T00:00:00Z`). Legacy configs may still store **`start_date`**; the manifest uses that as a fallback for events when `event_start_date` is unset.
+- **`sync_start_date`** (optional; default `1900-01-01T00:00:00Z` when omitted) — **issues**, **projects**, and **releases** incremental lower bound. Does not apply to events.
+
+The events upper bound is always the current time (`end`). Incremental runs still advance from saved state when state is newer than the configured start.
 
 ## Incremental Stream Considerations
 

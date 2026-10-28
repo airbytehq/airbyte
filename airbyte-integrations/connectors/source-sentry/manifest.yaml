@@ -73,7 +73,9 @@ definitions:
           inject_into: request_parameter
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime: >-
+            {{ config.get('event_start_date') or config.get('start_date') or
+            '1900-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -102,8 +104,8 @@ definitions:
           request_parameters:
             query: >-
               lastSeen:>{{ stream_interval.get('start_time', '') or
-              config.get('start_date', '1900-01-01T00:00:00Z') if
-              stream_interval else config.get('start_date',
+              config.get('sync_start_date', '1900-01-01T00:00:00Z') if
+              stream_interval else config.get('sync_start_date',
               '1900-01-01T00:00:00Z') }}
         record_selector:
           type: RecordSelector
@@ -124,7 +126,7 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
@@ -164,7 +166,7 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
@@ -199,7 +201,7 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '1900-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:
@@ -379,29 +381,38 @@ spec:
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization
-      start_date:
+      event_start_date:
         type: string
-        title: Start date
+        title: Event start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 4
         default: "1900-01-01T00:00:00Z"
         description: >-
-          Lower bound for incremental syncs. For the events stream this maps to
-          Sentry's `start` query parameter (ISO-8601 UTC, e.g.
-          2026-06-01T00:00:00Z). On the first sync, only records at or after
-          this time are requested; later syncs use saved state when it is later
-          than this value. See
-          https://docs.sentry.io/api/events/list-a-projects-error-events/
+          Lower bound for the events stream only (Sentry `start` query
+          parameter, ISO-8601 UTC, e.g. 2026-06-01T00:00:00Z). Later syncs
+          use saved state when it is newer. Legacy configs may still have
+          `start_date`; that value is used for events when this field is unset.
+          See https://docs.sentry.io/api/events/list-a-projects-error-events/
+      sync_start_date:
+        type: string
+        title: Sync start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 5
+        description: >-
+          Optional lower bound for incremental issues, projects, and releases.
+          Defaults to 1900-01-01T00:00:00Z when omitted. Does not apply to the
+          events stream.
       discover_fields:
         type: array
         description: Fields to retrieve when fetching discover events
         item: string
-        order: 5
+        order: 6
         title: Discover Event Fields
       events_full_payload:
         type: boolean
-        order: 6
+        order: 7
         title: Events full payload
         default: true
         description: >-
@@ -420,7 +431,7 @@ spec:
         minimum: 1
         maximum: 20
         default: 5
-        order: 7
+        order: 8
     additionalProperties: true
 
 # Sentry rate limits are per caller and endpoint (fixed window + concurrent cap).
