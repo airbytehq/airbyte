@@ -145,8 +145,74 @@ Keep what works, add what's missing, and trust the engine to debounce.
 `wait` when CI is pending or sessions are in flight, trust the next event.
 Natural debouncing.
 
+### Keeping the required-check filter list in sync
+
+The `check_run: completed` trigger needs a filter list of required-check names
+so the handoff doesn't wake on every unrelated CheckRun. Hydrakit itself reads
+the required-check list live from the branch-protection ruleset
+(`collect/github.ts:requiredChecks`), but the workflow filter is a separate
+copy. Two options for keeping them in sync:
+
+**Option A — Hardcoded list in the workflow, with drift detection.**
+
+```yaml
+jobs:
+  handoff:
+    if: >
+      contains(fromJson(vars.REQUIRED_CHECK_NAMES), github.event.check_run.name)
+```
+
+Store the list as a repo variable (`vars.REQUIRED_CHECK_NAMES`, JSON array) so
+updating it doesn't require editing the workflow file. Add a small periodic CI
+check that reads the ruleset via `gh api repos/{owner}/{repo}/rules/branches/master`,
+extracts `required_status_checks[].context`, and asserts the result matches
+`vars.REQUIRED_CHECK_NAMES`. On mismatch, the check fails and someone updates
+the variable. Required-check sets change rarely, so this check can run daily or
+weekly rather than per-handoff.
+
+- Cost per handoff: zero extra API calls.
+- Cost of drift: a failed daily/weekly CI check; manual update of the repo var.
+- Risk: between the ruleset change and the drift-check firing, the handoff may
+  wake on an outdated filter (missing a newly-required check, or waking
+  needlessly on a de-required one).
+
+**Option B — Query the ruleset at trigger time.**
+
+```yaml
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load required check names
+        id: required
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          REQUIRED=$(gh api repos/${{ github.repository }}/rules/branches/master \
+            --jq '[.[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context] | tostring')
+          echo "names=$REQUIRED" >> "$GITHUB_OUTPUT"
+      - name: Early exit if check is not required
+        if: >
+          !contains(fromJson(steps.required.outputs.names), github.event.check_run.name)
+        run: exit 0
+      # ...then call hydra as usual
+```
+
+- Cost per handoff: one extra GitHub REST call. Fast (<300ms, cached by GitHub
+  edge).
+- Cost of drift: none — the filter is live.
+- Risk: a transient 5xx from the rulesets API drops the handoff for that
+  event (idempotent retry on the next event covers it).
+
+**Recommendation: Option A for v1.** Required-check sets change on the order
+of once a quarter; the per-handoff savings dominate the one-off cost of
+updating a repo variable. Add Option B as a fallback if drift events start
+being frequent or disruptive.
+
 **Acceptance:** every stage transition has at least one trigger.
-Weekend-frozen `/ai-ready` recovers within 24h without the daily sweep.
+Weekend-frozen `/ai-ready` recovers within 24h without the daily sweep. The
+required-check filter list is either kept in a repo variable with drift
+detection (Option A) or sourced live from the ruleset per handoff (Option B).
 
 ---
 
