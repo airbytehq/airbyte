@@ -1153,7 +1153,7 @@ internal class PostgresAirbyteClientTest {
                 }
             assertEquals(
                 "Insufficient database permissions to execute the operation.",
-                thrown.message
+                thrown.message,
             )
         }
     }
