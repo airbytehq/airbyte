@@ -42,7 +42,7 @@ class BigQueryBulkLoaderTest {
                             configuration = jobInfo.getConfiguration<LoadJobConfiguration>()
                             true
                         },
-                        *anyVararg()
+                        *anyVararg(),
                     )
                 } returns job()
             }
@@ -55,7 +55,7 @@ class BigQueryBulkLoaderTest {
                 "bucket",
                 "path",
                 GcsHmacKeyConfiguration("access-key", "secret-key"),
-                "US"
+                "US",
             )
         val loader =
             BigQueryBulkLoader(
@@ -63,7 +63,7 @@ class BigQueryBulkLoaderTest {
                 bigQueryClient,
                 bigqueryConfiguration(),
                 tableId,
-                schema
+                schema,
             )
 
         loader.load(GcsBlob("staged.csv", storageConfig))
@@ -72,7 +72,7 @@ class BigQueryBulkLoaderTest {
         assertSame(schema, configuration!!.schema)
         assertEquals(
             listOf(JobInfo.SchemaUpdateOption.ALLOW_FIELD_ADDITION),
-            configuration!!.schemaUpdateOptions
+            configuration!!.schemaUpdateOptions,
         )
     }
 
@@ -82,7 +82,7 @@ class BigQueryBulkLoaderTest {
                 "bucket",
                 "path",
                 GcsHmacKeyConfiguration("access-key", "secret-key"),
-                "US"
+                "US",
             )
         return BigqueryConfiguration(
             projectId = "project",
@@ -93,7 +93,7 @@ class BigQueryBulkLoaderTest {
             credentialsJson = null,
             cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
             internalTableDataset = "airbyte_internal",
-            legacyRawTablesOnly = false
+            legacyRawTablesOnly = false,
         )
     }
 
