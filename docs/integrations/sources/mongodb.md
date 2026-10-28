@@ -9,7 +9,7 @@ Airbyte's certified MongoDB connector offers the following features:
 
 This connector's Docker image was renamed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb` in version 3.0.0; the connector definition is unchanged.
 
-This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](mongodb-migrations.md) first.
+This page covers setup (Quick Start), how replication works, and reference information (data type mapping, configuration parameters and changelog). If you are upgrading from version 2.x, read the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-migrations) first.
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ Setting up a MongoDB source takes four steps:
 - A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams: Full Refresh works against it, but an Incremental sync fails when the change stream is opened. A single-node replica set is fine for development: see [Convert a Standalone to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/).
 - MongoDB 4.4 or later. The connector is tested against MongoDB 7.0. Deletes carry the deleted document only on MongoDB 6.0 or later with [pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images) enabled on the collection.
 - On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers (M0, M2, M5) do not support the operations the connector relies on and may fail during connection setup.
-- An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams).
+- An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams).
 
 ### Step 1: Create a dedicated read-only MongoDB user
 
@@ -45,41 +45,41 @@ Either way, read access is all the connector needs: it never writes to your clus
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on "Database Access" under "Security".
 
-   ![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
+   ![Security Database Access](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-   ![Add New Database User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
+   ![Add New Database User](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-   ![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
+   ![Authentication Method](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` (or a name of your choice) in the first text box and set a password in the second text box. You will enter both in the Airbyte source in Step 3.
 
-   ![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
+   ![Username and Password](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", grant read access in one of two ways:
 
    - Under "Built-in Role", click "Select one built-in role for this user" and choose "Only read any database".
 
-     ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+     ![Database User Privileges](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
    - Or, under "Specific Privileges", click "Add Specific Privilege" and add `readAnyDatabase`.
 
-     ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
+     ![Read Database Privileges](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
 
-   :::info
-   Both grant `readAnyDatabase`, which is required when you configure more than one database. If you sync a single database and prefer narrower privileges, use a [custom role](https://www.mongodb.com/docs/atlas/security-add-mongodb-roles/) with the `read` role on that database instead.
-   :::
+:::info
+Both grant `readAnyDatabase`, which is required when you configure more than one database. If you sync a single database and prefer narrower privileges, use a [custom role](https://www.mongodb.com/docs/atlas/security-add-mongodb-roles/) with the `read` role on that database instead.
+:::
 
 7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and select only the cluster you want to replicate.
 
-   ![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+   ![Restrict Access](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
 8. Click on "Add User" at the bottom to save the user.
 
-   ![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
+   ![Add User](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 #### Self-hosted
 
@@ -110,9 +110,9 @@ These instructions use the [MongoDB shell](https://www.mongodb.com/docs/mongodb-
    admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "readAnyDatabase", db: "admin"}]})
    ```
 
-   :::note
-   Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. The user is created in the `admin` database, which is the connector's default **Authentication Source**; if you create it elsewhere, set that field accordingly in Step 3.
-   :::
+:::note
+Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. The user is created in the `admin` database, which is the connector's default **Authentication Source**; if you create it elsewhere, set that field accordingly in Step 3.
+:::
 
 4. Make sure every member of the replica set (or every `mongos`) requires authentication and accepts connections from the network Airbyte runs on. In each member's [configuration file](https://www.mongodb.com/docs/manual/reference/configuration-options/) (`/etc/mongod.conf` on most Linux distributions), check these keys and restart the process after changing them:
 
@@ -124,9 +124,9 @@ These instructions use the [MongoDB shell](https://www.mongodb.com/docs/mongodb-
      authorization: enabled
    ```
 
-   :::note
-   `net.bindIp` lists the interfaces the member listens on; `0.0.0.0` accepts connections from any interface, so if you use it, restrict access with a firewall or the IP allow list of Step 4. `security.authorization: enabled` makes the member reject unauthenticated clients. On a replica set, members also need to authenticate with each other (a keyfile or x.509 certificates); see [Internal/Membership Authentication](https://www.mongodb.com/docs/manual/core/security-internal-authentication/).
-   :::
+:::note
+`net.bindIp` lists the interfaces the member listens on; `0.0.0.0` accepts connections from any interface, so if you use it, restrict access with a firewall or the IP allow list of Step 4. `security.authorization: enabled` makes the member reject unauthenticated clients. On a replica set, members also need to authenticate with each other (a keyfile or x.509 certificates); see [Internal/Membership Authentication](https://www.mongodb.com/docs/manual/core/security-internal-authentication/).
+:::
 
 ### Step 2: Find the MongoDB cluster connection string
 
@@ -137,15 +137,15 @@ Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/databas
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-   ![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
+   ![Connect to Source Cluster](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
 3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-   ![Shell Connect](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
+   ![Shell Connect](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog.
 
-   ![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
+   ![Copy Connection String](https://docs.airbyte.com/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 The string looks like `mongodb+srv://cluster0.abcde.mongodb.net/`. You can paste it as Atlas shows it: surrounding quotation marks and the `<username>:<password>@` placeholder are removed by the connector. Enter the credentials in the **Username** and **Password** fields of the source instead, where the password is stored as a secret. Connections to Atlas always use TLS.
 
@@ -211,7 +211,7 @@ only retains a limited window of changes. If the saved position is no longer in 
 starts over, as chosen by the **Invalid CDC position behavior** setting. Long initial snapshots are protected
 automatically: a snapshot that runs longer than 8 hours pauses, its progress is saved and the sync is retried, and the
 retry reads the change stream before resuming the snapshot where it left off.
-See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams)
+See [MongoDB Oplog and Change Streams](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams)
 for how to size the oplog.
 
 Every record of an incremental stream carries three metadata fields: `_ab_cdc_updated_at` (the change time of a
@@ -260,7 +260,7 @@ Most destinations can safely cast between primitive types (for example, integer 
 { "reviews": {"rating": "A"} }  →  { "reviews": [{"rating": "A"}] }
 ```
 
-:::info Important
+:::info
 This normalization is intended for occasional type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
 :::
 
@@ -295,7 +295,7 @@ BSON types are mapped to the following Airbyte types in the discovered schema, a
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb/mongodb-troubleshooting).
+To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting).
 
 ### Schema discovery performance impact
 
@@ -305,11 +305,11 @@ Schema discovery runs aggregation queries against your MongoDB cluster **in para
 
 Because MongoDB collections are schemaless, no sample size can guarantee a complete or stable schema — new fields can appear in documents at any time. When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. On clusters with many collections or large documents, these concurrent queries can cause significant resource pressure on your MongoDB deployment, including degraded performance or cluster instability.
 
-For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb/mongodb-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
+For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
 
 ### MongoDB CDC Limitations
 
-MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
 
 ## Configuration Parameters
 
@@ -332,7 +332,7 @@ MongoDB has a 16MB maximum document size limit for BSON documents. During CDC sy
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.0.0   | 2026-10-27 | [89773](https://github.com/airbytehq/airbyte/pull/89773) | Rewrite on the Bulk CDK: change streams are read with the MongoDB driver instead of Debezium; existing connections upgrade in place; no clear or refresh needed. Docker image renamed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb`. Views and time series collections are no longer discovered; booleans typed as `boolean`; decimals keep full precision; `initial_waiting_seconds`, `queue_size` and `update_capture_mode` removed. See the [migration guide](mongodb-migrations.md#upgrading-to-300). |
+| 3.0.0   | 2026-10-27 | [89773](https://github.com/airbytehq/airbyte/pull/89773) | Rewrite on the Bulk CDK: change streams are read with the MongoDB driver instead of Debezium; existing connections upgrade in place; no clear or refresh needed. Docker image renamed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb`. Views and time series collections are no longer discovered; booleans typed as `boolean`; decimals keep full precision; `initial_waiting_seconds`, `queue_size` and `update_capture_mode` removed. See the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-migrations#upgrading-to-300). |
 | 2.1.1   | 2026-09-26 | [87019](https://github.com/airbytehq/airbyte/pull/87019) | Harden initial load iterator: surface sub-query failures instead of silently ending the stream, and fail with the intended transient error on CDC initial-load timeout.                                                                                                                                                                                                                                                                                                                                                  |
 | 2.1.0   | 2026-09-02 | [83705](https://github.com/airbytehq/airbyte/pull/83705) | Support sharded clusters and object-type `_id` fields; detect `_id` types with index seeks instead of a full collection scan; bump Debezium to 3.6.2 and base image to 2.0.4                                                                                                                                                                                                                                                                                                                                             |
 | 2.0.7   | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu)                                                                                                                                                                                                                                                                                                                                                                                                   |
