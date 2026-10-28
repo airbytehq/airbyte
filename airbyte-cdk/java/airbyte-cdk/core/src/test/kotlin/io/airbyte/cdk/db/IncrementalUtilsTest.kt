@@ -42,7 +42,7 @@ internal class IncrementalUtilsTest {
     fun testGetCursorType() {
         Assertions.assertEquals(
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
-            IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME)
+            IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME),
         )
     }
 
@@ -50,7 +50,7 @@ internal class IncrementalUtilsTest {
     fun testGetCursorType_V1() {
         Assertions.assertEquals(
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING_V1,
-            IncrementalUtils.getCursorType(STREAM_V1, UUID_FIELD_NAME)
+            IncrementalUtils.getCursorType(STREAM_V1, UUID_FIELD_NAME),
         )
     }
 
@@ -85,93 +85,93 @@ internal class IncrementalUtilsTest {
             IncrementalUtils.compareCursors(
                 ABC,
                 "def",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
+            ) < 0,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 ABC,
                 "def",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING_V1
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING_V1,
+            ) < 0,
         )
         Assertions.assertEquals(
             0,
             IncrementalUtils.compareCursors(
                 ABC,
                 ABC,
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
-            )
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
+            ),
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 "1",
                 "2",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER,
+            ) < 0,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 "1",
                 "2",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.INTEGER_V1
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.INTEGER_V1,
+            ) < 0,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 "5000000000",
                 "5000000001",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER,
+            ) < 0,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 "false",
                 "true",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN
-            ) < 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN,
+            ) < 0,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 null,
                 "def",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
-            ) < 1
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
+            ) < 1,
         )
         Assertions.assertTrue(
             IncrementalUtils.compareCursors(
                 ABC,
                 null,
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
-            ) > 0
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
+            ) > 0,
         )
         Assertions.assertEquals(
             0,
             IncrementalUtils.compareCursors(
                 null,
                 null,
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
-            )
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING,
+            ),
         )
         Assertions.assertThrows(IllegalStateException::class.java) {
             IncrementalUtils.compareCursors(
                 "a",
                 "a",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY,
             )
         }
         Assertions.assertThrows(IllegalStateException::class.java) {
             IncrementalUtils.compareCursors(
                 "a",
                 "a",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT,
             )
         }
         Assertions.assertThrows(IllegalStateException::class.java) {
             IncrementalUtils.compareCursors(
                 "a",
                 "a",
-                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NULL
+                JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NULL,
             )
         }
     }
@@ -183,14 +183,14 @@ internal class IncrementalUtilsTest {
             CatalogHelpers.createConfiguredAirbyteStream(
                 STREAM_NAME,
                 null,
-                Field.of("ascending_inventory_uuid", JsonSchemaType.STRING)
+                Field.of("ascending_inventory_uuid", JsonSchemaType.STRING),
             )
 
         private val STREAM_V1: ConfiguredAirbyteStream =
             CatalogHelpers.createConfiguredAirbyteStream(
                 STREAM_NAME,
                 null,
-                Field.of("ascending_inventory_uuid", JsonSchemaType.STRING_V1)
+                Field.of("ascending_inventory_uuid", JsonSchemaType.STRING_V1),
             )
         private const val ABC = "abc"
     }

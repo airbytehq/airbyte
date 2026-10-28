@@ -78,6 +78,7 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[ShippingZonesSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[TaxClassesSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[TaxRatesSearchData]
+    * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

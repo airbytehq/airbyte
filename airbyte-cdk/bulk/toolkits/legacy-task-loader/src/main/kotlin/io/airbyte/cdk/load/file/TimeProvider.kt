@@ -9,7 +9,9 @@ import jakarta.inject.Singleton
 
 interface TimeProvider {
     fun syncTimeMillis(): Long
+
     fun currentTimeMillis(): Long
+
     suspend fun delay(ms: Long)
 }
 

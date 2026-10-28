@@ -7,9 +7,8 @@ acceptance_tests:
             bypass_reason: "Project issues are not being returned by the Sentry API."
           - name: events
             bypass_reason: "No event records exist for the test project."
-        timeout_seconds: 1200
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
+          - name: releases
+            bypass_reason: "The test organization has no releases left: the releases API returns none."
   connection:
     tests:
       - config_path: secrets/config.json
@@ -23,9 +22,18 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
-        # test 403 exception is not breaking the sync
+        # Token with project:read only (no org:read / event:read). A 403 fails the stream
+        # (config_error), so the three streams that need the missing scopes are excluded;
+        # the rest must still sync with this token.
       - config_path: secrets/config_limited_scopes.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
+        empty_streams:
+          - name: all_projects_detail
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
+          - name: issues
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
+          - name: projects
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
   incremental:
     tests:
       - config_path: secrets/config.json

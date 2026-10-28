@@ -294,6 +294,7 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TicketFieldsSearchData]
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TicketsSearchData]
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TimeEntriesSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

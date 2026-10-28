@@ -54,16 +54,16 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                         ContextQueryFunction { ctx: DSLContext? ->
                             ctx!!.fetch("CREATE SCHEMA $schemaName;")
                             ctx.fetch(
-                                "CREATE TABLE $schemaName.id_and_name(id INTEGER, name VARCHAR(200));"
+                                "CREATE TABLE $schemaName.id_and_name(id INTEGER, name VARCHAR(200));",
                             )
                             ctx.fetch(
-                                "INSERT INTO $schemaName.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                                "INSERT INTO $schemaName.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
                             )
                             ctx.fetch(
-                                "CREATE TABLE $schemaName.starships(id INTEGER, name VARCHAR(200));"
+                                "CREATE TABLE $schemaName.starships(id INTEGER, name VARCHAR(200));",
                             )
                             ctx.fetch(
-                                "INSERT INTO $schemaName.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                                "INSERT INTO $schemaName.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
                             )
                             null
                         },
@@ -82,7 +82,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
         testdb =
             PostgresTestDatabase.Companion.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_17,
-                PostgresTestDatabase.ContainerModifier.NETWORK
+                PostgresTestDatabase.ContainerModifier.NETWORK,
             )
         bastion.initAndStartBastion(testdb.container.network)
         populateDatabaseTestData()

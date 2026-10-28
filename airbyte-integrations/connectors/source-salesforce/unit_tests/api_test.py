@@ -4,11 +4,12 @@
 
 import csv
 import io
+import json
 import logging
 import re
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import freezegun
 import pytest
@@ -16,7 +17,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import API_VERSION, Salesforce
+from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -35,6 +36,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
     Type,
 )
@@ -43,6 +45,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
@@ -131,6 +134,107 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+def _register_login(requests_mock, **extra):
+    response = {"access_token": "fake_access_token", "instance_url": "https://fake.salesforce.com"}
+    response.update(extra)
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=response)
+
+
+def _persisted_refresh_tokens(capsys):
+    """Return the refresh_token from every CONNECTOR_CONFIG control message the connector printed to
+    stdout. Persistence happens via direct stdout emission (see SourceSalesforce._persist_rotated_refresh_token),
+    which is what the platform reads, so that is what we assert against rather than the message repository."""
+    tokens = []
+    for line in capsys.readouterr().out.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        control = message.get("control") or {}
+        if message.get("type") == "CONTROL" and control.get("type") == "CONNECTOR_CONFIG":
+            tokens.append(control["connectorConfig"]["config"]["refresh_token"])
+    return tokens
+
+
+def test_rotated_refresh_token_is_persisted(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="new_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "new_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == ["new_refresh_token"]
+
+
+def test_rotated_refresh_token_is_masked_in_logs(requests_mock, capsys):
+    """A failed token request is logged with its body, so a rotated refresh token must be masked like the configured one."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="rotated_refresh_token_to_mask")
+
+    source._get_sf_object(config)
+
+    assert filter_secrets("refresh_token=rotated_refresh_token_to_mask") == "refresh_token=****"
+
+
+def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock)
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "old_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("same_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="same_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_mid_sync_rotation_is_persisted(requests_mock, capsys):
+    """A second login() (the proactive/forced refresh the connector runs during a sync) rotates the
+    single-use token again, so that rotation must be persisted too. Persisting only the first login
+    would leave the stored config holding a token Salesforce already invalidated."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    # Mid-sync refreshes fire well after the post-login dedup window (they are triggered by
+    # staleness or a 401 on an old token), so move past it.
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        sf.login()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
+
+
+def test_token_provider_force_refresh_persists_rotation(requests_mock, capsys):
+    """SalesforceTokenProvider.force_refresh (triggered on INVALID_SESSION_ID) must also persist the rotation."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        SalesforceTokenProvider(sf).force_refresh()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
@@ -321,6 +425,95 @@ def test_pagination_rest(stream_config, stream_api):
 
         records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
         assert len(records) == 4
+
+
+def test_rest_authenticator_reads_the_current_token(stream_config, stream_api, monkeypatch, mocker):
+    """
+    REST streams must authenticate with the token current at request time, not one captured when the stream was built. Reading it
+    must not trigger the proactive refresh: under Refresh Token Rotation that would only add rotations.
+    """
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    authenticator = stream._http_client._session.auth
+    proactive_refresh = mocker.patch.object(stream_api, "refresh_access_token_if_stale")
+    monkeypatch.setattr(stream_api, "access_token", "first_token")
+
+    assert authenticator.token == "Bearer first_token"
+
+    monkeypatch.setattr(stream_api, "access_token", "rotated_token")
+
+    assert authenticator.token == "Bearer rotated_token"
+    proactive_refresh.assert_not_called()
+
+
+def test_rest_error_handler_can_force_a_refresh(stream_config, stream_api, mocker):
+    """Without a token provider the INVALID_SESSION_ID branch cannot refresh, so a REST stream whose session ends cannot recover."""
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    error_handler = stream._http_client._error_handler
+
+    assert error_handler._token_provider is not None
+
+    login = mocker.patch.object(stream_api, "login")
+    assert error_handler._token_provider.force_refresh() is True
+    login.assert_called_once()
+
+
+def test_pagination_rest_retries_next_records_url_with_refreshed_token(stream_config, stream_api, mocker, monkeypatch):
+    """
+    When the session a REST stream is paginating with ends (for example after a refresh with Refresh Token Rotation, as reported in
+    #87664), INVALID_SESSION_ID forces a refresh. A query locator belongs to the user rather than to the session, so retrying
+    `nextRecordsUrl` with the refreshed token continues the query.
+    """
+    monkeypatch.setattr(stream_api, "access_token", "old_token")
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    login = mocker.patch.object(stream_api, "login", side_effect=lambda: setattr(stream_api, "access_token", "new_token"))
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+        m.register_uri(
+            "GET",
+            stream.path(),
+            json={
+                "done": False,
+                "nextRecordsUrl": next_page_url,
+                "records": [{"Id": "001", "LastModifiedDate": "2021-11-15"}, {"Id": "002", "LastModifiedDate": "2021-11-16"}],
+            },
+        )
+        dead_session = m.register_uri(
+            "GET",
+            next_page_url,
+            request_headers={"Authorization": "Bearer old_token"},
+            status_code=401,
+            json=[{"errorCode": "INVALID_SESSION_ID", "message": "Session expired or invalid"}],
+        )
+        new_session = m.register_uri(
+            "GET",
+            next_page_url,
+            request_headers={"Authorization": "Bearer new_token"},
+            json={
+                "done": True,
+                "records": [{"Id": "003", "LastModifiedDate": "2021-11-17"}, {"Id": "004", "LastModifiedDate": "2021-11-18"}],
+            },
+        )
+
+        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+    assert [record["Id"] for record in records] == ["001", "002", "003", "004"]
+    login.assert_called_once()
+    assert (dead_session.call_count, new_session.call_count) == (1, 1)
+
+
+def test_rest_invalid_session_fails_as_config_error_when_the_grant_is_rejected(stream_config, stream_api, mocker, monkeypatch):
+    """A dead session the grant cannot replace fails the REST stream right away as a config error instead of exhausting retries."""
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    mocker.patch.object(stream_api, "login", side_effect=lambda: monkeypatch.setattr(stream_api, "_login_permanently_failed", True))
+    with requests_mock.Mocker() as m:
+        m.register_uri(
+            "GET", stream.path(), status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "Session expired or invalid"}]
+        )
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert exception.value.failure_type == FailureType.config_error
 
 
 @pytest.fixture(name="mocked_response")

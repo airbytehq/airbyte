@@ -22,7 +22,7 @@ internal class SamplingSizeEstimatorTest {
                 initialByteSize.toDouble(),
                 minFetchSize,
                 defaultFetchSize,
-                maxFetchSize
+                maxFetchSize,
             )
 
         var maxByteSize = initialByteSize.toDouble()
