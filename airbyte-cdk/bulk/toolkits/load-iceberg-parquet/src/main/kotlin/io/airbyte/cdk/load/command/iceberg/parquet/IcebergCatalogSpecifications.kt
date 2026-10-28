@@ -90,6 +90,12 @@ interface IcebergCatalogSpecifications {
                     RestCatalogConfiguration(
                         (catalogType as RestCatalogSpecification).serverUri,
                         (catalogType as RestCatalogSpecification).namespace,
+                        (catalogType as RestCatalogSpecification).warehouse,
+                        (catalogType as RestCatalogSpecification).token,
+                        (catalogType as RestCatalogSpecification).clientId,
+                        (catalogType as RestCatalogSpecification).clientSecret,
+                        (catalogType as RestCatalogSpecification).oauth2ServerUri,
+                        (catalogType as RestCatalogSpecification).scope,
                     )
                 is PolarisCatalogSpecification ->
                     PolarisCatalogConfiguration(
@@ -277,6 +283,36 @@ class RestCatalogSpecification(
            `Destination-defined` or `Source-defined`""",
     )
     val namespace: String,
+    @get:JsonSchemaTitle("Warehouse")
+    @get:JsonPropertyDescription(
+        "Optional catalog warehouse identifier, such as a Unity Catalog catalog name. Overrides Warehouse Location for REST requests.",
+    )
+    @get:JsonProperty("warehouse")
+    val warehouse: String? = null,
+    @get:JsonSchemaTitle("Bearer Token")
+    @get:JsonPropertyDescription(
+        "Optional bearer token. Do not combine with OAuth client credentials.",
+    )
+    @get:JsonProperty("token")
+    @get:JsonSchemaInject(json = """{"airbyte_secret":true}""")
+    val token: String? = null,
+    @get:JsonSchemaTitle("Client ID")
+    @get:JsonPropertyDescription("Optional OAuth client ID. Requires client_secret.")
+    @get:JsonProperty("client_id")
+    val clientId: String? = null,
+    @get:JsonSchemaTitle("Client Secret")
+    @get:JsonPropertyDescription("Optional OAuth client secret. Requires client_id.")
+    @get:JsonProperty("client_secret")
+    @get:JsonSchemaInject(json = """{"airbyte_secret":true}""")
+    val clientSecret: String? = null,
+    @get:JsonSchemaTitle("OAuth2 Server URI")
+    @get:JsonPropertyDescription("Optional OAuth2 token endpoint URI.")
+    @get:JsonProperty("oauth2_server_uri")
+    val oauth2ServerUri: String? = null,
+    @get:JsonSchemaTitle("OAuth Scope")
+    @get:JsonPropertyDescription("Optional OAuth scope, such as all-apis for Databricks.")
+    @get:JsonProperty("scope")
+    val scope: String? = null,
 ) : CatalogType(catalogType)
 
 /**

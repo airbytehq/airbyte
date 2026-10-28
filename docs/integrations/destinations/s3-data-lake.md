@@ -426,6 +426,25 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
+## Databricks
+
+For Unity Catalog's Iceberg REST endpoint, select the **REST** catalog and configure:
+
+- `server_uri`: `https://<workspace>/api/2.1/unity-catalog/iceberg-rest`
+- `warehouse`: your Unity Catalog catalog name (not the storage path in `warehouse_location`)
+- `namespace`: your Unity Catalog schema
+- OAuth M2M service principal credentials: `client_id`, `client_secret`, `oauth2_server_uri=https://<workspace>/oidc/v1/token`, and `scope=all-apis`. Alternatively, provide a bearer `token`; do not combine the two authentication modes.
+
+Enable external data access in Unity Catalog and grant the principal the necessary schema and table privileges. Storage credentials must also permit access to the table's data location. Databricks supports external writes to managed Iceberg tables, not foreign Iceberg or Delta tables. See [Databricks Iceberg client access](https://docs.databricks.com/aws/en/external-access/iceberg) for requirements and limitations.
+
+Set `time_column_type=STRING` for Spark/Databricks readers: Iceberg `TIME` is unsupported. Time strings preserve the source offset when present. Existing `TIME` columns cannot be promoted to strings; run a full refresh to rebuild affected tables, or retain `TIME`.
+
+All nested fields under `_airbyte_meta`, including `sync_id` and `changes`, are optional. Existing tables are automatically relaxed in place on the next sync; top-level metadata columns retain their existing nullability.
+
+After this relaxation, downgrading to S3 Data Lake 0.4.1 causes normal syncs against these tables to fail with a schema-evolution error for `_airbyte_meta`; run a Full Refresh - Overwrite sync or rebuild the affected tables before resuming normal syncs with the older connector.
+
+Alternatively, keep the tables in AWS Glue and use Databricks catalog federation to query them as foreign Iceberg tables. Reader support for the table format version and delete encoding still applies.
+
 ## Changelog
 
 <details>
@@ -433,6 +452,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.1 | 2026-10-27 | [90120](https://github.com/airbytehq/airbyte/pull/90120) | Add optional time strings and authenticated REST catalogs for Databricks interoperability; automatically relax nested metadata fields to optional. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |

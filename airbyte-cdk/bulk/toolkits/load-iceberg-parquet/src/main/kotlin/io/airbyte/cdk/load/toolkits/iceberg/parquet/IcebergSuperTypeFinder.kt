@@ -96,6 +96,11 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     ): Type {
         val existingTypeId = existingType.typeId()
         val incomingTypeId = incomingType.typeId()
+        if (existingTypeId == TIME && incomingTypeId == STRING) {
+            throw ConfigErrorException(
+                "Iceberg TIME columns cannot be promoted to STRING. Run a full refresh to rebuild the table, or set time_column_type to TIME.",
+            )
+        }
         // If promotion is not allowed by Iceberg, fail fast.
         if (!TypeUtil.isPromotionAllowed(existingType, incomingType)) {
             throwIllegalTypeCombination(existingType, incomingType, columnName)

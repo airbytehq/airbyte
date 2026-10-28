@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.BigLakeCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsRestCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
 import jakarta.inject.Singleton
 import org.apache.iceberg.CatalogProperties
@@ -47,6 +48,12 @@ class GcsDataLakeCatalogUtil(
         val gcsProperties = buildGcsProperties(config, catalogConfig)
 
         return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
+            is GcsRestCatalogConfiguration ->
+                gcsProperties +
+                    mapOf(
+                        CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+                    ) +
+                    catalogConfiguration.rest.toProperties()
             is BigLakeCatalogConfiguration ->
                 buildBigLakeProperties(config, catalogConfiguration, gcsProperties)
             is PolarisCatalogConfiguration ->

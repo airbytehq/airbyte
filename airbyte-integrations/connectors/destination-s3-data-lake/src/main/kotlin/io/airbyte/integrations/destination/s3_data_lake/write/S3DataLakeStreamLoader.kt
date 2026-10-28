@@ -47,7 +47,12 @@ class S3DataLakeStreamLoader(
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
     private val incomingSchema: Schema =
-        withFinalColumnNames(icebergUtil.toIcebergSchema(stream = stream))
+        withFinalColumnNames(
+            icebergUtil.toIcebergSchema(
+                stream = stream,
+                timeColumnType = icebergConfiguration.timeColumnType,
+            ),
+        )
 
     /**
      * Renames top-level columns from input names to final names (resolved by the CDK's

@@ -123,7 +123,7 @@ class S3DataLakeUtil(
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
             )
 
-        return restProperties + s3Properties
+        return restProperties + s3Properties + catalogConfig.toProperties()
     }
 
     private fun buildPolarisProperties(

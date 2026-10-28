@@ -16,7 +16,7 @@ class AirbyteTypeToIcebergSchemaTest {
     private val converter = AirbyteTypeToIcebergSchema()
 
     @Test
-    fun `meta schema keeps top-level required fields and relaxes fields inside changes list`() {
+    fun `meta schema keeps top-level required fields and relaxes all nested metadata fields`() {
         val schema =
             ObjectType(
                     linkedMapOf(
@@ -35,11 +35,24 @@ class AirbyteTypeToIcebergSchemaTest {
         val changeFields = changesList.elementType().asStructType().fields()
 
         assertThat(metaField.isOptional).isFalse()
-        assertThat(syncId.isOptional).isFalse()
-        assertThat(changes.isOptional).isFalse()
+        assertThat(schema.findField("id").isRequired).isTrue()
+        assertThat(syncId.isOptional).isTrue()
+        assertThat(changes.isOptional).isTrue()
         assertThat(changesList.isElementOptional).isTrue()
         assertThat(changeFields.map { it.name() }).containsExactly("field", "change", "reason")
         assertThat(changeFields).allMatch { it.isOptional }
+    }
+
+    @Test
+    fun `non-meta struct fields retain required nullability`() {
+        val struct =
+            converter
+                .convert(
+                    ObjectType(linkedMapOf("required" to FieldType(StringType, nullable = false))),
+                    stringifyObjects = false,
+                )
+                .asStructType()
+        assertThat(struct.field("required").isRequired).isTrue()
     }
 
     @Test

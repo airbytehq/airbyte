@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.data.iceberg.parquet
 
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -28,16 +29,15 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 
-class AirbyteTypeToIcebergSchema {
+class AirbyteTypeToIcebergSchema(private val timeColumnType: TimeColumnType = TimeColumnType.TIME) {
 
     /**
-     * @param insideList true when converting a list's element type. Everything inside a list is
-     *   optional, since Delta/Databricks rejects NOT NULL nested in arrays.
+     * @param forceOptionalFields relax all nested fields for metadata structs and array elements.
      */
     fun convert(
         airbyteSchema: AirbyteType,
         stringifyObjects: Boolean,
-        insideList: Boolean = false,
+        forceOptionalFields: Boolean = false,
     ): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
@@ -47,17 +47,17 @@ class AirbyteTypeToIcebergSchema {
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
                             .map { (name, field) ->
-                                if (insideList || field.nullable) {
+                                if (forceOptionalFields || field.nullable) {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(field.type, stringifyObjects, forceOptionalFields),
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList),
+                                        convert(field.type, stringifyObjects, forceOptionalFields),
                                     )
                                 }
                             }
@@ -68,7 +68,7 @@ class AirbyteTypeToIcebergSchema {
             is ArrayType -> {
                 Types.ListType.ofOptional(
                     UUID.randomUUID().hashCode(),
-                    convert(airbyteSchema.items.type, stringifyObjects, insideList = true),
+                    convert(airbyteSchema.items.type, stringifyObjects, forceOptionalFields = true),
                 )
             }
             is BooleanType -> Types.BooleanType.get()
@@ -81,7 +81,9 @@ class AirbyteTypeToIcebergSchema {
             is ObjectTypeWithoutSchema -> Types.StringType.get()
             is StringType -> Types.StringType.get()
             is TimeTypeWithTimezone,
-            is TimeTypeWithoutTimezone -> Types.TimeType.get()
+            is TimeTypeWithoutTimezone ->
+                if (timeColumnType == TimeColumnType.STRING) Types.StringType.get()
+                else Types.TimeType.get()
             is TimestampTypeWithTimezone -> Types.TimestampType.withZone()
             is TimestampTypeWithoutTimezone -> Types.TimestampType.withoutZone()
             is UnionType -> {
@@ -91,7 +93,11 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true),
+                        convert(
+                            airbyteSchema.options.first(),
+                            stringifyObjects,
+                            forceOptionalFields = true,
+                        ),
                     )
                 }
                 // We stringify nontrivial unions
@@ -102,11 +108,14 @@ class AirbyteTypeToIcebergSchema {
     }
 }
 
-fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
+fun ObjectType.toIcebergSchema(
+    primaryKeys: List<List<String>>,
+    timeColumnType: TimeColumnType = TimeColumnType.TIME,
+): Schema {
     val fields = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
-    val icebergTypeConverter = AirbyteTypeToIcebergSchema()
+    val icebergTypeConverter = AirbyteTypeToIcebergSchema(timeColumnType)
     this.properties.entries.forEach { (name, field) ->
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)
@@ -120,7 +129,11 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 // Iceberg identifier fields (float/double are disallowed as identifiers).
                 Types.StringType.get()
             } else {
-                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+                icebergTypeConverter.convert(
+                    field.type,
+                    stringifyObjects = stringifyObjects,
+                    forceOptionalFields = name == Meta.COLUMN_NAME_AB_META,
+                )
             }
         fields.add(
             NestedField.builder()
