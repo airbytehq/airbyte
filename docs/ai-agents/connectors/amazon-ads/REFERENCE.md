@@ -8,7 +8,7 @@ The Amazon-Ads connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search) |
+| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search), [Context Store SQL Query](#profiles-context-store-sql-query) |
 | Portfolios | [List](#portfolios-list), [Get](#portfolios-get) |
 | Sponsored Product Campaigns | [List](#sponsored-product-campaigns-list), [Get](#sponsored-product-campaigns-get) |
 | Sponsored Product Ad Groups | [List](#sponsored-product-ad-groups-list) |
@@ -242,6 +242,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Profiles Context Store SQL Query
+
+Run a SQL query against profiles records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "profiles",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await amazon_ads.profiles.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profiles",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Portfolios
 
 ### Portfolios List
@@ -302,7 +365,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Portfolios Get
 
-Retrieves a single portfolio by its ID using the v2 API.
+Fetches a single portfolio by ID through the v3 list endpoint using an ID filter.
 
 
 #### CLI
@@ -314,7 +377,9 @@ airbyte-agent connectors execute --json '{
   "entity": "portfolios",
   "action": "get",
   "params": {
-    "portfolioId": 0
+    "portfolioIdFilter": {
+      "include": []
+    }
   }
 }'
 ```
@@ -323,7 +388,9 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await amazon_ads.portfolios.get(
-    portfolio_id=0
+    portfolio_id_filter={
+        "include": []
+    }
 )
 ```
 
@@ -337,7 +404,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "portfolios",
     "action": "get",
     "params": {
-        "portfolioId": 0
+        "portfolioIdFilter": {
+            "include": []
+        }
     }
 }'
 ```
@@ -347,27 +416,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `portfolioId` | `integer` | Yes | The unique identifier of the portfolio |
+| `portfolioIdFilter` | `object` | Yes | Pass \{"include": ["\<portfolioId\>"]\} to fetch the portfolio with this ID. |
+| `portfolioIdFilter.include` | `array<string>` | Yes |  |
+| `includeExtendedDataFields` | `string` | No | Whether to include extended data fields in the response |
 
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `portfolioId` | `string \| integer` |  |
-| `name` | `string \| null` |  |
-| `budget` | `object \| any` |  |
-| `inBudget` | `boolean \| null` |  |
-| `state` | `string \| null` |  |
-| `creationDate` | `integer \| null` |  |
-| `lastUpdatedDate` | `integer \| null` |  |
-| `servingStatus` | `string \| null` |  |
-
-
-</details>
 
 ## Sponsored Product Campaigns
 
@@ -432,7 +484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Sponsored Product Campaigns Get
 
-Retrieves a single sponsored product campaign by its ID using the v2 API.
+Fetches a single sponsored product campaign by ID through the v3 list endpoint using an ID filter.
 
 
 #### CLI
@@ -444,7 +496,9 @@ airbyte-agent connectors execute --json '{
   "entity": "sponsored_product_campaigns",
   "action": "get",
   "params": {
-    "campaignId": 0
+    "campaignIdFilter": {
+      "include": []
+    }
   }
 }'
 ```
@@ -453,7 +507,9 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await amazon_ads.sponsored_product_campaigns.get(
-    campaign_id=0
+    campaign_id_filter={
+        "include": []
+    }
 )
 ```
 
@@ -467,7 +523,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "sponsored_product_campaigns",
     "action": "get",
     "params": {
-        "campaignId": 0
+        "campaignIdFilter": {
+            "include": []
+        }
     }
 }'
 ```
@@ -477,36 +535,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `campaignId` | `integer` | Yes | The unique identifier of the campaign |
+| `campaignIdFilter` | `object` | Yes | Pass \{"include": ["\<campaignId\>"]\} to fetch the campaign with this ID. |
+| `campaignIdFilter.include` | `array<string>` | Yes |  |
 
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `campaignId` | `string \| integer` |  |
-| `portfolioId` | `string \| integer \| any` |  |
-| `name` | `string \| null` |  |
-| `campaignType` | `string \| null` |  |
-| `tags` | `object \| null` |  |
-| `targetingType` | `string \| null` |  |
-| `premiumBidAdjustment` | `boolean \| null` |  |
-| `state` | `string \| null` |  |
-| `dynamicBidding` | `object \| any` |  |
-| `bidding` | `object \| any` |  |
-| `startDate` | `string \| null` |  |
-| `endDate` | `string \| null` |  |
-| `dailyBudget` | `number \| null` |  |
-| `budget` | `object \| any` |  |
-| `extendedData` | `object \| null` |  |
-| `marketplaceBudgetAllocation` | `string \| null` |  |
-| `offAmazonSettings` | `object \| null` |  |
-
-
-</details>
 
 ## Sponsored Product Ad Groups
 

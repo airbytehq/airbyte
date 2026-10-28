@@ -59,7 +59,7 @@ class FilePartAccumulatorLegacyTest {
                     (it as PipelineMessage).checkpointCounts ==
                         mapOf(CheckpointId("0") to CheckpointValue(1, 1))
                 },
-                0
+                0,
             )
         }
     }
@@ -105,7 +105,7 @@ class FilePartAccumulatorLegacyTest {
             DestinationFile.AirbyteRecordMessageFile(
                 fileUrl = file.absolutePath,
                 fileRelativePath = fileRelativePath,
-            )
+            ),
         )
     }
 }

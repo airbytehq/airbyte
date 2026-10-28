@@ -52,5 +52,5 @@ configurations.all {
 
 dependencies {
     integrationTestImplementation 'org.testcontainers:azure:1.21.4'
-    integrationTestImplementation 'io.mockk:mockk:1.13.12'
+    integrationTestImplementation 'io.mockk:mockk:1.14.11'
 }

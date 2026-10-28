@@ -402,7 +402,7 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(
             sql.contains(
-                """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at""""
+                """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"""",
             ),
         )
         // Should NOT have the 4-way cursor comparison
@@ -587,11 +587,11 @@ internal class RedshiftSqlGeneratorTest {
         val dedupTableName = match!!.groupValues[1]
         assertTrue(
             dedupTableName.length <= 127,
-            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}"
+            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}",
         )
         assertTrue(
             dedupTableName.startsWith(dedupPrefix),
-            "Dedup temp table name should start with $dedupPrefix"
+            "Dedup temp table name should start with $dedupPrefix",
         )
     }
 
@@ -652,7 +652,7 @@ internal class RedshiftSqlGeneratorTest {
                             ColumnTypeChange(
                                 originalType = ColumnType("super", true),
                                 newType = ColumnType("varchar(65535)", true),
-                            )
+                            ),
                     ),
             )
 
@@ -678,7 +678,7 @@ internal class RedshiftSqlGeneratorTest {
                             ColumnTypeChange(
                                 originalType = ColumnType("varchar(65535)", true),
                                 newType = ColumnType("super", true),
-                            )
+                            ),
                     ),
             )
 
@@ -706,7 +706,7 @@ internal class RedshiftSqlGeneratorTest {
                             ColumnTypeChange(
                                 originalType = ColumnType("bigint", false),
                                 newType = ColumnType("decimal(38,9)", false),
-                            )
+                            ),
                     ),
             )
 
@@ -732,7 +732,7 @@ internal class RedshiftSqlGeneratorTest {
                             ColumnTypeChange(
                                 originalType = ColumnType("bigint", false),
                                 newType = ColumnType("decimal(38,9)", false),
-                            )
+                            ),
                     ),
                 isMetaColumnSuper = false,
             )
@@ -763,7 +763,9 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("""COPY "ns"."tbl""""))
         assertTrue(sql.contains("FROM 's3://bucket/path/file.csv.gz'"))
         assertTrue(
-            sql.contains("CREDENTIALS 'aws_access_key_id=AKIATEST;aws_secret_access_key=secret123'")
+            sql.contains(
+                "CREDENTIALS 'aws_access_key_id=AKIATEST;aws_secret_access_key=secret123'",
+            ),
         )
         assertTrue(sql.contains("CSV GZIP"))
         assertTrue(sql.contains("REGION 'us-east-1'"))
@@ -869,7 +871,7 @@ internal class RedshiftSqlGeneratorTest {
                                 ColumnTypeChange(
                                     originalType = ColumnType("bigint", false),
                                     newType = ColumnType("decimal(38,9)", false),
-                                )
+                                ),
                         ),
                 )
 

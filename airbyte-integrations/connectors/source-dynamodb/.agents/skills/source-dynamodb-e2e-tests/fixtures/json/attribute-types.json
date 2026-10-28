@@ -1,0 +1,71 @@
+{
+  "tables": [
+    {
+      "create": {
+        "TableName": "attribute_types",
+        "KeySchema": [{ "AttributeName": "id", "KeyType": "HASH" }],
+        "AttributeDefinitions": [
+          { "AttributeName": "id", "AttributeType": "S" }
+        ],
+        "BillingMode": "PAY_PER_REQUEST"
+      },
+      "items": [
+        { "id": { "S": "string" }, "string_value": { "S": "hello" } },
+        { "id": { "S": "integer" }, "integer_value": { "N": "42" } },
+        { "id": { "S": "decimal" }, "decimal_value": { "N": "3.14" } },
+        { "id": { "S": "boolean" }, "boolean_value": { "BOOL": true } },
+        { "id": { "S": "null" }, "null_value": { "NULL": true } },
+        { "id": { "S": "binary" }, "binary_value": { "B": "aGVsbG8=" } },
+        {
+          "id": { "S": "string-set" },
+          "string_set_value": { "SS": ["red", "blue"] }
+        },
+        {
+          "id": { "S": "number-set" },
+          "number_set_value": { "NS": ["1", "2.5"] }
+        },
+        {
+          "id": { "S": "binary-set" },
+          "binary_set_value": { "BS": ["YQ==", "Yg=="] }
+        },
+        {
+          "id": { "S": "list" },
+          "list_value": {
+            "L": [
+              { "S": "nested" },
+              { "N": "7" },
+              { "M": { "enabled": { "BOOL": true } } }
+            ]
+          }
+        },
+        {
+          "id": { "S": "map" },
+          "map_value": {
+            "M": { "name": { "S": "child" }, "count": { "N": "2" } }
+          }
+        }
+      ]
+    },
+    {
+      "create": {
+        "TableName": "composite_key",
+        "KeySchema": [
+          { "AttributeName": "partition_id", "KeyType": "HASH" },
+          { "AttributeName": "sort_key", "KeyType": "RANGE" }
+        ],
+        "AttributeDefinitions": [
+          { "AttributeName": "partition_id", "AttributeType": "S" },
+          { "AttributeName": "sort_key", "AttributeType": "S" }
+        ],
+        "BillingMode": "PAY_PER_REQUEST"
+      },
+      "items": [
+        {
+          "partition_id": { "S": "partition-1" },
+          "sort_key": { "S": "sort-1" },
+          "label": { "S": "composite key example" }
+        }
+      ]
+    }
+  ]
+}

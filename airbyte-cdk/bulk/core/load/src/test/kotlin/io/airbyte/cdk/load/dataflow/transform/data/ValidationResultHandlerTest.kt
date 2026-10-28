@@ -40,8 +40,8 @@ internal class ValidationResultHandlerTest {
                 partitionKey = partitionKey,
                 stream = stream,
                 result = ValidationResult.Valid,
-                value = enrichedValue
-            )
+                value = enrichedValue,
+            ),
         )
         assertEquals(
             NullValue,
@@ -50,9 +50,9 @@ internal class ValidationResultHandlerTest {
                     partitionKey = partitionKey,
                     stream = stream,
                     result = ValidationResult.ShouldNullify(Reason.DESTINATION_SERIALIZATION_ERROR),
-                    value = enrichedValue
+                    value = enrichedValue,
                 )
-                .abValue
+                .abValue,
         )
 
         val truncatedValue = StringValue("This is...")
@@ -65,11 +65,11 @@ internal class ValidationResultHandlerTest {
                     result =
                         ValidationResult.ShouldTruncate(
                             truncatedValue,
-                            Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                            Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                         ),
-                    value = enrichedValue
+                    value = enrichedValue,
                 )
-                .abValue
+                .abValue,
         )
     }
 
@@ -114,7 +114,7 @@ internal class ValidationResultHandlerTest {
                 partitionKey = partitionKey,
                 stream = stream,
                 value = enrichedValue,
-                truncatedValue = newValue
+                truncatedValue = newValue,
             )
         assertEquals(newValue, truncatedValue.abValue)
         assertEquals(1, truncatedValue.changes.size)

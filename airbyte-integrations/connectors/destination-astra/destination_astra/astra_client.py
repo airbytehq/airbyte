@@ -24,7 +24,7 @@ class AstraClient:
 
         self.request_base_url = f"{self.astra_endpoint}/api/json/v1/{self.keyspace_name}"
         self.request_header = {
-            "x-cassandra-token": self.astra_application_token,
+            "Token": self.astra_application_token,
             "Content-Type": "application/json",
             "User-Agent": "airbyte",
         }
@@ -149,7 +149,12 @@ class AstraClient:
         return result["status"]["count"]
 
     def delete_documents(self, collection_name: str, filter: Dict) -> int:
+        # The Data API deletes at most 20 documents per deleteMany request and sets
+        # status.moreData=true while documents matching the filter remain.
         query = {"deleteMany": {"filter": filter}}
-        result = self._run_query(self._build_collection_query(collection_name), query)
-
-        return result["status"]["deletedCount"]
+        deleted_count = 0
+        while True:
+            status = self._run_query(self._build_collection_query(collection_name), query)["status"]
+            deleted_count += status.get("deletedCount", 0)
+            if not status.get("moreData"):
+                return deleted_count

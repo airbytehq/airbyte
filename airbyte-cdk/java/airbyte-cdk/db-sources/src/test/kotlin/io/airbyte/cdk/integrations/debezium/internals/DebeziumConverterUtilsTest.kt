@@ -23,7 +23,7 @@ internal class DebeziumConverterUtilsTest {
         var actualColumnDefaultValue = DebeziumConverterUtils.convertDefaultValue(relationalColumn)
         Assertions.assertNull(
             actualColumnDefaultValue,
-            "Default value for optional relational column should be null"
+            "Default value for optional relational column should be null",
         )
 
         Mockito.`when`(relationalColumn.isOptional).thenReturn(false)

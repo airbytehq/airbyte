@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -41,6 +42,7 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
@@ -77,7 +79,7 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         execute(sqlGenerator.createTable(stream, tableName, replace))
     }
@@ -93,7 +95,7 @@ class RedshiftAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.copyTable(sourceTableName, targetTableName))
     }
@@ -102,7 +104,7 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
@@ -166,7 +168,8 @@ class RedshiftAirbyteClient(
                 Airbyte can only sync to Airbyte-controlled tables. To fix this error, \
                 you must either delete the target table or add a prefix in the connection \
                 configuration in order to sync to a separate table in the destination.
-                """.trimIndent()
+                """
+                    .trimIndent()
             log.error { message }
             throw ConfigErrorException(message)
         }
@@ -196,7 +199,7 @@ class RedshiftAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -206,7 +209,7 @@ class RedshiftAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        columnChangeset: ColumnChangeset
+        columnChangeset: ColumnChangeset,
     ) {
         if (columnChangeset.isNoop()) {
             return
@@ -241,7 +244,7 @@ class RedshiftAirbyteClient(
                 columnsToAdd = columnChangeset.columnsToAdd,
                 columnsToModify = columnChangeset.columnsToChange,
                 isMetaColumnSuper = isMetaColumnSuper,
-            )
+            ),
         )
     }
 
@@ -355,7 +358,7 @@ class RedshiftAirbyteClient(
      * Executes a SQL statement (DDL or DML) against Redshift.
      *
      * @param logStatement set to `false` for statements that contain secrets (e.g. COPY with inline
-     * AWS credentials) to prevent plaintext credentials from appearing in logs.
+     *   AWS credentials) to prevent plaintext credentials from appearing in logs.
      */
     internal fun execute(query: String, logStatement: Boolean = true) {
         if (logStatement) {
@@ -389,7 +392,8 @@ class RedshiftAirbyteClient(
                     JOIN pg_namespace dependent_ns 
                     ON dependent_view.relnamespace = dependent_ns.oid 
                     WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
@@ -436,7 +440,8 @@ class RedshiftAirbyteClient(
                 WHERE starttime >= GETDATE() - INTERVAL '1 minute'
                 ORDER BY starttime DESC
                 LIMIT 1
-                """.trimIndent()
+                """
+                    .trimIndent(),
             ) { rs ->
                 val errors = mutableListOf<String>()
                 while (rs.next()) {

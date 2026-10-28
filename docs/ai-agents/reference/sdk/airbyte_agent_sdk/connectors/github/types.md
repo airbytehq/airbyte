@@ -1822,29 +1822,6 @@ Classes
 
     * builtins.dict
 
-<a id="DiscussionsApiSearchParams"></a>
-
-`DiscussionsApiSearchParams(*args, **kwargs)`
-:   Parameters for discussions.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `fields: list[str]`
-    :   The type of the None singleton.
-
-    `per_page: int`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="DiscussionsArrayContainsCondition"></a>
 
 `DiscussionsArrayContainsCondition(*args, **kwargs)`
@@ -2137,6 +2114,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="DiscussionsSearchParams"></a>
+
+`DiscussionsSearchParams(*args, **kwargs)`
+:   Parameters for discussions.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `fields: list[str]`
+    :   The type of the None singleton.
+
+    `per_page: int`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="DiscussionsSearchQuery"></a>
 
@@ -2644,29 +2644,6 @@ Classes
     `url: Any`
     :   Permalink to the issue on GitHub
 
-<a id="IssuesApiSearchParams"></a>
-
-`IssuesApiSearchParams(*args, **kwargs)`
-:   Parameters for issues.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `fields: list[str]`
-    :   The type of the None singleton.
-
-    `per_page: int`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="IssuesArrayContainsCondition"></a>
 
 `IssuesArrayContainsCondition(*args, **kwargs)`
@@ -3064,6 +3041,29 @@ Classes
 
     `url: str | None`
     :   Permalink to the issue on GitHub
+
+<a id="IssuesSearchParams"></a>
+
+`IssuesSearchParams(*args, **kwargs)`
+:   Parameters for issues.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `fields: list[str]`
+    :   The type of the None singleton.
+
+    `per_page: int`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="IssuesSearchQuery"></a>
 
@@ -6501,29 +6501,6 @@ Classes
     `url: Any`
     :   Permalink to the pull request on GitHub
 
-<a id="PullRequestsApiSearchParams"></a>
-
-`PullRequestsApiSearchParams(*args, **kwargs)`
-:   Parameters for pull_requests.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `fields: list[str]`
-    :   The type of the None singleton.
-
-    `per_page: int`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="PullRequestsArrayContainsCondition"></a>
 
 `PullRequestsArrayContainsCondition(*args, **kwargs)`
@@ -6924,6 +6901,29 @@ Classes
 
     `url: str | None`
     :   Permalink to the pull request on GitHub
+
+<a id="PullRequestsSearchParams"></a>
+
+`PullRequestsSearchParams(*args, **kwargs)`
+:   Parameters for pull_requests.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `fields: list[str]`
+    :   The type of the None singleton.
+
+    `per_page: int`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="PullRequestsSearchQuery"></a>
 
@@ -7693,29 +7693,6 @@ Classes
     `url: Any`
     :   Canonical GitHub URL for the repository
 
-<a id="RepositoriesApiSearchParams"></a>
-
-`RepositoriesApiSearchParams(*args, **kwargs)`
-:   Parameters for repositories.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `fields: list[str]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="RepositoriesArrayContainsCondition"></a>
 
 `RepositoriesArrayContainsCondition(*args, **kwargs)`
@@ -8078,6 +8055,29 @@ Classes
 
     `url: str | None`
     :   Canonical GitHub URL for the repository
+
+<a id="RepositoriesSearchParams"></a>
+
+`RepositoriesSearchParams(*args, **kwargs)`
+:   Parameters for repositories.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `fields: list[str]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="RepositoriesSearchQuery"></a>
 
@@ -10079,29 +10079,6 @@ Classes
     `url: Any`
     :   Permalink to the user's profile on GitHub
 
-<a id="UsersApiSearchParams"></a>
-
-`UsersApiSearchParams(*args, **kwargs)`
-:   Parameters for users.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `fields: list[str]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="UsersArrayContainsCondition"></a>
 
 `UsersArrayContainsCondition(*args, **kwargs)`
@@ -10407,6 +10384,29 @@ Classes
 
     `url: str | None`
     :   Permalink to the user's profile on GitHub
+
+<a id="UsersSearchParams"></a>
+
+`UsersSearchParams(*args, **kwargs)`
+:   Parameters for users.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `fields: list[str]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="UsersSearchQuery"></a>
 
