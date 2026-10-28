@@ -190,9 +190,41 @@ An unknown number of API sources have streams that don't meet these conditions. 
 
 ### Delete file encodings
 
-Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on format v2 tables and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version.
+Deduplication writes Iceberg delete files whose encoding is controlled by `iceberg_delete_file_type`. `AUTOMATIC` (the default) uses equality deletes on unpartitioned format v2 tables, positional deletes on partitioned format v2 tables, and [deletion vectors](https://iceberg.apache.org/spec/#deletion-vectors) on format v3 tables. Equality deletes cannot remove rows across partitions. Choose `EQUALITY`, `POSITIONAL`, or `DELETION_VECTOR` to pin an encoding explicitly; the encoding must be supported by the table's format version. Partitioned tables cannot use `EQUALITY`. The connector rejects this combination before creating or evolving the table, and removing `partition_fields` does not un-partition a table that is already partitioned.
 
-Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors — required by some readers such as Databricks foreign Iceberg reads, and readable by BigQuery through the BigLake catalog (in Preview), but not readable by Amazon Athena today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
+Tables are created at format v2 by default. Set `table_format_version` to `v3` to create tables that support deletion vectors. Deletion vectors are required by some readers, such as Databricks foreign Iceberg reads, but Amazon Athena does not support format v3 today. Format upgrades are one-way: to upgrade an existing v2 table in place when `table_format_version` is `v3`, set `allow_non_reversible_upgrades` to `YES`, or `WITH_TABLE_BACKUP` to also register a copy of the current table metadata as a sibling v2 table first. Existing delete files are converted to deletion vectors during the upgrade.
+
+### Reading from BigQuery
+
+BigQuery can query Apache Iceberg tables in the [Lakehouse runtime catalog](https://docs.cloud.google.com/lakehouse/docs/query-table) using the four-part P.C.N.T name `PROJECT_NAME.CATALOG_ID.NAMESPACE_OR_SCHEMA_NAME.TABLE_NAME`.
+
+For Dedupe streams, use format v2 with positional deletes:
+
+```json
+{
+  "table_format_version": "v2",
+  "iceberg_delete_file_type": "POSITIONAL"
+}
+```
+
+Format v3 with `DELETION_VECTOR` is also supported by BigQuery through BigLake, but this relies on a BigQuery Preview feature. Append and Overwrite streams write no delete files, so either format version works.
+
+Set `partition_fields` to enable partition pruning. For example, this partitions by day:
+
+```json
+{
+  "partition_fields": [
+    {
+      "column": "updated_at",
+      "transform": "DAY"
+    }
+  ]
+}
+```
+
+Partition fields are added to existing tables through partition evolution. Old data files keep their original partition spec. Pruning applies to data written after the new partition field is added. Fields on columns added during an overwrite sync are picked up on the next sync.
+
+The connector does not compact tables. Each data file carries at most one deletion vector. Positional delete files accumulate on every Dedupe sync. Periodically compact with an Iceberg maintenance engine such as Spark. Run `rewrite_data_files`, `rewrite_position_delete_files`, and `expire_snapshots` to stay within BigQuery's delete-file limits.
 
 ## Branching and data availability
 
@@ -230,6 +262,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.2.0 | 2026-10-27 | [90121](https://github.com/airbytehq/airbyte/pull/90121) | Add configurable Iceberg partition fields for BigQuery pruning. |
 | 1.1.0 | 2026-10-22 | [89640](https://github.com/airbytehq/airbyte/pull/89640) | Add `table_format_version`, `DELETION_VECTOR` delete file type, and `allow_non_reversible_upgrades` options for Iceberg v3 deletion-vector support. Refresh Google credentials for the BigLake catalog and GCS file I/O so syncs longer than one hour no longer fail. |
 | 1.0.13 | 2026-10-01 | [87616](https://github.com/airbytehq/airbyte/pull/87616) | Upgrade to Bulk CDK 1.1.1. |
 | 1.0.12 | 2026-09-11 | [85852](https://github.com/airbytehq/airbyte/pull/85852) | Replace deprecated `Types.NestedField.of` usage. |

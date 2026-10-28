@@ -4,11 +4,13 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.write
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -24,13 +26,20 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BasePositionDeltaTaskWriter
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCommitter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsPartitionFieldSpec
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsPartitionTransform
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
 import io.mockk.every
@@ -38,7 +47,11 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
@@ -54,6 +67,8 @@ import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.inmemory.InMemoryCatalog
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,7 +83,13 @@ internal class GcsDataLakeStreamLoaderTest {
 
     private lateinit var catalog: Catalog
 
-    private fun makeStream(importType: ImportType, syncId: Long = 1): DestinationStream {
+    private fun makeStream(
+        importType: ImportType,
+        syncId: Long = 1,
+        columnNames: Map<String, String> = emptyMap(),
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+    ): DestinationStream {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
@@ -78,8 +99,8 @@ internal class GcsDataLakeStreamLoaderTest {
             )
         val inputSchema = objectSchema.properties
         return DestinationStream(
-            generationId = 1,
-            minimumGenerationId = 0,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
             syncId = syncId,
             unmappedNamespace = "namespace",
             unmappedName = "name",
@@ -90,7 +111,8 @@ internal class GcsDataLakeStreamLoaderTest {
                     columnSchema =
                         ColumnSchema(
                             inputSchema = inputSchema,
-                            inputToFinalColumnNames = inputSchema.keys.associateWith { it },
+                            inputToFinalColumnNames =
+                                inputSchema.keys.associateWith { columnNames[it] ?: it },
                             finalSchema = mapOf(),
                         ),
                     importType = importType,
@@ -99,7 +121,11 @@ internal class GcsDataLakeStreamLoaderTest {
         )
     }
 
-    private fun makeConfiguration(mainBranchName: String = "main") =
+    private fun makeConfiguration(
+        mainBranchName: String = "main",
+        partitionFields: List<GcsPartitionFieldSpec> = emptyList(),
+        deleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
+    ) =
         GcsDataLakeConfiguration(
             gcsBucketName = "bucket",
             serviceAccountJson = "{}",
@@ -119,7 +145,8 @@ internal class GcsDataLakeStreamLoaderTest {
                             clientSecret = "secret",
                         ),
                 ),
-            icebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
+            icebergDeleteFileType = deleteFileType,
+            partitionFields = partitionFields,
         )
 
     private fun makeTableSchema(
@@ -135,11 +162,14 @@ internal class GcsDataLakeStreamLoaderTest {
             .withAirbyteMeta(true)
             .toIcebergSchema(primaryKeys)
 
-    private fun createTable(schema: Schema): Table {
+    private fun createTable(
+        schema: Schema,
+        partitionSpec: PartitionSpec = PartitionSpec.unpartitioned(),
+    ): Table {
         (catalog as SupportsNamespaces).createNamespace(tableIdentifier.namespace())
         return catalog
             .buildTable(tableIdentifier, schema)
-            .withPartitionSpec(PartitionSpec.unpartitioned())
+            .withPartitionSpec(partitionSpec)
             .withProperty(TableProperties.FORMAT_VERSION, "2")
             .create()
     }
@@ -149,6 +179,9 @@ internal class GcsDataLakeStreamLoaderTest {
         table: Table,
         mainBranchName: String = "main",
         incomingSchema: Schema = table.schema(),
+        partitionFields: List<GcsPartitionFieldSpec> = emptyList(),
+        onCreateTable: ((PartitionSpec) -> Table)? = null,
+        deleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
     ): GcsDataLakeStreamLoader {
         val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil = mockk {
             every { createNamespace(any(), any()) } just runs
@@ -156,11 +189,16 @@ internal class GcsDataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any(), any()) } answers
+                {
+                    onCreateTable?.invoke(arg<PartitionSpec>(4)) ?: table
+                }
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
+                "test-generation-id-1-e"
             every { toIcebergSchema(any()) } returns incomingSchema
         }
         return GcsDataLakeStreamLoader(
-            makeConfiguration(mainBranchName),
+            makeConfiguration(mainBranchName, partitionFields, deleteFileType),
             stream,
             IcebergTableSynchronizer(
                 IcebergTypesComparator(),
@@ -312,5 +350,289 @@ internal class GcsDataLakeStreamLoaderTest {
 
         assertNull(table.refs()[DEFAULT_STAGING_BRANCH])
         assertEquals(legacySnapshotId, table.refs()["prod"]!!.snapshotId())
+    }
+
+    @Test
+    fun `new table spec uses the mapped source column name`() {
+        val table = createTable(makeTableSchema())
+        catalog = spyk(catalog)
+        every { catalog.tableExists(any()) } returns false
+        var createdSpec: PartitionSpec? = null
+        val fields =
+            listOf(
+                GcsPartitionFieldSpec(
+                    column = "id",
+                    transform = GcsPartitionTransform.IDENTITY,
+                ),
+            )
+        val stream = makeStream(Append, columnNames = mapOf("id" to "mapped_id"))
+
+        runBlocking {
+            makeLoader(
+                    stream,
+                    table,
+                    incomingSchema = makeTableSchema(),
+                    partitionFields = fields,
+                    onCreateTable = { spec ->
+                        createdSpec = spec
+                        table
+                    },
+                )
+                .start()
+        }
+
+        assertEquals("mapped_id", createdSpec!!.fields().single().name())
+    }
+
+    @Test
+    fun `stream filter excludes fields for other streams`() {
+        val table = createTable(makeTableSchema())
+        val fields =
+            listOf(
+                GcsPartitionFieldSpec(
+                    column = "id",
+                    transform = GcsPartitionTransform.IDENTITY,
+                    streams = listOf("other_stream"),
+                ),
+            )
+
+        runBlocking {
+            makeLoader(makeStream(Append), table, partitionFields = fields).start()
+        }
+
+        assertTrue(table.spec().fields().isEmpty())
+    }
+
+    @Test
+    fun `existing table evolves partition spec`() {
+        val table = createTable(makeTableSchema())
+        val fields =
+            listOf(
+                GcsPartitionFieldSpec(
+                    column = "id",
+                    transform = GcsPartitionTransform.IDENTITY,
+                ),
+            )
+
+        runBlocking {
+            makeLoader(makeStream(Append), table, partitionFields = fields).start()
+        }
+
+        assertEquals(listOf("identity"), table.spec().fields().map { it.transform().toString() })
+    }
+
+    @Test
+    fun `explicit EQUALITY with partition fields rejects new table before createTable`() {
+        val stream = makeStream(Dedupe(listOf(listOf("id")), emptyList()))
+        val table: Table = mockk()
+        val schema = makeTableSchema()
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+        catalog = spyk(catalog)
+        every { catalog.tableExists(any()) } returns false
+        var createTableCalls = 0
+
+        val error =
+            assertFailsWith<ConfigErrorException> {
+                runBlocking {
+                    makeLoader(
+                            stream,
+                            table,
+                            incomingSchema = schema,
+                            partitionFields = fields,
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                            onCreateTable = {
+                                createTableCalls++
+                                table
+                            },
+                        )
+                        .start()
+                }
+            }
+
+        assertEquals(
+            "Equality deletes cannot remove rows across partitions. Use POSITIONAL (v2) or " +
+                "DELETION_VECTOR (v3), or remove the partition fields for this stream.",
+            error.message,
+        )
+        assertEquals(0, createTableCalls)
+    }
+
+    @Test
+    fun `explicit EQUALITY with partition fields leaves existing unpartitioned table unchanged`() {
+        val table = createTable(makeTableSchema())
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        makeStream(Dedupe(listOf(listOf("id")), emptyList())),
+                        table,
+                        partitionFields = fields,
+                        deleteFileType = IcebergDeleteFileType.EQUALITY,
+                    )
+                    .start()
+            }
+        }
+
+        table.refresh()
+        assertTrue(table.spec().isUnpartitioned)
+    }
+
+    @Test
+    fun `explicit EQUALITY rejects an already partitioned table without configured fields`() {
+        val schema = makeTableSchema()
+        val table =
+            createTable(
+                schema,
+                PartitionSpec.builderFor(schema).identity("id").build(),
+            )
+
+        val error =
+            assertFailsWith<ConfigErrorException> {
+                runBlocking {
+                    makeLoader(
+                            makeStream(Dedupe(listOf(listOf("id")), emptyList())),
+                            table,
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                        )
+                        .start()
+                }
+            }
+
+        assertContains(error.message.orEmpty(), "is partitioned")
+    }
+
+    @Test
+    fun `append with EQUALITY and partition fields starts successfully`() {
+        val table = createTable(makeTableSchema())
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+
+        runBlocking {
+            makeLoader(
+                    makeStream(Append),
+                    table,
+                    partitionFields = fields,
+                    deleteFileType = IcebergDeleteFileType.EQUALITY,
+                )
+                .start()
+        }
+
+        assertTrue(table.spec().isPartitioned)
+    }
+
+    @Test
+    fun `overwrite removal defers partition evolution for deleted source column`() {
+        val tableSchema = makeTableSchema()
+        val table =
+            createTable(
+                tableSchema,
+                PartitionSpec.builderFor(tableSchema).identity("name").build(),
+            )
+        val incomingSchema =
+            ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
+                .withAirbyteMeta(true)
+                .toIcebergSchema(listOf(listOf("id")))
+        val partitionFields = listOf(GcsPartitionFieldSpec("name", GcsPartitionTransform.IDENTITY))
+        val loader =
+            makeLoader(
+                makeStream(Overwrite, generationId = 1, minimumGenerationId = 1),
+                table,
+                incomingSchema = incomingSchema,
+                partitionFields = partitionFields,
+            )
+
+        runBlocking {
+            loader.start()
+            loader.teardown(completedSuccessfully = true)
+        }
+
+        table.refresh()
+        assertNull(table.schema().findField("name"))
+        assertTrue(table.spec().fields().isEmpty())
+    }
+
+    @Test
+    fun `partitioned positional dedupe writes latest row and references old spec`() {
+        val schema =
+            Schema(
+                listOf(
+                    org.apache.iceberg.types.Types.NestedField.required(
+                        1,
+                        "id",
+                        org.apache.iceberg.types.Types.IntegerType.get(),
+                    ),
+                    org.apache.iceberg.types.Types.NestedField.required(
+                        2,
+                        "name",
+                        org.apache.iceberg.types.Types.StringType.get(),
+                    ),
+                ),
+                setOf(1),
+            )
+        (catalog as SupportsNamespaces).createNamespace(tableIdentifier.namespace())
+        val table =
+            catalog
+                .buildTable(tableIdentifier, schema)
+                .withPartitionSpec(PartitionSpec.unpartitioned())
+                .withProperty(TableProperties.FORMAT_VERSION, "2")
+                .create()
+        fun record(name: String) =
+            GenericRecord.create(schema).apply {
+                setField("id", 42)
+                setField("name", name)
+            }
+        val writerFactory = IcebergTableWriterFactory()
+        val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        seedWriter.write(record("old"))
+        val seedResult = seedWriter.complete()
+        val oldDataFile = seedResult.dataFiles().single()
+        table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
+
+        val fields =
+            listOf(
+                GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY),
+            )
+        val loader =
+            makeLoader(
+                makeStream(Dedupe(listOf(listOf("id")), emptyList())),
+                table,
+                incomingSchema = schema,
+                partitionFields = fields,
+            )
+        val state = startAndCaptureState(loader)
+        assertTrue(table.spec().isPartitioned)
+
+        val writer =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                Dedupe(listOf(listOf("id")), emptyList()),
+                schema,
+                positionalDeleteRef = state.stagingBranchName,
+                positionalDeleteState = state.positionalDeleteState,
+                deleteMode = state.deleteMode,
+            ) as BasePositionDeltaTaskWriter
+        writer.write(RecordWrapper(record("latest"), Operation.UPDATE))
+        val result = writer.complete()
+        val deleteFile = result.deleteFiles().single()
+        assertEquals(oldDataFile.specId(), deleteFile.specId())
+        assertEquals(oldDataFile.partition(), deleteFile.partition())
+        assertNotEquals(oldDataFile.specId(), result.dataFiles().single().specId())
+
+        IcebergTableCommitter.commit(
+            table,
+            state.stagingBranchName,
+            result,
+            table.refs()[state.stagingBranchName]!!.snapshotId(),
+            emptySet(),
+            writer.rewrittenDeleteFiles().toSet(),
+            resolvesDeletes = true,
+        )
+        runBlocking { loader.teardown(completedSuccessfully = true) }
+        val rows =
+            IcebergGenerics.read(table).build().use { records ->
+                records.map { it.getField("id").toString() to it.getField("name").toString() }
+            }
+        assertEquals(listOf("42" to "latest"), rows)
     }
 }

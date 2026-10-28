@@ -35,6 +35,7 @@ import java.util.LinkedHashMap
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -122,6 +123,7 @@ class IcebergUtil(
         catalog: Catalog,
         schema: Schema,
         formatVersion: Int = 2,
+        partitionSpec: PartitionSpec = PartitionSpec.unpartitioned(),
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -134,6 +136,7 @@ class IcebergUtil(
                         TableProperties.FORMAT_VERSION to formatVersion.toString(),
                     ),
                 )
+                .withPartitionSpec(partitionSpec)
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {

@@ -13,6 +13,9 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitionField
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitionTransform
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergPartitioning
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableUpgrader
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -25,8 +28,10 @@ import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCata
 import io.airbyte.integrations.destination.gcs_data_lake.spec.AllowNonReversibleUpgrades
 import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsPartitionTransform
 import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -34,6 +39,8 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
+
+private fun GcsPartitionTransform.toIcebergTransform() = IcebergPartitionTransform.valueOf(name)
 
 class GcsDataLakeStreamLoader(
     private val icebergConfiguration: GcsDataLakeConfiguration,
@@ -86,12 +93,21 @@ class GcsDataLakeStreamLoader(
         val targetFormatVersion = icebergConfiguration.tableFormatVersion.formatVersion
         val tableExisted =
             catalog.tableExists(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
+        val partitionFields = partitionFieldsForStream()
+        rejectEqualityDeletesWithPartitionFields(partitionFields)
+        val partitionSpec =
+            if (tableExisted) {
+                PartitionSpec.unpartitioned()
+            } else {
+                IcebergPartitioning.buildSpec(incomingSchema, partitionFields)
+            }
         val createdTable =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
                 formatVersion = targetFormatVersion,
+                partitionSpec = partitionSpec,
             )
         table = createdTable
         val actualVersion = tableFormatVersion(createdTable)
@@ -108,7 +124,6 @@ class GcsDataLakeStreamLoader(
             } else {
                 targetFormatVersion
             }
-        val deleteMode = resolveDeleteMode(createdTable, plannedVersion)
         val effectiveFormatVersion =
             reconcileFormatVersion(
                 table = createdTable,
@@ -184,7 +199,8 @@ class GcsDataLakeStreamLoader(
         // This is also intentional - the airbyte protocol requires that we commit data
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
-        targetSchema = computeOrExecuteSchemaUpdate().schema
+        val schemaUpdateResult = computeOrExecuteSchemaUpdate()
+        targetSchema = schemaUpdateResult.schema
 
         // After schema updates, refresh the table to ensure we have the latest schema with
         // identifier fields.
@@ -195,6 +211,22 @@ class GcsDataLakeStreamLoader(
             table.refresh()
             targetSchema = table.schema()
         }
+        if (tableExisted) {
+            if (schemaUpdateResult.pendingUpdates.isNotEmpty()) {
+                logger.info {
+                    "Deferring partition spec evolution to the next sync for " +
+                        "${stream.mappedDescriptor} because schema changes are pending."
+                }
+            } else {
+                val writerPartitionFields = partitionFields.filter {
+                    incomingSchema.findField(it.sourceColumn) != null
+                }
+                if (IcebergPartitioning.evolveSpec(createdTable, writerPartitionFields)) {
+                    logger.info { "Evolved partition spec for ${stream.mappedDescriptor}." }
+                }
+            }
+        }
+        val deleteMode = resolveDeleteMode(createdTable, effectiveFormatVersion)
 
         logger.info {
             "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
@@ -266,6 +298,44 @@ class GcsDataLakeStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
+    private fun partitionFieldsForStream(): List<IcebergPartitionField> =
+        icebergConfiguration.partitionFields
+            .filter {
+                it.streams.isNullOrEmpty() || stream.mappedDescriptor.name in it.streams
+            }
+            .map { field ->
+                val sourceColumn =
+                    if (Meta.COLUMN_NAMES.contains(field.column)) {
+                        field.column
+                    } else {
+                        stream.tableSchema.columnSchema.inputToFinalColumnNames[field.column]
+                            ?: field.column
+                    }
+                IcebergPartitionField(
+                    sourceColumn = sourceColumn,
+                    transform = field.transform.toIcebergTransform(),
+                    argument = field.transformArgument,
+                )
+            }
+
+    private fun rejectEqualityDeletesWithPartitionFields(
+        partitionFields: List<IcebergPartitionField>,
+    ) {
+        if (
+            stream.tableSchema.importType !is Dedupe ||
+                icebergConfiguration.icebergDeleteFileType != IcebergDeleteFileType.EQUALITY
+        ) {
+            return
+        }
+        if (IcebergPartitioning.buildSpec(incomingSchema, partitionFields).isUnpartitioned) {
+            return
+        }
+        throw ConfigErrorException(
+            "Equality deletes cannot remove rows across partitions. Use POSITIONAL (v2) or " +
+                "DELETION_VECTOR (v3), or remove the partition fields for this stream.",
+        )
+    }
+
     private fun reconcileFormatVersion(
         table: Table,
         tableExisted: Boolean,
@@ -315,9 +385,19 @@ class GcsDataLakeStreamLoader(
         }
         return when (icebergConfiguration.icebergDeleteFileType) {
             IcebergDeleteFileType.AUTOMATIC ->
-                if (effectiveVersion >= 3) IcebergDeleteMode.DELETION_VECTOR
-                else IcebergDeleteMode.EQUALITY
+                when {
+                    effectiveVersion >= 3 -> IcebergDeleteMode.DELETION_VECTOR
+                    !table.spec().isUnpartitioned -> IcebergDeleteMode.POSITIONAL
+                    else -> IcebergDeleteMode.EQUALITY
+                }
             IcebergDeleteFileType.EQUALITY -> {
+                if (!table.spec().isUnpartitioned) {
+                    throw ConfigErrorException(
+                        "Table ${table.name()} is partitioned, and equality deletes cannot " +
+                            "remove rows across partitions. Use POSITIONAL (v2) or " +
+                            "DELETION_VECTOR (v3).",
+                    )
+                }
                 if (effectiveVersion >= 3) {
                     throw ConfigErrorException(
                         "iceberg_delete_file_type EQUALITY requires an Iceberg format v2 " +

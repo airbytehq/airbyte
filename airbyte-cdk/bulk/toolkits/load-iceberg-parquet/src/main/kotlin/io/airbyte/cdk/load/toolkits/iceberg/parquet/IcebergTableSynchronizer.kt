@@ -15,6 +15,7 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.PrimitiveType
+import org.apache.iceberg.types.TypeUtil
 
 private val logger = KotlinLogging.logger {}
 
@@ -104,6 +105,7 @@ class IcebergTableSynchronizer(
                 addAll(diff.updatedDataTypes)
             }
         }
+        removePartitionFieldsIfNeeded(table, columnsBeingDeleted)
         replaceSortOrderIfNeeded(
             table = table,
             columnsBeingDeleted = columnsBeingDeleted,
@@ -292,6 +294,29 @@ class IcebergTableSynchronizer(
         } else {
             return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
+    }
+
+    private fun removePartitionFieldsIfNeeded(table: Table, columnsBeingDeleted: List<String>) {
+        val deletedSourceIds =
+            columnsBeingDeleted
+                .flatMap { columnName ->
+                    table
+                        .schema()
+                        .findField(columnName)
+                        ?.let { field ->
+                            TypeUtil.getProjectedIds(field.type()) + field.fieldId()
+                        }
+                        .orEmpty()
+                }
+                .toSet()
+        val fieldsToRemove = table.spec().fields().filter { it.sourceId() in deletedSourceIds }
+        if (fieldsToRemove.isEmpty()) {
+            return
+        }
+        val update = table.updateSpec()
+        fieldsToRemove.forEach { update.removeField(it.name()) }
+        update.commit()
+        table.refresh()
     }
 
     /**

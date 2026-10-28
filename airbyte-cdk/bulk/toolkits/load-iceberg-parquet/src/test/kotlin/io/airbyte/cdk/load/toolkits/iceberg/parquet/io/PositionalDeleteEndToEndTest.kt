@@ -6,11 +6,13 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Append
 import java.nio.file.Files
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.TableIdentifier
@@ -36,6 +38,94 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class PositionalDeleteEndToEndTest {
+    @Test
+    fun `interleaved partitioned positional deletes retain the old data file partition`() {
+        val warehouse = Files.createTempDirectory("positional-delete-partitioned")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "partitioned_records")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "updated_at", Types.TimestampType.withZone()),
+                    Types.NestedField.required(3, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase(),
+                )
+                .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
+                .create()
+        fun record(id: String, at: String, name: String) =
+            GenericRecord.create(schema).apply {
+                setField("id", id)
+                setField("updated_at", OffsetDateTime.parse(at))
+                setField("name", name)
+            }
+        val writerFactory = IcebergTableWriterFactory()
+        val seedWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        seedWriter.write(record("key", "2025-01-01T12:00:00Z", "old"))
+        val seedResult = seedWriter.complete()
+        val oldDataFile = seedResult.dataFiles().single()
+        table.newAppend().apply { seedResult.dataFiles().forEach(::appendFile) }.commit()
+
+        val updateWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList()),
+                schema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+                deleteMode = IcebergDeleteMode.POSITIONAL,
+            )
+        updateWriter.write(
+            RecordWrapper(record("first", "2025-01-01T12:00:00Z", "one"), Operation.INSERT),
+        )
+        updateWriter.write(
+            RecordWrapper(record("key", "2025-01-02T12:00:00Z", "latest"), Operation.UPDATE),
+        )
+        updateWriter.write(
+            RecordWrapper(record("last", "2025-01-01T13:00:00Z", "two"), Operation.INSERT),
+        )
+        val result = updateWriter.complete()
+        val deleteFile = result.deleteFiles().single()
+
+        assertThat(deleteFile.specId()).isEqualTo(oldDataFile.specId())
+        assertThat(deleteFile.partition()).isEqualTo(oldDataFile.partition())
+        assertThat(result.dataFiles()).hasSize(2)
+        assertThat(result.dataFiles().map { it.partition() }.toSet()).hasSize(2)
+        assertThat(
+                result.dataFiles().single { it.partition() != oldDataFile.partition() }.partition(),
+            )
+            .isNotEqualTo(oldDataFile.partition())
+        IcebergTableCommitter.commit(
+            table,
+            "main",
+            result,
+            table.currentSnapshot()!!.snapshotId(),
+            (updateWriter as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
+            resolvesDeletes = true,
+        )
+        val liveRows =
+            IcebergGenerics.read(table).build().use { records ->
+                records.map { it.getField("id").toString() to it.getField("name").toString() }
+            }
+        assertThat(liveRows)
+            .containsExactlyInAnyOrder(
+                "key" to "latest",
+                "first" to "one",
+                "last" to "two",
+            )
+        warehouse.toFile().deleteRecursively()
+    }
+
     @Test
     @Suppress("DEPRECATION")
     fun `dedupe update and delete produces positional deletes and expected read`() {

@@ -145,7 +145,7 @@
       "iceberg_delete_file_type" : {
         "type" : "string",
         "enum" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL", "DELETION_VECTOR" ],
-        "description" : "The delete-file encoding used by Dedupe streams. AUTOMATIC uses equality deletes on format v2 tables and deletion vectors on format v3 tables, and may change in a future version. Choose EQUALITY to always use equality deletes, POSITIONAL for v2 readers that do not support equality-delete files, or DELETION_VECTOR for v3 deletion vectors.",
+        "description" : "The delete-file encoding used by Dedupe streams. AUTOMATIC uses equality deletes on unpartitioned format v2 tables, positional deletes on partitioned format v2 tables, and deletion vectors on format v3 tables, and may change in a future version. Choose EQUALITY to always use equality deletes on unpartitioned tables, POSITIONAL for v2 readers that do not support equality-delete files, or DELETION_VECTOR for v3 deletion vectors.",
         "title" : "Iceberg Delete File Type",
         "default" : "AUTOMATIC",
         "examples" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL", "DELETION_VECTOR" ],
@@ -175,6 +175,43 @@
         "default" : 10000000000,
         "order" : 13,
         "airbyte_hidden" : true
+      },
+      "partition_fields" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "column" : {
+              "type" : "string",
+              "description" : "The source column name as it appears in the stream.",
+              "title" : "Column"
+            },
+            "transform" : {
+              "type" : "string",
+              "enum" : [ "IDENTITY", "YEAR", "MONTH", "DAY", "HOUR", "BUCKET", "TRUNCATE" ],
+              "description" : "The Iceberg partition transform to apply to the source column.",
+              "title" : "Transform"
+            },
+            "transform_argument" : {
+              "type" : "integer",
+              "description" : "The bucket count for BUCKET or the width for TRUNCATE. Do not set this for other transforms.",
+              "title" : "Transform Argument"
+            },
+            "streams" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              },
+              "description" : "The stream names that use this field. Empty or omitted means all streams.",
+              "title" : "Streams"
+            }
+          },
+          "required" : [ "column", "transform" ]
+        },
+        "description" : "Partitioning enables pruning in BigQuery and other query engines. YEAR, MONTH, DAY, and HOUR transforms require a date or timestamp column. _airbyte_extracted_at is stored as an epoch-millis long, so time transforms do not apply to it.",
+        "title" : "Partition Fields",
+        "order" : 14
       }
     },
     "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]

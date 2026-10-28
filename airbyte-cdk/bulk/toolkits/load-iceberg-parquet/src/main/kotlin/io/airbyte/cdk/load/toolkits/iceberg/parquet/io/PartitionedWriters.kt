@@ -16,7 +16,7 @@ import org.apache.iceberg.data.InternalRecordWrapper
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.OutputFileFactory
-import org.apache.iceberg.io.PartitionedWriter
+import org.apache.iceberg.io.PartitionedFanoutWriter
 import org.apache.iceberg.util.Tasks
 
 /**
@@ -88,7 +88,15 @@ class PartitionedAppendWriter(
     io: FileIO,
     targetFileSize: Long,
     schema: Schema,
-) : PartitionedWriter<Record>(spec, format, writerFactory, outputFileFactory, io, targetFileSize) {
+) :
+    PartitionedFanoutWriter<Record>(
+        spec,
+        format,
+        writerFactory,
+        outputFileFactory,
+        io,
+        targetFileSize,
+    ) {
     private val partitionKey = PartitionKey(spec, schema)
     private val wrapper = InternalRecordWrapper(schema.asStruct())
 
