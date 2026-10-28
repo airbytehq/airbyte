@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/deals
           http_method: GET
           request_parameters:
@@ -64,7 +64,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/deals/archived
           http_method: GET
           request_parameters:
@@ -410,7 +410,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/activities
           http_method: GET
           request_parameters:
@@ -574,7 +574,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/organizations
           http_method: GET
           request_parameters:
@@ -673,7 +673,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/persons
           http_method: GET
           request_parameters:
@@ -749,7 +749,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/pipelines
           http_method: GET
           request_parameters:
@@ -775,7 +775,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/products
           http_method: GET
           request_parameters:
@@ -883,7 +883,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/stages
           http_method: GET
           request_parameters:
@@ -931,7 +931,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           # One request per 100 deals: the batch endpoint returns the same items as /deals/{id}/products.
           path: api/v2/deals/products
           http_method: GET
@@ -943,6 +943,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/payment_required"
               - $ref: "#/definitions/error_filters/gone"
@@ -958,7 +960,7 @@ definitions:
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [403]
-                error_message: "Pipedrive denied access to the products of these deals ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); the API token owner cannot see them. Skipping them and continuing."
+                error_message: "Pipedrive denied access to the products of these deals ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); the Pipedrive user the source connects as cannot see them. Skipping them and continuing."
         record_selector:
           type: RecordSelector
           extractor:
@@ -997,7 +999,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/products/{{ stream_slice['parent_id'] }}/variations
           http_method: GET
           request_parameters:
@@ -1151,6 +1153,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               # These statuses are ignored before any base filters can classify them.
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1186,7 +1190,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/{{ stream_slice['path_segment'] }}
           http_method: GET
           request_parameters:
@@ -1196,6 +1200,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1244,7 +1250,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/tasks
           http_method: GET
           request_parameters:
@@ -1252,6 +1258,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1294,7 +1302,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/v2_requester"
           path: api/v2/deals/installments
           http_method: GET
           request_parameters:
@@ -1303,6 +1311,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [402, 415]
@@ -1431,6 +1441,8 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/error_filters/scope_mismatch"
+              - $ref: "#/definitions/error_filters/oauth_token_rejected"
               # Pipedrive documents NotFound for a permission set without assignments (GET /permissionSets/{id}/assignments).
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1449,7 +1461,7 @@ definitions:
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes: [403]
-                error_message: "Permission set assignments require an admin API token ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); skipping permission_set_assignments."
+                error_message: "Permission set assignments require a Pipedrive admin user ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); skipping permission_set_assignments."
         record_selector:
           type: RecordSelector
           extractor:
@@ -1477,21 +1489,57 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/permission_set_assignments"
+  # Two request bases. With an API token both API versions live on the shared host the vendor OpenAPI documents
+  # (v1 server https://api.pipedrive.com/v1, v2 server https://api.pipedrive.com/api/v2). With OAuth every request
+  # must go to the company host from the token response (`credentials.api_domain`), where both versions sit under
+  # /api/. Stream paths keep their `v1/` or `api/v2/` prefix: v1 streams use this requester, v2 streams
+  # `v2_requester`, so the token URLs stay exactly as before.
   base_requester:
     type: HttpRequester
-    url_base: https://api.pipedrive.com/
-    # Pipedrive documents only the `x-api-token` header for API tokens
-    # (https://pipedrive.readme.io/docs/core-api-concepts-authentication); the `api_token` query
-    # parameter is no longer documented and would also put the token in every URL.
+    url_base: "{{ (config['credentials']['api_domain'] ~ '/api/') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else 'https://api.pipedrive.com/' }}"
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: "{{ config['api_token'] }}"
-      inject_into:
-        type: RequestOption
-        inject_into: header
-        field_name: x-api-token
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        oauth2.0:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          token_refresh_endpoint: https://oauth.pipedrive.com/oauth/token
+          grant_type: refresh_token
+          # Pipedrive expects the client credentials as a Basic header; with this header set the CDK leaves them
+          # out of the request body.
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - credentials
+              - access_token
+            refresh_token_config_path:
+              - credentials
+              - refresh_token
+            token_expiry_date_config_path:
+              - credentials
+              - token_expiry_date
+        # Pipedrive documents only the `x-api-token` header for API tokens
+        # (https://pipedrive.readme.io/docs/core-api-concepts-authentication); the `api_token` query
+        # parameter is no longer documented and would also put the token in every URL.
+        api_token:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['credentials']['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: x-api-token
     error_handler:
       $ref: "#/definitions/base_error_handler"
+  v2_requester:
+    $ref: "#/definitions/base_requester"
+    url_base: "{{ (config['credentials']['api_domain'] ~ '/') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else 'https://api.pipedrive.com/' }}"
   base_error_handler:
     type: DefaultErrorHandler
     max_retries: 10
@@ -1502,6 +1550,8 @@ definitions:
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
+      - $ref: "#/definitions/error_filters/scope_mismatch"
+      - $ref: "#/definitions/error_filters/oauth_token_rejected"
       - $ref: "#/definitions/error_filters/unauthorized"
       - $ref: "#/definitions/error_filters/payment_required"
       - $ref: "#/definitions/error_filters/forbidden"
@@ -1510,16 +1560,43 @@ definitions:
       - $ref: "#/definitions/error_filters/not_implemented"
       - $ref: "#/definitions/error_filters/rate_limited"
   error_filters:
+    # Pipedrive answers 403 "Scope and URL mismatch" when the OAuth app was not granted the scope an endpoint needs.
+    # That is a setup problem, not a per-record permission, so it is listed first everywhere and fails even on
+    # streams that skip other 403s. No http_codes: the CDK ORs the criteria, so a code list would catch every 403.
+    scope_mismatch:
+      type: HttpResponseFilter
+      error_message_contains: "Scope and URL mismatch"
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        The Pipedrive OAuth app lacks the scope this stream needs (403: Scope and URL mismatch). On Airbyte Cloud,
+        deselect the stream and contact Airbyte support; with your own Pipedrive OAuth app, grant the scope in the
+        Pipedrive Developer Hub and re-authenticate the source.
+    # A request signed just before the access token expires can reach Pipedrive after it expired (the request budget
+    # may hold it after signing), so an OAuth 401 refreshes the token once and retries; a second rejection fails as
+    # config_error. A predicate cannot see the config, so it keys on the company host: API-token requests go to
+    # api.pipedrive.com and keep failing at once through `unauthorized`.
+    oauth_token_rejected:
+      type: HttpResponseFilter
+      predicate: "{{ (response if response is mapping else {}).get('errorCode') == 401 and '://api.pipedrive.com/' not in request_url }}"
+      action: REFRESH_TOKEN_THEN_RETRY
+      error_message: Pipedrive rejected the OAuth access token; refreshing it once and retrying.
     unauthorized:
       type: HttpResponseFilter
       http_codes: [401]
       action: FAIL
       failure_type: config_error
       error_message: >-
+        {%- if config.get('credentials', {}).get('auth_type') == 'oauth2.0' -%}
+        Pipedrive rejected the OAuth access token (401: {{ (((response if response is mapping else {}).get('error') or 'unauthorized access') ~ '')[:300] }}).
+        Re-authenticate the source in Airbyte: the refresh token expired or was revoked, or the app was
+        uninstalled from this Pipedrive company.
+        {%- else -%}
         Pipedrive rejected the API token (401: {{ (((response if response is mapping else {}).get('error') or 'unauthorized access') ~ '')[:300] }}).
         In Pipedrive, open Company settings > Personal preferences > API, copy the current API token
         and update it in the connector configuration. If the API tab is missing, ask a Pipedrive
         company admin to enable API access for your user.
+        {%- endif -%}
     payment_required:
       type: HttpResponseFilter
       http_codes: [402]
@@ -1536,9 +1613,9 @@ definitions:
       failure_type: config_error
       error_message: >-
         Pipedrive refused the request (403: {{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}).
-        The token owner does not have permission to read this data, the Pipedrive plan does not include it,
-        or Pipedrive's Cloudflare protection blocked the token after repeated rate-limit violations. Use an
-        API token from a user with access to this data, upgrade the plan, or reduce the sync frequency and
+        The Pipedrive user the source connects as does not have permission to read this data, the Pipedrive plan
+        does not include it, or Pipedrive's Cloudflare protection blocked the requests after repeated rate-limit
+        violations. Connect as a user with access to this data, upgrade the plan, or reduce the sync frequency and
         retry later.
     gone:
       type: HttpResponseFilter
@@ -1616,6 +1693,8 @@ definitions:
   substream_missing_parent_error_handler:
     $ref: "#/definitions/base_error_handler"
     response_filters:
+      - $ref: "#/definitions/error_filters/scope_mismatch"
+      - $ref: "#/definitions/error_filters/oauth_token_rejected"
       - $ref: "#/definitions/error_filters/unauthorized"
       - $ref: "#/definitions/error_filters/payment_required"
       - $ref: "#/definitions/error_filters/feature_not_enabled"
@@ -1638,8 +1717,8 @@ definitions:
         action: IGNORE
         error_message: >-
           Pipedrive denied access to the parent record for this request ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }});
-          the API token owner cannot see it. Skipping its child records and continuing. Use a token from a user
-          with wider visibility to sync these records.
+          the Pipedrive user the source connects as cannot see it. Skipping its child records and continuing.
+          Connect as a user with wider visibility to sync these records.
   v2_cursor_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -1725,19 +1804,100 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - api_token
+    # `credentials` is not listed as required: the spec backward-compatibility check cannot see the config
+    # migration below and would report a newly required property as breaking. Each option requires its fields.
     properties:
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Pipedrive.
+        order: 0
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+              - api_domain
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Pipedrive OAuth app.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Pipedrive OAuth app.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token used to renew the access token.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Access token for authenticated requests; renewed automatically.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token expires.
+                format: date-time
+                order: 5
+              api_domain:
+                type: string
+                title: API Domain
+                description: >-
+                  Company-specific API host returned by the OAuth token response, for
+                  example https://mycompany.pipedrive.com. OAuth requests must go to this host.
+                examples:
+                  - https://mycompany.pipedrive.com
+                # The Bearer token is sent to this host, so only a Pipedrive company host is accepted.
+                pattern: "^https://[A-Za-z0-9-]+\\.pipedrive\\.com$"
+                pattern_descriptor: "https://<company>.pipedrive.com"
+                order: 6
+            additionalProperties: true
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+                order: 0
+              api_token:
+                type: string
+                title: API Token
+                description: >-
+                  Your personal Pipedrive API token. In Pipedrive, click your name (top
+                  right) > Company settings > Personal preferences > API and copy the
+                  token. If the API tab is missing, ask your Pipedrive admin to enable
+                  API access for your user.
+                airbyte_secret: true
+                order: 1
+            additionalProperties: true
+      # Configs saved before 4.2.0 keep their top-level token after the migration below copies it into
+      # `credentials`; declared as a hidden secret so the platform keeps it masked and 4.1.x can still read it.
       api_token:
         type: string
-        title: API Token
-        description: >-
-          Your personal Pipedrive API token. In Pipedrive, click your name (top
-          right) > Company settings > Personal preferences > API and copy the
-          token. If the API tab is missing, ask your Pipedrive admin to enable
-          API access for your user.
+        title: API Token (before 4.2.0)
+        description: The API token of configs saved before 4.2.0. The connector reads the token from Authentication.
         airbyte_secret: true
-        order: 0
+        airbyte_hidden: true
       replication_start_date:
         type: string
         title: Start Date
@@ -1764,6 +1924,74 @@ spec:
         default: 3
         order: 2
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: https://oauth.pipedrive.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+        access_token_url: https://oauth.pipedrive.com/oauth/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+          code: "{{ auth_code_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+          - api_domain
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+          api_domain:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - api_domain
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
@@ -1776,6 +2004,25 @@ spec:
                 path: ["api_token"]
                 value: "{{ config.get('authorization', {}).get('api_token') }}"
             condition: "{{ config.get('api_token') is none and config.get('authorization', {}).get('api_token') is not none }}"
+      # Runs after the lift above, so pre-2.0.0 configs reach the credentials shape in one pass. One field per
+      # transformation: the condition is re-checked against the config the previous one changed.
+      - type: ConfigMigration
+        description: Wrap the flat `api_token` of 2.x-4.1.x configs into `credentials` with `auth_type` api_token.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config.get('api_token') }}"
+                value_type: string
+            condition: "{{ config.get('api_token') and not config.get('credentials', {}).get('api_token') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "api_token"
+                value_type: string
+            condition: "{{ config.get('credentials', {}).get('api_token') and not config.get('credentials', {}).get('auth_type') }}"
       - type: ConfigMigration
         description: Lower a `num_workers` above 10 to 10; versions 2.3.0 to 2.3.7 allowed up to 40 and saved configs keep the old value.
         transformations:

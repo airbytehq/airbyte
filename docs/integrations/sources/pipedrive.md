@@ -4,14 +4,18 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 ## Prerequisites
 
-- A Pipedrive account with API access enabled for your user
-- Your Pipedrive API Token
+- A Pipedrive account
+- On Airbyte Cloud, nothing else: you authorize Airbyte's Pipedrive app with OAuth during setup. Otherwise, a personal API token, which needs API access enabled for your user
 
 ## Setup guide
 
 ### Step 1: Set up Pipedrive
 
-The connector authenticates with a personal API token. Each token is tied to a Pipedrive user, so the connector can only read data that user is allowed to see.
+The connector authenticates with OAuth or with a personal API token. Either credential belongs to one Pipedrive user, so the connector can only read data that user is allowed to see.
+
+**OAuth (default on Airbyte Cloud)**: No preparation is needed. During setup you authorize Airbyte's Pipedrive app in a browser window, and Pipedrive returns your company's own API host, which the connector uses for every request.
+
+**API token**:
 
 1. In the Pipedrive web app, click your account name (top right), then **Company settings** > **Personal preferences** > **API**.
 2. Copy the API token shown on that page. See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for screenshots.
@@ -27,9 +31,9 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 3. Enter a name for the source.
 4. Fill in the fields below, then click **Set up source**.
 
-<FieldAnchor field="api_token">
+<FieldAnchor field="credentials">
 
-**API Token**: The personal API token you copied in Step 1. Airbyte sends it in the `x-api-token` header on every request.
+**Authentication**: Choose **OAuth2.0** and click **Authenticate your Pipedrive account**, or choose **API Token** and paste the token you copied in Step 1. Airbyte sends the API token in the `x-api-token` header on every request; it never appears in URLs. On self-managed Airbyte, choose **API Token** unless you registered your own Pipedrive OAuth app (see Pipedrive's [OAuth authorization guide](https://pipedrive.readme.io/docs/marketplace-oauth-authorization)).
 
 </FieldAnchor>
 
@@ -45,7 +49,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 </FieldAnchor>
 
-When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every API token can read it, so the test passes even on an account that has no deals yet.
+When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every credential can read it, so the test passes even on an account that has no deals yet.
 
 ## Supported sync modes
 
@@ -68,7 +72,7 @@ Most streams read Pipedrive API v1; `deals`, `deals_archived`, `persons`, `organ
 | `activities`                 | Full Refresh, Incremental | API v2 `api/v2/activities`, cursor: `update_time`.                                                                                                                                                                                                                                                            |
 | `activity_fields`            | Full Refresh              | [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)                                                                                                                                                                                                               |
 | `activity_types`             | Full Refresh              | [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)                                                                                                                                                                                                                  |
-| `call_logs`                  | Full Refresh              | Call logs of the token's user ([CallLogs](https://developers.pipedrive.com/docs/api/v1/CallLogs#getUserCallLogs)). Empty unless a phone integration is connected in Pipedrive.                                                                                                                                |
+| `call_logs`                  | Full Refresh              | Call logs of the connected user ([CallLogs](https://developers.pipedrive.com/docs/api/v1/CallLogs#getUserCallLogs)). Empty unless a phone integration is connected in Pipedrive.                                                                                                                              |
 | `currencies`                 | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                                                                                           |
 | `deal_fields`                | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                                                                                           |
 | `deal_flow`                  | Full Refresh, Incremental | Field change history of each deal returned by `deals` and `deals_archived` ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`, filtered client-side.                                      |
@@ -89,7 +93,7 @@ Most streams read Pipedrive API v1; `deals`, `deals_archived`, `persons`, `organ
 | `notes`                      | Full Refresh, Incremental | API v1 `GET /v1/notes` with the inclusive `updated_since` filter, sorted by `id`; each sync re-reads the hour before the cursor. Cursor: `update_time`.                                                                                                                                                       |
 | `organization_fields`        | Full Refresh              | [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)                                                                                                                                                                                                   |
 | `organizations`              | Full Refresh, Incremental | API v2 `api/v2/organizations`, cursor: `update_time`.                                                                                                                                                                                                                                                         |
-| `permission_set_assignments` | Full Refresh              | Users assigned to each permission set ([PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSetAssignments)). Requires an admin API token; the stream is empty otherwise.                                                                                                |
+| `permission_set_assignments` | Full Refresh              | Users assigned to each permission set ([PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSetAssignments)). Requires an admin user; the stream is empty otherwise.                                                                                                     |
 | `permission_sets`            | Full Refresh              | [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)                                                                                                                                                                                                               |
 | `person_fields`              | Full Refresh              | [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)                                                                                                                                                                                                                     |
 | `persons`                    | Full Refresh, Incremental | API v2 `api/v2/persons`, cursor: `update_time`.                                                                                                                                                                                                                                                               |
@@ -117,7 +121,7 @@ Monetary custom fields are objects with `value` and `currency` keys instead of t
 
 ### Mail streams
 
-`mailThreads` lists threads from the mailbox of the user who owns the API token. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder may be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the user whose token you configured, not for the whole company. If that user has not connected a mailbox to Pipedrive (Mail sync), both streams return no records.
+`mailThreads` lists threads from the mailbox of the Pipedrive user the source connects as. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder may be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the connected Pipedrive user, not for the whole company. If that user has not connected a mailbox to Pipedrive (Mail sync), both streams return no records.
 
 ## Performance considerations
 
@@ -152,16 +156,17 @@ How the connector treats Pipedrive HTTP errors:
 | 501                | The sync fails with a system error: the connector sent a request Pipedrive does not implement. Report it to Airbyte.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 - Deletions are replicated for `deals` and `deals_archived`, for 30 days after the deletion (`is_deleted: true`), and for `projects` (`status: deleted`). Records deleted in other streams stay in your destination until you clear and resync the stream.
-- The connector authenticates with a personal API token only. It doesn't support OAuth.
+- With OAuth, requests go to the company host Pipedrive returned during authorization (`https://<company>.pipedrive.com/api/...`); with an API token they go to `https://api.pipedrive.com`.
+- With OAuth, a 403 "Scope and URL mismatch" means Airbyte's Pipedrive app lacks the scope a stream needs. It fails the sync with a configuration error on every stream, including those that otherwise skip a 403.
 
 ### Troubleshooting
 
-- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive. `projects`, `tasks`, `deal_installments`, `legacy_teams` and `permission_set_assignments` finish with no records, and an info-level log line naming the stream, when your plan or the token's user can't access that feature.
+- **Missing streams or empty streams**: Records are limited to what the connected Pipedrive user can see. Connect as a user with broader visibility, or as an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive. `projects`, `tasks`, `deal_installments`, `legacy_teams` and `permission_set_assignments` finish with no records, and an info-level log line naming the stream, when your plan or the connected user can't access that feature.
 - **Records missing from incremental streams**: Incremental streams only replicate records modified on or after the Start Date, or after the last saved cursor on later syncs. Records that haven't been modified since the Start Date are excluded; move the Start Date earlier or clear the stream to backfill them.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
 - **Syncs fail with HTTP 429**: The retries were exhausted, which usually means the daily token budget is spent. The budget is shared by every integration in your Pipedrive company, so another integration can spend it too. Reduce the number of enabled streams, increase the interval between syncs, or upgrade the plan.
-- **Setup or syncs fail with HTTP 401, 402, 403 or 415**: The message carries Pipedrive's own error text. 415 means a feature the stream reads isn't enabled for your company: enable it in Pipedrive or deselect the stream. 401 means the token was not copied in full, has been regenerated, or API access is disabled for the user (see Step 1). 402 means the company account is not active. 403 means the token owner lacks permission for that data, or Cloudflare blocked the token after repeated rate-limit violations.
-- **Syncs fail because Pipedrive answered with an HTML page instead of JSON**: Cloudflare blocks the token with an HTML page after repeated rate-limit violations: reduce the sync frequency and retry later. If it keeps happening, Pipedrive may no longer serve an endpoint the stream reads; report it to Airbyte with the stream name. This message comes from `deal_flow`, `mail`, `product_variations`, `deal_products`, `deal_installments`, `projects`, `tasks`, `legacy_teams` and `permission_set_assignments`.
+- **Setup or syncs fail with HTTP 401, 402, 403 or 415**: The message carries Pipedrive's own error text. 415 means a feature the stream reads isn't enabled for your company: enable it in Pipedrive or deselect the stream. With an API token, 401 means the token was not copied in full, has been regenerated, or API access is disabled for the user (see Step 1); with OAuth the connector first refreshes the access token once and retries, so a 401 that remains means the authorization expired or was revoked: re-authenticate the source. 402 means the company account is not active. 403 means the connected user lacks permission for that data, Cloudflare blocked the requests after repeated rate-limit violations, or, with OAuth and the text "Scope and URL mismatch", Airbyte's app lacks a scope: deselect the stream and contact Airbyte support (with your own OAuth app, grant the scope in the Pipedrive Developer Hub and re-authenticate).
+- **Syncs fail because Pipedrive answered with an HTML page instead of JSON**: Cloudflare blocks the requests with an HTML page after repeated rate-limit violations: reduce the sync frequency and retry later. If it keeps happening, Pipedrive may no longer serve an endpoint the stream reads; report it to Airbyte with the stream name. This message comes from `deal_flow`, `mail`, `product_variations`, `deal_products`, `deal_installments`, `projects`, `tasks`, `legacy_teams` and `permission_set_assignments`.
 
 </details>
 
@@ -173,6 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.2.0 | 2026-10-28 | [85773](https://github.com/airbytehq/airbyte/pull/85773) | Add OAuth2.0 as the default authentication; existing API token configs move into `credentials` automatically |
 | 4.1.3 | 2026-10-27 | [90008](https://github.com/airbytehq/airbyte/pull/90008) | Update dependencies |
 | 4.1.2 | 2026-10-24 | [89714](https://github.com/airbytehq/airbyte/pull/89714) | Rebuild error handling for child and plan-gated streams as one handler per stream; an unexpected HTML page on those streams, such as an endpoint Pipedrive no longer serves, now fails the sync instead of reading as empty or being retried |
 | 4.1.1 | 2026-10-20 | [89349](https://github.com/airbytehq/airbyte/pull/89349) | Update dependencies |
