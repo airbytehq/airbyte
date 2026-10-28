@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.write
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -47,7 +48,9 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
@@ -121,6 +124,7 @@ internal class GcsDataLakeStreamLoaderTest {
     private fun makeConfiguration(
         mainBranchName: String = "main",
         partitionFields: List<GcsPartitionFieldSpec> = emptyList(),
+        deleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
     ) =
         GcsDataLakeConfiguration(
             gcsBucketName = "bucket",
@@ -141,7 +145,7 @@ internal class GcsDataLakeStreamLoaderTest {
                             clientSecret = "secret",
                         ),
                 ),
-            icebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
+            icebergDeleteFileType = deleteFileType,
             partitionFields = partitionFields,
         )
 
@@ -177,6 +181,7 @@ internal class GcsDataLakeStreamLoaderTest {
         incomingSchema: Schema = table.schema(),
         partitionFields: List<GcsPartitionFieldSpec> = emptyList(),
         onCreateTable: ((PartitionSpec) -> Table)? = null,
+        deleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.POSITIONAL,
     ): GcsDataLakeStreamLoader {
         val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil = mockk {
             every { createNamespace(any(), any()) } just runs
@@ -193,7 +198,7 @@ internal class GcsDataLakeStreamLoaderTest {
             every { toIcebergSchema(any()) } returns incomingSchema
         }
         return GcsDataLakeStreamLoader(
-            makeConfiguration(mainBranchName, partitionFields),
+            makeConfiguration(mainBranchName, partitionFields, deleteFileType),
             stream,
             IcebergTableSynchronizer(
                 IcebergTypesComparator(),
@@ -414,6 +419,105 @@ internal class GcsDataLakeStreamLoaderTest {
         }
 
         assertEquals(listOf("identity"), table.spec().fields().map { it.transform().toString() })
+    }
+
+    @Test
+    fun `explicit EQUALITY with partition fields rejects new table before createTable`() {
+        val stream = makeStream(Dedupe(listOf(listOf("id")), emptyList()))
+        val table: Table = mockk()
+        val schema = makeTableSchema()
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+        catalog = spyk(catalog)
+        every { catalog.tableExists(any()) } returns false
+        var createTableCalls = 0
+
+        val error =
+            assertFailsWith<ConfigErrorException> {
+                runBlocking {
+                    makeLoader(
+                            stream,
+                            table,
+                            incomingSchema = schema,
+                            partitionFields = fields,
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                            onCreateTable = {
+                                createTableCalls++
+                                table
+                            },
+                        )
+                        .start()
+                }
+            }
+
+        assertEquals(
+            "Equality deletes cannot remove rows across partitions. Use POSITIONAL (v2) or " +
+                "DELETION_VECTOR (v3), or remove the partition fields for this stream.",
+            error.message,
+        )
+        assertEquals(0, createTableCalls)
+    }
+
+    @Test
+    fun `explicit EQUALITY with partition fields leaves existing unpartitioned table unchanged`() {
+        val table = createTable(makeTableSchema())
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        makeStream(Dedupe(listOf(listOf("id")), emptyList())),
+                        table,
+                        partitionFields = fields,
+                        deleteFileType = IcebergDeleteFileType.EQUALITY,
+                    )
+                    .start()
+            }
+        }
+
+        table.refresh()
+        assertTrue(table.spec().isUnpartitioned)
+    }
+
+    @Test
+    fun `explicit EQUALITY rejects an already partitioned table without configured fields`() {
+        val schema = makeTableSchema()
+        val table =
+            createTable(
+                schema,
+                PartitionSpec.builderFor(schema).identity("id").build(),
+            )
+
+        val error =
+            assertFailsWith<ConfigErrorException> {
+                runBlocking {
+                    makeLoader(
+                            makeStream(Dedupe(listOf(listOf("id")), emptyList())),
+                            table,
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                        )
+                        .start()
+                }
+            }
+
+        assertContains(error.message.orEmpty(), "is partitioned")
+    }
+
+    @Test
+    fun `append with EQUALITY and partition fields starts successfully`() {
+        val table = createTable(makeTableSchema())
+        val fields = listOf(GcsPartitionFieldSpec("id", GcsPartitionTransform.IDENTITY))
+
+        runBlocking {
+            makeLoader(
+                    makeStream(Append),
+                    table,
+                    partitionFields = fields,
+                    deleteFileType = IcebergDeleteFileType.EQUALITY,
+                )
+                .start()
+        }
+
+        assertTrue(table.spec().isPartitioned)
     }
 
     @Test

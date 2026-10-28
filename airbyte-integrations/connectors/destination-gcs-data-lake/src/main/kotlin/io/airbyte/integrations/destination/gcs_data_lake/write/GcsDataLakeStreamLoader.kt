@@ -94,6 +94,7 @@ class GcsDataLakeStreamLoader(
         val tableExisted =
             catalog.tableExists(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
         val partitionFields = partitionFieldsForStream()
+        rejectEqualityDeletesWithPartitionFields(partitionFields)
         val partitionSpec =
             if (tableExisted) {
                 PartitionSpec.unpartitioned()
@@ -317,6 +318,24 @@ class GcsDataLakeStreamLoader(
                 )
             }
 
+    private fun rejectEqualityDeletesWithPartitionFields(
+        partitionFields: List<IcebergPartitionField>,
+    ) {
+        if (
+            stream.tableSchema.importType !is Dedupe ||
+                icebergConfiguration.icebergDeleteFileType != IcebergDeleteFileType.EQUALITY
+        ) {
+            return
+        }
+        if (IcebergPartitioning.buildSpec(incomingSchema, partitionFields).isUnpartitioned) {
+            return
+        }
+        throw ConfigErrorException(
+            "Equality deletes cannot remove rows across partitions. Use POSITIONAL (v2) or " +
+                "DELETION_VECTOR (v3), or remove the partition fields for this stream.",
+        )
+    }
+
     private fun reconcileFormatVersion(
         table: Table,
         tableExisted: Boolean,
@@ -374,9 +393,9 @@ class GcsDataLakeStreamLoader(
             IcebergDeleteFileType.EQUALITY -> {
                 if (!table.spec().isUnpartitioned) {
                     throw ConfigErrorException(
-                        "Equality deletes cannot remove rows across partitions. Use POSITIONAL " +
-                            "(v2) or DELETION_VECTOR (v3), or remove the partition fields for " +
-                            "this stream.",
+                        "Table ${table.name()} is partitioned, and equality deletes cannot " +
+                            "remove rows across partitions. Use POSITIONAL (v2) or " +
+                            "DELETION_VECTOR (v3).",
                     )
                 }
                 if (effectiveVersion >= 3) {

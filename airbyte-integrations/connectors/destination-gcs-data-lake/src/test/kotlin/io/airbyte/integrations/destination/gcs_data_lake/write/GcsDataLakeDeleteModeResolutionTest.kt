@@ -253,6 +253,7 @@ internal class GcsDataLakeDeleteModeResolutionTest {
                 }
             }
 
+        assertContains(error.message.orEmpty(), "is partitioned")
         assertContains(error.message.orEmpty(), "cannot remove rows across partitions")
         assertContains(error.message.orEmpty(), "Use POSITIONAL (v2) or DELETION_VECTOR (v3)")
     }
