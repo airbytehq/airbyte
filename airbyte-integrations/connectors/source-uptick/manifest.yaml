@@ -125,6 +125,7 @@ definitions:
           inject_into: request_parameter
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d"
     BaseSimpleRetriever:
       type: SimpleRetriever
       requester:
@@ -370,6 +371,14 @@ spec:
             path_in_connector_config: ["credentials", "client_secret"]
   config_normalization_rules:
     type: ConfigNormalizationRules
+    validations:
+      - type: DpathValidator
+        field_path: ["base_url_json"]
+        validation_strategy:
+          type: ValidateAdheresToSchema
+          base_schema:
+            type: string
+            pattern: "^https://[a-z0-9-]+\\.onuptick\\.com/?$"
     transformations:
       - type: ConfigAddFields
         condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
@@ -407,6 +416,15 @@ spec:
           - type: AddedFieldDefinition
             path: ["credentials", "token_expiry_date"]
             value: ""
+            value_type: string
+      # Validation copy of the normalized base_url. It is JSON-encoded twice because
+      # ValidateAdheresToSchema runs json.loads on string values, and interpolation
+      # strips one level of quoting.
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url_json"]
+            value: "{{ config.get('base_url') | default('') | string | lower | tojson | tojson }}"
             value_type: string
     config_migrations:
       - type: ConfigMigration
@@ -462,8 +480,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/tasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/tasks/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Task]: id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,sla,callout
@@ -474,6 +493,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -594,7 +621,6 @@ streams:
             type:
               - string
               - "null"
-            format: uri
           technician_note:
             type:
               - string
@@ -968,8 +994,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/taskcategories/'
+        url: '{{ config["base_url"] }}/api/v2.16/taskcategories/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[TaskCategory]: id,name,created,updated
@@ -980,6 +1007,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1011,8 +1046,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clients/'
+        url: '{{ config["base_url"] }}/api/v2.16/clients/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Client]: id,created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,sector,billingcard,pricetier,clientgroup,account_manager
@@ -1023,6 +1059,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1072,7 +1116,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           contact_email_cc:
             type:
               - string
@@ -1093,7 +1136,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           report_email_cc:
             type:
               - string
@@ -1118,7 +1160,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           billing_email_cc:
             type:
               - string
@@ -1220,8 +1261,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clientgroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/clientgroups/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ClientGroup]: id,created,updated,name,sector,is_active
@@ -1232,6 +1274,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1271,8 +1321,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/properties/'
+        url: '{{ config["base_url"] }}/api/v2.16/properties/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Property]: id,created,updated,address,coords,timezone,access_inductionreq,access_logbookreq,access_schedule,billing_manual,building_tenancies,client_signature_required,name,ref,report_manual,status,bsecure_resolved_guid,extra_fields,tags,client,branch,account_manager
@@ -1283,6 +1334,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1300,6 +1359,9 @@ streams:
             type:
               - object
               - "null"
+            properties:
+              place_id:
+                type: [string, "null"]
           coords:
             type:
               - object
@@ -1412,8 +1474,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/invoices/'
+        url: '{{ config["base_url"] }}/api/v2.16/invoices/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Invoice]: id,created,updated,description,authorisation_ref,created,currency,date,due_date,extra_fields,gst,is_overdue,is_sent,number,partner_uid,ref,status,subtotal,synced,total,property,task,branch,client
@@ -1424,6 +1487,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1564,8 +1635,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/projects/'
+        url: '{{ config["base_url"] }}/api/v2.16/projects/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Project]: id,created,updated,status,ref,name,is_active,category,scope_of_works,retention_rate,final_rebate_rate,expected_start_date,expected_completion_date,actual_start_date,actual_completion_date,retention_date,order_no,description,extra_fields,branch,costcentre,client,property,billingcard,supervisor,salesperson
@@ -1576,6 +1648,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1748,8 +1828,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ServiceQuote]: id,description,created,updated,uuid,ref,status,status_changed_submitted,status_changed_approved,expiry_date,review_date,template,template_name,scope_of_works_format,upload_path,property_access_schedule,authorisation_date,product_subtotal,author,salesperson,property_branch,property_object,client_object
@@ -1760,6 +1841,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -1908,8 +1997,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/defectquotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/defectquotes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works,branch,client,property,author,salesperson,status_changed_submitted,status_changed_approved,servicegroup,authorisation_date
@@ -1920,6 +2010,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2072,8 +2170,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/suppliers/'
+        url: '{{ config["base_url"] }}/api/v2.16/suppliers/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Supplier]: id,created,updated,is_active,name,partner_uid,accounts_name,purchasing_name
@@ -2084,6 +2183,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2131,8 +2238,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorders/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorders/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PurchaseOrder]: id,created,updated,ref,status,all_goods_received,date,total,supplier_ref,created_via,has_manually_added_costs,currency,fx_rate,task
@@ -2143,6 +2251,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2224,8 +2340,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routines/'
+        url: '{{ config["base_url"] }}/api/v2.16/routines/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Routine]: id,created,updated,display_name,due,tolerance_period_start,tolerance_period_end,status,is_processing
@@ -2236,6 +2353,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2290,8 +2415,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcards/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcards/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[BillingCard]: id,name,created,updated,is_active
@@ -2302,6 +2428,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2337,8 +2471,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbills/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbills/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PurchaseOrderBill]: id,created,updated,status,invoice_number,invoice_date
@@ -2349,6 +2484,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2389,8 +2532,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderdockets/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderdockets/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PurchaseOrderDocket]: id,created,updated,number,date,status
@@ -2401,6 +2545,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2441,8 +2593,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/invoicelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/invoicelineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[LineItem]: id,invoice,created,updated,description,created,index,account_code,quantity,unit_price,gst,total,taxcode,taxrate,product
@@ -2453,6 +2606,17 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
+          subtotal:
+            type: [string, "null"]
+            airbyte_type: decimal
           id:
             type:
               - integer
@@ -2543,8 +2707,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/users/'
+        url: '{{ config["base_url"] }}/api/v2.16/users/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[User]: id,updated,name,email,partner_uid,date_joined,last_login,last_access,is_active,is_staff,is_superuser,license,addons,rate,sell_rate,extra_fields,purchase_order_approval_limit,defectquote_approval_limit,servicegroup
@@ -2555,6 +2720,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2571,7 +2744,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           partner_uid:
             type:
               - string
@@ -2664,8 +2836,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicegroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicegroups/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ServiceGroup]: id,created,updated,name
@@ -2676,6 +2849,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2707,8 +2888,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/costcentres/'
+        url: '{{ config["base_url"] }}/api/v2.16/costcentres/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[CostCentre]: id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory
@@ -2719,6 +2901,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2792,8 +2982,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderlineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PurchaseOrderLineItem]: id,created,updated,description,unit_price,quantity,subtotal,gst,total,taxcode,taxrate,index,purchaseorder_ref,is_committed,is_incurred,billed_quantity,docketed_quantity,has_dockets,purchaseorder,product
@@ -2804,6 +2995,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -2919,8 +3118,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbilllineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/purchaseorderbilllineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PurchaseOrderBillLineItem]: id,created,updated,description,unit_price,quantity,subtotal,gst,total,taxcode,taxrate,index,account_code,purchaseorderbill,purchaseorderlineitem,product
@@ -2931,6 +3131,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3035,8 +3243,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/accreditationtypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/accreditationtypes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[AccreditationType]: id,created,updated,name,type,property_specific,extra_fields
@@ -3047,6 +3256,12 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
           id:
             type:
               - integer
@@ -3093,8 +3308,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/accreditations/'
+        url: '{{ config["base_url"] }}/api/v2.16/accreditations/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Accreditation]: id,created,updated,status,expiry,number,extra_fields,property,accreditationtype,technician
@@ -3105,6 +3321,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3181,8 +3405,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/branches/'
+        url: '{{ config["base_url"] }}/api/v2.16/branches/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Branch]: id,created,updated,name,code,address,business_hours,email,phone,property_count,user_count,material_markup,extra_fields,subcontracted_task_safety_requirements,subcontracted_task_service_requirements,default_warehouse
@@ -3193,6 +3418,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3226,7 +3459,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           phone:
             type:
               - string
@@ -3282,8 +3514,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/creditnotes/'
+        url: '{{ config["base_url"] }}/api/v2.16/creditnotes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[CreditNote]: id,created,updated,deleted,status,date,subtotal,tax,total,description,number,partner_uid,extra_fields,invoice,lineitems
@@ -3294,6 +3527,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3388,8 +3629,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/creditnotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/creditnotelineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[CreditNoteLineItem]: id,created,updated,deleted,account_code,description,unit_price,quantity,subtotal,tax,total,taxcode,taxrate,creditnote,product
@@ -3400,6 +3642,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3497,8 +3747,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/remarks/'
+        url: '{{ config["base_url"] }}/api/v2.16/remarks/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Remark]: id,created,updated,deleted,identified,ref,is_active,inactive_date,severity,notes,description,resolution,location,last_verified_date,is_published,quoted_date,quote_ref,quote_status,type,asset,assigned_contractor,created_by,created_by_contractor,extra_fields,status
@@ -3509,6 +3760,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3666,8 +3925,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assettypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/assettypes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[AssetType]: id,created,updated,deleted,is_active,is_starred,is_esm,name,description,code,icon,standard_maintenance,standard_performance,standard_installation,standard_excerpt,is_lifecycle_enabled,total_nominal_life,category,subcategory,fire_industry_classification,inspection_criteria,sequence_group,sequence_name,is_sequential_ref,asset_count,is_majorservice_applicable,is_component_default,extra_fields,can_bulk_perform_servicetasks,tags,variants,applicable_routines,excluded_routinelevels,default_replacement_product
@@ -3678,6 +3938,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3860,8 +4128,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assettypevariants/'
+        url: '{{ config["base_url"] }}/api/v2.16/assettypevariants/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[AssetTypeVariant]: id,created,updated,deleted,name,sequence_name,is_active,icon,extra_fields,type,default_replacement_product
@@ -3872,6 +4141,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -3948,8 +4225,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/assets/'
+        url: '{{ config["base_url"] }}/api/v2.16/assets/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Asset]: id,created,updated,deleted,is_active,internal_note,contractor_note,contractor_ref,is_silent,is_notoncofo,uptick_ref,ref,iotdevice,label,location,standard_maintenance,standard_performance,standard_installation,compliant,status,inspection_ref,barcode,inspection_order,serviced_date,base_date,installation_date,total_expected_life,asset_condition,inspected_date,make,model,size,signoff_date,signoff_method,guid,coord_lat,coord_lng,bsecure_latest_sticker_guid,bsecure_resolved_guid,extra_fields,tags,type,variant,product,property,contractor,serviced_by,servicelevels,last_service_result,highest_severity
@@ -3960,6 +4238,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4239,8 +4525,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/products/'
+        url: '{{ config["base_url"] }}/api/v2.16/products/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Product]: id,created,updated,deleted,name,type,description,code,sku,upc,account_code,expense_account_code,default_taxcode,internal_note,is_starred,is_active,is_stocked,cost_price,unit_description,unit_price,current_price,category,subcategory,markup,estimated_time,partner_uid,autocomplete_label,tracking_categories,extra_fields,supplier,accounting_organisation,is_attendancefee,included_labour,included_travel,labour_increment,last_used,latest_unit_cost
@@ -4251,6 +4538,12 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
           id:
             type:
               - integer
@@ -4439,8 +4732,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/rounds/'
+        url: '{{ config["base_url"] }}/api/v2.16/rounds/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Round]: id,created,updated,deleted,name,is_active,notes,due,task_count,task_breakdown,chieftan,technician,branch
@@ -4451,6 +4745,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4541,8 +4843,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/tasksessions/'
+        url: '{{ config["base_url"] }}/api/v2.16/tasksessions/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[TaskSession]: id,created,updated,trashed,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
@@ -4553,6 +4856,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4755,8 +5066,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/contractors/'
+        url: '{{ config["base_url"] }}/api/v2.16/contractors/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Contractor]: id,created,updated,name,ref,primary_contact,email,email_cc,contact_mobile,contact_bh,contact_ah,address,notes,is_starred,is_active,partner_uid,extra_fields,category,tags,skill,serviceareas,zones,account,supplier,accounting_organisation,asset_count
@@ -4767,6 +5079,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -4796,7 +5116,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           email_cc:
             type:
               - string
@@ -4934,8 +5253,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/appointments/'
+        url: '{{ config["base_url"] }}/api/v2.16/appointments/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[Appointment]: id,created,updated,status,subject,scheduled_start,scheduled_end,scheduler,notes,address,last_reminder_sent,timezone,attendance,category,routine,technicians,task
@@ -4946,6 +5266,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5060,8 +5388,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcontracts/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcontracts/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[BillingContract]: id,created,updated,name,type,property,billingcard,recurrence,invoice_mode,is_active,start_date,finish_date,review_date,send_invoice,author,authorisation,authorisation_ref,next_due,value,annual_value,period_begin,period_end,notes,priceincrease_policy,priceincrease_auto_next_date,priceincrease_auto_percentage,extra_fields
@@ -5072,6 +5401,12 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
           id:
             type:
               - integer
@@ -5227,8 +5562,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/billingcontractlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/billingcontractlineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[BillingContractLineItem]: id,created,updated,billingcontract,visible,product,description,unit_price,all_routines,price_period,type
@@ -5239,6 +5575,12 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
           id:
             type:
               - integer
@@ -5316,8 +5658,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/defectquotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/defectquotelineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product,quote,asset,remark
@@ -5328,6 +5671,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5450,8 +5801,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotefixedlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotefixedlineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ServiceLineItem]: id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,annual_subtotal,created,updated
@@ -5462,6 +5814,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5546,8 +5906,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequotedoandchargelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequotedoandchargelineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ServiceLineItem]: id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,site_price,annual_subtotal,service_price,created,updated
@@ -5558,6 +5919,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5652,8 +6021,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicequoteproductlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicequoteproductlineitems/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ProductLineItem]: id,servicequote,product,description,quantity,unit_price,cost_price,subtotal,taxcode,taxrate,tax,total,index,created,updated
@@ -5664,6 +6034,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5760,8 +6138,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/remarkevents/'
+        url: '{{ config["base_url"] }}/api/v2.16/remarkevents/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[RemarkEvent]: id,created,updated,event,notes,remark,task,servicetask,account
@@ -5772,6 +6151,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -5849,8 +6236,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/servicetasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/servicetasks/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ServiceTask]: id,created,updated,deleted,quantity,unit_price,subtotal,cost_price,markup,notes,is_scheduled,is_quoted,is_invoiced,is_billable,is_scanned,performed_date,quoted_date,invoiced_date,guid,result,extra_fields,remarks_added_count,active_remarks_count,highest_severity,task,item,routine,remark,product,technician,purchaseorderlineitem,routineserviceleveltype
@@ -5861,6 +6249,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6068,8 +6464,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/majorservices/'
+        url: '{{ config["base_url"] }}/api/v2.16/majorservices/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: id
           show_deleted: "true"
           fields[MajorService]: id,asset,routineserviceleveltype,due,status
@@ -6080,6 +6477,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6129,8 +6534,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservices/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservices/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[RoutineService]: id,created,updated,start_date,annual_test_date,end_date,output_type,performance_standard,is_active,extra_fields,type,property,servicegroup,contractor,assettag
@@ -6141,6 +6547,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6251,8 +6665,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservicelevels/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservicelevels/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[RoutineServiceLevel]: id,created,updated,is_active,is_asset_based_level,estimated_duration,contractor_authorisation_limit,type,routineservice,servicegroup,contractor,extra_fields
@@ -6263,6 +6678,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6353,8 +6776,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineservicetypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineservicetypes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[RoutineServiceType]: id,created,updated,name,short_name,standard_reference,standard_notes,is_active,is_custom,default_performance_standard,routineservice_count,applicable_esms,is_annual_certification,product,standard,servicegroup,assettype_set
@@ -6365,6 +6789,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6473,8 +6905,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/routineserviceleveltypes/'
+        url: '{{ config["base_url"] }}/api/v2.16/routineserviceleveltypes/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[RoutineServiceLevelType]: id,created,updated,name,display_code,applicability_note,internal_note,interval,offset,frequency,tolerance_interval,tolerance_unit,is_active,is_custom,is_default_enabled,is_asset_based,suggest_to_technician,uses_due_date_slippage,supersedes_lower_rank,service_rank,estimated_duration_per_asset,estimated_duration_per_visit,extra_fields,servicegroup,routineservicetype
@@ -6485,6 +6918,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6614,8 +7055,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/subtasks/'
+        url: '{{ config["base_url"] }}/api/v2.16/subtasks/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[SubTask]: id,created,updated,deleted,order,performed_date,is_performed,service_task,site_price,report_task,billing_task,billing_period_start_date,billing_period_end_date,task,billingcontract,product,routine
@@ -6626,6 +7068,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6742,8 +7192,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/clientcontacts/'
+        url: '{{ config["base_url"] }}/api/v2.16/clientcontacts/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[ClientContact]: id,created,updated,name,email,mobile,phone,position,is_active,client
@@ -6754,6 +7205,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6775,7 +7234,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           mobile:
             type:
               - string
@@ -6818,8 +7276,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/propertycontacts/'
+        url: '{{ config["base_url"] }}/api/v2.16/propertycontacts/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PropertyContact]: id,created,updated,name,role,email,email_cc,mobile,phone_bh,organisation,address,requires_report,requires_quote,requires_invoice,requires_notification,is_public,is_active,property
@@ -6830,6 +7289,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -6855,7 +7322,6 @@ streams:
             type:
               - string
               - "null"
-            format: email
           email_cc:
             type:
               - string
@@ -6926,8 +7392,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptquestions/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptquestions/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PromptQuestion]: id,created,updated,deleted,label,type,ref,order,config,section
@@ -6938,6 +7405,12 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
           id:
             type:
               - integer
@@ -7006,8 +7479,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptanswergroups/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptanswergroups/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PromptAnswerGroup]: id,created,updated,servicetask,task,section,key,order,group_type,guid
@@ -7018,6 +7492,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7094,8 +7576,9 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.16/promptanswers/'
+        url: '{{ config["base_url"] }}/api/v2.16/promptanswers/?page[cursor]'
         request_parameters:
+          page[size]: "1000"
           ordering: -updated
           show_deleted: "true"
           fields[PromptAnswer]: id,created,updated,value,question,answergroup,performed_date,guid
@@ -7106,6 +7589,14 @@ streams:
         $schema: http://json-schema.org/schema#
         additionalProperties: true
         properties:
+          attributes:
+            type: [object, "null"]
+            additionalProperties: true
+          relationships:
+            type: [object, "null"]
+            additionalProperties: true
+          type:
+            type: [string, "null"]
           id:
             type:
               - integer
@@ -7177,6 +7668,7 @@ streams:
         inject_into: request_parameter
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%d"
     retriever:
       type: SimpleRetriever
       requester:
