@@ -171,12 +171,11 @@ jobs:
           echo "::group::hydra output"
           echo "$OUT"
           echo "::endgroup::"
-          # Assess payload may be at root or nested under .assess; try both.
-          NEXT_ACTION=$(jq -r '.assess.next_action // .next_action // "unknown"' <<<"$OUT")
-          REASON=$(jq -r '.assess.reason // .reason // ""' <<<"$OUT")
-          TARGET=$(jq -r '.assess.target // .target // ""' <<<"$OUT")
-          BLOCKERS=$(jq -r '(.assess.blockers // .blockers // []) | join("; ")' <<<"$OUT")
-          MARK_READY=$(jq -r '.assess.mark_ready_for_review // .mark_ready_for_review // false' <<<"$OUT")
+          NEXT_ACTION=$(jq -r '.assessment.next_action // "unknown"' <<<"$OUT")
+          REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
+          TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
+          BLOCKERS=$(jq -r '(.assessment.blockers // []) | join("; ")' <<<"$OUT")
+          MARK_READY=$(jq -r '.assessment.mark_ready_for_review // false' <<<"$OUT")
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
@@ -226,6 +225,17 @@ jobs:
             echo "::notice::Dispatched $WORKFLOW for issue #$ISSUE"
           }
 
+          # hydra assesses the whole issue+PR group, so target can be another
+          # PR in the group. Only act on PR-level actions aimed at this PR.
+          case "$NEXT_ACTION" in
+            prove|review|ready|resolve_conflicts)
+              if [[ "$TARGET" != "airbytehq/airbyte#$PR_NUMBER" ]]; then
+                echo "::notice::next_action=$NEXT_ACTION targets $TARGET, not this PR; skipping dispatch"
+                exit 0
+              fi
+              ;;
+          esac
+
           case "$NEXT_ACTION" in
             prove)
               dispatch_airbyte "ai-prove-fix-command.yml"
@@ -242,23 +252,14 @@ jobs:
             resolve_conflicts)
               dispatch_airbyte "ai-resolve-conflicts-command.yml"
               ;;
-            fix)
-              # target is an oncall issue ref: airbytehq/oncall#<N> (or a URL
-              # ending in the issue number). Extract the trailing digits.
-              ISSUE=$(printf '%s' "$TARGET" | grep -oE '[0-9]+$' || true)
-              if [[ -z "$ISSUE" ]]; then
-                echo "::error::fix next_action but no oncall issue number in target='$TARGET'"
-                exit 1
+            fix|triage)
+              # The oncall workflows only take oncall issues; the group's issue
+              # can live elsewhere (e.g. airbyte-internal-issues).
+              if [[ ! "$TARGET" =~ ^airbytehq/oncall#([0-9]+)$ ]]; then
+                echo "::warning::$NEXT_ACTION next_action targets '$TARGET', not an airbytehq/oncall issue; skipping dispatch"
+                exit 0
               fi
-              dispatch_oncall "ai-fix-command.yml" "$ISSUE"
-              ;;
-            triage)
-              ISSUE=$(printf '%s' "$TARGET" | grep -oE '[0-9]+$' || true)
-              if [[ -z "$ISSUE" ]]; then
-                echo "::error::triage next_action but no oncall issue number in target='$TARGET'"
-                exit 1
-              fi
-              dispatch_oncall "ai-triage-command.yml" "$ISSUE"
+              dispatch_oncall "ai-$NEXT_ACTION-command.yml" "${BASH_REMATCH[1]}"
               ;;
             fix_ci)
               # TODO (Phase 3): thin-LLM relatedness classifier reads the
