@@ -665,6 +665,7 @@ definitions:
       type: DeclarativeStream
       name: ads_report_daily
       primary_key:
+        - adGroupId
         - adId
         - date
         - countryorregion
@@ -760,6 +761,12 @@ definitions:
               path:
                 - date
               value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - adGroupId
+              value: "{{ record.metadata.adGroupId }}"
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -2346,7 +2353,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       creativeId:
         type:
           - number
@@ -2366,7 +2373,7 @@ schemas:
           - string
           - "null"
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - string
@@ -2436,7 +2443,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           creativeId:
             type:
               - number
@@ -2454,7 +2461,7 @@ schemas:
               - string
               - "null"
             format: date-time
-            airbyte_type: timestamp_with_timezone
+            airbyte_type: timestamp_without_timezone
           orgId:
             type:
               - number
@@ -2476,6 +2483,10 @@ schemas:
               - string
               - "null"
       adId:
+        type:
+          - number
+          - "null"
+      adGroupId:
         type:
           - number
           - "null"

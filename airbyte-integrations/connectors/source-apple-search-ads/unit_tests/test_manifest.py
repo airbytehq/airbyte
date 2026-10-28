@@ -7,6 +7,7 @@ Validates the declarative manifest structure to catch copy-paste errors
 and typos in stream definitions.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -137,9 +138,9 @@ def test_concurrency_level_configured(manifest):
     assert concurrency is not None, "manifest must define concurrency_level"
     assert concurrency["type"] == "ConcurrencyLevel"
     default = concurrency["default_concurrency"]
-    assert (
-        "config.get('num_workers'" in default or "config['num_workers']" in default
-    ), f"default_concurrency must reference config num_workers, got: {default}"
+    assert "config.get('num_workers'" in default or "config['num_workers']" in default, (
+        f"default_concurrency must reference config num_workers, got: {default}"
+    )
 
 
 def test_num_workers_spec_field(manifest):
@@ -159,7 +160,7 @@ def test_num_workers_spec_field(manifest):
         pytest.param("campaigns_report_daily", ["campaignId", "date", "countryorregion"], id="campaigns_report_daily"),
         pytest.param("adgroups_report_daily", ["adGroupId", "date", "countryorregion"], id="adgroups_report_daily"),
         pytest.param("keywords_report_daily", ["keywordId", "date", "countryorregion"], id="keywords_report_daily"),
-        pytest.param("ads_report_daily", ["adId", "date", "countryorregion"], id="ads_report_daily"),
+        pytest.param("ads_report_daily", ["adGroupId", "adId", "date", "countryorregion"], id="ads_report_daily"),
     ],
 )
 def test_report_stream_primary_key(manifest, stream_name, expected_primary_key):
@@ -217,12 +218,7 @@ def test_date_like_fields_are_typed(manifest, stream_name):
 
 
 def test_timestamp_fields_declare_their_time_zone(manifest):
-    # Apple's examples end in Z only for these fields; every other timestamp has no offset.
     with_timezone = {
-        "ads.creationTime",
-        "ads.modificationTime",
-        "ads_report_daily.metadata.creationTime",
-        "ads_report_daily.metadata.modificationTime",
         "product_pages.modificationTime",
     }
     timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
@@ -249,6 +245,40 @@ def test_timestamp_fields_declare_their_time_zone(manifest):
     for field_path, airbyte_type in found.items():
         expected = "timestamp_with_timezone" if field_path in with_timezone else "timestamp_without_timezone"
         assert airbyte_type == expected, field_path
+
+
+def test_timestamp_fields_declared_without_timezone_match_observed_values(manifest):
+    observed_value = datetime.fromisoformat("2026-09-29T09:36:45.541")
+    assert observed_value.tzinfo is None
+
+    timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    with_timezone = {"product_pages.modificationTime"}
+    found = {}
+
+    def walk(schema, path):
+        if not isinstance(schema, dict):
+            return
+        for name, field_schema in schema.get("properties", {}).items():
+            field_path = f"{path}.{name}"
+            if name in timestamp_fields and field_path not in with_timezone:
+                found[field_path] = field_schema["airbyte_type"]
+            walk(field_schema, field_path)
+        if "items" in schema:
+            walk(schema["items"], path)
+        for branch in schema.get("anyOf", []):
+            walk(branch, path)
+
+    for stream_name, schema in manifest["schemas"].items():
+        walk(schema, stream_name)
+
+    assert {
+        "ads.creationTime",
+        "ads.modificationTime",
+        "ads_report_daily.metadata.creationTime",
+        "ads_report_daily.metadata.modificationTime",
+    } <= set(found)
+    for field_path, airbyte_type in found.items():
+        assert airbyte_type == "timestamp_without_timezone", field_path
 
 
 @pytest.mark.parametrize(

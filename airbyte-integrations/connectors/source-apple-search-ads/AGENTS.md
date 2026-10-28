@@ -9,10 +9,11 @@ API requires on campaign-management calls.
 Streams: `campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
 `adgroup_negative_keywords`, `product_pages` (entity streams, `primary_key: [id]`, full refresh),
 `organization` (`GET /acls`, `primary_key: [orgId]`, full refresh, no `X-AP-Context` header because
-the ACL call lists every organization the API user can access) and `campaigns_report_daily`,
-`adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily` (report streams, incremental on
-`date`, keyed by `(<entity>Id, date, countryorregion)`) and `search_terms_report_daily` (incremental
-on `date`, keyless; see section 2).
+the ACL call lists every organization the API user can access), `campaigns_report_daily`,
+`adgroups_report_daily` and `keywords_report_daily` (incremental on `date`, keyed by
+`(<entity>Id, date, countryorregion)`), `ads_report_daily` (incremental on `date`, keyed by
+`(adGroupId, adId, date, countryorregion)`) and `search_terms_report_daily` (incremental on `date`,
+keyless; see section 2).
 
 `product_pages` is partitioned by the app (`adamId`) of each campaign through a deduplicating
 `GroupingPartitionRouter` (`group_size: 1`), so an app advertised by several campaigns is requested
@@ -65,14 +66,17 @@ Each row is identified by a deterministic composite the connector assembles with
 transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or `adId`, lifted
 out of nested `record.metadata`), the `date` copied from `stream_slice.start_time`, and
 `countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
-Every request covers one day (`endTime` equals the slice start), so `date` is also the day of the
-row's metrics. The CDK folds the last day into the final slice, so the cursor ends one day after the
-End Date (or today) to give that day its own request, and `is_compare_strictly` keeps a start equal
-to that end from requesting a day past the range. The first window starts at most 89 days back,
-because Apple serves `DAILY` reports only when "the startTime is <= 90 days in the past"
-([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)); a day of
-margin covers organization time zones ahead of UTC. The manifest declares this composite as the primary key of the four entity report
-streams. Metrics are nested under the `granularity` array; entity attributes stay under `metadata`.
+For `ads_report_daily`, the key is `(adGroupId, adId, date, countryorregion)` because Apple can
+return the same `adId` under several ad groups. Every request covers one day (`endTime` equals the
+slice start), so `date` is also the day of the row's metrics. The CDK folds the last day into the
+final slice, so the cursor ends one day after the End Date (or today) to give that day its own
+request, and `is_compare_strictly` keeps a start equal to that end from requesting a day past the
+range. The first window starts at most 89 days back, because Apple serves `DAILY` reports only when
+"the startTime is <= 90 days in the past"
+([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)); a day
+of margin covers organization time zones ahead of UTC. The manifest declares this composite as the
+primary key of the four entity report streams. Metrics are nested under the `granularity` array;
+entity attributes stay under `metadata`.
 
 `search_terms_report_daily` declares no key. Its rows add `adGroupId`, `keywordId` and
 `searchTermText`, and Apple folds terms under its 10-impression limit into rows with `other: true`
@@ -268,12 +272,9 @@ parameters, and `product_pages`, because
 
 ## Timestamp time zones
 
-Apple documents its timestamps as UTC. Its examples end in `Z` for `creationTime` and
-`modificationTime` on ads ([Get All Ads](https://developer.apple.com/documentation/apple_ads/get-all-ads),
-[Get Ad-Level Reports](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports)) and for
-`modificationTime` on product pages ([Get Product Pages](https://developer.apple.com/documentation/apple_ads/get-product-pages)),
-so those declare `timestamp_with_timezone`; the other examples have no offset, so every other timestamp
-declares `timestamp_without_timezone`. Airbyte destinations read a value without an offset as UTC
-either way. `test_timestamp_fields_declare_their_time_zone` pins the split; check it against live
-records once test credentials exist (#17086).
-
+Apple documents its timestamps as UTC, and published examples for ads end in `Z`, but live
+`creationTime` and `modificationTime` values on `ads` and `ads_report_daily.metadata` have no offset,
+so they declare `timestamp_without_timezone`. `product_pages.modificationTime` remains
+`timestamp_with_timezone` because Apple's example ends in `Z`; other timestamps without offsets also
+declare `timestamp_without_timezone`. Airbyte destinations read a value without an offset as UTC
+either way. The timestamp tests pin the observed value shape and schema declarations.

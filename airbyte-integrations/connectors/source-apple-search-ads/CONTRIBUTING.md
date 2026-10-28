@@ -19,13 +19,13 @@ declarative OAuth spec.
 
 ### 2. The four entity report streams use deterministic composite primary keys
 
-Apple's reporting endpoints return metric aggregations with no record identifier. The connector
-assembles each row's key from the reporting entity id, `date`, and `countryorregion` and declares
-that composite as the primary key of the four entity report streams; each request covers one day,
-and report streams never start more than 89 days back, one day inside Apple's 90-day limit for daily reports.
-`search_terms_report_daily` stays keyless because Apple's low-volume rollup rows have no search term.
-Changes to `groupBy`, `granularity`, the request window or the cursor `step` change row identity and
-require a major version.
+Apple's reporting endpoints return metric aggregations with no record identifier. The campaigns,
+adgroups and keywords report streams use deterministic composite primary keys built from the report
+entity ID, `date`, and `countryorregion`. Requests cover one day, and report streams start no more
+than 89 days back. `ads_report_daily` is keyed by `(adGroupId, adId, date, countryorregion)` because
+Apple can return the same `adId` under several ad groups. `search_terms_report_daily` stays keyless
+because Apple's low-volume rollup rows have no search term. Changes to `groupBy`, `granularity`, the
+request window or the cursor `step` change row identity and require a major version.
 
 ### 3. The `GET` list endpoints never return deleted entities
 

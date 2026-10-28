@@ -104,7 +104,7 @@ The Apple Ads source connector exposes the following streams. For full schema an
 - [`adgroup_negative_keywords`](https://developer.apple.com/documentation/apple_ads/get-all-ad-group-negative-keywords) — negative keywords set on each ad group.
 - [`product_pages`](https://developer.apple.com/documentation/apple_ads/get-product-pages) — custom product pages for each app advertised by a campaign.
 
-`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone, except `creationTime` and `modificationTime` on `ads` and `modificationTime` on `product_pages`: Apple returns those with a `Z` offset, so they are timestamps with time zone. Apple documents its timestamps as UTC.
+`creationTime`, `modificationTime`, `startTime` and `endTime` are timestamps without time zone, except `product_pages.modificationTime`, which remains a timestamp with time zone because Apple's example ends in `Z`. Live values for `ads` and `ads_report_daily.metadata` have no offset, even though Apple's published examples end in `Z`. Apple documents its timestamps as UTC.
 
 Apple's list endpoints don't return deleted campaigns, ad groups, keywords, ads or negative keywords, so the connector doesn't sync them and `deleted` is always `false`. An object you delete in Apple Ads stays in your destination as it was last synced.
 
@@ -119,12 +119,12 @@ The connector requests daily reports from Apple's Reports API, grouped by `count
 - [`search_terms_report_daily`](https://developer.apple.com/documentation/apple_ads/get-search-term-level-reports): search-term-level daily metrics for Search Results campaigns, for the last 90 days at most.
 
 :::note
-Report streams use `date` as the cursor field. The four entity report streams declare a primary key that includes the report's entity id, `date`, and `countryorregion`:
+Report streams use `date` as the cursor field. The four entity report streams declare a primary key that includes the report's entity id, `date`, and `countryorregion`; `ads_report_daily` also includes `adGroupId` because Apple can return the same `adId` under several ad groups:
 
 - `campaigns_report_daily`: `(campaignId, date, countryorregion)`
 - `adgroups_report_daily`: `(adGroupId, date, countryorregion)`
 - `keywords_report_daily`: `(keywordId, date, countryorregion)`
-- `ads_report_daily`: `(adId, date, countryorregion)`
+- `ads_report_daily`: `(adGroupId, adId, date, countryorregion)`
 
 These keys support **Incremental - Append + Deduped**. `search_terms_report_daily` declares no key; to deduplicate it, use `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and `countryorregion` in the destination. Apple reports search terms under its 10-impression limit in rows with `other: true` and no `searchTermText`.
 :::

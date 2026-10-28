@@ -8,7 +8,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 Do not clear the report streams unless the steps for your destination below require it. Apple serves daily reports for the last 90 days only, so a clear permanently deletes every report row older than that. Back up the affected tables before you clear any stream.
 :::
 
-This release types the date and time fields Apple returns, gives Apple's documented types to fields that were declared as always null, and adds primary keys to the four entity report streams: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily` and `ads_report_daily`. The values themselves don't change. Only their declared types do. Apple documents its timestamps as UTC; the `ads` timestamps carry a `Z` offset, so they become timestamps with time zone.
+This release types the date and time fields Apple returns, gives Apple's documented types to fields that were declared as always null, and adds primary keys to the four entity report streams: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily` and `ads_report_daily`. The report values are otherwise unchanged, but `ads_report_daily` now exposes `metadata.adGroupId` at the top level for its primary key. Declared field types change as shown below. Apple documents its timestamps as UTC, but live values for `ads` and `ads_report_daily.metadata` have no offset, so they become timestamps without time zone.
 
 ### What changed
 
@@ -16,11 +16,11 @@ This release types the date and time fields Apple returns, gives Apple's documen
 | :-- | :-- | :-- | :-- |
 | `campaigns`, `adgroups` | `creationTime`, `modificationTime`, `startTime`, `endTime` | string (`endTime` untyped) | timestamp without time zone |
 | `keywords` | `creationTime`, `modificationTime` | string | timestamp without time zone |
-| `ads` | `creationTime`, `modificationTime` | string | timestamp with time zone |
+| `ads` | `creationTime`, `modificationTime` | string | timestamp without time zone |
 | the four entity report streams | `date`, `granularity[].date` | string | date |
 | `campaigns_report_daily`, `keywords_report_daily` | `metadata.modificationTime` | string | timestamp without time zone |
 | `adgroups_report_daily` | `metadata.modificationTime`, `metadata.startTime`, `metadata.endTime` | string (`endTime` untyped) | timestamp without time zone |
-| `ads_report_daily` | `metadata.creationTime`, `metadata.modificationTime` | string | timestamp with time zone |
+| `ads_report_daily` | `metadata.creationTime`, `metadata.modificationTime` | string | timestamp without time zone |
 | `campaigns`, `campaigns_report_daily` | `servingStateReasons`, `metadata.servingStateReasons` | untyped | array of strings |
 | `adgroups_report_daily` | `metadata.adGroupServingStateReasons` | untyped | array of strings |
 | `adgroups`, `adgroups_report_daily` | `cpaGoal`, `metadata.cpaGoal` | untyped | object with `amount` and `currency` |
@@ -34,9 +34,9 @@ New primary keys:
 | `campaigns_report_daily` | `campaignId`, `date`, `countryorregion` |
 | `adgroups_report_daily` | `adGroupId`, `date`, `countryorregion` |
 | `keywords_report_daily` | `keywordId`, `date`, `countryorregion` |
-| `ads_report_daily` | `adId`, `date`, `countryorregion` |
+| `ads_report_daily` | `adGroupId`, `adId`, `date`, `countryorregion` |
 
-Each report request now covers one day, so `date` is the day of the row's metrics, and the End Date (or today) gets its own request. In 1.x, the newest row of each sync could also carry the next day in `granularity`. To avoid double counting in rows synced before the upgrade, flatten `granularity` and deduplicate on the entity ID, `countryorregion` and each entry's `date`, keeping the most recently extracted row.
+Each report request now covers one day, so `date` is the day of the row's metrics, and the End Date (or today) gets its own request. In 1.x, the newest row of each sync could also carry the next day in `granularity`. To avoid double counting in rows synced before the upgrade, flatten `granularity` and deduplicate on the report's full entity identity, `countryorregion` and each entry's `date` (both `adGroupId` and `adId` for `ads_report_daily`), keeping the most recently extracted row.
 
 Report streams also never start more than 89 days back, one day inside Apple's 90-day limit for daily reports. An older Start Date no longer fails the sync.
 

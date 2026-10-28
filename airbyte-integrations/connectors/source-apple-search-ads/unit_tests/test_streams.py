@@ -264,6 +264,8 @@ def test_report_records_add_id_date_and_country(stream: str, id_field: str, id_v
 
     record = output.records[0].record.data
     assert record[id_field] == id_value
+    if stream == "ads_report_daily":
+        assert record["adGroupId"] == _ADGROUP_ID
     assert record["date"] == "2024-01-01"
     assert record["countryorregion"] == "FR"
     assert record["granularity"] == [{"date": "2024-01-01", "impressions": 5}]
