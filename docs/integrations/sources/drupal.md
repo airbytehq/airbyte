@@ -14,7 +14,7 @@ Drupal can run on MySQL, Percona, MariaDb, MSSQL, MongoDB, Postgres, or SQL-Lite
 
 - [MySQL/Percona/MariaDB](mysql)
 - [MSSQL](mssql)
-- [Mongo](mongodb)
+- [Mongo](mongodb-v2)
 - [Postgres](postgres)
 
 :::info

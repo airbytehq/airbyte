@@ -6,8 +6,6 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 Version 3.0.0 is a rewrite of the MongoDB source on Airbyte's Bulk CDK. Change data capture now reads MongoDB change streams directly with the MongoDB driver instead of through Debezium.
 
-In version 3.0.0, the Docker image changed from `airbyte/source-mongodb-v2` to `airbyte/source-mongodb`. If you run Self-Managed with a mirrored registry or an image allowlist, add `airbyte/source-mongodb` before upgrading.
-
 **Most connections need no action.** Existing connections keep syncing from where they left off, with no clear or refresh: the saved change stream position, the progress of an initial snapshot and your saved settings are all read as they are. After upgrading, act if any of these apply to you:
 
 - **Your connection syncs a view or a time series collection.** 3.0.0 no longer syncs them. MongoDB does not deliver changes to views or time series collections through the oplog, so they could never be synced incrementally; earlier versions discovered them by mistake, and only their Full Refresh syncs worked. After the upgrade, a view or time series stream still in your connection makes the sync fail ("could not be read due to catalog validation errors") until you refresh the source schema, which removes it. The data already in your destination is left in place but is no longer updated. For a view, sync the underlying collection instead.
@@ -68,7 +66,7 @@ The changes will require you to reconfigure your existing MongoDB V2 source conn
 3. Add any additional databases you want to sync
 4. Save the configuration and run a sync
 
-For more information, please refer to the [MongoDB v2 documentation](/integrations/sources/mongodb/).
+For more information, please refer to the [MongoDB v2 documentation](/integrations/sources/mongodb-v2/).
 
 ## Upgrading to 1.0.0
 
@@ -83,7 +81,7 @@ small volume.
 **THIS VERSION INCLUDES BREAKING CHANGES FROM PREVIOUS VERSIONS OF THE CONNECTOR!**
 
 The changes will require you to reconfigure your existing MongoDB V2 configured source connectors. To review the
-breaking changes and to learn how to upgrade the connector, refer to the [MongoDB V2 source connector documentation](/integrations/sources/mongodb#changelog).
+breaking changes and to learn how to upgrade the connector, refer to the [MongoDB V2 source connector documentation](/integrations/sources/mongodb-v2#changelog).
 Additionally, you can manually update existing connections prior to the next scheduled sync to perform the upgrade or
 re-create the source using the new configuration.
 
@@ -95,7 +93,7 @@ Worthy of specific mention, this version includes:
 - Sampling of fields for schema discovery
 - Required SSL/TLS connections
 
-Learn more about what's new in the connector in the [MongoDB source documentation](/integrations/sources/mongodb/).
+Learn more about what's new in the connector in the [MongoDB source documentation](/integrations/sources/mongodb-v2/).
 
 ## Connector upgrade guide
 

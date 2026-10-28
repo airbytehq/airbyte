@@ -1,21 +1,21 @@
-# Contributing to source-mongodb
+# Contributing to source-mongodb-v2
 
-Since version 3.0.0, `source-mongodb` is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no
+Since version 3.0.0, `source-mongodb-v2` is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no
 toolkits) connector. It replaced the Debezium-based Java implementation (versions ≤ 2.1.1, the
 "legacy connector" below) in place, under the **same connector definition** (`definitionId
 b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`), so existing connections
 upgrade with no clear or refresh. The legacy connector is the parity oracle: `spec`, `check`, `discover` and
 `read` output, saved configurations and persisted state must stay compatible with it. The
-user-facing documentation is `docs/integrations/sources/mongodb.md` (plus the migration and
+user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration and
 troubleshooting pages next to it); keep it in step with behaviour changes.
 
 ## Build and test
 
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home)
-./gradlew :airbyte-integrations:connectors:source-mongodb:compileKotlin
-./gradlew :airbyte-integrations:connectors:source-mongodb:test          # unit tests (Testcontainers, needs Docker)
-./gradlew :airbyte-integrations:connectors:source-mongodb:assemble      # builds airbyte/source-mongodb:dev
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:compileKotlin
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:test          # unit tests (Testcontainers, needs Docker)
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:assemble      # builds airbyte/source-mongodb-v2:dev
 ```
 
 Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set.
@@ -27,8 +27,8 @@ has no oplog, so full refresh works there and an incremental sync fails when the
 ## Running the connector locally
 
 ```bash
-docker run --rm airbyte/source-mongodb:dev spec
-docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb:dev check --config /secrets/config.json
+docker run --rm airbyte/source-mongodb-v2:dev spec
+docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --config /secrets/config.json
 ```
 
 `secrets/config.json` is git-ignored. Minimal self-managed example:
@@ -67,7 +67,7 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb:dev check --conf
 
   ```bash
   docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v2:2.1.1 check --config /configs/case.json
-  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb:dev   check --config /configs/case.json
+  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v2:dev   check --config /configs/case.json
   ```
 
   **Record parity** (`parity/seed-values.js`, `diff-records.py`, `run-read-tls.sh` in the skill):
