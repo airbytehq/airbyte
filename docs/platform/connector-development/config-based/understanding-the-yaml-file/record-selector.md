@@ -1,4 +1,4 @@
-# Record selector
+# Record Selector
 
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
 Schema:
@@ -390,3 +390,7 @@ resulting in the following record:
   "path3": "data_to_keep"
 }
 ```
+
+## Related
+
+- *No-Code Connector Builder*: [Record Parsing](/platform/connector-development/connector-builder-ui/record-processing)

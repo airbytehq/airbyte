@@ -47,6 +47,10 @@ Your API Key needs to have `Read` and `Configuration Access` permissions to enab
 
 The Opsgenie connector uses the most recent API version for each source of data. Each stream endpoint operates on its own version.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,7 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.13 | 2026-10-27 | [78884](https://github.com/airbytehq/airbyte/pull/78884) | Update dependencies |
 | 0.5.12 | 2025-05-24 | [60438](https://github.com/airbytehq/airbyte/pull/60438) | Update dependencies |
 | 0.5.11 | 2025-05-10 | [60121](https://github.com/airbytehq/airbyte/pull/60121) | Update dependencies |
 | 0.5.10 | 2025-05-03 | [59496](https://github.com/airbytehq/airbyte/pull/59496) | Update dependencies |

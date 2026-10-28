@@ -2,6 +2,36 @@
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
+## Upgrading to 5.5.0
+
+This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream affects which records are synced.
+
+Version 5.5.0 reverts the `tickets` stream to Zendesk's [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint and changes its cursor field back from `updated_at` to `generated_timestamp`.
+
+### Why
+
+The 5.2.0 switch to the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint filtered and checkpointed the `tickets` stream on `updated_at`. Per Zendesk's [incremental export docs](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based), `updated_at` is only bumped when an update generates a ticket event, whereas `generated_timestamp` is bumped for **every** ticket change including system updates. Automation-, macro-, and system-driven ticket updates (e.g. auto-solve batches) generate no ticket event, so they left `updated_at` unchanged and were silently dropped from incremental syncs.
+
+This also affected full/historical reads. The Export Search Results endpoint is served from Zendesk's search index, which [Zendesk documents as non-real-time](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/) ("It can take up to a few minutes for new tickets, users, and other resources to be indexed for search") and recommends against for data export. In practice, tickets whose most recent change generated no ticket event were not re-indexed, so `search/export` returned **stale field values** (e.g. `status = new` for tickets that were actually solved) — even on a from-scratch backfill. `generated_timestamp` on the Incremental Ticket Export endpoint avoids both problems: it reads the live ticket record and advances on every change.
+
+### What changed
+
+- The `tickets` stream again uses `generated_timestamp` and re-includes deleted tickets (as it did before 5.2.0). It reads the live ticket record, so statuses are accurate (no search-index staleness).
+- A one-time state migration runs automatically on upgrade. It converts existing `updated_at`-based state back to `generated_timestamp` and clamps the cursor to **2026-03-01T00:00:00Z** (just before 5.2.0 shipped), so the first sync after upgrading re-reads every ticket changed during the regression window and rewrites their current values. No manual stream reset is required.
+- `ticket_metrics` and `side_conversations` depend on the `tickets` stream and are re-synced accordingly.
+- The fast Export Search Results behavior is preserved as a new **opt-in `tickets_search` stream**. It has a configurable `Tickets Search Lookback Window (days)` setting. ⚠️ `tickets_search` can miss automation/macro/system-driven updates in incremental mode (same limitation as 5.2.0–5.4.x `tickets`); use the default `tickets` stream when completeness matters. Because Export Search excludes deleted tickets, pair `tickets_search` with the `deleted_tickets` stream.
+
+### Who is affected
+
+All users of the `tickets`, `ticket_metrics`, and `side_conversations` streams.
+
+The state migration also rewrites the `tickets` parent state carried inside `ticket_metrics` and `side_conversations`, so all three streams backfill on the first sync after upgrading. That sync is substantially heavier than a normal incremental run: `tickets` re-reads from the Incremental Ticket Export endpoint, which Zendesk rate limits to 10 requests per minute regardless of plan tier, and `ticket_metrics` and `side_conversations` each make one additional API request per re-read ticket. Expect it to run considerably longer than usual; later syncs return to normal volume. Progress is checkpointed, so an interrupted first sync continues from the last committed cursor rather than restarting the backfill.
+
+### Migration steps
+
+1. Upgrade the connector. The first sync automatically backfills records changed since 2026-03-01 via the state migration — no reset required. Allow extra time for it (see [Who is affected](#who-is-affected)).
+2. If you specifically want the faster (but potentially lossy) sync behavior, enable the new `tickets_search` stream and keep `deleted_tickets` enabled alongside it.
+
 ## Upgrading to 5.2.0
 
 This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream may affect downstream pipelines that depend on deleted ticket data.
@@ -65,9 +95,9 @@ The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is 
 
 ### Schema Changes - Added Field
 
-| Stream Name        | Added Fields            |
-| -------------------|------------------------ |
-| `TicketMetrics`    | `generated_timestamp`   |
+| Stream Name     | Added Fields          |
+| --------------- | --------------------- |
+| `TicketMetrics` | `generated_timestamp` |
 
 ## Upgrading to 2.0.0
 

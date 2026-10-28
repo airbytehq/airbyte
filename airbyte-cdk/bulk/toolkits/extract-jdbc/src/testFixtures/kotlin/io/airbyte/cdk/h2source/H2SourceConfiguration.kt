@@ -65,8 +65,8 @@ class H2SourceConfigurationFactory :
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             resumablePreferred = pojo.resumablePreferred != false,
             maxConcurrency = 1,
-            checkpointTargetInterval = Duration.parse(pojo.timeout).takeIf { it.isPositive }
-                    ?: Duration.ofDays(100L),
+            checkpointTargetInterval =
+                Duration.parse(pojo.timeout).takeIf { it.isPositive } ?: Duration.ofDays(100L),
         )
     }
 }

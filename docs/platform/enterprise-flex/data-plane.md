@@ -55,7 +55,7 @@ For a production-ready deployment of self-managed data planes, you require the f
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html). |
-| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy). |
+| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/operating-airbyte/external-secrets#step-1-configure-cloud-provider-permissions). |
 | Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
 
 </TabItem>
@@ -64,7 +64,7 @@ For a production-ready deployment of self-managed data planes, you require the f
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Kubernetes Cluster       | Azure Kubernetes Service cluster running in [2 or more availability zones](https://learn.microsoft.com/en-us/azure/aks/reliability-zone-resiliency-recommendations). |
-| External Secrets Manager | [Azure Key Vault](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#azure-key-vault-policy). |
+| External Secrets Manager | [Azure Key Vault](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/operating-airbyte/external-secrets#step-1-configure-cloud-provider-permissions). |
 | Object Storage (Optional)| Azure Blob Storage with a directory for log storage.                                                                         |
 
 </TabItem>
@@ -217,7 +217,7 @@ Your data plane relies on Kubernetes secrets to identify itself with the control
 In step 5, you create a values.yaml file that references this Kubernetes secret store and these secret keys. Configure all required secrets before deploying your data plane.
 
 
-You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using kubectl directly. Ensure that the secrets manager configurtion on your data plane matches the configuration on the control plane. At this time, only access key authentication is supported. 
+You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using kubectl directly. Ensure that the secrets manager configuration on your data plane matches the configuration on the control plane. At this time, only access key authentication is supported. 
 
 While you can set the name of the secret to whatever you prefer, you need to set that name in your values.yaml file. For this reason it's easiest to keep the name of airbyte-config-secrets unless you have a reason to change it.
 
@@ -251,13 +251,12 @@ You can also use `kubectl` to create the secret directly from the command-line t
 
 ```bash
 kubectl create secret generic airbyte-config-secrets \
-  --from-literal=license-key='' \
-  --from-literal=data_plane_client_id='' \
-  --from-literal=data_plane_client_secret='' \
-  --from-literal=s3-access-key-id='' \
-  --from-literal=s3-secret-access-key='' \
-  --from-literal=aws-secret-manager-access-key-id='' \
-  --from-literal=aws-secret-manager-secret-access-key='' \
+  --from-literal=DATA_PLANE_CLIENT_ID='' \
+  --from-literal=DATA_PLANE_CLIENT_SECRET='' \
+  --from-literal=S3_ACCESS_KEY_ID='' \
+  --from-literal=S3_SECRET_ACCESS_KEY='' \
+  --from-literal=AWS_SECRET_MANAGER_ACCESS_KEY_ID='' \
+  --from-literal=AWS_SECRET_MANAGER_SECRET_ACCESS_KEY='' \
   --namespace airbyte
 ```
 

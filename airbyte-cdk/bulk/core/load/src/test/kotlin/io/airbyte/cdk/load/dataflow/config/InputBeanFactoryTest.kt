@@ -95,7 +95,7 @@ class InputBeanFactoryTest {
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
                 socketConnectionTimeoutMs = socketConnectionTimeoutMs,
-                socketConfig = null
+                socketConfig = null,
             )
 
         // Then
@@ -118,7 +118,7 @@ class InputBeanFactoryTest {
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
                 socketConnectionTimeoutMs = socketConnectionTimeoutMs,
-                socketConfig = null
+                socketConfig = null,
             )
 
         // Then
@@ -143,7 +143,7 @@ class InputBeanFactoryTest {
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
                 socketConnectionTimeoutMs = socketConnectionTimeoutMs,
-                socketConfig = socketConfig
+                socketConfig = socketConfig,
             )
 
         // Then
@@ -169,7 +169,7 @@ class InputBeanFactoryTest {
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
                 socketConnectionTimeoutMs = socketConnectionTimeoutMs,
-                socketConfig = socketConfig
+                socketConfig = socketConfig,
             )
 
         // Then
@@ -195,7 +195,7 @@ class InputBeanFactoryTest {
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
                 socketConnectionTimeoutMs = socketConnectionTimeoutMs,
-                socketConfig = socketConfig
+                socketConfig = socketConfig,
             )
 
         // Then
@@ -276,7 +276,7 @@ class InputBeanFactoryTest {
                 inputStreams,
                 DataChannelFormat.JSONL,
                 deserializer,
-                destinationMessageFactory
+                destinationMessageFactory,
             )
 
         // Then
@@ -397,7 +397,7 @@ class InputBeanFactoryTest {
                 inputStreams,
                 DataChannelFormat.JSONL,
                 deserializer,
-                destinationMessageFactory
+                destinationMessageFactory,
             )
 
         val inputFlows =

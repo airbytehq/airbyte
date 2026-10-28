@@ -53,6 +53,7 @@ class SocketProtobufOutputConsumer(
             }
         }
     }
+
     fun accept(airbyteProtoMessage: AirbyteMessageProtobuf) {
         synchronized(this) {
             // This is the equivalent of writeDelimitedTo,

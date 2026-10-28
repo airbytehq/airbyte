@@ -17,20 +17,25 @@ class RequestBuilder:
     @classmethod
     def auth_endpoint(cls) -> RequestBuilder:
         request_headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        request_body = (
-            f"grant_type=refresh_token&client_id={LWA_APP_ID}&" f"client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
-        )
+        request_body = f"grant_type=refresh_token&client_id={LWA_APP_ID}&client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
         return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
-    def create_report_endpoint(cls, report_name: str) -> RequestBuilder:
+    def create_report_endpoint(cls, report_name: str, report_options: Optional[dict] = None) -> RequestBuilder:
         request_body = {
             "reportType": report_name,
             "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
         }
+        if report_options is not None:
+            request_body["reportOptions"] = report_options
         return cls("reports/2021-06-30/reports").with_body(json.dumps(request_body))
+
+    @classmethod
+    def get_reports_endpoint(cls) -> RequestBuilder:
+        """GET /reports/2021-06-30/reports — used by ReportCreationRequester to look up existing reports."""
+        return cls("reports/2021-06-30/reports")
 
     @classmethod
     def check_report_status_endpoint(cls, report_id: str) -> RequestBuilder:
@@ -55,6 +60,14 @@ class RequestBuilder:
     @classmethod
     def vendor_orders_status_endpoint(cls) -> RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrdersStatus")
+
+    @classmethod
+    def fba_inbound_shipments_endpoint(cls) -> RequestBuilder:
+        return cls("fba/inbound/v0/shipments")
+
+    @classmethod
+    def fba_inbound_shipment_items_endpoint(cls, shipment_id: str) -> RequestBuilder:
+        return cls(f"fba/inbound/v0/shipments/{shipment_id}/items")
 
     def __init__(self, resource: str) -> None:
         self._resource = resource
@@ -87,6 +100,11 @@ class RequestBuilder:
 
     def _url(self) -> str:
         return f"{self._base_url}/{self._resource}" if self._resource else self._base_url
+
+    def without_amz_date(self) -> RequestBuilder:
+        if isinstance(self._headers, dict) and "x-amz-date" in self._headers:
+            self._headers = {k: v for k, v in self._headers.items() if k != "x-amz-date"}
+        return self
 
     def build(self) -> HttpRequest:
         return HttpRequest(url=self._url(), query_params=self._query_params, headers=self._headers, body=self._body)

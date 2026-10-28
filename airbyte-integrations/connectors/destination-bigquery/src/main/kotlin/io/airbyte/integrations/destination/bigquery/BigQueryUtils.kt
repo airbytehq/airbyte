@@ -26,7 +26,7 @@ object BigQueryUtils {
     fun getOrCreateDataset(
         bigquery: BigQuery,
         datasetId: String?,
-        datasetLocation: String?
+        datasetLocation: String?,
     ): Dataset {
         var dataset = bigquery.getDataset(datasetId)
         if (dataset == null || !dataset.exists()) {
@@ -35,7 +35,7 @@ object BigQueryUtils {
         }
         if (dataset.location != datasetLocation) {
             throw ConfigErrorException(
-                "Expected dataset $datasetId to be in location $datasetLocation, but it was in ${dataset.location}. You should either recreate the dataset manually in $datasetLocation, update your destination settings to use location ${dataset.location}, or configure this connection to use a different dataset."
+                "Expected dataset $datasetId to be in location $datasetLocation, but it was in ${dataset.location}. You should either recreate the dataset manually in $datasetLocation, update your destination settings to use location ${dataset.location}, or configure this connection to use a different dataset.",
             )
         }
         return dataset
@@ -50,7 +50,7 @@ object BigQueryUtils {
      * @param tableId equivalent to table name
      * @param schema representation for table schema
      * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning
-     * table was not successfully created
+     *   table was not successfully created
      */
     @JvmStatic
     fun createPartitionedTableIfNotExists(bigquery: BigQuery, tableId: TableId?, schema: Schema?) {
@@ -99,7 +99,7 @@ object BigQueryUtils {
                 String.format(
                     "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
                     projectId,
-                    projectIdPart
+                    projectIdPart,
                 )
             }
         }
@@ -123,20 +123,20 @@ object BigQueryUtils {
                     LOGGER.error(
                         "Job {} failed with errors {}",
                         completedJob.jobId,
-                        completedJob.status.error.toString()
+                        completedJob.status.error.toString(),
                     )
                     throw RuntimeException(
                         "Fail to complete a load job in big query, Job id: " +
                             completedJob.jobId +
                             ", with error: " +
-                            completedJob.status.error
+                            completedJob.status.error,
                     )
                 } else {
                     // job completed successfully
                     LOGGER.info(
                         "Job {} completed successfully, job info {}",
                         completedJob.jobId,
-                        completedJob
+                        completedJob,
                     )
                 }
             } catch (e: BigQueryException) {
@@ -159,7 +159,7 @@ object BigQueryUtils {
             errors
                 .stream()
                 .map { obj: BigQueryError -> obj.toString() }
-                .collect(Collectors.joining(",\n "))
+                .collect(Collectors.joining(",\n ")),
         )
     }
 

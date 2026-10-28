@@ -61,6 +61,10 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 
 Google Webfont's [API reference](https://developers.google.com/fonts/docs/developer_api) has v1 at present and v2 is at development. The connector as default uses v1.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -68,6 +72,8 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.25 | 2026-10-13 | [78752](https://github.com/airbytehq/airbyte/pull/78752) | Update dependencies |
+| 0.2.24 | 2026-10-07 | [88266](https://github.com/airbytehq/airbyte/pull/88266) | Fix `fonts` stream schema to describe the actual font records instead of the API response envelope |
 | 0.2.23 | 2025-05-24 | [60589](https://github.com/airbytehq/airbyte/pull/60589) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59881](https://github.com/airbytehq/airbyte/pull/59881) | Update dependencies |
 | 0.2.21 | 2025-05-03 | [58811](https://github.com/airbytehq/airbyte/pull/58811) | Update dependencies |

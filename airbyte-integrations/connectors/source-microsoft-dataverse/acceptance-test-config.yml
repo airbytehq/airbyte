@@ -1,25 +1,17 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-microsoft-dataverse:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_microsoft_dataverse/spec.yaml"
+    tests:
+      - spec_path: "source_microsoft_dataverse/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    bypass_reason: "Community connector — no CI secrets available"
   discovery:
-    - config_path: "secrets/config.json"
-      timeout_seconds: 180
+    bypass_reason: "Community connector — no CI secrets available"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+    bypass_reason: "Community connector — no CI secrets available"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: "Community connector — no CI secrets available"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "Community connector — no CI secrets available"

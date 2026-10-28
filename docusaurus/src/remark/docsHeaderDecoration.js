@@ -1,9 +1,28 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
+const { parseCDKVersion } = require("../scripts/connector_registry");
 const {
-  parseCDKVersion,
-} = require("../scripts/connector_registry");
+  getDefaultDataWorkersForSource,
+} = require("../scripts/data-worker-consumption");
+const { discoverAgentConnectorSlugs } = require("../plugins/agentConnectors");
 const visit = require("unist-util-visit").visit;
+
+const AGENT_DESTINATIONS = ["bigquery", "snowflake"];
+
+let agentSourceSlugs = null;
+
+const isAgentConnector = (dockerRepository) => {
+  const match = /^airbyte\/(source|destination)-(.+)$/.exec(
+    dockerRepository ?? "",
+  );
+  if (!match) return false;
+  const [, connectorType, slug] = match;
+  if (connectorType === "destination") return AGENT_DESTINATIONS.includes(slug);
+  if (agentSourceSlugs === null) {
+    agentSourceSlugs = discoverAgentConnectorSlugs();
+  }
+  return agentSourceSlugs.includes(slug);
+};
 
 /**
  * Convert a boolean to a string
@@ -39,15 +58,14 @@ const plugin = () => {
           registryEntry,
           "generated.metrics.[all|cloud|oss].usage",
         );
+        const defaultDataWorkers =
+          getDefaultDataWorkersForSource(registryEntry);
         const lastUpdated = getFromPaths(
           registryEntry,
           "generated.source_file_info.metadata_last_modified",
         );
 
-        const { version, isLatest, url } = parseCDKVersion(
-          rawCDKVersion,
-          null,
-        );
+        const { version, isLatest, url } = parseCDKVersion(rawCDKVersion, null);
 
         const attrDict = {
           isOss: registryEntry.is_oss,
@@ -59,12 +77,18 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
+          ...(isLatest !== undefined && {
+            isLatestCDKString: boolToBoolString(isLatest),
+          }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
+          defaultDataWorkers,
           lastUpdated,
           definitionId: registryEntry.definitionId,
+          isAgent: boolToBoolString(
+            isAgentConnector(registryEntry.dockerRepository),
+          ),
         };
 
         firstHeading = false;

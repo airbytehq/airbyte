@@ -27,23 +27,21 @@ const plugin = () => {
 
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
 
-    let firstHeading = true;
+    let headingTransformed = false;
 
     visit(ast, "heading", (node) => {
-      if (firstHeading && node.depth === 1 && node.children.length === 1) {
-        const originalTitle = node.children[0].value;
+      if (headingTransformed) return;
+      if (node.depth !== 1 || node.children.length !== 1) return;
 
-        const attrDict = {
-          iconUrl,
-          originalTitle,
-        };
+      const originalTitle = node.children[0].value;
 
-        firstHeading = false;
-        node.children = [];
-        node.type = "mdxJsxFlowElement";
-        node.name = "AgentConnectorTitle";
-        node.attributes = toAttributes(attrDict);
-      }
+      // Transform heading into AgentConnectorTitle
+      node.children = [];
+      node.type = "mdxJsxFlowElement";
+      node.name = "AgentConnectorTitle";
+      node.attributes = toAttributes({ iconUrl, originalTitle });
+
+      headingTransformed = true;
     });
   };
   return transformer;

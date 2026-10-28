@@ -23,20 +23,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 25
-            start_from_page: 1
-            inject_on_first_request: true
+          type: NoPagination
         requester:
           $ref: "#/definitions/base_requester"
           path: /tags
@@ -175,20 +162,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 25
-            start_from_page: 1
-            inject_on_first_request: true
+          type: NoPagination
         requester:
           $ref: "#/definitions/base_requester"
           path: /orders/{{ stream_partition.sellable_id }}/returns

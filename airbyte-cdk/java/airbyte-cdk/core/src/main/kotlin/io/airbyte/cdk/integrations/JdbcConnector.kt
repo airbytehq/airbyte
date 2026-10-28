@@ -32,35 +32,35 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
          * https://jdbc.postgresql.org/documentation/head/connect.html
          *
          * @param connectionProperties custom jdbc_url_parameters containing information on
-         * connection properties
+         *   connection properties
          * @param driverClassName name of the JDBC driver
          * @return DataSourceBuilder class used to create dynamic fields for DataSource
          */
         @JvmStatic
         fun getConnectionTimeout(
             connectionProperties: Map<String, String>,
-            driverClassName: String?
+            driverClassName: String?,
         ): Duration {
             val parsedConnectionTimeout =
                 when (DatabaseDriver.Companion.findByDriverClassName(driverClassName)) {
                     DatabaseDriver.POSTGRESQL ->
                         maybeParseDuration(
                                 connectionProperties[POSTGRES_CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
+                                ChronoUnit.SECONDS,
                             )
                             .or { Optional.of<Duration>(POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION) }
                     DatabaseDriver.MYSQL,
                     DatabaseDriver.SINGLESTORE ->
                         maybeParseDuration(
                             connectionProperties["connectTimeout"],
-                            ChronoUnit.MILLIS
+                            ChronoUnit.MILLIS,
                         )
                     DatabaseDriver.MSSQLSERVER ->
                         maybeParseDuration(connectionProperties["loginTimeout"], ChronoUnit.SECONDS)
                     else ->
                         maybeParseDuration(
                                 connectionProperties[CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
+                                ChronoUnit.SECONDS,
                             ) // Enforce minimum timeout duration for unspecified data sources.
                             .filter { d: Duration -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0 }
                 }
@@ -69,7 +69,7 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
 
         private fun maybeParseDuration(
             stringValue: String?,
-            unit: TemporalUnit
+            unit: TemporalUnit,
         ): Optional<Duration> {
             if (stringValue == null) {
                 return Optional.empty()

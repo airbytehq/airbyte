@@ -28,16 +28,16 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         private const val PASSWORD = "password"
     }
 
-    val replicationProps: Map<String, String> =
-        mapOf(
-            "assumeMinServerVersion" to "9.4",
-            "ApplicationName" to "Airbyte CDC Streaming",
-            "replication" to "database",
-            // replication protocol only supports simple query mode
-            "preferQueryMode" to "simple",
-            USER to config.jdbcProperties[USER]!!,
-            PASSWORD to config.jdbcProperties[PASSWORD]!!,
-        )
+    val replicationProps: Map<String, String> = buildMap {
+        put("assumeMinServerVersion", "9.4")
+        put("ApplicationName", "Airbyte CDC Streaming")
+        put("replication", "database")
+        // replication protocol only supports simple query mode
+        put("preferQueryMode", "simple")
+        put(USER, config.jdbcProperties[USER]!!)
+        // Password is optional
+        config.jdbcProperties[PASSWORD]?.also { put(PASSWORD, it) }
+    }
 
     override fun get(): Connection {
         // Setting autoCommit to false in pg jdbc allows the driver to start returning result before
@@ -64,12 +64,12 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
             if ("42501" == exception.sqlState) { // insufficient_privilege
                 throw ConfigErrorException(
                     "User '${replicationProps[USER]}' does not have sufficient privileges for " +
-                        "CDC replication. Please read the docs and add required privileges."
+                        "CDC replication. Please read the docs and add required privileges.",
                 )
             }
             throw ConfigErrorException(
                 "Unexpected failure while creating replication connection.",
-                exception
+                exception,
             )
         }
 
@@ -84,7 +84,7 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
             statement.executeQuery("IDENTIFY_SYSTEM").use { resultSet ->
                 if (!resultSet!!.next()) {
                     throw ConfigErrorException(
-                        "The DB connection is not a valid replication connection"
+                        "The DB connection is not a valid replication connection",
                     )
                 }
             }

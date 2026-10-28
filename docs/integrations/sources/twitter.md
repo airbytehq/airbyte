@@ -35,6 +35,10 @@ The Twitter source connector supports the following [sync modes](https://docs.ai
 
 Rate limiting is mentioned in the API [documentation](https://developer.twitter.com/en/docs/twitter-api/rate-limits)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

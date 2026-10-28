@@ -64,7 +64,7 @@
    =========================== */
 .drSection {
   padding: 4rem 0;
-  background: var(--color-white);
+  background: var(--color-ae-bg);
 }
 
 .drSectionTitle {
@@ -188,11 +188,11 @@
 }
 
 /* ===========================
-   Section 3: Agent Engine
+   Section 3: Agents
    =========================== */
 .aeSection {
   padding: 4rem 0;
-  background: var(--color-ae-bg);
+  background: var(--color-white);
 }
 
 .aeSectionTitle {
