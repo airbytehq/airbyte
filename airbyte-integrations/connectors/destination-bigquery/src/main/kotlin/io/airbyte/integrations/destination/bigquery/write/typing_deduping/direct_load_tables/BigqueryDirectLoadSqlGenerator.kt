@@ -343,7 +343,7 @@ class BigqueryDirectLoadSqlGenerator(
                             StandardSQLTypeName.JSON
                     ) {
                         throw ConfigErrorException(
-                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains JSON-typed column $pk (arrays, objects, and unions are stored as JSON in BigQuery, which cannot be used for deduplication). Remove this field from the primary key, or use a non-deduplicating sync mode."
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains JSON-typed column $pk (arrays, objects, and unions are stored as JSON in BigQuery, which cannot be used for deduplication). Remove this field from the primary key, or use a non-deduplicating sync mode.",
                         )
                     }
                 }

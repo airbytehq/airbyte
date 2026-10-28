@@ -145,9 +145,9 @@ class BigqueryDirectLoadSqlGeneratorTest {
                                 "contents" to
                                     FieldType(
                                         ArrayType(FieldType(StringType, nullable = true)),
-                                        nullable = true
+                                        nullable = true,
                                     ),
-                            )
+                            ),
                         ),
                         generationId = 42,
                         minimumGenerationId = 0,
@@ -160,13 +160,13 @@ class BigqueryDirectLoadSqlGeneratorTest {
                             "b" to "mapped_b",
                             "c" to "mapped_c",
                             "contents" to "mapped_contents",
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
         assertEquals(
             "Stream ns.sitemaps: Primary key contains JSON-typed column [contents] (arrays, objects, and unions are stored as JSON in BigQuery, which cannot be used for deduplication). Remove this field from the primary key, or use a non-deduplicating sync mode.",
-            e.message
+            e.message,
         )
     }
 
@@ -187,7 +187,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                             "b" to FieldType(IntegerType, nullable = true),
                             "c" to FieldType(IntegerType, nullable = true),
                             "d" to FieldType(IntegerType, nullable = true),
-                        )
+                        ),
                     ),
                     generationId = 42,
                     minimumGenerationId = 0,
@@ -200,12 +200,12 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         "b" to "mapped_b",
                         "c" to "mapped_c",
                         "d" to "mapped_d",
-                    )
-                )
+                    ),
+                ),
             )
         assertEquals(
             listOf("mapped_a", "mapped_b", "mapped_c", "_airbyte_extracted_at"),
-            clusteringColumns
+            clusteringColumns,
         )
     }
 
@@ -228,9 +228,9 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         "contents" to
                             FieldType(
                                 ArrayType(FieldType(StringType, nullable = true)),
-                                nullable = true
+                                nullable = true,
                             ),
-                    )
+                    ),
                 ),
                 generationId = 42,
                 minimumGenerationId = 0,
@@ -247,7 +247,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         "b" to "mapped_b",
                         "c" to "mapped_c",
                         "contents" to "mapped_contents",
-                    )
+                    ),
                 ),
                 replace = false,
             )
