@@ -12,33 +12,39 @@ The two reference artifacts this plan builds on:
   Devin sessions. This plan treats hydrakit's state schema (`hydra.state/v0`)
   and `assess` function as the deterministic engine.
 
-The daily sweep playbook
-(`airbytehq/ai-skills:devin/playbooks/daily_hands_free_triage.md`) is the
-behavioral spec hydrakit's `assess` is a condensed reading of.
+The per-item playbook
+(`airbytehq/ai-skills:plugins/devin-playbooks/playbooks/hands_free_item.md`)
+and its sweep-side counterpart (`hands_free_sweep`) are the behavioral spec
+hydrakit's `assess` is a condensed reading of. The handoff workflow launches
+`!hands_free_item` scoped to a single PR; the daily sweep runs
+`!hands_free_sweep` and starts a `!hands_free_item` per candidate item.
 
 ## Sequencing
 
-| Phase | Depends on | Blocks |
-|---|---|---|
-| 0 — Ship router/split playbook | — | all downstream quality work |
-| 1 — Core determinism: hydra-driven handoff | 0; hydrakit stable | 2, 3 |
-| 2 — Expand trigger set | 1 | — |
-| 3 — Hybrid LLM for substantive + escalation body | 1 | — |
-| 4 — Close upstream gaps (dispatch-time head SHA, structured escalation markers) | parallel with 1-3 | full determinism of some branches |
+| Phase | Status | Depends on | Blocks |
+|---|---|---|---|
+| 0 — Ship router/split playbook | **Done** (2026-10-28) | — | all downstream quality work |
+| 1 — Core determinism: hydra-driven handoff | Not started | 0; hydrakit stable | 2, 3 |
+| 2 — Expand trigger set | Not started | 1 | — |
+| 3 — Hybrid LLM for substantive + escalation body | Not started | 1 | — |
+| 4 — Close upstream gaps (dispatch-time head SHA, structured escalation markers) | Not started | parallel with 1-3 | full determinism of some branches |
 
-Do 0 first. Do 1 before 2 and 3 because they both wire into the hydra-driven
-dispatcher. 4 is parallel code in other repos (airbyte workflows, resolver) and
-should start now.
+Do 1 before 2 and 3 because they both wire into the hydra-driven dispatcher.
+4 is parallel code in other repos (airbyte workflows, resolver) and should
+start now.
 
 ---
 
-## Phase 0 — Ship router/split playbook
+## Phase 0 — Ship router/split playbook (DONE)
 
-Ship as-is. It's the single biggest accuracy win available and it's decoupled
-from hydrakit (hydra reads PR state, not playbook internals). Fixes the
-"laziness" and poor-escalation symptoms by giving each session a scoped prompt.
-
-**Acceptance:** split playbooks running in prod; daily sweep uses router.
+Shipped 2026-10-28 via airbyte#89775 (handoff workflow now launches
+`!hands_free_item`) and the matching split in ai-skills
+(`plugins/devin-playbooks/playbooks/hands_free_item.md` plus the sweep-side
+`hands_free_sweep`). Decoupled from hydrakit, as expected (hydra reads PR
+state, not playbook internals). Expected wins: scoped per-item prompts fix the
+"laziness" and poor-escalation symptoms; eliminates the dead "Single-Item
+Handoff Mode" cross-reference the old handoff prompt-text had into
+`daily_hands_free_triage.md`.
 
 ---
 
