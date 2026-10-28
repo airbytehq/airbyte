@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 BASE_URL = "https://api.pipedrive.com/"
-CONFIG = {"api_token": "tok", "replication_start_date": "2017-01-25 00:00:00Z"}
+CONFIG = {"credentials": {"auth_type": "api_token", "api_token": "tok"}, "replication_start_date": "2017-01-25 00:00:00Z"}
 V1_PAGE_DONE = {"pagination": {"start": 0, "limit": 500, "more_items_in_collection": False}}
 
 
