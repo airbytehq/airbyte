@@ -7,9 +7,12 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #   1. Trigger fires (currently workflow_dispatch + repository_dispatch; the
 #      full trigger set — check_run, pull_request synchronize/labeled, weekend
 #      cron — lands in Phase 2 PRs).
-#   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain + no hyd-pause + no
-#      community/fork. Avoids spending a hydra call on PRs the pipeline would
-#      never touch.
+#   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
+#      no community/fork. The v2 label is intentionally separate from `hyd-chain`
+#      so this workflow and the existing hydra-stage-handoff.yml can run in
+#      parallel against disjoint PR sets during the soak period, with zero
+#      double-dispatch risk. After cutover, rename hyd-chain-v2 → hyd-chain (or
+#      have the new workflow accept both) and retire the old workflow.
 #   3. Download and run `hydra state <pr> --assess` from airbytehq/hydrakit.
 #      Hydra re-reads the PR's current state (facts + prior runs + stages + CI
 #      + flags + conflict + support-bot + draft) and returns an Assessment with
@@ -126,7 +129,7 @@ jobs:
           [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
           [[ -z "$SKIP" && ",$LABELS," == *",hyd-pause,"* ]] && SKIP="hyd-pause label"
-          [[ -z "$SKIP" && ",$LABELS," != *",hyd-chain,"* ]] && SKIP="PR not opted in (no hyd-chain label)"
+          [[ -z "$SKIP" && ",$LABELS," != *",hyd-chain-v2,"* ]] && SKIP="PR not opted in (no hyd-chain-v2 label)"
 
           if [[ -n "$SKIP" ]]; then
             echo "::notice::Skipping handoff: $SKIP"
