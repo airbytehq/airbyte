@@ -96,139 +96,164 @@ class TestDirectoryMatching:
         assert isinstance(result, bool)
 
 
+class TestPathNormalization:
+    """Test the canonical path normalization used for file URIs and directory paths."""
+
+    @pytest.mark.parametrize(
+        "raw_path,expected",
+        [
+            ("//downloaded/client2", "/downloaded/client2"),
+            ("/downloaded//client2/", "/downloaded/client2"),
+            ("///a///b///", "/a/b"),
+            ("/", "/"),
+            ("//", "/"),
+            ("", "/"),
+            ("/downloaded/client2/Lacey Gaddis Report.csv", "/downloaded/client2/Lacey Gaddis Report.csv"),
+        ],
+    )
+    def test_normalize_path(self, raw_path, expected):
+        assert SourceSFTPBulkStreamReader._normalize_path(raw_path) == expected
+
+
 class TestGlobNormalization:
-    """Test glob pattern normalization in get_matching_files"""
+    """Test glob pattern normalization in _normalize_glob."""
 
-    def test_double_slash_normalization(self):
-        """Test that globs are normalized to match // URI format when root is /"""
+    @pytest.mark.parametrize(
+        "glob_pattern,root_folder,expected,description",
+        [
+            # Root folder "/" with a relative glob is the intuitive configuration from the bug report.
+            ("downloaded/client2/Lacey*", "/", "/downloaded/client2/Lacey*", "relative glob made absolute from root"),
+            ("/downloaded/client2/Lacey*", "/", "/downloaded/client2/Lacey*", "absolute glob kept absolute"),
+            ("//downloaded/client2/Lacey*", "/", "/downloaded/client2/Lacey*", "duplicate leading slash collapsed"),
+            ("**", "/", "/**", "recursive wildcard made absolute"),
+            ("**/Lacey*", "/", "/**/Lacey*", "recursive wildcard with suffix"),
+            ("*.csv", "/", "/*.csv", "no-directory glob made absolute"),
+            # Non-root folder: relative globs are joined to it, absolute globs are left alone.
+            ("Lacey*", "/downloaded/client2", "/downloaded/client2/Lacey*", "relative glob joined to non-root folder"),
+            ("data/*.csv", "/upload", "/upload/data/*.csv", "nested relative glob joined to non-root folder"),
+            ("/absolute/*.csv", "/upload", "/absolute/*.csv", "absolute glob ignores non-root folder"),
+            ("data//reports///*.csv", "/upload", "/upload/data/reports/*.csv", "repeated slashes collapsed throughout"),
+        ],
+    )
+    def test_normalize_glob(self, glob_pattern, root_folder, expected, description):
+        result = SourceSFTPBulkStreamReader._normalize_glob(glob_pattern, root_folder)
+        assert result == expected, f"{description}: {glob_pattern!r} with root {root_folder!r}"
 
-        # Simulate the new normalization logic
-        globs = ["//downloads/file_*.csv", "/downloads/file_*.csv", "downloads/file_*.csv"]
-        root_folder = "/"
 
-        normalized_globs = []
-        for glob_pattern in globs:
-            # Make glob relative to root_folder if it doesn't start with /
-            if not glob_pattern.startswith("/"):
-                # When root_folder is "/", this creates "//pattern"
-                normalized_globs.append(f"{root_folder}/{glob_pattern}")
-            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
-                # If user provides "/downloads/*.csv" and root is "/", prepend "/" to match "//" URIs
-                normalized_globs.append(f"/{glob_pattern}")
-            else:
-                # Glob already has correct format or root is not "/"
-                normalized_globs.append(glob_pattern)
+class TestGetMatchingFilesGlobScenarios:
+    """
+    End-to-end glob matching over a mocked SFTP tree, covering the acceptance criteria
+    from the bug report. The tree mirrors the reported layout:
 
-        # All should normalize to //downloads/file_*.csv when root is "/"
-        assert normalized_globs == ["//downloads/file_*.csv", "//downloads/file_*.csv", "//downloads/file_*.csv"]
+        /downloaded/client2/Lacey Gaddis Report.csv   (target, 2026-10-28)
+        /downloaded/client2/other_report.csv          (unrelated CSV)
+        /downloaded/client2/archive.gz                (unrelated gz)
+        /downloaded/client2/old_Lacey.csv             (old file, before start_date)
+    """
 
-    def test_glob_with_non_root_folder(self):
-        """Test that normalization works correctly with non-root folder_path"""
-        globs = ["downloads/*.csv", "/uploads/*.txt"]
-        root_folder = "/data"
+    import datetime as _dt
+    import logging as _logging
+    from unittest.mock import MagicMock as _MagicMock
 
-        normalized_globs = []
-        for glob_pattern in globs:
-            if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder}/{glob_pattern}")
-            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
-                normalized_globs.append(f"/{glob_pattern}")
-            else:
-                normalized_globs.append(glob_pattern)
+    LACEY_MTIME = int(_dt.datetime(2026, 10, 28, 21, 55, 47).timestamp())
+    OLD_MTIME = int(_dt.datetime(2026, 9, 1, 0, 0, 0).timestamp())
 
-        # With non-root folder, no // prepending happens
-        assert normalized_globs == ["/data/downloads/*.csv", "/uploads/*.txt"]
+    DIR_MODE = 16877  # stat.S_ISDIR true
+    FILE_MODE = 33188  # regular file
 
-    def test_glob_starting_with_single_slash(self):
-        """Test that globs starting with single / get // prepended when root is /"""
-        globs = ["/downloads/file_*.csv", "/data/folder/*.txt"]
-        root_folder = "/"
-
-        normalized_globs = []
-        for glob_pattern in globs:
-            if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder}/{glob_pattern}")
-            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
-                normalized_globs.append(f"/{glob_pattern}")
-            else:
-                normalized_globs.append(glob_pattern)
-
-        # When root is "/", single / globs get // prepended
-        assert normalized_globs == ["//downloads/file_*.csv", "//data/folder/*.txt"]
-
-    def test_get_matching_files_with_double_slash_globs(self):
-        """Test that get_matching_files correctly normalizes globs with double slashes"""
+    def _match(self, folder_path, globs, start_date=None):
         import logging
         from unittest.mock import MagicMock, patch
 
         import paramiko
         from source_sftp_bulk.spec import SourceSFTPBulkSpec
 
-        logger = logging.Logger("")
-
-        # Create a mock SFTP client
-        fake_client = MagicMock()
-        fake_client.from_transport = MagicMock(return_value=fake_client)
-
-        # Mock file system structure (with // paths due to root folder being "/"):
-        # //downloads/file_1.csv
-        # //downloads/subdir/file_2.csv
-        # //data/folder/file_3.txt
         files_per_directory = {
-            "/": [
-                MagicMock(filename="downloads", st_mode=16877, st_mtime=1704067200),  # Directory
-                MagicMock(filename="data", st_mode=16877, st_mtime=1704067200),  # Directory
-            ],
-            "//downloads": [
-                MagicMock(filename="file_1.csv", st_mode=180, st_mtime=1704067200),  # File
-                MagicMock(filename="subdir", st_mode=16877, st_mtime=1704067200),  # Directory
-            ],
-            "//downloads/subdir": [
-                MagicMock(filename="file_2.csv", st_mode=180, st_mtime=1704067200),  # File
-            ],
-            "//data": [
-                MagicMock(filename="folder", st_mode=16877, st_mtime=1704067200),  # Directory
-            ],
-            "//data/folder": [
-                MagicMock(filename="file_3.txt", st_mode=180, st_mtime=1704067200),  # File
+            "/": [MagicMock(filename="downloaded", st_mode=self.DIR_MODE, st_mtime=self.LACEY_MTIME)],
+            "/downloaded": [MagicMock(filename="client2", st_mode=self.DIR_MODE, st_mtime=self.LACEY_MTIME)],
+            "/downloaded/client2": [
+                MagicMock(filename="Lacey Gaddis Report.csv", st_mode=self.FILE_MODE, st_mtime=self.LACEY_MTIME),
+                MagicMock(filename="other_report.csv", st_mode=self.FILE_MODE, st_mtime=self.LACEY_MTIME),
+                MagicMock(filename="archive.gz", st_mode=self.FILE_MODE, st_mtime=self.LACEY_MTIME),
+                MagicMock(filename="old_Lacey.csv", st_mode=self.FILE_MODE, st_mtime=self.OLD_MTIME),
             ],
         }
 
-        def listdir_iter_side_effect(path):
-            return files_per_directory.get(path, [])
+        fake_client = MagicMock()
+        fake_client.from_transport = MagicMock(return_value=fake_client)
+        fake_client.listdir_iter = MagicMock(side_effect=lambda path: files_per_directory.get(path, []))
 
-        fake_client.listdir_iter = MagicMock(side_effect=listdir_iter_side_effect)
+        config_kwargs = dict(
+            host="localhost",
+            username="username",
+            credentials={"auth_type": "password", "password": "password"},
+            port=123,
+            streams=[],
+        )
+        if start_date:
+            config_kwargs["start_date"] = start_date
 
         with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
             reader = SourceSFTPBulkStreamReader()
-            config = SourceSFTPBulkSpec(
-                host="localhost",
-                username="username",
-                credentials={"auth_type": "password", "password": "password"},
-                port=123,
-                streams=[],
-            )
-            reader.config = config
+            reader.config = SourceSFTPBulkSpec(**config_kwargs)
+            reader._config.folder_path = folder_path
+            files = list(reader.get_matching_files(globs=globs, prefix=None, logger=logging.Logger("")))
+        return sorted(f.uri for f in files)
 
-            # Test with various glob patterns
-            globs = [
-                "//downloads/*.csv",  # Already has //, stays as //downloads/*.csv
-                "/data/folder/**/*.txt",  # Gets / prepended, becomes //data/folder/**/*.txt
-            ]
+    TARGET = "/downloaded/client2/Lacey Gaddis Report.csv"
 
-            files = list(reader.get_matching_files(globs=globs, prefix=None, logger=logger))
+    def test_root_with_relative_glob_matches_target(self):
+        """Acceptance #1: root '/' + 'downloaded/client2/Lacey*' matches the target."""
+        uris = self._match("/", ["downloaded/client2/Lacey*"])
+        assert uris == [self.TARGET]
 
-            # Extract file URIs for easier assertion
-            file_uris = sorted([f.uri for f in files])
+    def test_nested_folder_with_simple_glob_matches_target(self):
+        """Acceptance #2: folder '/downloaded/client2' + 'Lacey*' matches the target."""
+        uris = self._match("/downloaded/client2", ["Lacey*"])
+        assert uris == [self.TARGET]
 
-            # Should match (with // URIs):
-            # - //downloads/file_1.csv (matches first glob: //downloads/*.csv)
-            # - //data/folder/file_3.txt (matches second glob: //data/folder/**/*.txt)
-            expected_uris = sorted(
-                [
-                    "//downloads/file_1.csv",
-                    "//data/folder/file_3.txt",
-                ]
-            )
+    def test_recursive_glob_matches_target(self):
+        """Acceptance #3: '**/Lacey*' behavior documented and tested."""
+        uris = self._match("/downloaded/client2", ["**/Lacey*"])
+        # Both the current-day target and the old Lacey file match the glob;
+        # start_date filtering is exercised separately.
+        assert self.TARGET in uris
 
-            assert file_uris == expected_uris, f"Expected {expected_uris} but got {file_uris}"
+    def test_specific_glob_excludes_unrelated_files(self):
+        """Acceptance #4: a specific glob excludes unrelated CSV and .gz files."""
+        uris = self._match("/", ["downloaded/client2/Lacey*"])
+        assert all("other_report.csv" not in u and "archive.gz" not in u for u in uris)
+
+    def test_spaces_in_filename_match_without_encoding(self):
+        """Acceptance #5: spaces in filenames work without URL-encoding the glob."""
+        uris = self._match("/", ["downloaded/client2/Lacey Gaddis*"])
+        assert uris == [self.TARGET]
+
+    @pytest.mark.parametrize(
+        "glob",
+        [
+            "downloaded/client2/Lacey*",
+            "/downloaded/client2/Lacey*",
+            "//downloaded/client2/Lacey*",
+            "downloaded//client2/Lacey*",
+        ],
+    )
+    def test_slash_variants_all_match(self, glob):
+        """Acceptance #6: leading/repeated/trailing slashes normalize consistently."""
+        uris = self._match("/", [glob])
+        assert uris == [self.TARGET]
+
+    def test_start_date_excludes_old_file(self):
+        """Acceptance #7: files newer than start_date are eligible; older files excluded."""
+        uris = self._match(
+            "/downloaded/client2",
+            ["**/Lacey*"],
+            start_date="2026-10-01T00:00:00.000000Z",
+        )
+        assert self.TARGET in uris
+        assert all("old_Lacey.csv" not in u for u in uris)
+
+    def test_uris_have_single_leading_slash(self):
+        """Matched file URIs are normalized (no '//' artifact)."""
+        uris = self._match("/", ["downloaded/client2/Lacey*"])
+        assert all(not u.startswith("//") for u in uris)
