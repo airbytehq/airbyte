@@ -495,9 +495,6 @@ Classes
     `schema_: dict[str, typing.Any] | None`
     :   Schema definition for the catalog type
 
-    `semantic_type: str | None`
-    :   Semantic type for special behavior
-
     `type_name: str | None`
     :   Programmatic type name
 
