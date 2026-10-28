@@ -55,6 +55,19 @@ existing `hydra-stage-handoff.yml`, rather than refactoring in place. The
 existing workflow stays unchanged throughout and continues launching
 `!hands_free_item` as it does today. The new workflow runs in parallel.
 
+**Separate opt-in label.** The new workflow gates on `hyd-chain-v2` instead of
+`hyd-chain`. The two labels are intentionally disjoint during the soak so no
+PR is driven by both workflows at the same time:
+
+- PR labeled `hyd-chain` only → old workflow drives it (current behavior).
+- PR labeled `hyd-chain-v2` only → new workflow drives it (volunteer PRs).
+- Both labels on one PR → both drive it; avoid in practice. The idempotency
+  key `(pr, head_sha, next_action)` catches that case.
+
+After cutover: rename `hyd-chain-v2` → `hyd-chain` across labeled PRs (or
+teach the new workflow to also accept `hyd-chain`), then retire the old
+workflow.
+
 **Why parallel instead of in-place:**
 
 - Clean rollback: if the new workflow misbehaves, disable its triggers; the
@@ -155,9 +168,10 @@ Keep what works, add what's missing, and trust the engine to debounce.
   push (before CI starts), so hydra sees the new HEAD and can invalidate stale
   markers right away. Complementary to `check_run: completed`, which fires
   when CI finishes.
-- `pull_request: [labeled]` filtered to `hyd-chain` — opt-in moment, one-pass
-  kickstart.
-- `schedule` — Monday 08:00 UTC (midnight PT), scoped to `label:hyd-chain` PRs
+- `pull_request: [labeled]` filtered to `hyd-chain-v2` — opt-in moment,
+  one-pass kickstart. Label migrates back to `hyd-chain` after cutover.
+- `schedule` — Monday 08:00 UTC (midnight PT), scoped to `label:hyd-chain-v2`
+  PRs
   whose `state.runs[ready].outcome === "FROZEN"`. One hydra pass per matching
   PR; re-dispatches `/ai-ready` as the engine decides. Only mechanism to
   recover from weekend-frozen `/ai-ready`.
@@ -366,9 +380,9 @@ outcomes carry the specific blocking gate.
    this is a non-issue. Monitor.
 4. **Pending third-party checks.** Hydra handles via `wait`, but if a check
    never completes, the PR sits. Add an alert if a hydra `wait` persists >24h
-   on a `hyd-chain` PR.
-5. **Double-dispatch during the parallel soak.** Once the new workflow flips
-   out of DRY_RUN and before the old workflow is disabled, both are live. The
-   `(pr, head_sha, next_action)` idempotency key collapses duplicates, but
-   verify this works on a real event before extending the soak. Fallback:
-   shorten the parallel-live period if duplicates leak through.
+   on a `hyd-chain-v2` or `hyd-chain` PR.
+5. **Double-dispatch during the parallel soak.** New workflow gates on
+   `hyd-chain-v2`, old on `hyd-chain` — disjoint label sets mean no PR is
+   driven by both at the same time. Risk reduces to "someone accidentally
+   applies both labels"; the `(pr, head_sha, next_action)` idempotency key
+   catches that case.
