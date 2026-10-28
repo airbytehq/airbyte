@@ -441,6 +441,8 @@ Set `time_column_type=STRING` for Spark/Databricks readers: Iceberg `TIME` is un
 
 All nested fields under `_airbyte_meta`, including `sync_id` and `changes`, are optional. Existing tables are automatically relaxed in place on the next sync; top-level metadata columns retain their existing nullability.
 
+After this relaxation, downgrading to S3 Data Lake 0.4.1 causes normal syncs against these tables to fail with a schema-evolution error for `_airbyte_meta`; run a Full Refresh - Overwrite sync or rebuild the affected tables before resuming normal syncs with the older connector.
+
 Alternatively, keep the tables in AWS Glue and use Databricks catalog federation to query them as foreign Iceberg tables. Reader support for the table format version and delete encoding still applies.
 
 ## Changelog

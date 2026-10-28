@@ -238,6 +238,8 @@ Set `time_column_type=STRING` for Spark/Databricks readers: Iceberg `TIME` is un
 
 All nested fields under `_airbyte_meta`, including `sync_id` and `changes`, are optional. Existing tables are automatically relaxed in place on the next sync; top-level metadata columns retain their existing nullability.
 
+After this relaxation, downgrading to GCS Data Lake 1.0.13 causes normal syncs against these tables to fail with a schema-evolution error for `_airbyte_meta`; run a Full Refresh - Overwrite sync or rebuild the affected tables before resuming normal syncs with the older connector.
+
 ## Changelog
 
 <details>
