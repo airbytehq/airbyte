@@ -1080,7 +1080,7 @@ class TestDisplayReportStreams:
         error_details = "startDate (2024-03-01) must be equal to or after report type data retention start date (2024-03-02)"
         requests_mock.post(
             "https://advertising-api.amazon.com/reporting/reports",
-            json={"code": "400", "details": error_details, "requestId": "test-req-id"},
+            json={"code": "400", "detail": error_details, "requestId": "test-req-id"},
             status_code=400,
             request_headers={"Authorization": "Bearer test-access-token"},
         )
