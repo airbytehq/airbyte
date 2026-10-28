@@ -87,7 +87,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     private fun buildJsonRecord(
         record: DestinationRecordRaw,
         proxy: AirbyteValueProxy,
-        parsingFailures: MutableList<Meta.Change>
+        parsingFailures: MutableList<Meta.Change>,
     ): String {
         val estimatedCapacity = 256 + fieldAccessors.size * 32
 
@@ -108,7 +108,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
         builder: StringBuilder,
         proxy: AirbyteValueProxy,
         parsingFailures: MutableList<Meta.Change>,
-        needsComma: Boolean
+        needsComma: Boolean,
     ): Boolean {
         var addComma = needsComma
 
@@ -146,7 +146,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
         builder: StringBuilder,
         record: DestinationRecordRaw,
         parsingFailures: MutableList<Meta.Change>,
-        needsComma: Boolean
+        needsComma: Boolean,
     ) {
         if (needsComma) builder.append(',')
         builder
@@ -185,12 +185,12 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     data class ExtractionResult(
         val value: Any?,
         val parsingError: Meta.Change?,
-        val isRawJson: Boolean = false
+        val isRawJson: Boolean = false,
     )
 
     private fun extractTypedValueWithErrorHandling(
         proxy: AirbyteValueProxy,
-        accessor: FieldAccessor
+        accessor: FieldAccessor,
     ): ExtractionResult {
         return when (accessor.type) {
             is BooleanType -> ExtractionResult(proxy.getBoolean(accessor), null)
@@ -207,8 +207,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             accessor.name,
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     ExtractionResult(value?.longValueExact(), null)
@@ -225,8 +225,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 validatedResult.changeType!!,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION
-                            )
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            ),
                         )
                     } else if (validatedResult.changeType != null) {
                         ExtractionResult(
@@ -235,8 +235,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 validatedResult.changeType,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION
-                            )
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            ),
                         )
                     } else {
                         ExtractionResult(validatedResult.value, null)
@@ -260,8 +260,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
                                     AirbyteRecordMessageMetaChange.Reason
-                                        .DESTINATION_FIELD_SIZE_LIMITATION
-                                )
+                                        .DESTINATION_FIELD_SIZE_LIMITATION,
+                                ),
                             )
                         } else {
                             ExtractionResult(dateValue, null)
@@ -273,8 +273,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR
-                            )
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            ),
                         )
                     }
                 } else {
@@ -296,13 +296,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
                                     AirbyteRecordMessageMetaChange.Reason
-                                        .DESTINATION_FIELD_SIZE_LIMITATION
-                                )
+                                        .DESTINATION_FIELD_SIZE_LIMITATION,
+                                ),
                             )
                         } else {
                             val formattedValue =
                                 BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                                    parsedTimestamp
+                                    parsedTimestamp,
                                 )
                             ExtractionResult(formattedValue, null)
                         }
@@ -313,8 +313,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR
-                            )
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            ),
                         )
                     }
                 } else {
@@ -336,13 +336,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
                                     AirbyteRecordMessageMetaChange.Reason
-                                        .DESTINATION_FIELD_SIZE_LIMITATION
-                                )
+                                        .DESTINATION_FIELD_SIZE_LIMITATION,
+                                ),
                             )
                         } else {
                             val formattedValue =
                                 BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                    parsedDateTime
+                                    parsedDateTime,
                                 )
                             ExtractionResult(formattedValue, null)
                         }
@@ -353,8 +353,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR
-                            )
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            ),
                         )
                     }
                 } else {
@@ -367,7 +367,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     try {
                         val formattedValue =
                             BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(
-                                java.time.OffsetTime.parse(timeValue)
+                                java.time.OffsetTime.parse(timeValue),
                             )
                         ExtractionResult(formattedValue, null)
                     } catch (_: Exception) {
@@ -377,8 +377,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR
-                            )
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            ),
                         )
                     }
                 } else {
@@ -391,7 +391,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     try {
                         val formattedValue =
                             BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                java.time.LocalTime.parse(timeValue)
+                                java.time.LocalTime.parse(timeValue),
                             )
                         ExtractionResult(formattedValue, null)
                     } catch (_: Exception) {
@@ -401,8 +401,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR
-                            )
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            ),
                         )
                     }
                 } else {
@@ -423,13 +423,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                 AirbyteValueCoercer.coerce(
                                     airbyteValue,
                                     chosenType,
-                                    respectLegacyUnions = true
+                                    respectLegacyUnions = true,
                                 )
 
                             if (coercedValue != null) {
                                 return extractValueFromCoercedAirbyteValue(
                                     coercedValue,
-                                    accessor.name
+                                    accessor.name,
                                 )
                             } else {
                                 return ExtractionResult(
@@ -438,8 +438,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
                                         AirbyteRecordMessageMetaChange.Reason
-                                            .DESTINATION_SERIALIZATION_ERROR
-                                    )
+                                            .DESTINATION_SERIALIZATION_ERROR,
+                                    ),
                                 )
                             }
                         } catch (_: Exception) {
@@ -449,8 +449,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
                                     AirbyteRecordMessageMetaChange.Reason
-                                        .DESTINATION_SERIALIZATION_ERROR
-                                )
+                                        .DESTINATION_SERIALIZATION_ERROR,
+                                ),
                             )
                         }
                     }
@@ -480,7 +480,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     value.setScale(BigQueryRecordFormatter.NUMERIC_MAX_SCALE, RoundingMode.HALF_UP)
                 ValidatedNumericResult(
                     roundedValue,
-                    AirbyteRecordMessageMetaChange.Change.TRUNCATED
+                    AirbyteRecordMessageMetaChange.Change.TRUNCATED,
                 )
             }
             else -> ValidatedNumericResult(value, null)
@@ -489,12 +489,12 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
 
     private data class ValidatedNumericResult(
         val value: BigDecimal?,
-        val changeType: AirbyteRecordMessageMetaChange.Change?
+        val changeType: AirbyteRecordMessageMetaChange.Change?,
     )
 
     private fun extractValueFromCoercedAirbyteValue(
         coercedValue: AirbyteValue,
-        fieldName: String
+        fieldName: String,
     ): ExtractionResult {
         return when (coercedValue) {
             NullValue -> ExtractionResult(null, null)
@@ -510,8 +510,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     ExtractionResult(coercedValue.value.longValueExact(), null)
@@ -525,8 +525,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             validatedResult.changeType!!,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else if (validatedResult.changeType != null) {
                     ExtractionResult(
@@ -534,8 +534,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             validatedResult.changeType,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     ExtractionResult(validatedResult.value, null)
@@ -551,8 +551,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     ExtractionResult(coercedValue.value.toString(), null)
@@ -568,13 +568,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            coercedValue.value,
                         )
                     ExtractionResult(formattedValue, null)
                 }
@@ -589,13 +589,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         Meta.Change(
                             fieldName,
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                        ),
                     )
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            coercedValue.value,
                         )
                     ExtractionResult(formattedValue, null)
                 }
@@ -608,7 +608,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
             is TimeWithoutTimezoneValue -> {
                 val formattedValue =
                     BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                        coercedValue.value
+                        coercedValue.value,
                     )
                 ExtractionResult(formattedValue, null)
             }
@@ -627,7 +627,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     private fun appendMetaObject(
         builder: StringBuilder,
         record: DestinationRecordRaw,
-        allChanges: List<Meta.Change>
+        allChanges: List<Meta.Change>,
     ) {
         builder.append('{').append("\"sync_id\":").append(record.stream.syncId)
         builder.append(",\"changes\":[")
@@ -662,7 +662,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
 
     private fun buildValidatedJsonData(
         proxy: AirbyteValueProxy,
-        parsingFailures: MutableList<Meta.Change>
+        parsingFailures: MutableList<Meta.Change>,
     ): String {
         return buildString {
             append('{')
@@ -690,7 +690,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
 
     private fun buildMetaObjectAsString(
         record: DestinationRecordRaw,
-        allChanges: List<Meta.Change>
+        allChanges: List<Meta.Change>,
     ): String {
         return buildString {
             append('{').append("\"sync_id\":").append(record.stream.syncId)

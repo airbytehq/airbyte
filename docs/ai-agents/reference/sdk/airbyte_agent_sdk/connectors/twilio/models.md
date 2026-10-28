@@ -2321,7 +2321,7 @@ Classes
     `encryption_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `error_code: str | None`
+    `error_code: int | None`
     :   The type of the None singleton.
 
     `media_url: str | None`

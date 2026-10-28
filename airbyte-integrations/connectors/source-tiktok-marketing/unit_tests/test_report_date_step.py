@@ -112,25 +112,40 @@ def test_ads_reports_daily_respects_configured_step(report_granularity, max_days
                 ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} with report_granularity={report_granularity}"
 
 
-def test_error_40067_handler_is_config_error_on_daily_report_handler():
+def test_error_40067_handler_splits_request_window_on_daily_report_handler():
     manifest = _load_manifest()
     handler_def = manifest["definitions"]["report_daily_error_handler"]
     filters = handler_def["response_filters"]
     error_40067_filters = [f for f in filters if "40067" in f.get("predicate", "")]
     assert len(error_40067_filters) == 1, "Expected exactly one error handler for code 40067"
     handler = error_40067_filters[0]
-    assert handler["action"] == "FAIL"
-    assert handler.get("failure_type") == "config_error", "Error 40067 should be a config_error"
-    assert (
-        "daily reports date step" in handler["error_message"].lower()
-    ), "Error message should guide user to reduce the Daily Reports Date Step setting"
+    assert handler["action"] == "SPLIT_REQUEST_WINDOW"
+    assert "http_codes" not in handler, "HttpResponseFilter ORs its conditions; a status code here would split on every 200"
+
+
+@pytest.mark.parametrize(
+    "retriever_name",
+    [
+        pytest.param("base_report_retriever", id="basic_daily_retriever"),
+        pytest.param("audience_base_report_retriever", id="audience_daily_retriever"),
+    ],
+)
+def test_daily_retrievers_define_request_window_splitting(retriever_name):
+    """The factory rejects a SPLIT_REQUEST_WINDOW filter whose retriever has no request_window_splitting block."""
+    manifest = _load_manifest()
+    retriever = manifest["definitions"][retriever_name]
+    assert retriever["request_window_splitting"]["$ref"] == "#/definitions/report_daily_request_window_splitting"
+    block = manifest["definitions"]["report_daily_request_window_splitting"]
+    assert block["type"] == "RequestWindowSplitting"
+    assert "date step" not in block["failure_message"].lower(), "The failure message must not promise a config remedy"
+    assert "min_split_window" not in block, "cursor_granularity P1D already floors the split at one day"
 
 
 def test_error_40067_not_on_global_requester():
     manifest = _load_manifest()
     global_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
     error_40067 = [f for f in global_filters if "40067" in f.get("predicate", "")]
-    assert len(error_40067) == 0, "Error 40067 config_error should NOT be on the global requester"
+    assert len(error_40067) == 0, "Error 40067 SPLIT_REQUEST_WINDOW belongs on report_daily_error_handler only, not on the global requester"
 
 
 @pytest.mark.parametrize(

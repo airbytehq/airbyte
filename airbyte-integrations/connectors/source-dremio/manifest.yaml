@@ -23,7 +23,7 @@ definitions:
               inject_into: header
           path: /catalog
           http_method: GET
-          request_body_json:
+          request_headers:
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -81,7 +81,7 @@ streams:
             inject_into: header
         path: /catalog
         http_method: GET
-        request_body_json:
+        request_headers:
           Content-Type: application/json
       record_selector:
         type: RecordSelector

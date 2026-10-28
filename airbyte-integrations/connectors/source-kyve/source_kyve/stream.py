@@ -151,9 +151,15 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
             # Compare hash of the downloaded data from Arweave with the hash from KYVE.
             # This is required to make sure, that the Arweave Gateway provided the correct data.
+            # Legacy bundles (e.g. on the Korellia devnet) have an empty data_hash, so there is nothing to verify against.
             bundle_hash = bundle.get("data_hash")
-            local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
-            assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
+            if bundle_hash:
+                local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
+                if local_hash != bundle_hash:
+                    logger.error(f"Hash of bundle {storage_id} ({local_hash}) does not match the hash from KYVE ({bundle_hash})")
+                    raise Exception(f"HASHES DO NOT MATCH for bundle {storage_id}")
+            else:
+                logger.warning(f"Bundle {storage_id} has no data_hash; skipping hash verification")
             decompressed_as_json = json.loads(decompressed)
 
             # extract the value from the key -> value mapping

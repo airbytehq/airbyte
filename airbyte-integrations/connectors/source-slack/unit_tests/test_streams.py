@@ -1022,3 +1022,59 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+@pytest.mark.parametrize("stream_name", ["channel_messages", "threads"])
+def test_message_partitions_skip_archived_nonmembers(requests_mock, token_config, stream_name):
+    config = {**token_config, "channel_filter": [], "include_archived_channels": True, "lookback_window": 0}
+    channels = [
+        {"id": "archived-member", "name": "archived-member", "is_member": True, "is_archived": True},
+        {"id": "archived-nonmember", "name": "archived-nonmember", "is_member": False, "is_archived": True},
+        {"id": "active-member", "name": "active-member", "is_member": True, "is_archived": False},
+        {"id": "active-nonmember", "name": "active-nonmember", "is_member": False, "is_archived": False},
+    ]
+    requests_mock.get("https://slack.com/api/conversations.list", json={"ok": True, "channels": channels})
+    join = requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True, "channel": channels[-1]})
+    history = requests_mock.get(
+        "https://slack.com/api/conversations.history",
+        json={"ok": True, "messages": [{"ts": "1626984010.0", "thread_ts": "1626984010.0", "reply_count": 1}]},
+    )
+    stream = get_stream_by_name(stream_name, config)
+    slices = [partition.to_slice() for partition in stream.generate_partitions()]
+    channels_read = {s["channel"] if stream_name == "channel_messages" else s["parent_slice"]["channel"] for s in slices}
+    assert channels_read == {"archived-member", "active-member", "active-nonmember"}
+    assert all(request.json()["channel"] == "active-nonmember" for request in join.request_history)
+    if stream_name == "threads":
+        assert all(request.qs["channel"] != ["archived-nonmember"] for request in history.request_history)
+
+
+def test_threads_restart_requests_history_from_saved_channel_cursors(requests_mock, token_config):
+    config = {**token_config, "lookback_window": 0}
+    checkpoints = {"airbyte-for-beginners": 1627027200.0, "good-reads": 1627030800.0}
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "threads",
+            {
+                "states": [],
+                "state": {"float_ts": "1627040000"},
+                "parent_state": {
+                    "channel_messages": {
+                        "states": [
+                            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": timestamp}}
+                            for channel, timestamp in checkpoints.items()
+                        ],
+                        "use_global_cursor": False,
+                    }
+                },
+            },
+        )
+        .build()
+    )
+    history = requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    stream = get_stream_by_name("threads", config, state)
+    assert list(stream.generate_partitions()) == []
+    assert {request.qs["channel"][0] for request in history.request_history} == set(checkpoints)
+    for channel, checkpoint in checkpoints.items():
+        oldest_requests = [float(request.qs["oldest"][0]) for request in history.request_history if request.qs["channel"] == [channel]]
+        assert min(oldest_requests) == checkpoint
