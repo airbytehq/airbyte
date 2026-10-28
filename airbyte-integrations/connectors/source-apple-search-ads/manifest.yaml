@@ -54,21 +54,6 @@ definitions:
         {%- set first_error = apple_errors[0] if apple_errors else {} -%}
         {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
         {{ ' Apple said: ' ~ apple_message[:300] }}
-    invalid_report_request:
-      type: HttpResponseFilter
-      action: FAIL
-      http_codes:
-        - 400
-      failure_type: config_error
-      error_message: >-
-        Apple Ads rejected the report request (400). Apple serves daily reports
-        for the last 90 days only: set the Start Date within that window, or
-        refresh the stream if it has not synced for a long time.
-        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
-        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
-        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
-        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
-        {{ ' Apple said: ' ~ apple_message[:300] }}
     forbidden:
       type: HttpResponseFilter
       action: FAIL
@@ -124,17 +109,6 @@ definitions:
         factor: "{{ config.get('backoff_factor', 5) }}"
     response_filters:
       - $ref: "#/definitions/response_filters/token_expired"
-      - $ref: "#/definitions/response_filters/invalid_report_request"
-      - $ref: "#/definitions/response_filters/forbidden"
-      - $ref: "#/definitions/response_filters/not_found"
-  search_terms_report_error_handler:
-    type: DefaultErrorHandler
-    max_retries: 10
-    backoff_strategies:
-      - type: ExponentialBackoffStrategy
-        factor: "{{ config.get('backoff_factor', 5) }}"
-    response_filters:
-      - $ref: "#/definitions/response_filters/token_expired"
       - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
@@ -147,7 +121,7 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/keyword_missing"
       - $ref: "#/definitions/response_filters/token_expired"
-      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/invalid_request"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
   streams:
@@ -310,6 +284,10 @@ definitions:
             - reportingDataResponse
             - row
       name: campaigns_report_daily
+      primary_key:
+        - campaignId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -319,7 +297,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -369,10 +347,15 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
+        # The end is one day past the range, so a start equal to it must not become a one-day request.
+        is_compare_strictly: true
         step: P1D
         cursor_granularity: P1D
       transformations:
@@ -407,6 +390,10 @@ definitions:
             - reportingDataResponse
             - row
       name: adgroups_report_daily
+      primary_key:
+        - adGroupId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -416,7 +403,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -474,10 +461,15 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
+        # The end is one day past the range, so a start equal to it must not become a one-day request.
+        is_compare_strictly: true
         step: P1D
         cursor_granularity: P1D
         global_substream_cursor: true
@@ -513,6 +505,10 @@ definitions:
             - reportingDataResponse
             - row
       name: keywords_report_daily
+      primary_key:
+        - keywordId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -522,7 +518,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -580,10 +576,15 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
+        # The end is one day past the range, so a start equal to it must not become a one-day request.
+        is_compare_strictly: true
         step: P1D
         cursor_granularity: P1D
         global_substream_cursor: true
@@ -663,6 +664,11 @@ definitions:
     ads_report_daily:
       type: DeclarativeStream
       name: ads_report_daily
+      primary_key:
+        - adGroupId
+        - adId
+        - date
+        - countryorregion
       retriever:
         type: SimpleRetriever
         requester:
@@ -672,7 +678,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
-            endTime: "{{ stream_slice.end_time }}"
+            endTime: "{{ stream_slice.start_time }}"
             groupBy: "[ 'countryOrRegion' ]"
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
@@ -730,10 +736,15 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.start_date }}"
           datetime_format: "%Y-%m-%d"
+          # Apple serves DAILY reports only when startTime is at most 90 days in the past.
+          min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.end_date or today_utc() }}"
+          # One day past the last day to sync: the cursor folds its last day into the final slice, and each request covers the slice start only.
+          datetime: "{{ format_datetime(str_to_datetime(config['end_date']) + duration('P1D'), '%Y-%m-%d') if config.get('end_date') else day_delta(1, format='%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
+        # The end is one day past the range, so a start equal to it must not become a one-day request.
+        is_compare_strictly: true
         step: P1D
         cursor_granularity: P1D
         global_substream_cursor: true
@@ -750,6 +761,12 @@ definitions:
               path:
                 - date
               value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - adGroupId
+              value: "{{ record.metadata.adGroupId }}"
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -991,7 +1008,7 @@ definitions:
             returnRowTotals: false
             returnGrandTotals: false
           error_handler:
-            $ref: "#/definitions/search_terms_report_error_handler"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1159,7 +1176,10 @@ spec:
         title: Org Id
       end_date:
         type: string
-        description: Data is retrieved until that date (included)
+        description: >-
+          Data is retrieved until that date (included). Leave it blank to sync
+          up to today. If it is more than 89 days ago, report streams return no
+          rows.
         order: 1
         title: End Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
@@ -1179,8 +1199,8 @@ spec:
         type: string
         description: >-
           Start getting data from that date. Apple serves daily reports for the
-          last 90 days only, so report streams need a Start Date within that
-          window.
+          last 90 days only, so report streams never start more than 89 days
+          back, whatever this date says.
         order: 3
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
@@ -1382,7 +1402,11 @@ schemas:
       countryOrRegionServingStateReasons:
         type: object
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       dailyBudgetAmount:
         type: object
         properties:
@@ -1395,7 +1419,11 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       locInvoiceDetails:
@@ -1416,7 +1444,11 @@ schemas:
               - "null"
               - string
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1426,11 +1458,19 @@ schemas:
       sapinLawResponse:
         type: string
       servingStateReasons:
-        type: "null"
+        type:
+          - array
+          - "null"
+        items:
+          type: string
       servingStatus:
         type: string
       startTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       supplySources:
@@ -1464,9 +1504,24 @@ schemas:
       campaignId:
         type: integer
       cpaGoal:
-        type: "null"
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       defaultBidAmount:
         type: object
         properties:
@@ -1479,11 +1534,19 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1499,7 +1562,11 @@ schemas:
       servingStatus:
         type: string
       startTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       targetingDimensions:
@@ -1525,7 +1592,9 @@ schemas:
                       type: object
                       properties:
                         maxAge:
-                          type: "null"
+                          type:
+                            - integer
+                            - "null"
                         minAge:
                           type:
                             - integer
@@ -1566,7 +1635,21 @@ schemas:
                     items:
                       type: string
           daypart:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              userTime:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  included:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type: integer
           deviceClass:
             type: object
             properties:
@@ -1575,7 +1658,16 @@ schemas:
                 items:
                   type: string
           gender:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              included:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: string
           locality:
             anyOf:
               - type: "null"
@@ -1606,7 +1698,11 @@ schemas:
       campaignId:
         type: integer
       creationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       deleted:
         type: boolean
       id:
@@ -1614,7 +1710,11 @@ schemas:
       matchType:
         type: string
       modificationTime:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       text:
@@ -1666,11 +1766,19 @@ schemas:
           displayStatus:
             type: string
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           servingStateReasons:
-            type: "null"
+            type:
+              - array
+              - "null"
+            items:
+              type: string
           servingStatus:
             type: string
           supplySources:
@@ -1702,7 +1810,10 @@ schemas:
       campaignId:
         type: integer
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -1723,7 +1834,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1828,7 +1942,11 @@ schemas:
           adGroupName:
             type: string
           adGroupServingStateReasons:
-            type: "null"
+            type:
+              - array
+              - "null"
+            items:
+              type: string
           adGroupServingStatus:
             type: string
           adGroupStatus:
@@ -1840,7 +1958,18 @@ schemas:
           countryOrRegion:
             type: string
           cpaGoal:
-            type: "null"
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
           defaultBidAmount:
             type: object
             properties:
@@ -1851,15 +1980,27 @@ schemas:
           deleted:
             type: boolean
           endTime:
-            type: "null"
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           pricingModel:
             type: string
           startTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           automatedKeywordsRequired:
             type:
               - boolean
@@ -1871,7 +2012,10 @@ schemas:
       adGroupId:
         type: integer
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -1892,7 +2036,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -2018,7 +2165,11 @@ schemas:
           matchType:
             type: string
           modificationTime:
-            type: string
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           campaignId:
             type:
               - integer
@@ -2028,7 +2179,10 @@ schemas:
               - integer
               - "null"
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type: array
         items:
@@ -2042,7 +2196,10 @@ schemas:
                 currency:
                   type: string
             date:
-              type: string
+              type:
+                - string
+                - "null"
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -2195,6 +2352,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       creativeId:
         type:
           - number
@@ -2213,6 +2372,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - string
@@ -2281,6 +2442,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           creativeId:
             type:
               - number
@@ -2297,6 +2460,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type:
               - number
@@ -2321,12 +2486,19 @@ schemas:
         type:
           - number
           - "null"
+      adGroupId:
+        type:
+          - number
+          - "null"
       countryorregion:
         type:
           - string
           - "null"
       date:
-        type: string
+        type:
+          - string
+          - "null"
+        format: date
       granularity:
         type:
           - array
@@ -2353,6 +2525,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date
             impressions:
               type:
                 - number

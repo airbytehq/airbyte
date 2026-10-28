@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 1.2.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -32,6 +32,21 @@ data:
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      2.0.0:
+        message: "Apple Ads date and time fields are now typed, and the four entity report streams get primary keys (`campaigns_report_daily`: `campaignId`, `date`, `countryorregion`; `adgroups_report_daily`: `adGroupId`, `date`, `countryorregion`; `keywords_report_daily`: `keywordId`, `date`, `countryorregion`; `ads_report_daily`: `adGroupId`, `adId`, `date`, `countryorregion`), so you can deduplicate them. `adGroupId` is needed because Apple can return the same `adId` under several ad groups. `date` and `granularity.date` become dates, and the affected `creationTime`, `modificationTime`, `startTime` and `endTime` fields become timestamps without time zone; `product_pages.modificationTime` remains timestamp with time zone. Fields declared as always null (`servingStateReasons`, `cpaGoal`, parts of `targetingDimensions`) get Apple's documented types; the migration guide lists every field. Report requests now cover one day each and start at most 89 days back. After upgrading, refresh the source schema and save it without refreshing or clearing streams. Warehouse destinations convert the columns in place, except some entity streams in Full refresh | Append (see the guide). Do not clear the report streams unless the migration guide says so for your destination: Apple serves daily reports for the last 90 days only, so a clear permanently deletes older report rows. Data lake (Iceberg) destinations and Avro or Parquet object storage need extra steps: https://docs.airbyte.com/integrations/sources/apple-search-ads-migrations#upgrading-to-200"
+        upgradeDeadline: "2026-12-22"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "campaigns"
+              - "adgroups"
+              - "keywords"
+              - "ads"
+              - "campaigns_report_daily"
+              - "adgroups_report_daily"
+              - "keywords_report_daily"
+              - "ads_report_daily"
       1.0.0:
         message: This release introduces changes to incremental sync of `adgroups_daily_reports` and `keywords_daily_reports` streams, changing stream's state from per-partition state to usage of a global state cursor. This will decrease the time of read for the streams. To migrate the Source Apple Ads to the new version, users will need to clear the affected streams. For more info please follow the process in migration guide.
         upgradeDeadline: "2025-11-04"

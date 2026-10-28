@@ -17,12 +17,15 @@ Apple's API only offers machine-to-machine OAuth: a self-signed ES256 JWT acts a
 so the connector uses a plain `OAuthAuthenticator` and intentionally has no `advanced_auth` or
 declarative OAuth spec.
 
-### 2. The five `*_report_daily` streams are genuinely keyless
+### 2. The four entity report streams use deterministic composite primary keys
 
-Apple's reporting endpoints return metric aggregations with no record identifier. A row is
-identified by the reporting entity id plus `date` plus `countryorregion` — all three assembled by
-the connector from its own request parameters — so no stable API-provided primary key exists to
-declare. Dedupe on that tuple in the destination if needed; for `search_terms_report_daily`, add `adGroupId`, `keywordId` and `searchTermText`.
+Apple's reporting endpoints return metric aggregations with no record identifier. The campaigns,
+adgroups and keywords report streams use deterministic composite primary keys built from the report
+entity ID, `date`, and `countryorregion`. Requests cover one day, and report streams start no more
+than 89 days back. `ads_report_daily` is keyed by `(adGroupId, adId, date, countryorregion)` because
+Apple can return the same `adId` under several ad groups. `search_terms_report_daily` stays keyless
+because Apple's low-volume rollup rows have no search term. Changes to `groupBy`, `granularity`, the
+request window or the cursor `step` change row identity and require a major version.
 
 ### 3. The `GET` list endpoints never return deleted entities
 

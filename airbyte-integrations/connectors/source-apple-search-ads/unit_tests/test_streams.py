@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from _helpers import get_source
+from freezegun import freeze_time
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -42,8 +43,8 @@ _CONFIG = {
     "num_workers": 1,
 }
 
-_FIRST_DAY = ("2024-01-01", "2024-01-01")
-_SECOND_DAY = ("2024-01-02", "2024-01-03")
+# One report request per day, through the End Date.
+_DAYS = ("2024-01-01", "2024-01-02", "2024-01-03")
 
 _TOKEN_REQUEST = HttpRequest(
     url=_TOKEN_URL,
@@ -63,6 +64,13 @@ _REPORT_PATHS = {
 }
 
 
+@pytest.fixture(autouse=True)
+def frozen_clock():
+    # The fixtures use January 2024 dates, and report windows start at most 89 days back.
+    with freeze_time("2024-01-06T12:00:00Z"):
+        yield
+
+
 def _mock_token(http_mocker: HttpMocker, number_of_calls: int = 1) -> None:
     http_mocker.post(_TOKEN_REQUEST, [_TOKEN_RESPONSE] * number_of_calls)
 
@@ -78,7 +86,7 @@ def _list_response(records: list[dict[str, Any]]) -> HttpResponse:
     return HttpResponse(body=json.dumps({"data": records}))
 
 
-def _report_request(stream: str, start_time: str, end_time: str, offset: int | None = None) -> HttpRequest:
+def _report_request(stream: str, day: str, offset: int | None = None) -> HttpRequest:
     pagination = {"limit": _PAGE_SIZE}
     if offset is not None:
         pagination["offset"] = offset
@@ -86,8 +94,8 @@ def _report_request(stream: str, start_time: str, end_time: str, offset: int | N
         url=f"{_BASE_URL}{_REPORT_PATHS[stream]}",
         headers=_API_HEADERS,
         body={
-            "startTime": start_time,
-            "endTime": end_time,
+            "startTime": day,
+            "endTime": day,
             "granularity": "DAILY",
             "groupBy": ["countryOrRegion"],
             "timeZone": "UTC",
@@ -130,9 +138,10 @@ def _read(
     stream: str,
     sync_mode: SyncMode = SyncMode.full_refresh,
     state: list[AirbyteStateMessage] | None = None,
+    config: dict[str, Any] = _CONFIG,
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
-    return read(get_source(_CONFIG, catalog=catalog, state=state), config=_CONFIG, catalog=catalog, state=state)
+    return read(get_source(config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
 
 
 def _state(stream: str, cursor_value: str) -> list[AirbyteStateMessage]:
@@ -219,7 +228,7 @@ def test_report_stream_sends_one_request_per_daily_partition(stream: str) -> Non
     with HttpMocker() as http_mocker:
         if stream != "campaigns_report_daily":
             _mock_campaigns(http_mocker)
-        partition_requests = [_report_request(stream, start, end) for start, end in (_FIRST_DAY, _SECOND_DAY)]
+        partition_requests = [_report_request(stream, day) for day in _DAYS]
         for request in partition_requests:
             http_mocker.post(request, _report_response([_report_row()]))
         _mock_token(http_mocker)
@@ -229,7 +238,7 @@ def test_report_stream_sends_one_request_per_daily_partition(stream: str) -> Non
         for request in partition_requests:
             http_mocker.assert_number_of_calls(request, 1)
 
-    assert sorted(record.record.data["date"] for record in output.records) == ["2024-01-01", "2024-01-02"]
+    assert sorted(record.record.data["date"] for record in output.records) == list(_DAYS)
     assert not output.errors
 
 
@@ -246,14 +255,17 @@ def test_report_records_add_id_date_and_country(stream: str, id_field: str, id_v
     with HttpMocker() as http_mocker:
         if stream != "campaigns_report_daily":
             _mock_campaigns(http_mocker)
-        http_mocker.post(_report_request(stream, *_FIRST_DAY), _report_response([_report_row(country="FR")]))
-        http_mocker.post(_report_request(stream, *_SECOND_DAY), _report_response([]))
+        http_mocker.post(_report_request(stream, _DAYS[0]), _report_response([_report_row(country="FR")]))
+        for day in _DAYS[1:]:
+            http_mocker.post(_report_request(stream, day), _report_response([]))
         _mock_token(http_mocker)
 
         output = _read(stream, SyncMode.incremental)
 
     record = output.records[0].record.data
     assert record[id_field] == id_value
+    if stream == "ads_report_daily":
+        assert record["adGroupId"] == _ADGROUP_ID
     assert record["date"] == "2024-01-01"
     assert record["countryorregion"] == "FR"
     assert record["granularity"] == [{"date": "2024-01-01", "impressions": 5}]
@@ -262,12 +274,13 @@ def test_report_records_add_id_date_and_country(stream: str, id_field: str, id_v
 def test_full_report_page_paginates_with_offset_in_selector() -> None:
     with HttpMocker() as http_mocker:
         http_mocker.post(
-            _report_request("campaigns_report_daily", *_FIRST_DAY),
+            _report_request("campaigns_report_daily", _DAYS[0]),
             _report_response([_report_row(country=f"country {index}") for index in range(_PAGE_SIZE)]),
         )
-        second_page_request = _report_request("campaigns_report_daily", *_FIRST_DAY, offset=_PAGE_SIZE)
+        second_page_request = _report_request("campaigns_report_daily", _DAYS[0], offset=_PAGE_SIZE)
         http_mocker.post(second_page_request, _report_response([_report_row(country="last")]))
-        http_mocker.post(_report_request("campaigns_report_daily", *_SECOND_DAY), _report_response([]))
+        for day in _DAYS[1:]:
+            http_mocker.post(_report_request("campaigns_report_daily", day), _report_response([]))
         _mock_token(http_mocker)
 
         output = _read("campaigns_report_daily", SyncMode.incremental)
@@ -279,22 +292,21 @@ def test_full_report_page_paginates_with_offset_in_selector() -> None:
 
 def test_report_read_emits_latest_cursor_state() -> None:
     with HttpMocker() as http_mocker:
-        for start_time, end_time in (_FIRST_DAY, _SECOND_DAY):
-            http_mocker.post(
-                _report_request("campaigns_report_daily", start_time, end_time),
-                _report_response([_report_row()]),
-            )
+        for day in _DAYS:
+            http_mocker.post(_report_request("campaigns_report_daily", day), _report_response([_report_row()]))
         _mock_token(http_mocker)
 
         output = _read("campaigns_report_daily", SyncMode.incremental)
 
-    assert output.most_recent_state.stream_state.date == "2024-01-02"
+    # The cursor ends one day after the End Date, but the state keeps the newest record date.
+    assert output.most_recent_state.stream_state.date == "2024-01-03"
 
 
 def test_report_read_resumes_from_cursor_minus_lookback_window() -> None:
     with HttpMocker() as http_mocker:
-        remaining_request = _report_request("campaigns_report_daily", *_SECOND_DAY)
-        http_mocker.post(remaining_request, _report_response([_report_row()]))
+        remaining_requests = [_report_request("campaigns_report_daily", day) for day in _DAYS[1:]]
+        for request in remaining_requests:
+            http_mocker.post(request, _report_response([_report_row()]))
         _mock_token(http_mocker)
 
         output = _read(
@@ -303,9 +315,72 @@ def test_report_read_resumes_from_cursor_minus_lookback_window() -> None:
             state=_state("campaigns_report_daily", "2024-01-03"),
         )
 
-        http_mocker.assert_number_of_calls(remaining_request, 1)
+        for request in remaining_requests:
+            http_mocker.assert_number_of_calls(request, 1)
 
-    assert len(output.records) == 1
+    assert len(output.records) == 2
+    assert not output.errors
+
+
+@pytest.mark.parametrize("stream", list(_REPORT_PATHS), ids=list(_REPORT_PATHS))
+def test_report_start_is_floored_to_apples_daily_window(stream: str) -> None:
+    # Apple serves DAILY reports only when startTime is at most 90 days in the past: 2024-01-02 for this clock.
+    with freeze_time("2024-03-31T12:00:00Z"), HttpMocker() as http_mocker:
+        if stream != "campaigns_report_daily":
+            _mock_campaigns(http_mocker)
+        requests = [_report_request(stream, day) for day in _DAYS[1:]]
+        for request in requests:
+            http_mocker.post(request, _report_response([]))
+        _mock_token(http_mocker)
+
+        output = _read(stream, SyncMode.incremental)
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert not output.errors
+
+
+@pytest.mark.parametrize("stream", list(_REPORT_PATHS), ids=list(_REPORT_PATHS))
+def test_report_without_end_date_requests_today_once(stream: str) -> None:
+    config = {key: value for key, value in _CONFIG.items() if key != "end_date"} | {"start_date": "2024-01-05"}
+    with HttpMocker() as http_mocker:
+        if stream != "campaigns_report_daily":
+            _mock_campaigns(http_mocker)
+        # 2024-01-06 is today on the frozen clock; a request for 2024-01-07 has no mock and fails the read.
+        requests = [_report_request(stream, day) for day in ("2024-01-05", "2024-01-06")]
+        for request in requests:
+            http_mocker.post(request, _report_response([_report_row()]))
+        _mock_token(http_mocker)
+
+        output = _read(stream, SyncMode.incremental, config=config)
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert sorted(record.record.data["date"] for record in output.records) == ["2024-01-05", "2024-01-06"]
+    assert not output.errors
+
+
+@pytest.mark.parametrize("stream", list(_REPORT_PATHS), ids=list(_REPORT_PATHS))
+@pytest.mark.parametrize(
+    "dates",
+    [
+        pytest.param({"start_date": "2024-01-04", "end_date": "2024-01-03"}, id="start_after_end_date"),
+        pytest.param({"start_date": "2024-01-07", "end_date": None}, id="start_tomorrow_without_end_date"),
+    ],
+)
+def test_report_sends_nothing_past_the_last_day(stream: str, dates: dict[str, Any]) -> None:
+    config = {key: value for key, value in (_CONFIG | dates).items() if value is not None}
+    with HttpMocker() as http_mocker:
+        if stream != "campaigns_report_daily":
+            _mock_campaigns(http_mocker)
+        _mock_token(http_mocker)
+
+        # No report request is mocked, so any report request fails the read.
+        output = _read(stream, SyncMode.incremental, config=config)
+
+    assert output.records == []
     assert not output.errors
 
 
@@ -318,10 +393,7 @@ def test_report_request_defaults_timezone_and_optional_config_values() -> None:
         "end_date": "2024-01-03",
         "num_workers": 1,
     }
-    requests = [
-        _report_request("campaigns_report_daily", *_FIRST_DAY),
-        _report_request("campaigns_report_daily", *_SECOND_DAY),
-    ]
+    requests = [_report_request("campaigns_report_daily", day) for day in _DAYS]
 
     with HttpMocker() as http_mocker:
         for request in requests:
@@ -343,10 +415,11 @@ def test_report_request_defaults_timezone_and_optional_config_values() -> None:
 
 def test_report_retry_uses_the_default_backoff_factor(sleeps) -> None:
     config = {key: value for key, value in _CONFIG.items() if key != "backoff_factor"}
-    report_request = _report_request("campaigns_report_daily", *_FIRST_DAY)
+    report_request = _report_request("campaigns_report_daily", _DAYS[0])
     with HttpMocker() as http_mocker:
         http_mocker.post(report_request, [HttpResponse(body="{}", status_code=500), _report_response([_report_row()])])
-        http_mocker.post(_report_request("campaigns_report_daily", *_SECOND_DAY), _report_response([]))
+        for day in _DAYS[1:]:
+            http_mocker.post(_report_request("campaigns_report_daily", day), _report_response([]))
         _mock_token(http_mocker)
 
         catalog = CatalogBuilder().with_stream("campaigns_report_daily", SyncMode.incremental).build()

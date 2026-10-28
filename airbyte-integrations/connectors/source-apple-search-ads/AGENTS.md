@@ -9,9 +9,11 @@ API requires on campaign-management calls.
 Streams: `campaigns`, `adgroups`, `keywords`, `ads`, `creatives`, `campaign_negative_keywords`,
 `adgroup_negative_keywords`, `product_pages` (entity streams, `primary_key: [id]`, full refresh),
 `organization` (`GET /acls`, `primary_key: [orgId]`, full refresh, no `X-AP-Context` header because
-the ACL call lists every organization the API user can access) and `campaigns_report_daily`,
-`adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily`, `search_terms_report_daily`
-(report streams, incremental on `date`).
+the ACL call lists every organization the API user can access), `campaigns_report_daily`,
+`adgroups_report_daily` and `keywords_report_daily` (incremental on `date`, keyed by
+`(<entity>Id, date, countryorregion)`), `ads_report_daily` (incremental on `date`, keyed by
+`(adGroupId, adId, date, countryorregion)`) and `search_terms_report_daily` (incremental on `date`,
+keyless; see section 2).
 
 `product_pages` is partitioned by the app (`adamId`) of each campaign through a deduplicating
 `GroupingPartitionRouter` (`group_size: 1`), so an app advertised by several campaigns is requested
@@ -51,36 +53,46 @@ user-consent flow at all, so the `client_id` / `client_secret` pair is the only 
 shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
 connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
 
-## 2. The five `*_report_daily` streams are genuinely keyless
+## 2. The four entity report streams use deterministic composite primary keys
 
-`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily`, and
-`search_terms_report_daily` declare no `primary_key`. They are aggregate reporting streams: the request is a `POST` to
+`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, `ads_report_daily` and
+`search_terms_report_daily` are aggregate reporting streams: the request is a `POST` to
 `/reports/campaigns[/{campaignId}/{adgroups|keywords|ads|searchterms}]` with `granularity: DAILY`,
 `groupBy: ['countryOrRegion']`, and a `startTime`/`endTime` window; the API returns
 `data.reportingDataResponse.row[]` where each row is a metric aggregation, not a stored object. No
 row carries an API-assigned record identifier.
 
-What actually identifies a row is a composite of fields the connector assembles itself with
-`AddFields` transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or
-`adId`, lifted out of the nested `record.metadata`; search-term rows also get `adGroupId`, `keywordId`,
-and `searchTermText`, and `searchTermText` is null for Apple's low-volume rollup row), the `date` copied from
-`stream_slice.start_time`, and `countryorregion` lifted from `record.metadata.countryOrRegion`
-(the single `groupBy` dimension). Metrics are nested under the `granularity` array; entity
-attributes stay under `metadata`.
+Each row is identified by a deterministic composite the connector assembles with `AddFields`
+transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or `adId`, lifted
+out of nested `record.metadata`), the `date` copied from `stream_slice.start_time`, and
+`countryorregion` lifted from `record.metadata.countryOrRegion` (the single `groupBy` dimension).
+For `ads_report_daily`, the key is `(adGroupId, adId, date, countryorregion)` because Apple can
+return the same `adId` under several ad groups. Every request covers one day (`endTime` equals the
+slice start), so `date` is also the day of the row's metrics. The CDK folds the last day into the
+final slice, so the cursor ends one day after the End Date (or today) to give that day its own
+request, and `is_compare_strictly` keeps a start equal to that end from requesting a day past the
+range. The first window starts at most 89 days back, because Apple serves `DAILY` reports only when
+"the startTime is <= 90 days in the past"
+([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)); a day
+of margin covers organization time zones ahead of UTC. The manifest declares this composite as the
+primary key of the four entity report streams. Metrics are nested under the `granularity` array;
+entity attributes stay under `metadata`.
 
-That composite is not declared as a primary key because it is only unique as long as the request
-shape stays exactly as it is today: the tuple is a function of the hard-coded `granularity: DAILY`
-and `groupBy: ['countryOrRegion']` in the manifest, plus `step: P1D` on the cursor. Declaring it as
-a PK would make any future change to `groupBy` (adding a dimension) or `granularity` (HOURLY,
-WEEKLY, MONTHLY) a silently key-violating change rather than an additive one, and changing a
-declared PK afterwards is a breaking change for every existing connection. Keyless append is the
-honest description of what the API returns.
+`search_terms_report_daily` declares no key. Its rows add `adGroupId`, `keywordId` and
+`searchTermText`, and Apple folds terms under its 10-impression limit into rows with `other: true`
+and a null `searchTermText`, so no non-null composite identifies every row. Users who need
+deduplication use `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and
+`countryorregion` in the destination.
 
-**Why this matters:** S-1 requires either a real primary key on every stream or a named exception
-per stream with the reason. These five streams are the exception, and the reason is not "we did not
-get around to it": the identifying tuple is derived from the connector's own request parameters
-rather than from the API, so it is not a stable record identity. Users who need deduplicated
-reporting rows should dedupe on `(<entity>Id, date, countryorregion)` (for `search_terms_report_daily`, on `campaignId`, `adGroupId`, `keywordId`, `searchTermText`, `date` and `countryorregion`) in the destination.
+Row identity depends on the request shape: `granularity: DAILY`, `groupBy: ['countryOrRegion']`,
+and `step: P1D` on the cursor. A future change to `groupBy`, `granularity`, or `step` can change
+row identity and is itself a breaking change that requires a major version bump.
+
+**Why this matters:** S-1 requires a real primary key on every stream or a named exception. The four
+keys are derived from fields supplied by the connector's request and transformations, rather than an
+API-assigned identifier, so keep their derivation aligned with the report request and cursor: a
+change to `groupBy`, `granularity`, the one-day request window or the cursor `step` changes row
+identity and needs a major version. `search_terms_report_daily` is the named exception above.
 
 ## 3. The `GET` list endpoints never return deleted entities
 
@@ -163,13 +175,9 @@ response. The filters follow the status tables on each endpoint page (for exampl
   configuration error.
 - `403` ("Insufficient rights to the resource."): configuration error that asks for an API role,
   with Apple's first error message.
-- `400` ("An invalid query or missing required parameters."): on the report streams a configuration
-  error, because their requests carry the user's dates and Apple serves `DAILY` reports only when
-  "the startTime is <= 90 days in the past"
-  ([ReportingRequest](https://developer.apple.com/documentation/apple_ads/reportingrequest)). The spec
-  cannot enforce that limit: a Start Date older than 90 days, or a cursor that has not moved for about
-  60 days with the default 30-day lookback, crosses it. On the entity streams a `400` is a system
-  error, since their list requests carry no user input.
+- `400` ("An invalid query or missing required parameters."): system error with Apple's first
+  error message. Report windows start at most 89 days back (section 2), so neither the Start Date nor
+  an old cursor can cross Apple's 90-day `DAILY` limit, and list requests carry no user input.
 - `404` ("The API can't locate the resource."): documented only on endpoints addressed by a parent
   id, so a campaign or ad group removed during the sync; system error naming the URL, with Apple's
   message.
@@ -243,13 +251,8 @@ It only requests campaigns whose `supplySources` include `APPSTORE_SEARCH_RESULT
 on the parent `campaigns` stream), because search terms only exist for Search Results campaigns;
 campaigns without `supplySources` are kept. Terms under Apple's 10-impression limit arrive in rows
 with `other: true` and a null `searchTermText`. Each request covers one day (`endTime` equals the
-slice start), so a row's `date` always matches its metrics. The CDK folds the last day into the
-final slice, so the cursor ends one day after the End Date (or today) to give that day its own
-request; `is_compare_strictly` keeps a start equal to that end from requesting a day past the range.
-The first window starts at most 89 days back, because Apple serves `DAILY`
-reports only when "the startTime is <= 90 days in the past"; a day of margin covers organization time
-zones ahead of UTC. With that floor a `400` cannot come from the Start Date, so the stream's error
-handler reports it as a system error.
+slice start), and the window rules match the other report streams (section 2): the cursor ends one
+day after the End Date (or today), and the first window starts at most 89 days back.
 
 **Why this matters:** with `timezone: UTC`, this stream's `date` is an organization-time-zone day
 while the other report streams use UTC days, so joins by `date` can shift by one day. Do not make it
@@ -267,3 +270,11 @@ parameters, and `product_pages`, because
 [Get Product Pages](https://developer.apple.com/documentation/apple_ads/get-product-pages) takes only
 `name` and `states`.
 
+## Timestamp time zones
+
+Apple documents its timestamps as UTC, and published examples for ads end in `Z`, but live
+`creationTime` and `modificationTime` values on `ads` and `ads_report_daily.metadata` have no offset,
+so they declare `timestamp_without_timezone`. `product_pages.modificationTime` remains
+`timestamp_with_timezone` because Apple's example ends in `Z`; other timestamps without offsets also
+declare `timestamp_without_timezone`. Airbyte destinations read a value without an offset as UTC
+either way. The timestamp tests pin the observed value shape and schema declarations.

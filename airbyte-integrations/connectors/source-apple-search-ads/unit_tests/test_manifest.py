@@ -7,6 +7,7 @@ Validates the declarative manifest structure to catch copy-paste errors
 and typos in stream definitions.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -122,13 +123,12 @@ def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):
-    """startTime and endTime in request_body_json must use the correct
-    stream_slice keys produced by DatetimeBasedCursor."""
+    """Each report request covers one day: the slice start."""
     stream = _get_stream_def(manifest, "ads_report_daily")
     body = stream["retriever"]["requester"]["request_body_json"]
 
     assert "stream_slice.start_time" in body["startTime"], f"startTime should use stream_slice.start_time, got: {body['startTime']}"
-    assert "stream_slice.end_time" in body["endTime"], f"endTime should use stream_slice.end_time, got: {body['endTime']}"
+    assert body["endTime"] == body["startTime"], f"endTime should equal startTime, got: {body['endTime']}"
 
 
 def test_concurrency_level_configured(manifest):
@@ -155,6 +155,133 @@ def test_num_workers_spec_field(manifest):
 
 
 @pytest.mark.parametrize(
+    ("stream_name", "expected_primary_key"),
+    [
+        pytest.param("campaigns_report_daily", ["campaignId", "date", "countryorregion"], id="campaigns_report_daily"),
+        pytest.param("adgroups_report_daily", ["adGroupId", "date", "countryorregion"], id="adgroups_report_daily"),
+        pytest.param("keywords_report_daily", ["keywordId", "date", "countryorregion"], id="keywords_report_daily"),
+        pytest.param("ads_report_daily", ["adGroupId", "adId", "date", "countryorregion"], id="ads_report_daily"),
+    ],
+)
+def test_report_stream_primary_key(manifest, stream_name, expected_primary_key):
+    stream = manifest["definitions"]["streams"][stream_name]
+    schema_properties = manifest["schemas"][stream_name]["properties"]
+
+    assert stream["primary_key"] == expected_primary_key
+    assert all(field in schema_properties for field in expected_primary_key)
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("campaigns", id="campaigns"),
+        pytest.param("adgroups", id="adgroups"),
+        pytest.param("keywords", id="keywords"),
+        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
+        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
+        pytest.param("keywords_report_daily", id="keywords_report_daily"),
+        pytest.param("ads", id="ads"),
+        pytest.param("ads_report_daily", id="ads_report_daily"),
+    ],
+)
+def test_date_like_fields_are_typed(manifest, stream_name):
+    date_time_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    found_fields = []
+
+    def walk(schema):
+        if not isinstance(schema, dict):
+            return
+        properties = schema.get("properties", {})
+        for name, field_schema in properties.items():
+            if name == "date":
+                found_fields.append(name)
+                assert field_schema["format"] == "date"
+                types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
+                assert "string" in types
+                assert "null" in types
+            elif name in date_time_fields:
+                found_fields.append(name)
+                assert field_schema["format"] == "date-time"
+                # test_timestamp_fields_declare_their_time_zone pins which fields carry a time zone.
+                assert field_schema["airbyte_type"] in ("timestamp_without_timezone", "timestamp_with_timezone")
+                types = field_schema["type"] if isinstance(field_schema["type"], list) else [field_schema["type"]]
+                assert "string" in types
+                assert "null" in types
+            walk(field_schema)
+        if "items" in schema:
+            walk(schema["items"])
+        for branch in schema.get("anyOf", []):
+            walk(branch)
+
+    walk(manifest["schemas"][stream_name])
+    assert found_fields, f"{stream_name} must have at least one date-like field"
+
+
+def test_timestamp_fields_declare_their_time_zone(manifest):
+    with_timezone = {
+        "product_pages.modificationTime",
+    }
+    timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    found = {}
+
+    def walk(schema, path):
+        if not isinstance(schema, dict):
+            return
+        for name, field_schema in schema.get("properties", {}).items():
+            field_path = f"{path}.{name}"
+            if name in timestamp_fields:
+                assert field_schema["format"] == "date-time", field_path
+                found[field_path] = field_schema["airbyte_type"]
+            walk(field_schema, field_path)
+        if "items" in schema:
+            walk(schema["items"], path)
+        for branch in schema.get("anyOf", []):
+            walk(branch, path)
+
+    for stream_name, schema in manifest["schemas"].items():
+        walk(schema, stream_name)
+
+    assert with_timezone <= set(found)
+    for field_path, airbyte_type in found.items():
+        expected = "timestamp_with_timezone" if field_path in with_timezone else "timestamp_without_timezone"
+        assert airbyte_type == expected, field_path
+
+
+def test_timestamp_fields_declared_without_timezone_match_observed_values(manifest):
+    observed_value = datetime.fromisoformat("2026-09-29T09:36:45.541")
+    assert observed_value.tzinfo is None
+
+    timestamp_fields = {"creationTime", "modificationTime", "startTime", "endTime"}
+    with_timezone = {"product_pages.modificationTime"}
+    found = {}
+
+    def walk(schema, path):
+        if not isinstance(schema, dict):
+            return
+        for name, field_schema in schema.get("properties", {}).items():
+            field_path = f"{path}.{name}"
+            if name in timestamp_fields and field_path not in with_timezone:
+                found[field_path] = field_schema["airbyte_type"]
+            walk(field_schema, field_path)
+        if "items" in schema:
+            walk(schema["items"], path)
+        for branch in schema.get("anyOf", []):
+            walk(branch, path)
+
+    for stream_name, schema in manifest["schemas"].items():
+        walk(schema, stream_name)
+
+    assert {
+        "ads.creationTime",
+        "ads.modificationTime",
+        "ads_report_daily.metadata.creationTime",
+        "ads_report_daily.metadata.modificationTime",
+    } <= set(found)
+    for field_path, airbyte_type in found.items():
+        assert airbyte_type == "timestamp_without_timezone", field_path
+
+
+@pytest.mark.parametrize(
     "stream_name, expected_ref",
     [
         ("campaigns", "#/definitions/error_handler"),
@@ -170,7 +297,7 @@ def test_num_workers_spec_field(manifest):
         ("campaign_negative_keywords", "#/definitions/error_handler"),
         ("adgroup_negative_keywords", "#/definitions/error_handler"),
         ("product_pages", "#/definitions/error_handler"),
-        ("search_terms_report_daily", "#/definitions/search_terms_report_error_handler"),
+        ("search_terms_report_daily", "#/definitions/report_error_handler"),
     ],
 )
 def test_streams_use_expected_shared_error_handler(manifest, stream_name, expected_ref):
@@ -191,9 +318,8 @@ def test_each_stream_resolves_to_default_error_handler(manifest):
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
 def test_streams_classify_api_errors(manifest, stream_name):
     filters = _get_response_filters(manifest, _get_stream_def(manifest, stream_name))
-    # Report requests carry the user's dates; search terms start inside Apple's 90-day window, so a 400 there is not a config problem.
-    bad_request = "config_error" if stream_name.endswith("_report_daily") and stream_name != "search_terms_report_daily" else "system_error"
-    for status_code, failure_type in ((400, bad_request), (403, "config_error"), (404, "system_error")):
+    # Report windows start inside Apple's 90-day limit, so a 400 is never a config problem.
+    for status_code, failure_type in ((400, "system_error"), (403, "config_error"), (404, "system_error")):
         matching = [response_filter for response_filter in filters if status_code in response_filter.get("http_codes", [])]
         assert matching
         assert matching[0]["action"] == "FAIL"
