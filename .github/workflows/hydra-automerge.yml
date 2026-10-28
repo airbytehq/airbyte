@@ -517,6 +517,12 @@ jobs:
             result="FAIL"
           fi
 
+          matched_scopes=$(echo "$STRUCTURED_OUTPUT" | jq -r '
+            [.change_scope | to_entries[] | select(.value.pass == true) | .key
+              | gsub("_"; " ") | split(" ") | map((.[:1] | ascii_upcase) + .[1:]) | join(" ")]
+            | join(", ")')
+
+          echo "matched_scopes=$matched_scopes" | tee -a "$GITHUB_OUTPUT"
           echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
           echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
           echo "result=$result" | tee -a "$GITHUB_OUTPUT"
@@ -981,7 +987,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong.\n*Eligible for auto-merge reason:* ${{ steps.evaluate.outputs.matched_scopes }}"
               - type: context
                 elements:
                   - type: mrkdwn
@@ -1004,7 +1010,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong.\n*Eligible for auto-merge reason:* ${{ steps.evaluate.outputs.matched_scopes }}"
               - type: context
                 elements:
                   - type: mrkdwn
@@ -1027,7 +1033,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong.\n*Eligible for auto-merge reason:* ${{ steps.evaluate.outputs.matched_scopes }}"
               - type: context
                 elements:
                   - type: mrkdwn
