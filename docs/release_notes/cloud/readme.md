@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 28, 2026
+
+Platform
+
+- The **Billing** and **Plan** pages in your organization settings now fill the width of large windows, like the other organization settings pages. Previously, they stopped at a fixed width and left empty space on the right.
+
 ## October 27, 2026
 
 Connections
