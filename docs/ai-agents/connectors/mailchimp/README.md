@@ -12,12 +12,25 @@ for marketing analytics and audience management.
 
 The Mailchimp connector is optimized to handle prompts like these.
 
+- List all my Mailchimp audiences (lists)
+- Show me the details of my primary audience
 - List all subscribers in my main mailing list
+- Show me the details of the first subscriber in my main mailing list
+- List all campaigns in my account
+- Show me the details of the most recent campaign
 - List all automation workflows in my account
 - Show me all segments for my primary audience
+- Show me the details of the first segment in my primary audience
+- List all members of the first segment in my primary audience
 - List all interest categories for my primary audience
+- Show me the details of the first interest category in my primary audience
+- List all interests in the first interest category of my primary audience
+- Show me the details of the first interest in my primary audience
+- List all tags in my primary audience
 - Show me email activity for a recent campaign
 - Show me the performance report for a recent campaign
+- Show me the details of the report for my most recent sent campaign
+- List all unsubscribes for my most recent sent campaign
 - Show me all my email campaigns from the last month
 - What are the open rates for my recent campaigns?
 - Who unsubscribed from list \{list_id\} this week?

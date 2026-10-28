@@ -11,19 +11,40 @@ access to customers for payment analytics and customer management.
 
 The Stripe connector is optimized to handle prompts like these.
 
+- Show me my current Stripe balance
+- List recent balance transactions
+- Show me the details of the most recent balance transaction
 - List customers created in the last 7 days
 - Show me details for a recent customer
+- Search for a customer by email
 - List recent charges
 - Show me details for a recent charge
+- Search for charges over a certain amount
 - List recent invoices
+- Show me the details of the most recent invoice
+- Search for invoices by status
 - List active subscriptions
+- Show me the details of the most recent subscription
+- Search for subscriptions by status
+- List all products in my Stripe account
+- Show me the details of the first product
+- Search for a product by name
+- List recent payment intents
+- Show me the details of the most recent payment intent
+- Search for payment intents by status
+- List all payouts
+- Show me the details of the most recent payout
+- List all disputes
+- Show me the details of the first dispute
+- List all refunds
+- Show me the details of the most recent refund
 - Create a payment intent for $50.00 USD
-- Create a new invoice for customer cus_123
-- Create a subscription for customer cus_123 with price price_456
-- Create a price of $29.99/month for product prod_789
-- Create a checkout session for price price_456
-- Cancel payment intent pi_123
-- Finalize invoice inv_123
+- Create a new invoice for the most recent customer
+- Create a subscription for the most recent customer using a new $29.99/month price on the first product
+- Create a price of $29.99/month for the first product
+- Create a checkout session using a new $10 one-time price on the first product
+- Cancel the most recent payment intent
+- Finalize the most recent draft invoice
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers

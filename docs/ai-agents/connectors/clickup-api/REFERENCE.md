@@ -1408,6 +1408,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `sharing` | `object \| null` |  |
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
+| `subtasks_count` | `integer \| null` |  |
 
 
 #### Meta
@@ -1516,6 +1517,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `sharing` | `object \| null` |  |
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
+| `subtasks_count` | `integer \| null` |  |
 
 
 </details>
@@ -1635,6 +1637,7 @@ Operators: = (contains), == (exact), \<, \<=, \>, \>=, !=, !==, IS NULL, IS NOT 
 | `sharing` | `object \| null` |  |
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
+| `subtasks_count` | `integer \| null` |  |
 
 
 #### Meta
@@ -2303,6 +2306,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `percent_completed` | `integer \| null` |  |
 | `history` | `array<object>` |  |
 | `pretty_url` | `string \| null` |  |
+| `date_updated` | `string \| null` |  |
+| `folder_id` | `string \| null` |  |
+| `folder_name` | `string \| null` |  |
+| `role_subtype` | `integer \| null` |  |
+| `group_members` | `array<object>` |  |
+| `owners` | `array<object>` |  |
+| `key_result_count` | `integer \| null` |  |
 
 
 </details>
@@ -2382,6 +2392,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `percent_completed` | `integer \| null` |  |
 | `history` | `array<object>` |  |
 | `pretty_url` | `string \| null` |  |
+| `date_updated` | `string \| null` |  |
+| `folder_id` | `string \| null` |  |
+| `folder_name` | `string \| null` |  |
+| `role_subtype` | `integer \| null` |  |
+| `group_members` | `array<object>` |  |
+| `owners` | `array<object>` |  |
+| `key_result_count` | `integer \| null` |  |
 
 
 </details>
@@ -2806,6 +2823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `sharing` | `object \| null` |  |
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
+| `subtasks_count` | `integer \| null` |  |
 
 
 #### Meta
@@ -2888,6 +2906,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `description` | `string \| null` |  |
 | `tags` | `array<object>` |  |
 | `at` | `string \| null` |  |
+| `source` | `string \| null` |  |
+| `is_locked` | `boolean \| null` |  |
+| `approval_id` | `string \| null` |  |
+| `task_location` | `object \| null` |  |
+| `task_url` | `string \| null` |  |
 
 
 </details>
@@ -2963,6 +2986,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `description` | `string \| null` |  |
 | `tags` | `array<object>` |  |
 | `at` | `string \| null` |  |
+| `source` | `string \| null` |  |
+| `is_locked` | `boolean \| null` |  |
+| `approval_id` | `string \| null` |  |
+| `task_location` | `object \| null` |  |
+| `task_url` | `string \| null` |  |
 
 
 </details>

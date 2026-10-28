@@ -31,7 +31,7 @@ Follow these steps to create a connection to a database, warehouse, lake, or sim
 
 2. Click **New connection**.
 
-3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source). Sources and destinations you saved as drafts don't appear here until you finish setting them up.
 
 4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data.
 
@@ -70,7 +70,7 @@ Follow these steps to create a connection to a data activation destination.
 
 2. Click **New connection**.
 
-3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source). Sources and destinations you saved as drafts don't appear here until you finish setting them up.
 
 4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data. When it's done, Airbyte asks you to set up mappings.
 

@@ -14,7 +14,7 @@ The Granola connector is optimized to handle prompts like these.
 
 - List all meeting notes from Granola
 - Show me recent meeting notes
-- Get the details of a specific note
+- Get the details of my most recent note
 - List notes created in the last week
 - Find meeting notes from last month
 - Which meetings had the most attendees?
@@ -743,4 +743,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.0.7
+**Connector version:** 1.0.8

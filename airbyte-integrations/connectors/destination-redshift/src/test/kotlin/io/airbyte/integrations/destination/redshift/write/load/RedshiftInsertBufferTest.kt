@@ -41,7 +41,7 @@ internal class RedshiftInsertBufferTest {
             "_airbyte_extracted_at",
             "_airbyte_meta",
             "_airbyte_generation_id",
-            "name"
+            "name",
         )
 
     private val s3Config =
@@ -183,7 +183,7 @@ internal class RedshiftInsertBufferTest {
             RedshiftInsertBuffer(tableName, columns, redshiftClient, noPrefixConfiguration)
 
         bufferNoPrefix.accumulate(
-            mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y"))
+            mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y")),
         )
         bufferNoPrefix.flush()
 
@@ -202,7 +202,7 @@ internal class RedshiftInsertBufferTest {
             RedshiftInsertBuffer(tableName, columns, redshiftClient, noPurgeConfiguration)
 
         noPurgeBuffer.accumulate(
-            mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y"))
+            mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y")),
         )
         noPurgeBuffer.flush()
 
@@ -218,7 +218,7 @@ internal class RedshiftInsertBufferTest {
                 mapOf(
                     "_airbyte_raw_id" to StringValue("id-$i"),
                     "name" to StringValue("name-$i"),
-                )
+                ),
             )
         }
         assertEquals(5, buffer.recordCount)
@@ -274,7 +274,7 @@ internal class RedshiftInsertBufferTest {
         val fileName = key.substringAfterLast("/")
         assertTrue(
             fileName.matches(Regex("""\d+_[a-f0-9]{8}\.csv\.gz""")),
-            "Default format: $fileName"
+            "Default format: $fileName",
         )
     }
 
@@ -288,7 +288,7 @@ internal class RedshiftInsertBufferTest {
         val fileName = key.substringAfterLast("/")
         assertTrue(
             fileName.matches(Regex("""\d+_[a-f0-9]{8}\.csv\.gz""")),
-            "Default format for blank: $fileName"
+            "Default format for blank: $fileName",
         )
     }
 
@@ -303,7 +303,7 @@ internal class RedshiftInsertBufferTest {
         // Should be like 2026_04_28.csv.gz (auto-appended extension)
         assertTrue(
             fileName.matches(Regex("""\d{4}_\d{2}_\d{2}\.csv\.gz""")),
-            "Date format: $fileName"
+            "Date format: $fileName",
         )
     }
 
@@ -381,7 +381,7 @@ internal class RedshiftInsertBufferTest {
         // Should be like 2026_04_0.csv.gz
         assertTrue(
             fileName.matches(Regex("""\d{4}_\d{2}_\d+\.csv\.gz""")),
-            "Extended date format: $fileName"
+            "Extended date format: $fileName",
         )
     }
 
@@ -440,7 +440,7 @@ internal class RedshiftInsertBufferTest {
         // Directory path should still be {bucketPath}/{namespace}/{tableName}/
         assertTrue(
             key.startsWith("staging/data/test_schema/test_table/"),
-            "Directory unchanged: $key"
+            "Directory unchanged: $key",
         )
     }
 

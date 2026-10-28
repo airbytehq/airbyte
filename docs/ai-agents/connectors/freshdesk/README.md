@@ -10,13 +10,21 @@ Connector for the Freshdesk customer support platform API (v2). Provides read ac
 The Freshdesk connector is optimized to handle prompts like these.
 
 - List all open tickets in Freshdesk
+- Show me the details of the most recent ticket
 - Show me all agents in the support team
+- Show me the details of the first agent
 - List all groups configured in Freshdesk
-- Get the details of ticket #26
+- Show me the details of the first group
 - Show me all companies in Freshdesk
+- Show me the details of the first company
+- List all contacts in Freshdesk
+- Show me the details of the first contact
 - List all roles defined in the helpdesk
+- Show me the details of the first role
 - Show me the ticket fields and their options
 - List time entries for tickets
+- Show me recent satisfaction ratings
+- List all surveys configured in Freshdesk
 - What are the high priority tickets from last week?
 - Which tickets have breached their SLA due date?
 - Show me tickets assigned to agent \{agent_name\}

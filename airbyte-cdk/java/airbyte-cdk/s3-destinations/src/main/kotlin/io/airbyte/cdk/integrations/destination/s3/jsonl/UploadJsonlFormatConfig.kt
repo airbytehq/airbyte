@@ -16,19 +16,19 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 
 class UploadJsonlFormatConfig(
     val flatteningType: Flattening,
-    val compressionType: CompressionType
+    val compressionType: CompressionType,
 ) : UploadFormatConfig {
     constructor(
-        formatConfig: JsonNode
+        formatConfig: JsonNode,
     ) : this(
         if (formatConfig.has(S3DestinationConstants.FLATTENING_ARG_NAME))
             fromValue(formatConfig[S3DestinationConstants.FLATTENING_ARG_NAME].asText())
         else Flattening.NO,
         if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME))
             CompressionTypeHelper.parseCompressionType(
-                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
+                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME],
             )
-        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
     )
 
     override val format: FileUploadFormat = FileUploadFormat.JSONL

@@ -12,11 +12,80 @@ notes, and attachments for sales analytics and customer relationship management.
 
 The Salesforce connector is optimized to handle prompts like these.
 
+- What Salesforce objects (sObjects) are available in my org?
+- List the 10 most recently modified accounts in my Salesforce org
 - List recent contacts in my Salesforce account
+- List my 10 most recently created leads and their status
+- List my 10 open opportunities with their stage and amount
 - List open cases in my Salesforce account
-- Show me the notes and attachments for a recent account
 - List all available reports in Salesforce
-- Run my quarterly revenue report and show the results
+- Who are the active users in my Salesforce org?
+- What opportunity stages are configured in my org and which ones are closed/won?
+- Create a test Account record named 'devin-test-sobject' through the generic sObject endpoint
+- Fetch the generic sObject Account record I just created by its Id
+- Update the Description of that generic sObject Account record
+- Delete the generic sObject Account test record
+- Create a new account named 'devin-test-account' in the Technology industry
+- Show me the details of the devin-test-account I just created
+- Update the phone number and website of the devin-test-account
+- Search my accounts for the name 'devin-test'
+- Delete the devin-test-account test record
+- Create a contact named 'Devin Test Contact' with a title of 'QA Engineer'
+- Show me the details of the Devin Test Contact I just created
+- Update the title and email of the Devin Test Contact
+- Search my contacts for the name 'Devin Test'
+- Delete the Devin Test Contact test record
+- Create a new lead named 'Devin Test Lead' from the company 'Devin Test Company'
+- Show me the details of the Devin Test Lead I just created
+- Update the status of the Devin Test Lead to 'Working - Contacted'
+- Search my leads for the company 'Devin Test Company'
+- Delete the Devin Test Lead test record
+- Create an opportunity named 'devin-test-opportunity' in the Prospecting stage closing next month
+- Show me the details of the devin-test-opportunity I just created
+- Move the devin-test-opportunity to the Qualification stage with an amount of 5000
+- Search my opportunities for the name 'devin-test'
+- Delete the devin-test-opportunity test record
+- List my 10 most recent tasks with their status and priority
+- Create a task titled 'devin-test-task' with High priority
+- Show me the details of the devin-test-task I just created
+- Mark the devin-test-task as Completed
+- Search my tasks for the subject 'devin-test'
+- Delete the devin-test-task test record
+- List my 10 upcoming or most recent calendar events
+- Schedule a 30-minute event titled 'devin-test-event' for next week
+- Show me the details of the devin-test-event I just created
+- Change the devin-test-event duration to 60 minutes and add a location
+- Search my events for the subject 'devin-test'
+- Delete the devin-test-event test record
+- List my 10 most recent campaigns with their status and type
+- Create a campaign named 'devin-test-campaign' of type Email
+- Show me the details of the devin-test-campaign I just created
+- Set the devin-test-campaign status to In Progress with a budget of 1000
+- Search my campaigns for the name 'devin-test'
+- Delete the devin-test-campaign test record
+- Open a new case with the subject 'devin-test-case' originating from the Web
+- Show me the details of the devin-test-case I just created
+- Escalate the devin-test-case to High priority and set it to Working
+- Search my cases for the subject 'devin-test'
+- Delete the devin-test-case test record
+- Show me the notes and attachments for a recent account
+- Add a note titled 'devin-test-note' to a recent account
+- Show me the details of the devin-test-note I just created
+- Update the body of the devin-test-note
+- Search my notes for the title 'devin-test'
+- Delete the devin-test-note test record
+- List the 5 most recent files (content versions) in my org
+- Show me the details of the most recent file in my org
+- Download the content of the most recent file in my org
+- List the 5 most recent classic attachments in my org
+- Show me the details of the most recent attachment in my org
+- Download the content of the most recent attachment in my org
+- Run the 'Accounts with Activities' report and show me its results
+- Create a new Salesforce user named 'devin-test-user' with the Chatter Free User profile
+- Show me the details of the devin-test-user I just created
+- Deactivate the devin-test-user
+- Show me the details of the 'Prospecting' opportunity stage
+- How many opportunities do I have in each stage?
 - Show me my top 5 opportunities this month
 - List all contacts from \{company\} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
@@ -30,11 +99,11 @@ The Salesforce connector is optimized to handle prompts like these.
 
 The Salesforce connector isn't currently able to handle prompts like these.
 
-- Create a new lead for \{person\}
-- Update the status of my sales opportunity
-- Schedule a follow-up meeting with \{customer\}
-- Delete this old contact record
 - Send an email to all contacts in this campaign
+- Convert this lead into an account, contact, and opportunity
+- Merge these two duplicate accounts
+- Upload a new file and attach it to this opportunity
+- Delete this Salesforce user
 
 ## Entities and actions
 

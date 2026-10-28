@@ -25,6 +25,7 @@ For API-first use cases, create a connector with OAuth credentials directly.
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
+| `refresh_token` | `str` | No | Refresh token used to obtain new access tokens when the current one expires |
 | `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
 | `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
 
@@ -40,6 +41,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "name": "My Monday Connector",
     "credentials": {
       "access_token": "<Access token obtained via OAuth 2.0 flow>",
+      "refresh_token": "<Refresh token used to obtain new access tokens when the current one expires>",
       "client_id": "<The Client ID of your Monday.com OAuth application>",
       "client_secret": "<The Client Secret of your Monday.com OAuth application>"
     }
@@ -484,6 +486,7 @@ In open source mode, provide API credentials directly to the connector.
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
+| `refresh_token` | `str` | No | Refresh token used to obtain new access tokens when the current one expires |
 | `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
 | `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
 
@@ -496,6 +499,7 @@ from airbyte_agent_sdk.connectors.monday.models import MondayOauth20Authenticati
 connector = MondayConnector(
     auth_config=MondayOauth20AuthenticationAuthConfig(
         access_token="<Access token obtained via OAuth 2.0 flow>",
+        refresh_token="<Refresh token used to obtain new access tokens when the current one expires>",
         client_id="<The Client ID of your Monday.com OAuth application>",
         client_secret="<The Client Secret of your Monday.com OAuth application>"
     )

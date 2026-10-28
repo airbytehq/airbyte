@@ -43,7 +43,7 @@ private val logger = KotlinLogging.logger {}
 object BigqueryRawTableDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
@@ -81,7 +81,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Bigquery doesn't support file transfer")
     }
@@ -90,7 +90,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
 object BigqueryFinalTableDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
@@ -106,34 +106,33 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
                         .filter { field -> !Meta.COLUMN_NAMES.contains(field.name) }
                         .associateTo(linkedMapOf()) { field ->
                             val value: FieldValue = row[field.name]
-                            val airbyteValue =
-                                value.mapNotNull {
-                                    when (field.type) {
-                                        LegacySQLTypeName.BOOLEAN -> BooleanValue(it.booleanValue)
-                                        LegacySQLTypeName.BIGNUMERIC -> NumberValue(it.numericValue)
-                                        LegacySQLTypeName.FLOAT ->
-                                            NumberValue(BigDecimal(it.doubleValue))
-                                        LegacySQLTypeName.NUMERIC -> NumberValue(it.numericValue)
-                                        LegacySQLTypeName.INTEGER -> IntegerValue(it.longValue)
-                                        LegacySQLTypeName.STRING -> StringValue(it.stringValue)
-                                        // TODO check these
-                                        LegacySQLTypeName.DATE -> DateValue(it.stringValue)
-                                        LegacySQLTypeName.DATETIME ->
-                                            TimestampWithoutTimezoneValue(it.stringValue)
-                                        LegacySQLTypeName.TIME ->
-                                            TimeWithoutTimezoneValue(it.stringValue)
-                                        LegacySQLTypeName.TIMESTAMP ->
-                                            TimestampWithTimezoneValue(
-                                                it.timestampInstant.atOffset(ZoneOffset.UTC)
-                                            )
-                                        LegacySQLTypeName.JSON ->
-                                            it.stringValue.deserializeToNode().toAirbyteValue()
-                                        else ->
-                                            throw UnsupportedOperationException(
-                                                "Bigquery data dumper doesn't know how to dump type ${field.type} with value $it"
-                                            )
-                                    }
+                            val airbyteValue = value.mapNotNull {
+                                when (field.type) {
+                                    LegacySQLTypeName.BOOLEAN -> BooleanValue(it.booleanValue)
+                                    LegacySQLTypeName.BIGNUMERIC -> NumberValue(it.numericValue)
+                                    LegacySQLTypeName.FLOAT ->
+                                        NumberValue(BigDecimal(it.doubleValue))
+                                    LegacySQLTypeName.NUMERIC -> NumberValue(it.numericValue)
+                                    LegacySQLTypeName.INTEGER -> IntegerValue(it.longValue)
+                                    LegacySQLTypeName.STRING -> StringValue(it.stringValue)
+                                    // TODO check these
+                                    LegacySQLTypeName.DATE -> DateValue(it.stringValue)
+                                    LegacySQLTypeName.DATETIME ->
+                                        TimestampWithoutTimezoneValue(it.stringValue)
+                                    LegacySQLTypeName.TIME ->
+                                        TimeWithoutTimezoneValue(it.stringValue)
+                                    LegacySQLTypeName.TIMESTAMP ->
+                                        TimestampWithTimezoneValue(
+                                            it.timestampInstant.atOffset(ZoneOffset.UTC),
+                                        )
+                                    LegacySQLTypeName.JSON ->
+                                        it.stringValue.deserializeToNode().toAirbyteValue()
+                                    else ->
+                                        throw UnsupportedOperationException(
+                                            "Bigquery data dumper doesn't know how to dump type ${field.type} with value $it",
+                                        )
                                 }
+                            }
                             field.name to (airbyteValue ?: NullValue)
                         }
                 OutputRecord(
@@ -157,7 +156,7 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Bigquery doesn't support file transfer")
     }

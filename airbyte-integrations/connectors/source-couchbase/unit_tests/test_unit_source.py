@@ -113,3 +113,28 @@ def test_ensure_primary_index(mocker, config):
     mock_cluster.query.return_value.execute.side_effect = Exception("Index already exists")
     SourceCouchbase._ensure_primary_index(mock_cluster, "travel-sample", "inventory", "hotel")
     assert mock_cluster.query.call_count == 1, "Query should be called once"
+
+
+def test_streams_skips_system_scope(mocker, config):
+    source = SourceCouchbase()
+
+    mock_cluster = MagicMock()
+    mock_bucket = MagicMock()
+    system_scope = MagicMock()
+    system_scope.name = "_system"
+    system_scope.collections = [MagicMock()]
+    user_scope = MagicMock()
+    user_scope.name = "inventory"
+    user_collection = MagicMock()
+    user_collection.name = "hotel"
+    user_scope.collections = [user_collection]
+
+    mock_cluster.bucket.return_value = mock_bucket
+    mock_bucket.collections.return_value.get_all_scopes.return_value = [system_scope, user_scope]
+
+    with patch.object(SourceCouchbase, "_get_cluster", return_value=mock_cluster):
+        with patch.object(SourceCouchbase, "_ensure_primary_index") as mock_ensure_index:
+            streams = source.streams(config)
+
+    assert [stream.name for stream in streams] == ["travel-sample.inventory.hotel"]
+    mock_ensure_index.assert_called_once_with(mock_cluster, "travel-sample", "inventory", "hotel")

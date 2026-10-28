@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""Unit tests for the custom low-code components in `source_github.components`.
+"""Unit tests for the custom low-code components in `components.py` (loaded as `source_declarative_manifest.components`).
 
 The pagination strategies are tested directly rather than through a read because the property
 that matters most is not observable from a single request: all traversal state lives in the
@@ -10,16 +10,13 @@ page token, so the same strategy instance can serve concurrent partitions withou
 interfering. The legacy streams kept that state in per-stream dicts keyed by repository.
 """
 
-import json
 from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_github.components import (
+from components import (
     DeepNestedGraphQLPaginationStrategy,
-    DeepNestedGraphQLRecordExtractor,
     NestedGraphQLPaginationStrategy,
-    NestedGraphQLRecordExtractor,
     ReleasesRecordTransformation,
     _extract_database_id_from_node_id,
     _resolve_page_size,
@@ -212,54 +209,6 @@ def test_nested_strategy_requires_its_documents_in_parameters(missing):
             drilldown_field="pullRequest",
             child_connection="reviews",
         )
-
-
-# --- NestedGraphQLRecordExtractor ---------------------------------------------------------
-
-
-def _reviews_extractor():
-    return NestedGraphQLRecordExtractor(
-        config={},
-        parameters={},
-        list_connection="pullRequests",
-        drilldown_field="pullRequest",
-        child_connection="reviews",
-        parent_fields={"url": "pull_request_url"},
-    )
-
-
-def test_nested_extractor_reads_the_listing_shape_and_copies_parent_fields():
-    records = list(
-        _reviews_extractor().extract_records(
-            _response(_listing([_pull_request(1, [{"id": 11}, {"id": 12}]), _pull_request(2, [{"id": 21}])]))
-        )
-    )
-
-    assert [record["id"] for record in records] == [11, 12, 21]
-    assert {record["repository"] for record in records} == {"airbytehq/airbyte"}
-    assert records[0]["pull_request_url"] == "https://github.com/pr/1"
-    assert records[2]["pull_request_url"] == "https://github.com/pr/2"
-
-
-def test_nested_extractor_reads_the_drilldown_shape():
-    payload = {
-        "data": {
-            "repository": {
-                "name": "airbyte",
-                "owner": {"login": "airbytehq"},
-                "pullRequest": _pull_request(3, [{"id": 31}]),
-            }
-        }
-    }
-
-    records = list(_reviews_extractor().extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [31]
-    assert records[0]["pull_request_url"] == "https://github.com/pr/3"
-
-
-def test_nested_extractor_yields_nothing_for_an_inaccessible_repository():
-    assert list(_reviews_extractor().extract_records(_response({"data": {"repository": None}}))) == []
 
 
 # --- DeepNestedGraphQLPaginationStrategy --------------------------------------------------
@@ -462,49 +411,6 @@ def test_deep_strategy_reads_its_documents_from_parameters():
     assert strategy.documents["Reaction"] == "ROOT_COMMENT"
 
 
-# --- DeepNestedGraphQLRecordExtractor -----------------------------------------------------
-
-
-def test_deep_extractor_reads_the_repository_shape():
-    payload = _deep_listing([_deep_pull_request("PR_1", [_review("RV_1", 1, [_comment("C_1", 1), _comment("C_2", 2)])])])
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [10, 20]
-    assert [record["comment_id"] for record in records] == [1, 2]
-    assert {record["repository"] for record in records} == {"airbytehq/airbyte"}
-
-
-@pytest.mark.parametrize(
-    ("typename", "node"),
-    [
-        ("PullRequest", _deep_pull_request("PR_1", [_review("RV_1", 1, [_comment("C_1", 3)])])),
-        ("PullRequestReview", _review("RV_1", 1, [_comment("C_1", 3)])),
-        ("PullRequestReviewComment", _comment("C_1", 3)),
-    ],
-)
-def test_deep_extractor_reads_every_drilldown_shape(typename, node):
-    payload = {"data": {"node": {**node, "__typename": typename, "repository": {"name": "airbyte", "owner": {"login": "airbytehq"}}}}}
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [30]
-    assert records[0]["comment_id"] == 3
-    assert records[0]["repository"] == "airbytehq/airbyte"
-
-
-def test_deep_extractor_sets_the_user_type_when_present():
-    """The legacy record carried `user.type`, which the GraphQL `user` field does not return."""
-    comment = _comment("C_1", 1)
-    comment["reactions"]["nodes"] = [{"id": 1, "user": {"login": "octocat"}}, {"id": 2, "user": None}]
-    payload = _deep_listing([_deep_pull_request("PR_1", [_review("RV_1", 1, [comment])])])
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert records[0]["user"]["type"] == "User"
-    assert records[1]["user"] is None
-
-
 # --- Releases transformation ---------------------------------------------------------------
 
 
@@ -573,11 +479,11 @@ def test_releases_transformation_uses_the_configured_api_url():
     [
         pytest.param(None, None, id="unset"),
         pytest.param(25, 25, id="integer"),
-        pytest.param("{{ config['page_size_for_large_streams'] }}", 40, id="interpolated"),
+        pytest.param("{{ config['num_workers'] }}", 40, id="interpolated"),
     ],
 )
 def test_resolve_page_size_returns_a_whole_number(page_size, expected):
-    assert _resolve_page_size(page_size, {"page_size_for_large_streams": 40}) == expected
+    assert _resolve_page_size(page_size, {"num_workers": 40}) == expected
 
 
 @pytest.mark.parametrize(
@@ -591,11 +497,10 @@ def test_resolve_page_size_returns_a_whole_number(page_size, expected):
     ],
 )
 def test_resolve_page_size_reports_a_bad_value_as_a_config_error(page_size):
-    """`page_size_for_large_streams` left the spec in 1.0.1 but is still honored, so nothing
-    validates it before it gets here. A bare `int()` would surface as a `ValueError` from the
-    middle of a sync instead of naming the option the user has to fix."""
+    """Nothing validates a page size before it gets here. A bare `int()` would surface as a
+    `ValueError` from the middle of a sync instead of stating what went wrong."""
     with pytest.raises(AirbyteTracedException) as exception:
         _resolve_page_size(page_size, {})
 
     assert exception.value.failure_type == FailureType.config_error
-    assert "page_size_for_large_streams" in exception.value.message
+    assert "page size" in exception.value.message

@@ -37,7 +37,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         linkedMapOf(
                             "foo" to FieldType(IntegerType, nullable = true),
                             "bar" to FieldType(IntegerType, nullable = true),
-                        )
+                        ),
                     ),
                     generationId = 42,
                     minimumGenerationId = 0,
@@ -48,8 +48,8 @@ class BigqueryDirectLoadSqlGeneratorTest {
                     mapOf(
                         "foo" to "mapped_foo",
                         "bar" to "mapped_bar",
-                    )
-                )
+                    ),
+                ),
             )
         assertEquals(listOf("_airbyte_extracted_at"), clusteringColumns)
     }
@@ -69,7 +69,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         linkedMapOf(
                             "foo" to FieldType(IntegerType, nullable = true),
                             "bar" to FieldType(IntegerType, nullable = true),
-                        )
+                        ),
                     ),
                     generationId = 42,
                     minimumGenerationId = 0,
@@ -80,8 +80,8 @@ class BigqueryDirectLoadSqlGeneratorTest {
                     mapOf(
                         "foo" to "mapped_foo",
                         "bar" to "mapped_bar",
-                    )
-                )
+                    ),
+                ),
             )
         assertEquals(listOf("mapped_foo", "_airbyte_extracted_at"), clusteringColumns)
     }
@@ -102,7 +102,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                             linkedMapOf(
                                 "foo" to FieldType(ObjectTypeWithoutSchema, nullable = true),
                                 "bar" to FieldType(ObjectTypeWithoutSchema, nullable = true),
-                            )
+                            ),
                         ),
                         generationId = 42,
                         minimumGenerationId = 0,
@@ -113,14 +113,14 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         mapOf(
                             "foo" to "mapped_foo",
                             "bar" to "mapped_bar",
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
         // note: we used unmapped column names in the exception message
         assertEquals(
             "Stream ns.n: Primary key contains JSON-typed column [foo] (arrays, objects, and unions are stored as JSON in BigQuery, which cannot be used for deduplication). Remove this field from the primary key, or use a non-deduplicating sync mode.",
-            e.message
+            e.message,
         )
     }
 

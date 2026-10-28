@@ -12,32 +12,54 @@ development workflow analysis and project management insights.
 
 The Github connector is optimized to handle prompts like these.
 
+- Show me my GitHub profile
+- List my repositories
+- Show me the details of my most recently updated repository
+- List the repositories in my first organization
+- Search for repositories related to machine learning
+- List all my organizations
 - Show me all open issues in my repositories this month
-- List the top 5 repositories I've starred recently
-- Analyze the commit trends in my main project over the last quarter
+- Show me the details of the most recently created issue in my first repository
+- Search for issues labeled as bugs in my first repository
 - Find all pull requests created in the past two weeks
-- Search for repositories related to machine learning in my organizations
-- Compare the number of contributors across my different team projects
-- Identify the most active branches in my main repository
+- Show me the details of the most recent pull request in my first repository
+- Search for pull requests that are still open in my first repository
+- List the comments on the most recent pull request in my first repository
+- List the reviews on the most recent pull request in my first repository
+- List the comments on the most recent issue in my first repository
+- Show me the details of the most recent comment on the first issue in my repository
+- List the most recent commits in my first repository and who authored them
+- Show me the details of the most recent commit in my first repository
+- List the branches in my main repository
+- Show me the details of the default branch in my first repository
+- Show me the content of the README file in my first repository
 - Get details about the most recent releases in my organization
+- Show me the details of the latest release in my first repository
 - List all milestones for our current development sprint
-- Show me insights about pull request review patterns in our team
+- Show me the details of the first milestone in my repository
+- List all labels in my first repository
+- Show me the details of the first label in my repository
+- List all tags in my first repository
+- Show me the details of the most recent tag in my repository
+- List the stargazers of my first repository
+- Search for users named after my organization
+- List all projects in my first organization
+- Show me the details of the first project
+- List the items in my first project
 - List all unanswered discussions in a repository
 - Show me recent discussions in the General category
+- Search for discussions about releases in my first repository
+- Show me the details of the most recent discussion in my repository
+- List the files and folders in the docs directory of my first repository
+- Show me the details of the first comment on the most recent pull request in my first repository
+- List the public repositories of the user girarda
+- Show me the profile of the GitHub user airbyteio
 - Create a new issue titled 'Fix login bug' in my repository
-- Create an issue with labels 'bug' and 'urgent' in owner/repo
 - File a new bug report issue in our project repository
-- Create an issue and assign it to a team member
 - Open a new feature request issue in the repository
-- Close issue #42 in owner/repo as completed
-- Reopen issue #15 in our repository
-- Add the 'bug' and 'urgent' labels to issue #10
-- Assign user @johndoe to issue #25 in owner/repo
-- Update the title of issue #30 to 'New title'
-- Add a comment to issue #5 saying 'This has been fixed in the latest release'
-- Post a comment on pull request #100 with a status update
-- Create a pull request from feature-branch to main in owner/repo
-- Open a draft PR titled 'Add new feature' from my-branch to main
+- Close the most recent issue in my repository as completed
+- Add a comment to the most recent issue saying 'This has been fixed in the latest release'
+- Create a pull request from my latest feature branch to main in my repository
 
 ## Unsupported prompts
 
