@@ -8,6 +8,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 Clearing a Full Refresh | Append stream permanently deletes destination history that Zoom can no longer serve, including reports older than roughly six months and meetings older than one year. Back up the affected tables before clearing.
 :::
 
+:::warning Required scope for meeting report streams
+Every connection syncing `report_meetings` or `report_meeting_participants` must add `report:read:user:admin` (granular) or `report:read:admin` (classic) to its Zoom app before upgrading. Most existing apps do not have this scope. OAuth connections must re-authenticate after adding it.
+:::
+
 ### WHAT
 
 - Primary keys are added or changed for `meeting_polls` (`[meeting_id, id]`), `meeting_registration_questions` (`[meeting_id]`), `report_meetings` (`[uuid]`), and `report_meeting_participants` (`[meeting_uuid, user_id]`). Webinar keys are `webinar_panelists`, `webinar_registrants`, and `webinar_polls` (`[webinar_id, id]`); `webinar_registration_questions` (`[webinar_id]`); `report_webinars` (`[uuid]`); and `report_webinar_participants` (`[webinar_uuid, user_id]`). `meeting_poll_results`, `webinar_poll_results`, and `webinar_qna_results` have no primary key because a result name is not unique.
@@ -24,7 +28,7 @@ The poll-results `question_details[].date_time` fields remain unformatted becaus
 
 `report_meetings` and `report_meeting_participants` now use Zoom's past-meetings report, which can return rows for eligible meeting sessions, including separate rows for sessions of recurring meetings. Zoom's past-meetings report omits sessions with fewer than two participants, so those sessions produce no report rows. Zoom retains these reports for roughly six months, and `start_date` further limits the requested report window.
 
-These streams require the classic `report:read:admin` scope or the granular `report:read:user:admin` scope. Zoom apps set up before source-zoom 1.5.0 may not have the required scope; without it, sync fails with a configuration error naming the missing scope. After adding the scope, users with OAuth credentials must re-authenticate the source.
+Every connection syncing these streams must add the granular `report:read:user:admin` scope or the classic `report:read:admin` scope before upgrading. Most existing apps do not have this scope. Without it, syncs fail after the upgrade because the connection check does not test for it. OAuth connections must re-authenticate after adding the scope.
 
 ### WHY
 
@@ -38,9 +42,10 @@ Users syncing only `chat_channels`, `meeting_poll_results`, `report_user_meeting
 
 ### STEPS
 
-1. Add the report scope if needed. Upgrade the Zoom source to 2.0.0 and refresh the source schema.
-2. For **Full Refresh | Overwrite** streams, no other action is needed; the next sync rebuilds the stream with the new schema.
-3. For **Full Refresh | Append** streams, back up the destination first. Refresh the schema while retaining existing records, or leave the existing records in place and accept that old rows keep their previous types.
+1. Add `report:read:user:admin` (or `report:read:admin`) to your Zoom app and, for OAuth, re-authenticate the source. Do this before upgrading if you sync `report_meetings` or `report_meeting_participants`.
+2. Upgrade the Zoom source to 2.0.0 and refresh the source schema.
+3. For **Full Refresh | Overwrite** streams, no other action is needed; the next sync rebuilds the stream with the new schema.
+4. For **Full Refresh | Append** streams, back up the destination first. Refresh the schema while retaining existing records, or leave the existing records in place and accept that old rows keep their previous types.
 
 :::note
 If you set `start_date` in source-zoom 1.5.0 for `report_user_meetings` or `report_daily`, `meetings` and `webinars` now include only records created on or after that date, including during Full Refresh. Clear `start_date` to keep everything Zoom still serves.
