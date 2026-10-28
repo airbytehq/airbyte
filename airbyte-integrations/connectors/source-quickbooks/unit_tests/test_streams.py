@@ -260,7 +260,7 @@ def _frozen_config(**overrides) -> dict:
     return config
 
 
-def _incremental_query(entity: str, start_position: int, max_results: int = 200) -> str:
+def _incremental_query(entity: str, start_position: int, max_results: int = 1000) -> str:
     return (
         f"SELECT * FROM {entity} "
         f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
@@ -290,11 +290,11 @@ def _page(entity: str, first_id: int, count: int) -> HttpResponse:
 
 @freeze_time(FROZEN_NOW)
 def test_incremental_stream_paginates_with_explicit_queries(manifest):
-    """5 + 5 + 2 records over three pages: STARTPOSITION advances by the page size and the read stops on the short page."""
-    config = _frozen_config()
-    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
-    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6)})
-    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11)})
+    """5 + 5 + 2 records at a page size of 5: STARTPOSITION advances by the page size and the read stops on the short page."""
+    config = _frozen_config(max_results=5)
+    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=5)})
+    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6, max_results=5)})
+    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11, max_results=5)})
 
     with HttpMocker() as http_mocker:
         http_mocker.get(first, _page("Account", 1, 5))
@@ -313,18 +313,76 @@ def test_incremental_stream_paginates_with_explicit_queries(manifest):
 
 
 @freeze_time(FROZEN_NOW)
-def test_max_results_is_configurable(manifest):
-    config = _frozen_config(max_results=1000)
-    request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=1000)})
+@pytest.mark.parametrize("max_results,record_count", [(None, 50), (None, 999), (300, 50), (300, 299)])
+def test_window_shorter_than_page_size_makes_one_request(max_results, record_count, manifest):
+    """A page with fewer records than MAXRESULTS is the last one, so no empty follow-up request is sent."""
+    config = _frozen_config() if max_results is None else _frozen_config(max_results=max_results)
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={"query": _incremental_query("Account", 1, max_results=max_results or 1000)},
+    )
 
     with HttpMocker() as http_mocker:
-        http_mocker.get(request, _page("Account", 1, 2))
+        http_mocker.get(request, _page("Account", 1, record_count))
 
         output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
 
         http_mocker.assert_number_of_calls(request, 1)
 
+    assert output.errors == []
+    assert len(output.records) == record_count
+
+
+@freeze_time(FROZEN_NOW)
+def test_window_that_is_an_exact_multiple_of_page_size_stops_on_the_empty_page(manifest):
+    config = _frozen_config(max_results=5)
+    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=5)})
+    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6, max_results=5)})
+    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11, max_results=5)})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(first, _page("Account", 1, 5))
+        http_mocker.get(second, _page("Account", 6, 5))
+        http_mocker.get(third, _page("Account", 11, 0))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(first, 1)
+        http_mocker.assert_number_of_calls(second, 1)
+        http_mocker.assert_number_of_calls(third, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 10
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stored,expected", [(200, 1000), ("200", 1000), (300, 300), (1000, 1000)])
+def test_page_size_of_200_is_migrated_to_1000(stored, expected, manifest, capsys):
+    """200 was the default before 5.1.0, so a stored 200 is raised to the new default; other values are kept."""
+    config = _frozen_config(max_results=stored)
+    request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=expected)})
+
+    source = _source(config, manifest)
+    control_lines = [line for line in capsys.readouterr().out.splitlines() if '"CONNECTOR_CONFIG"' in line]
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 2))
+
+        output = read(source, config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
     assert len(output.records) == 2
+    if stored == expected:
+        assert control_lines == []
+    else:
+        assert len(control_lines) == 1
+        assert json.loads(control_lines[0])["control"]["connectorConfig"]["config"]["max_results"] == expected
+
+
+def test_page_size_defaults_to_1000(manifest):
+    assert manifest["spec"]["connection_specification"]["properties"]["max_results"]["default"] == 1000
 
 
 @freeze_time(FROZEN_NOW)
@@ -358,7 +416,7 @@ def test_streams_without_active_field_omit_the_active_clause(stream_name: str, e
         f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
         f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
         "ORDER BY Metadata.LastUpdatedTime ASC "
-        "STARTPOSITION 1 MAXRESULTS 200"
+        "STARTPOSITION 1 MAXRESULTS 1000"
     )
     request = HttpRequest(QUERY_URL, query_params={"query": query})
 
