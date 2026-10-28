@@ -38,6 +38,7 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
@@ -120,13 +121,19 @@ class IcebergUtil(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
         schema: Schema,
+        formatVersion: Int = 2,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
                 .buildTable(tableIdentifier, schema)
-                .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .withProperties(
+                    mapOf(
+                        DEFAULT_FILE_FORMAT to FileFormat.PARQUET.name.lowercase(),
+                        TableProperties.FORMAT_VERSION to formatVersion.toString(),
+                    ),
+                )
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {

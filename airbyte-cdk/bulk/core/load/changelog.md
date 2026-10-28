@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.9 — 2026-10-17
+
+[#88973](https://github.com/airbytehq/airbyte/pull/88973) — Feat: add positional and deletion-vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression and optional whole-file supersession; add an in-place v2-to-v3 table upgrader that converts legacy delete files to deletion vectors.
+
 ### 1.1.8 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
