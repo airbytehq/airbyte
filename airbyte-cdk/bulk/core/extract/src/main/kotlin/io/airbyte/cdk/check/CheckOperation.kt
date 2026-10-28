@@ -81,24 +81,34 @@ class CheckOperation<T : ConfigurationSpecification>(
 
     /**
      * Checks a partial configuration up to [section], one of the sections the specification
-     * declares. The last section completes the configuration and gets the [fullCheck]; the others
-     * are delegated to the connector's [CheckSectionHandler].
+     * declares with `"check": true`. The last section completes the configuration and gets the
+     * [fullCheck]; the others are delegated to the connector's [CheckSectionHandler].
      */
     private fun sectionCheck(section: String, pojo: T) {
-        val declared: List<String> = declaredSections()
+        val declared: List<DeclaredSection> = declaredSections()
         if (declared.isEmpty()) {
             throw ConfigErrorException(
                 "'$CHECK_SECTION_KEY' is not supported: " +
                     "the connector specification declares no sections.",
             )
         }
-        if (section !in declared) {
+        val ids: List<String> = declared.map { it.id }
+        if (section !in ids) {
             throw ConfigErrorException(
                 "Unknown $CHECK_SECTION_KEY '$section'; " +
-                    "the connector specification declares: ${declared.joinToString(", ")}.",
+                    "the connector specification declares: ${ids.joinToString(", ")}.",
             )
         }
-        if (section == declared.last()) {
+        val checkable: List<String> = declared.filter { it.check }.map { it.id }
+        if (section !in checkable) {
+            throw ConfigErrorException(
+                "Section '$section' cannot be checked on its own; " +
+                    "the sections declared with \"check\": true are: " +
+                    checkable.ifEmpty { listOf("none") }.joinToString(", ") +
+                    ".",
+            )
+        }
+        if (section == ids.last()) {
             log.info { "Section '$section' is the last one, running the full config check." }
             fullCheck(pojo)
             return
@@ -126,10 +136,16 @@ class CheckOperation<T : ConfigurationSpecification>(
         return (fromJson ?: checkSectionProperty)?.takeIf { it.isNotBlank() }
     }
 
-    /** The `sections[].id` values of the specification, in order; empty without `sections`. */
-    private fun declaredSections(): List<String> =
+    /** One of the specification's `sections`: its `id` and whether it is marked `"check": true`. */
+    private data class DeclaredSection(val id: String, val check: Boolean)
+
+    /** The specification's `sections` with a textual `id`, in order; empty without `sections`. */
+    private fun declaredSections(): List<DeclaredSection> =
         configJsonObjectSupplier.jsonSchema.path("sections").mapNotNull { section: JsonNode ->
-            section.path("id").takeIf { it.isTextual }?.asText()
+            val id: JsonNode = section.path("id")
+            if (!id.isTextual) return@mapNotNull null
+            val check: JsonNode = section.path("check")
+            DeclaredSection(id.asText(), check.isBoolean && check.booleanValue())
         }
 
     /**

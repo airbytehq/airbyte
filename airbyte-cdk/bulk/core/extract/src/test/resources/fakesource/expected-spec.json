@@ -16,12 +16,20 @@
       {
         "id": "connection",
         "title": "Connection",
-        "groups": ["db"]
+        "groups": ["db"],
+        "check": true
+      },
+      {
+        "id": "naming",
+        "title": "Naming",
+        "groups": [],
+        "check": false
       },
       {
         "id": "sync_method",
         "title": "Sync method",
-        "groups": ["sync"]
+        "groups": ["sync"],
+        "check": true
       }
     ],
     "type": "object",
