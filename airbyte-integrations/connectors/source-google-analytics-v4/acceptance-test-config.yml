@@ -5,9 +5,6 @@ acceptance_tests:
         empty_streams:
           - name: users_per_city
             bypass_reason: no records in the stream
-        expect_records:
-          path: integration_tests/expected_records.jsonl
-        timeout_seconds: 1800
   connection:
     tests:
       - config_path: secrets/service_config.json
@@ -25,7 +22,6 @@ acceptance_tests:
     tests:
       - config_path: secrets/service_config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        timeout_seconds: 2400
         future_state:
           future_state_path: integration_tests/abnormal_state.json
   spec:

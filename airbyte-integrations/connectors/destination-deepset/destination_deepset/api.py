@@ -24,7 +24,7 @@ class FileUploadError(APIError):
     """Raised when the server is unable to successfully upload the file."""
 
     def __str__(self) -> str:
-        return "File upload failed."
+        return str(self.args[0]) if self.args else "File upload failed."
 
 
 class DeepsetCloudApi:
@@ -82,7 +82,7 @@ class DeepsetCloudApi:
             workspaces = util.get(response.json(), "organization.workspaces", [])
             access = next((True for workspace in workspaces if workspace["name"] == self.config.workspace), False)
         except Exception as ex:
-            raise APIError from ex
+            raise APIError(str(ex)) from ex
         else:
             if access:
                 return

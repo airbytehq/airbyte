@@ -8,6 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.stream.Stream
 
 private val log = KotlinLogging.logger {}
+
 /**
  * Registers a shutdown hook that calls the close method of the provided objects. If an object does
  * not support either the [AutoCloseable] or [Closeable] interface, it will be ignored.

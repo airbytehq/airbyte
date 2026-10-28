@@ -14,11 +14,11 @@ class ConvexWriter:
     Buffers messages before sending them to Convex.
     """
 
-    write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 
     def __init__(self, client: ConvexClient):
         self.client = client
+        self.write_buffer: List[Mapping[str, Any]] = []
 
     def delete_tables(self, table_names: List[str]) -> None:
         """Deletes all the records belonging to the input stream"""

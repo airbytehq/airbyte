@@ -21,7 +21,7 @@ import java.util.function.Supplier
  */
 internal class LazyAutoCloseableIterator<T>(
     iteratorSupplier: Supplier<AutoCloseableIterator<T>>,
-    airbyteStream: AirbyteStreamNameNamespacePair?
+    airbyteStream: AirbyteStreamNameNamespacePair?,
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     private val iteratorSupplier: Supplier<AutoCloseableIterator<T>>
     override val airbyteStream: Optional<AirbyteStreamNameNamespacePair>

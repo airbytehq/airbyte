@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CouponAnyCondition"></a>
@@ -172,10 +172,24 @@ Classes
     `valid_till: Any`
     :   Date until which the coupon is valid for use.
 
+<a id="CouponArrayContainsCondition"></a>
+
+`CouponArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.CouponAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CouponContainsCondition"></a>
 
 `CouponContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -184,6 +198,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.CouponAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CouponEndswithCondition"></a>
+
+`CouponEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.CouponStringFilter`
     :   The type of the None singleton.
 
 <a id="CouponEqCondition"></a>
@@ -387,20 +415,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.CouponStringFilter`
     :   The type of the None singleton.
 
-<a id="CouponLikeCondition"></a>
-
-`CouponLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.CouponStringFilter`
-    :   The type of the None singleton.
-
 <a id="CouponListParams"></a>
 
 `CouponListParams(*args, **kwargs)`
@@ -479,7 +493,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition`
     :   The type of the None singleton.
 
 <a id="CouponOrCondition"></a>
@@ -501,7 +515,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CouponSearchFilter"></a>
@@ -610,7 +624,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.CouponEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponInCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CouponAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.CouponSortFilter]`
@@ -711,10 +725,24 @@ Classes
     `valid_till: Literal['asc', 'desc']`
     :   Date until which the coupon is valid for use.
 
+<a id="CouponStartswithCondition"></a>
+
+`CouponStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.CouponStringFilter`
+    :   The type of the None singleton.
+
 <a id="CouponStringFilter"></a>
 
 `CouponStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -825,7 +853,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreditNoteAnyCondition"></a>
@@ -1008,10 +1036,24 @@ Classes
     `voided_at: Any`
     :   The date when the credit note was voided.
 
+<a id="CreditNoteArrayContainsCondition"></a>
+
+`CreditNoteArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CreditNoteContainsCondition"></a>
 
 `CreditNoteContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1020,6 +1062,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CreditNoteEndswithCondition"></a>
+
+`CreditNoteEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStringFilter`
     :   The type of the None singleton.
 
 <a id="CreditNoteEqCondition"></a>
@@ -1286,20 +1342,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStringFilter`
     :   The type of the None singleton.
 
-<a id="CreditNoteLikeCondition"></a>
-
-`CreditNoteLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStringFilter`
-    :   The type of the None singleton.
-
 <a id="CreditNoteListParams"></a>
 
 `CreditNoteListParams(*args, **kwargs)`
@@ -1378,7 +1420,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition`
     :   The type of the None singleton.
 
 <a id="CreditNoteOrCondition"></a>
@@ -1400,7 +1442,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreditNoteSearchFilter"></a>
@@ -1572,7 +1614,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteInCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CreditNoteAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.CreditNoteSortFilter]`
@@ -1736,10 +1778,24 @@ Classes
     `voided_at: Literal['asc', 'desc']`
     :   The date when the credit note was voided.
 
+<a id="CreditNoteStartswithCondition"></a>
+
+`CreditNoteStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.CreditNoteStringFilter`
+    :   The type of the None singleton.
+
 <a id="CreditNoteStringFilter"></a>
 
 `CreditNoteStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1913,7 +1969,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomerAnyCondition"></a>
@@ -2138,10 +2194,24 @@ Classes
     `vat_number_validated_time: Any`
     :   Date and time when the VAT number was validated.
 
+<a id="CustomerArrayContainsCondition"></a>
+
+`CustomerArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomerContainsCondition"></a>
 
 `CustomerContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2150,6 +2220,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomerEndswithCondition"></a>
+
+`CustomerEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.CustomerStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomerEqCondition"></a>
@@ -2458,20 +2542,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.CustomerStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomerLikeCondition"></a>
-
-`CustomerLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.CustomerStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomerListParams"></a>
 
 `CustomerListParams(*args, **kwargs)`
@@ -2550,7 +2620,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomerOrCondition"></a>
@@ -2572,7 +2642,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomerSearchFilter"></a>
@@ -2786,7 +2856,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.CustomerEqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerGteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLtCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerLteCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerInCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerNotCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAndCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerOrCondition | airbyte_agent_sdk.connectors.chargebee.types.CustomerAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.CustomerSortFilter]`
@@ -2992,10 +3062,24 @@ Classes
     `vat_number_validated_time: Literal['asc', 'desc']`
     :   Date and time when the VAT number was validated.
 
+<a id="CustomerStartswithCondition"></a>
+
+`CustomerStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.CustomerStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomerStringFilter"></a>
 
 `CustomerStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3211,7 +3295,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventAnyCondition"></a>
@@ -3280,10 +3364,24 @@ Classes
     `webhooks: Any`
     :   List of webhooks associated with the event.
 
+<a id="EventArrayContainsCondition"></a>
+
+`EventArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.EventAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EventContainsCondition"></a>
 
 `EventContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3292,6 +3390,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.EventAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="EventEndswithCondition"></a>
+
+`EventEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.EventStringFilter`
     :   The type of the None singleton.
 
 <a id="EventEqCondition"></a>
@@ -3444,20 +3556,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.EventStringFilter`
     :   The type of the None singleton.
 
-<a id="EventLikeCondition"></a>
-
-`EventLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.EventStringFilter`
-    :   The type of the None singleton.
-
 <a id="EventListParams"></a>
 
 `EventListParams(*args, **kwargs)`
@@ -3536,7 +3634,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition`
     :   The type of the None singleton.
 
 <a id="EventOrCondition"></a>
@@ -3558,7 +3656,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventSearchFilter"></a>
@@ -3616,7 +3714,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.EventEqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventGteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLtCondition | airbyte_agent_sdk.connectors.chargebee.types.EventLteCondition | airbyte_agent_sdk.connectors.chargebee.types.EventInCondition | airbyte_agent_sdk.connectors.chargebee.types.EventStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.EventFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.EventKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.EventContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.EventNotCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAndCondition | airbyte_agent_sdk.connectors.chargebee.types.EventOrCondition | airbyte_agent_sdk.connectors.chargebee.types.EventAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.EventSortFilter]`
@@ -3666,10 +3764,24 @@ Classes
     `webhooks: Literal['asc', 'desc']`
     :   List of webhooks associated with the event.
 
+<a id="EventStartswithCondition"></a>
+
+`EventStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.EventStringFilter`
+    :   The type of the None singleton.
+
 <a id="EventStringFilter"></a>
 
 `EventStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3729,7 +3841,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoiceAnyCondition"></a>
@@ -3972,10 +4084,24 @@ Classes
     `write_off_amount: Any`
     :   Amount written off
 
+<a id="InvoiceArrayContainsCondition"></a>
+
+`InvoiceArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InvoiceContainsCondition"></a>
 
 `InvoiceContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3984,6 +4110,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InvoiceEndswithCondition"></a>
+
+`InvoiceEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.InvoiceStringFilter`
     :   The type of the None singleton.
 
 <a id="InvoiceEqCondition"></a>
@@ -4310,20 +4450,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.InvoiceStringFilter`
     :   The type of the None singleton.
 
-<a id="InvoiceLikeCondition"></a>
-
-`InvoiceLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.InvoiceStringFilter`
-    :   The type of the None singleton.
-
 <a id="InvoiceListParams"></a>
 
 `InvoiceListParams(*args, **kwargs)`
@@ -4402,7 +4528,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition`
     :   The type of the None singleton.
 
 <a id="InvoiceOrCondition"></a>
@@ -4424,7 +4550,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoiceSearchFilter"></a>
@@ -4656,7 +4782,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.InvoiceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceInCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.InvoiceAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.InvoiceSortFilter]`
@@ -4880,10 +5006,24 @@ Classes
     `write_off_amount: Literal['asc', 'desc']`
     :   Amount written off
 
+<a id="InvoiceStartswithCondition"></a>
+
+`InvoiceStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.InvoiceStringFilter`
+    :   The type of the None singleton.
+
 <a id="InvoiceStringFilter"></a>
 
 `InvoiceStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5117,7 +5257,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemAnyCondition"></a>
@@ -5231,10 +5371,24 @@ Classes
     `usage_calculation: Any`
     :   Calculation method used for item usage
 
+<a id="ItemArrayContainsCondition"></a>
+
+`ItemArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.ItemAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ItemContainsCondition"></a>
 
 `ItemContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5243,6 +5397,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.ItemAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ItemEndswithCondition"></a>
+
+`ItemEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.ItemStringFilter`
     :   The type of the None singleton.
 
 <a id="ItemEqCondition"></a>
@@ -5440,20 +5608,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.ItemStringFilter`
     :   The type of the None singleton.
 
-<a id="ItemLikeCondition"></a>
-
-`ItemLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.ItemStringFilter`
-    :   The type of the None singleton.
-
 <a id="ItemListParams"></a>
 
 `ItemListParams(*args, **kwargs)`
@@ -5532,7 +5686,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition`
     :   The type of the None singleton.
 
 <a id="ItemOrCondition"></a>
@@ -5554,7 +5708,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemPriceAndCondition"></a>
@@ -5576,7 +5730,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemPriceAnyCondition"></a>
@@ -5723,10 +5877,24 @@ Classes
     `updated_at: Any`
     :   Date and time when the item price was last updated.
 
+<a id="ItemPriceArrayContainsCondition"></a>
+
+`ItemPriceArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ItemPriceContainsCondition"></a>
 
 `ItemPriceContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5735,6 +5903,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ItemPriceEndswithCondition"></a>
+
+`ItemPriceEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStringFilter`
     :   The type of the None singleton.
 
 <a id="ItemPriceEqCondition"></a>
@@ -5965,20 +6147,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStringFilter`
     :   The type of the None singleton.
 
-<a id="ItemPriceLikeCondition"></a>
-
-`ItemPriceLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStringFilter`
-    :   The type of the None singleton.
-
 <a id="ItemPriceListParams"></a>
 
 `ItemPriceListParams(*args, **kwargs)`
@@ -6057,7 +6225,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition`
     :   The type of the None singleton.
 
 <a id="ItemPriceOrCondition"></a>
@@ -6079,7 +6247,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemPriceSearchFilter"></a>
@@ -6215,7 +6383,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemPriceAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.ItemPriceSortFilter]`
@@ -6343,10 +6511,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Date and time when the item price was last updated.
 
+<a id="ItemPriceStartswithCondition"></a>
+
+`ItemPriceStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.ItemPriceStringFilter`
+    :   The type of the None singleton.
+
 <a id="ItemPriceStringFilter"></a>
 
 `ItemPriceStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6565,7 +6747,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.ItemEqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemGteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLtCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemLteCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemInCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemNotCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAndCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemOrCondition | airbyte_agent_sdk.connectors.chargebee.types.ItemAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.ItemSortFilter]`
@@ -6660,10 +6842,24 @@ Classes
     `usage_calculation: Literal['asc', 'desc']`
     :   Calculation method used for item usage
 
+<a id="ItemStartswithCondition"></a>
+
+`ItemStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.ItemStringFilter`
+    :   The type of the None singleton.
+
 <a id="ItemStringFilter"></a>
 
 `ItemStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6768,7 +6964,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderAnyCondition"></a>
@@ -6984,10 +7180,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the order data was last updated.
 
+<a id="OrderArrayContainsCondition"></a>
+
+`OrderArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.OrderAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrderContainsCondition"></a>
 
 `OrderContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6996,6 +7206,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.OrderAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrderEndswithCondition"></a>
+
+`OrderEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.OrderStringFilter`
     :   The type of the None singleton.
 
 <a id="OrderEqCondition"></a>
@@ -7295,20 +7519,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.OrderStringFilter`
     :   The type of the None singleton.
 
-<a id="OrderLikeCondition"></a>
-
-`OrderLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.OrderStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrderListParams"></a>
 
 `OrderListParams(*args, **kwargs)`
@@ -7387,7 +7597,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrderOrCondition"></a>
@@ -7409,7 +7619,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderSearchFilter"></a>
@@ -7614,7 +7824,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.OrderEqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderGteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLtCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderLteCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderInCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderNotCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAndCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderOrCondition | airbyte_agent_sdk.connectors.chargebee.types.OrderAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.OrderSortFilter]`
@@ -7811,10 +8021,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the order data was last updated.
 
+<a id="OrderStartswithCondition"></a>
+
+`OrderStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.OrderStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrderStringFilter"></a>
 
 `OrderStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8021,7 +8245,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PaymentSourceAnyCondition"></a>
@@ -8123,10 +8347,24 @@ Classes
     `upi: Any`
     :   Data related to UPI payment source
 
+<a id="PaymentSourceArrayContainsCondition"></a>
+
+`PaymentSourceArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PaymentSourceContainsCondition"></a>
 
 `PaymentSourceContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8135,6 +8373,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PaymentSourceEndswithCondition"></a>
+
+`PaymentSourceEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStringFilter`
     :   The type of the None singleton.
 
 <a id="PaymentSourceEqCondition"></a>
@@ -8320,20 +8572,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStringFilter`
     :   The type of the None singleton.
 
-<a id="PaymentSourceLikeCondition"></a>
-
-`PaymentSourceLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStringFilter`
-    :   The type of the None singleton.
-
 <a id="PaymentSourceListParams"></a>
 
 `PaymentSourceListParams(*args, **kwargs)`
@@ -8412,7 +8650,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition`
     :   The type of the None singleton.
 
 <a id="PaymentSourceOrCondition"></a>
@@ -8434,7 +8672,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PaymentSourceSearchFilter"></a>
@@ -8525,7 +8763,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceGteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLtCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceLteCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceInCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceNotCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAndCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceOrCondition | airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceSortFilter]`
@@ -8608,10 +8846,24 @@ Classes
     `upi: Literal['asc', 'desc']`
     :   Data related to UPI payment source
 
+<a id="PaymentSourceStartswithCondition"></a>
+
+`PaymentSourceStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.PaymentSourceStringFilter`
+    :   The type of the None singleton.
+
 <a id="PaymentSourceStringFilter"></a>
 
 `PaymentSourceStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8704,7 +8956,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SubscriptionAnyCondition"></a>
@@ -8968,10 +9220,24 @@ Classes
     `updated_at: Any`
     :   The date and time when the subscription was last updated.
 
+<a id="SubscriptionArrayContainsCondition"></a>
+
+`SubscriptionArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SubscriptionContainsCondition"></a>
 
 `SubscriptionContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8980,6 +9246,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SubscriptionEndswithCondition"></a>
+
+`SubscriptionEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStringFilter`
     :   The type of the None singleton.
 
 <a id="SubscriptionEqCondition"></a>
@@ -9327,20 +9607,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStringFilter`
     :   The type of the None singleton.
 
-<a id="SubscriptionLikeCondition"></a>
-
-`SubscriptionLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStringFilter`
-    :   The type of the None singleton.
-
 <a id="SubscriptionListParams"></a>
 
 `SubscriptionListParams(*args, **kwargs)`
@@ -9419,7 +9685,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition`
     :   The type of the None singleton.
 
 <a id="SubscriptionOrCondition"></a>
@@ -9441,7 +9707,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SubscriptionSearchFilter"></a>
@@ -9694,7 +9960,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionInCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.SubscriptionAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.SubscriptionSortFilter]`
@@ -9939,10 +10205,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The date and time when the subscription was last updated.
 
+<a id="SubscriptionStartswithCondition"></a>
+
+`SubscriptionStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.SubscriptionStringFilter`
+    :   The type of the None singleton.
+
 <a id="SubscriptionStringFilter"></a>
 
 `SubscriptionStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -10197,7 +10477,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TransactionAnyCondition"></a>
@@ -10398,10 +10678,24 @@ Classes
     `voided_at: Any`
     :   Date when the transaction was voided.
 
+<a id="TransactionArrayContainsCondition"></a>
+
+`TransactionArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TransactionContainsCondition"></a>
 
 `TransactionContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -10410,6 +10704,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TransactionEndswithCondition"></a>
+
+`TransactionEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.chargebee.types.TransactionStringFilter`
     :   The type of the None singleton.
 
 <a id="TransactionEqCondition"></a>
@@ -10694,20 +11002,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.chargebee.types.TransactionStringFilter`
     :   The type of the None singleton.
 
-<a id="TransactionLikeCondition"></a>
-
-`TransactionLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.chargebee.types.TransactionStringFilter`
-    :   The type of the None singleton.
-
 <a id="TransactionListParams"></a>
 
 `TransactionListParams(*args, **kwargs)`
@@ -10786,7 +11080,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition`
+    `not: airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition`
     :   The type of the None singleton.
 
 <a id="TransactionOrCondition"></a>
@@ -10808,7 +11102,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TransactionSearchFilter"></a>
@@ -10998,7 +11292,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLikeCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.chargebee.types.TransactionEqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNeqCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionGteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLtCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionLteCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionInCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionStartswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionEndswithCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionFuzzyCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionKeywordCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionArrayContainsCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionNotCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAndCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionOrCondition | airbyte_agent_sdk.connectors.chargebee.types.TransactionAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.chargebee.types.TransactionSortFilter]`
@@ -11180,10 +11474,24 @@ Classes
     `voided_at: Literal['asc', 'desc']`
     :   Date when the transaction was voided.
 
+<a id="TransactionStartswithCondition"></a>
+
+`TransactionStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.chargebee.types.TransactionStringFilter`
+    :   The type of the None singleton.
+
 <a id="TransactionStringFilter"></a>
 
 `TransactionStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

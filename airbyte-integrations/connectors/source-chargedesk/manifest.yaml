@@ -66,7 +66,7 @@ definitions:
         cursor_field: occurred
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\", 0) }}"
           datetime_format: "%s"
         datetime_format: "%s"
         start_time_option:
@@ -150,7 +150,7 @@ definitions:
         cursor_field: first_seen
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\", 0) }}"
           datetime_format: "%s"
         datetime_format: "%s"
         start_time_option:
@@ -199,7 +199,7 @@ definitions:
         cursor_field: first_seen
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\", 0) }}"
           datetime_format: "%s"
         datetime_format: "%s"
         start_time_option:

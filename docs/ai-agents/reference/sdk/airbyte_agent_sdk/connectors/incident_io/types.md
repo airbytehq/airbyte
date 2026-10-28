@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AlertsAnyCondition"></a>
@@ -121,10 +121,24 @@ Classes
     `updated_at: Any`
     :   When the alert was last updated
 
+<a id="AlertsArrayContainsCondition"></a>
+
+`AlertsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AlertsContainsCondition"></a>
 
 `AlertsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -133,6 +147,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AlertsEndswithCondition"></a>
+
+`AlertsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.AlertsStringFilter`
     :   The type of the None singleton.
 
 <a id="AlertsEqCondition"></a>
@@ -285,20 +313,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.AlertsStringFilter`
     :   The type of the None singleton.
 
-<a id="AlertsLikeCondition"></a>
-
-`AlertsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.AlertsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AlertsListParams"></a>
 
 `AlertsListParams(*args, **kwargs)`
@@ -377,7 +391,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AlertsOrCondition"></a>
@@ -399,7 +413,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AlertsSearchFilter"></a>
@@ -457,7 +471,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.AlertsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsInCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.AlertsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.AlertsSortFilter]`
@@ -507,10 +521,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the alert was last updated
 
+<a id="AlertsStartswithCondition"></a>
+
+`AlertsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.AlertsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AlertsStringFilter"></a>
 
 `AlertsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -570,7 +598,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogTypesAnyCondition"></a>
@@ -648,19 +676,30 @@ Classes
     `schema_: Any`
     :   Schema definition for the catalog type
 
-    `semantic_type: Any`
-    :   Semantic type for special behavior
-
     `type_name: Any`
     :   Programmatic type name
 
     `updated_at: Any`
     :   When the catalog type was last updated
 
+<a id="CatalogTypesArrayContainsCondition"></a>
+
+`CatalogTypesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CatalogTypesContainsCondition"></a>
 
 `CatalogTypesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -669,6 +708,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CatalogTypesEndswithCondition"></a>
+
+`CatalogTypesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStringFilter`
     :   The type of the None singleton.
 
 <a id="CatalogTypesEqCondition"></a>
@@ -816,9 +869,6 @@ Classes
     `schema_: list[dict[str, typing.Any]]`
     :   Schema definition for the catalog type
 
-    `semantic_type: list[str]`
-    :   Semantic type for special behavior
-
     `type_name: list[str]`
     :   Programmatic type name
 
@@ -837,20 +887,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStringFilter`
-    :   The type of the None singleton.
-
-<a id="CatalogTypesLikeCondition"></a>
-
-`CatalogTypesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStringFilter`
     :   The type of the None singleton.
 
 <a id="CatalogTypesListParams"></a>
@@ -923,7 +959,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CatalogTypesOrCondition"></a>
@@ -945,7 +981,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogTypesSearchFilter"></a>
@@ -1001,9 +1037,6 @@ Classes
     `schema_: dict[str, typing.Any] | None`
     :   Schema definition for the catalog type
 
-    `semantic_type: str | None`
-    :   Semantic type for special behavior
-
     `type_name: str | None`
     :   Programmatic type name
 
@@ -1021,7 +1054,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesInCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesSortFilter]`
@@ -1080,19 +1113,30 @@ Classes
     `schema_: Literal['asc', 'desc']`
     :   Schema definition for the catalog type
 
-    `semantic_type: Literal['asc', 'desc']`
-    :   Semantic type for special behavior
-
     `type_name: Literal['asc', 'desc']`
     :   Programmatic type name
 
     `updated_at: Literal['asc', 'desc']`
     :   When the catalog type was last updated
 
+<a id="CatalogTypesStartswithCondition"></a>
+
+`CatalogTypesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.CatalogTypesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CatalogTypesStringFilter"></a>
 
 `CatalogTypesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1142,9 +1186,6 @@ Classes
     `schema_: str`
     :   Schema definition for the catalog type
 
-    `semantic_type: str`
-    :   Semantic type for special behavior
-
     `type_name: str`
     :   Programmatic type name
 
@@ -1170,7 +1211,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomFieldsAnyCondition"></a>
@@ -1224,10 +1265,24 @@ Classes
     `updated_at: Any`
     :   When the custom field was last updated
 
+<a id="CustomFieldsArrayContainsCondition"></a>
+
+`CustomFieldsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomFieldsContainsCondition"></a>
 
 `CustomFieldsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1236,6 +1291,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomFieldsEndswithCondition"></a>
+
+`CustomFieldsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomFieldsEqCondition"></a>
@@ -1373,20 +1442,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomFieldsLikeCondition"></a>
-
-`CustomFieldsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomFieldsListParams"></a>
 
 `CustomFieldsListParams(*args, **kwargs)`
@@ -1457,7 +1512,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomFieldsOrCondition"></a>
@@ -1479,7 +1534,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomFieldsSearchFilter"></a>
@@ -1522,7 +1577,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsSortFilter]`
@@ -1557,10 +1612,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the custom field was last updated
 
+<a id="CustomFieldsStartswithCondition"></a>
+
+`CustomFieldsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.CustomFieldsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomFieldsStringFilter"></a>
 
 `CustomFieldsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1605,7 +1674,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EscalationsAnyCondition"></a>
@@ -1674,10 +1743,24 @@ Classes
     `updated_at: Any`
     :   When the escalation was last updated
 
+<a id="EscalationsArrayContainsCondition"></a>
+
+`EscalationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EscalationsContainsCondition"></a>
 
 `EscalationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1686,6 +1769,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="EscalationsEndswithCondition"></a>
+
+`EscalationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.EscalationsStringFilter`
     :   The type of the None singleton.
 
 <a id="EscalationsEqCondition"></a>
@@ -1838,20 +1935,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.EscalationsStringFilter`
     :   The type of the None singleton.
 
-<a id="EscalationsLikeCondition"></a>
-
-`EscalationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.EscalationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="EscalationsListParams"></a>
 
 `EscalationsListParams(*args, **kwargs)`
@@ -1930,7 +2013,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="EscalationsOrCondition"></a>
@@ -1952,7 +2035,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EscalationsSearchFilter"></a>
@@ -2010,7 +2093,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.EscalationsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsInCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.EscalationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.EscalationsSortFilter]`
@@ -2060,10 +2143,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the escalation was last updated
 
+<a id="EscalationsStartswithCondition"></a>
+
+`EscalationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.EscalationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="EscalationsStringFilter"></a>
 
 `EscalationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2123,7 +2220,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentRolesAnyCondition"></a>
@@ -2186,10 +2283,24 @@ Classes
     `updated_at: Any`
     :   When the role was last updated
 
+<a id="IncidentRolesArrayContainsCondition"></a>
+
+`IncidentRolesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentRolesContainsCondition"></a>
 
 `IncidentRolesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2198,6 +2309,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IncidentRolesEndswithCondition"></a>
+
+`IncidentRolesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStringFilter`
     :   The type of the None singleton.
 
 <a id="IncidentRolesEqCondition"></a>
@@ -2344,20 +2469,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStringFilter`
     :   The type of the None singleton.
 
-<a id="IncidentRolesLikeCondition"></a>
-
-`IncidentRolesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStringFilter`
-    :   The type of the None singleton.
-
 <a id="IncidentRolesListParams"></a>
 
 `IncidentRolesListParams(*args, **kwargs)`
@@ -2428,7 +2539,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncidentRolesOrCondition"></a>
@@ -2450,7 +2561,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentRolesSearchFilter"></a>
@@ -2502,7 +2613,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesSortFilter]`
@@ -2546,10 +2657,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the role was last updated
 
+<a id="IncidentRolesStartswithCondition"></a>
+
+`IncidentRolesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentRolesStringFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentRolesStringFilter"></a>
 
 `IncidentRolesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2603,7 +2728,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentStatusesAnyCondition"></a>
@@ -2660,10 +2785,24 @@ Classes
     `updated_at: Any`
     :   When the status was last updated
 
+<a id="IncidentStatusesArrayContainsCondition"></a>
+
+`IncidentStatusesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentStatusesContainsCondition"></a>
 
 `IncidentStatusesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2672,6 +2811,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IncidentStatusesEndswithCondition"></a>
+
+`IncidentStatusesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStringFilter`
     :   The type of the None singleton.
 
 <a id="IncidentStatusesEqCondition"></a>
@@ -2812,20 +2965,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStringFilter`
     :   The type of the None singleton.
 
-<a id="IncidentStatusesLikeCondition"></a>
-
-`IncidentStatusesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStringFilter`
-    :   The type of the None singleton.
-
 <a id="IncidentStatusesListParams"></a>
 
 `IncidentStatusesListParams(*args, **kwargs)`
@@ -2896,7 +3035,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncidentStatusesOrCondition"></a>
@@ -2918,7 +3057,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentStatusesSearchFilter"></a>
@@ -2964,7 +3103,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesSortFilter]`
@@ -3002,10 +3141,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the status was last updated
 
+<a id="IncidentStatusesStartswithCondition"></a>
+
+`IncidentStatusesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentStatusesStringFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentStatusesStringFilter"></a>
 
 `IncidentStatusesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3053,7 +3206,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentTimestampsAnyCondition"></a>
@@ -3098,10 +3251,24 @@ Classes
     `rank: Any`
     :   Rank for ordering
 
+<a id="IncidentTimestampsArrayContainsCondition"></a>
+
+`IncidentTimestampsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentTimestampsContainsCondition"></a>
 
 `IncidentTimestampsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3110,6 +3277,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IncidentTimestampsEndswithCondition"></a>
+
+`IncidentTimestampsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStringFilter`
     :   The type of the None singleton.
 
 <a id="IncidentTimestampsEqCondition"></a>
@@ -3238,20 +3419,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStringFilter`
     :   The type of the None singleton.
 
-<a id="IncidentTimestampsLikeCondition"></a>
-
-`IncidentTimestampsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStringFilter`
-    :   The type of the None singleton.
-
 <a id="IncidentTimestampsListParams"></a>
 
 `IncidentTimestampsListParams(*args, **kwargs)`
@@ -3322,7 +3489,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncidentTimestampsOrCondition"></a>
@@ -3344,7 +3511,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentTimestampsSearchFilter"></a>
@@ -3378,7 +3545,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsSortFilter]`
@@ -3404,10 +3571,24 @@ Classes
     `rank: Literal['asc', 'desc']`
     :   Rank for ordering
 
+<a id="IncidentTimestampsStartswithCondition"></a>
+
+`IncidentTimestampsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentTimestampsStringFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentTimestampsStringFilter"></a>
 
 `IncidentTimestampsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3443,7 +3624,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesAnyCondition"></a>
@@ -3500,10 +3681,24 @@ Classes
     `updater: Any`
     :   Who made this update
 
+<a id="IncidentUpdatesArrayContainsCondition"></a>
+
+`IncidentUpdatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentUpdatesContainsCondition"></a>
 
 `IncidentUpdatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3512,6 +3707,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IncidentUpdatesEndswithCondition"></a>
+
+`IncidentUpdatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStringFilter`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesEqCondition"></a>
@@ -3638,20 +3847,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStringFilter`
     :   The type of the None singleton.
 
-<a id="IncidentUpdatesLikeCondition"></a>
-
-`IncidentUpdatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="IncidentUpdatesListParams"></a>
 
 `IncidentUpdatesListParams(*args, **kwargs)`
@@ -3730,7 +3925,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesOrCondition"></a>
@@ -3752,7 +3947,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesSearchFilter"></a>
@@ -3798,7 +3993,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesSortFilter]`
@@ -3836,10 +4031,24 @@ Classes
     `updater: Literal['asc', 'desc']`
     :   Who made this update
 
+<a id="IncidentUpdatesStartswithCondition"></a>
+
+`IncidentUpdatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentUpdatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentUpdatesStringFilter"></a>
 
 `IncidentUpdatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3887,7 +4096,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentsAnyCondition"></a>
@@ -3998,10 +4207,24 @@ Classes
     `workload_minutes_working: Any`
     :   Minutes of workload classified as working
 
+<a id="IncidentsArrayContainsCondition"></a>
+
+`IncidentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentsContainsCondition"></a>
 
 `IncidentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4010,6 +4233,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IncidentsEndswithCondition"></a>
+
+`IncidentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentsStringFilter`
     :   The type of the None singleton.
 
 <a id="IncidentsEqCondition"></a>
@@ -4204,20 +4441,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.IncidentsStringFilter`
     :   The type of the None singleton.
 
-<a id="IncidentsLikeCondition"></a>
-
-`IncidentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.IncidentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="IncidentsListParams"></a>
 
 `IncidentsListParams(*args, **kwargs)`
@@ -4296,7 +4519,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncidentsOrCondition"></a>
@@ -4318,7 +4541,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncidentsSearchFilter"></a>
@@ -4418,7 +4641,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.IncidentsEqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsGteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLtCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsLteCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsInCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsNotCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAndCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsOrCondition | airbyte_agent_sdk.connectors.incident_io.types.IncidentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.IncidentsSortFilter]`
@@ -4510,10 +4733,24 @@ Classes
     `workload_minutes_working: Literal['asc', 'desc']`
     :   Minutes of workload classified as working
 
+<a id="IncidentsStartswithCondition"></a>
+
+`IncidentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.IncidentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="IncidentsStringFilter"></a>
 
 `IncidentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4615,7 +4852,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SchedulesAnyCondition"></a>
@@ -4675,10 +4912,24 @@ Classes
     `updated_at: Any`
     :   When the schedule was last updated
 
+<a id="SchedulesArrayContainsCondition"></a>
+
+`SchedulesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SchedulesContainsCondition"></a>
 
 `SchedulesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4687,6 +4938,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SchedulesEndswithCondition"></a>
+
+`SchedulesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.SchedulesStringFilter`
     :   The type of the None singleton.
 
 <a id="SchedulesEqCondition"></a>
@@ -4830,20 +5095,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.SchedulesStringFilter`
     :   The type of the None singleton.
 
-<a id="SchedulesLikeCondition"></a>
-
-`SchedulesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.SchedulesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SchedulesListParams"></a>
 
 `SchedulesListParams(*args, **kwargs)`
@@ -4922,7 +5173,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SchedulesOrCondition"></a>
@@ -4944,7 +5195,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SchedulesSearchFilter"></a>
@@ -4993,7 +5244,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.SchedulesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SchedulesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.SchedulesSortFilter]`
@@ -5034,10 +5285,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the schedule was last updated
 
+<a id="SchedulesStartswithCondition"></a>
+
+`SchedulesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.SchedulesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SchedulesStringFilter"></a>
 
 `SchedulesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5088,7 +5353,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SeveritiesAnyCondition"></a>
@@ -5142,10 +5407,24 @@ Classes
     `updated_at: Any`
     :   When the severity was last updated
 
+<a id="SeveritiesArrayContainsCondition"></a>
+
+`SeveritiesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SeveritiesContainsCondition"></a>
 
 `SeveritiesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5154,6 +5433,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SeveritiesEndswithCondition"></a>
+
+`SeveritiesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStringFilter`
     :   The type of the None singleton.
 
 <a id="SeveritiesEqCondition"></a>
@@ -5291,20 +5584,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStringFilter`
     :   The type of the None singleton.
 
-<a id="SeveritiesLikeCondition"></a>
-
-`SeveritiesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SeveritiesListParams"></a>
 
 `SeveritiesListParams(*args, **kwargs)`
@@ -5375,7 +5654,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SeveritiesOrCondition"></a>
@@ -5397,7 +5676,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SeveritiesSearchFilter"></a>
@@ -5440,7 +5719,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesGteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLtCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesLteCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesInCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesNotCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAndCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesOrCondition | airbyte_agent_sdk.connectors.incident_io.types.SeveritiesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.SeveritiesSortFilter]`
@@ -5475,10 +5754,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the severity was last updated
 
+<a id="SeveritiesStartswithCondition"></a>
+
+`SeveritiesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.SeveritiesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SeveritiesStringFilter"></a>
 
 `SeveritiesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5554,7 +5847,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -5611,10 +5904,24 @@ Classes
     `slack_user_id: Any`
     :   Slack user ID
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.incident_io.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5623,6 +5930,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.incident_io.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.incident_io.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -5763,20 +6084,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.incident_io.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.incident_io.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -5855,7 +6162,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -5877,7 +6184,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -5923,7 +6230,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLikeCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.incident_io.types.UsersEqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNeqCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersGteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLtCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersLteCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersInCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersNotCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAndCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersOrCondition | airbyte_agent_sdk.connectors.incident_io.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.incident_io.types.UsersSortFilter]`
@@ -5961,10 +6268,24 @@ Classes
     `slack_user_id: Literal['asc', 'desc']`
     :   Slack user ID
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.incident_io.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

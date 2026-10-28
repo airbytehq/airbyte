@@ -81,8 +81,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      *
      * @param query execute a query using a [Connection] to get a [ResultSet].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
+     *   just pass the [ResultSet] through. it is a stateful object will not be accessible if
+     *   returned from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a list.
      * @throws SQLException SQL related exceptions. </T>
@@ -90,7 +90,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> bufferedResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): List<T>
 
     /**
@@ -102,8 +102,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      *
      * @param query execute a query using a [Connection] to get a [ResultSet].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
+     *   just pass the [ResultSet] through. it is a stateful object will not be accessible if
+     *   returned from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.
      * @throws SQLException SQL related exceptions. </T>
@@ -112,7 +112,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> unsafeResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): Stream<T>
 
     /**
@@ -122,7 +122,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryStrings(
         query: CheckedFunction<Connection, ResultSet, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, String, SQLException>
+        recordTransform: CheckedFunction<ResultSet, String, SQLException>,
     ): List<String> {
         unsafeResultSetQuery(query, recordTransform).use { stream ->
             return stream.toList()
@@ -138,9 +138,10 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      * connection leak.
      *
      * @paramstatementCreator create a [PreparedStatement] from a [Connection].
+     *
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
+     *   just pass the [ResultSet] through. it is a stateful object will not be accessible if
+     *   returned from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.void execute(String sql)
      * @throws SQLException SQL related exceptions. </T>
@@ -149,7 +150,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> unsafeQuery(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): Stream<T>
 
     /**
@@ -159,7 +160,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryJsons(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException>
+        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException>,
     ): List<JsonNode> {
         unsafeQuery(statementCreator, recordTransform).use { stream ->
             return stream.toList()
@@ -170,7 +171,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryInt(sql: String, vararg params: String): Int {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getInt(1) }
+                { rs: ResultSet -> rs.getInt(1) },
             )
             .use { stream ->
                 return stream.findFirst().get()
@@ -181,7 +182,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryBoolean(sql: String, vararg params: String): Boolean {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getBoolean(1) }
+                { rs: ResultSet -> rs.getBoolean(1) },
             )
             .use { stream ->
                 return stream.findFirst().get()
@@ -205,7 +206,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                 }
                 statement
             },
-            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) }
+            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) },
         )
     }
 
@@ -238,6 +239,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(JdbcDatabase::class.java)
+
         /**
          * Map records returned in a result set. It is an "unsafe" stream because the stream must be
          * manually closed. Otherwise, there will be a database connection leak.
@@ -251,7 +253,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
         @MustBeClosed
         fun <T> toUnsafeStream(
             resultSet: ResultSet,
-            mapper: CheckedFunction<ResultSet, T, SQLException>
+            mapper: CheckedFunction<ResultSet, T, SQLException>,
         ): Stream<T> {
             return StreamSupport.stream(
                 object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {
@@ -268,7 +270,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                         }
                     }
                 },
-                false
+                false,
             )
         }
 
@@ -276,7 +278,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
         private fun getPreparedStatement(
             sql: String,
             params: Array<out String>,
-            c: Connection
+            c: Connection,
         ): PreparedStatement {
             val statement = c.prepareStatement(sql)
             var i = 1

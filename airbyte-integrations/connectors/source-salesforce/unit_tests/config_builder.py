@@ -19,6 +19,10 @@ class ConfigBuilder:
         self._config["start_date"] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         return self
 
+    def end_date(self, end_date: datetime) -> "ConfigBuilder":
+        self._config["end_date"] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return self
+
     def stream_slice_step(self, stream_slice_step: str) -> "ConfigBuilder":
         self._config["stream_slice_step"] = stream_slice_step
         return self

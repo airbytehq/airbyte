@@ -111,7 +111,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected open fun assertStreamStatusTraceMessageIndex(
         idx: Int,
         allMessages: List<AirbyteMessage>,
-        expectedStreamStatus: AirbyteStreamStatusTraceMessage
+        expectedStreamStatus: AirbyteStreamStatusTraceMessage,
     ) {
         var actualMessage = allMessages[idx]
         Assertions.assertEquals(
@@ -127,7 +127,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun createAirbteStreanStatusTraceMessage(
         namespace: String,
         streamName: String,
-        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus,
     ): AirbyteStreamStatusTraceMessage {
 
         return AirbyteStreamStatusTraceMessage()
@@ -136,7 +136,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun assertExpectedStateMessagesForFullRefresh(
-        stateMessages: List<AirbyteStateMessage>
+        stateMessages: List<AirbyteStateMessage>,
     ) {}
 
     // TODO: this assertion should be added into test cases in this class, we will need to implement
@@ -144,7 +144,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     // doing so.
     protected open fun assertExpectedStateMessageCountMatches(
         stateMessages: List<AirbyteStateMessage>,
-        totalCount: Long
+        totalCount: Long,
     ) {
         // Do nothing.
     }
@@ -229,7 +229,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun columnClause(
         columnsWithDataType: Map<String, String>,
-        primaryKey: Optional<String>
+        primaryKey: Optional<String>,
     ): String {
         val columnClause = StringBuilder()
         var i = 0
@@ -260,7 +260,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamName: String?,
         idCol: String?,
         makeIdCol: String?,
-        modelCol: String?
+        modelCol: String?,
     ) {
         testdb.with(
             "INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
@@ -288,7 +288,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         modelCol: String?,
         modelVal: String?,
         idCol: String?,
-        idValue: Int
+        idValue: Int,
     ) {
         testdb.with(
             "UPDATE %s.%s SET %s = '%s' WHERE %s = %s",
@@ -311,7 +311,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected fun extractRecordMessagesStreamWise(
-        messages: List<AirbyteMessage>
+        messages: List<AirbyteMessage>,
     ): Map<String, Set<AirbyteRecordMessage>> {
         val recordsPerStream: MutableMap<String, MutableList<AirbyteRecordMessage>> = HashMap()
         for (message in messages) {
@@ -344,7 +344,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected fun assertExpectedRecords(
         expectedRecords: Set<JsonNode>,
-        actualRecords: Set<AirbyteRecordMessage>
+        actualRecords: Set<AirbyteRecordMessage>,
     ) {
         // assume all streams are cdc.
         assertExpectedRecords(
@@ -357,7 +357,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun assertExpectedRecords(
         expectedRecords: Set<JsonNode>,
         actualRecords: Set<AirbyteRecordMessage>,
-        cdcStreams: Set<String>
+        cdcStreams: Set<String>,
     ) {
         assertExpectedRecords(
             expectedRecords,
@@ -373,7 +373,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         actualRecords: Set<AirbyteRecordMessage>,
         cdcStreams: Set<String>,
         streamNames: Set<String>,
-        namespace: String?
+        namespace: String?,
     ) {
         val actualData =
             actualRecords
@@ -445,7 +445,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
-        record: AirbyteRecordMessage
+        record: AirbyteRecordMessage,
     ) {
         Assertions.assertEquals(extractPosition(record.data), targetPosition)
     }
@@ -475,7 +475,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun assertExpectedStateMessagesFromIncrementalSync(
-        stateMessages: List<AirbyteStateMessage>
+        stateMessages: List<AirbyteStateMessage>,
     ) {
         assertExpectedStateMessages(stateMessages)
     }
@@ -630,7 +630,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
-        stateAfterFirstBatch: List<AirbyteStateMessage>
+        stateAfterFirstBatch: List<AirbyteStateMessage>,
     ) {
         assertExpectedStateMessages(stateAfterFirstBatch)
     }
@@ -1017,7 +1017,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun assertExpectedStateMessagesForNoData(
-        stateMessages: List<AirbyteStateMessage>
+        stateMessages: List<AirbyteStateMessage>,
     ) {
         assertExpectedStateMessages(stateMessages)
     }
@@ -1472,7 +1472,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun assertStateMessagesForNewTableSnapshotTest(
         stateMessages: List<AirbyteStateMessage>,
-        stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage
+        stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage,
     ) {
         Assertions.assertEquals(2, stateMessages.size)
         val stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateMessages[0]
@@ -1591,7 +1591,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected open fun waitForCdcRecords(
         schemaName: String?,
         tableName: String?,
-        recordCount: Int
+        recordCount: Int,
     ) {}
 
     companion object {
@@ -1634,7 +1634,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         @JvmStatic
         protected fun removeDuplicates(
-            messages: Set<AirbyteRecordMessage>
+            messages: Set<AirbyteRecordMessage>,
         ): Set<AirbyteRecordMessage> {
             val existingDataRecordsWithoutUpdated: MutableSet<JsonNode> = HashSet()
             val output: MutableSet<AirbyteRecordMessage> = HashSet()

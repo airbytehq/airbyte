@@ -22,7 +22,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /users/current/projects
+          path: users/{{ config.get('user') or 'current' }}/projects
           http_method: GET
           request_parameters:
             SortBy: Id
@@ -60,7 +60,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/current/runs
+          path: users/{{ config.get('user') or 'current' }}/runs
           http_method: GET
           request_parameters:
             SortBy: Id
@@ -167,7 +167,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1024
+            page_size: 1000
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -213,7 +213,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1024
+            page_size: 1000
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -236,7 +236,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/current/appsessions
+          path: users/{{ config.get('user') or 'current' }}/appsessions
           http_method: GET
           request_parameters:
             SortBy: Id
@@ -322,6 +322,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: appresults/{{ stream_partition["parent_id"] }}/files
           http_method: GET
+          request_parameters:
+            SortBy: Id
         record_selector:
           type: RecordSelector
           extractor:
@@ -329,6 +331,20 @@ definitions:
             field_path:
               - Response
               - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -343,7 +359,7 @@ definitions:
           $ref: "#/schemas/appresults_files"
   base_requester:
     type: HttpRequester
-    url_base: https://api.euw2.sh.basespace.illumina.com/v1pre3
+    url_base: https://api.{{ config['domain'] }}/v1pre3
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["access_token"] }}'
@@ -379,8 +395,14 @@ spec:
       domain:
         type: string
         description: >-
-          Domain name of the BaseSpace instance (e.g.,
-          euw2.sh.basespace.illumina.com)
+          Domain name of the BaseSpace instance your access token was issued
+          for, without the `api.` prefix (e.g. `basespace.illumina.com` for
+          the US instance, `euw2.sh.basespace.illumina.com` for EU West 2).
+          Requests are sent to `https://api.<domain>/v1pre3`.
+        examples:
+          - basespace.illumina.com
+          - euw2.sh.basespace.illumina.com
+          - euc1.sh.basespace.illumina.com
         order: 1
         title: Domain
       user:

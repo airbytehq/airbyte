@@ -775,6 +775,7 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[MediaSearchData]
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[OrganizationsSearchData]
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[SegmentsSearchData]
+    * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
