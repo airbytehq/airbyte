@@ -168,13 +168,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.1 | 2026-10-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Request 500 items per page from Gmail list endpoints |
 | 1.0.0 | 2026-10-27 | [89502](https://github.com/airbytehq/airbyte/pull/89502) | Add profile primary key and type count and size fields as integers |
-| 0.3.0 | 2026-10-27 | [89756](https://github.com/airbytehq/airbyte/pull/89756) | Bound incremental `messages_details` reads to the previous sync with a one-hour lookback; label and read-state changes on older messages now need a full refresh |
-| 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota, using the previous quota for OAuth and the current quota and full-format read costs for service accounts |
+| 0.3.0 | 2026-10-27 | [89756](https://github.com/airbytehq/airbyte/pull/89756) | Bound incremental `messages_details` reads to the previous sync with a one-hour lookback |
+| 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota |
 | 0.1.24 | 2026-10-27 | [89912](https://github.com/airbytehq/airbyte/pull/89912) | Update dependencies |
-| 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
+| 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts and honor Gmail's rate-limit retry time |
 | 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
-| 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
+| 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connections via the profile endpoint and retry rate-limited requests |
 | 0.1.20 | 2026-10-13 | [88635](https://github.com/airbytehq/airbyte/pull/88635) | Update dependencies |
 | 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
 | 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
@@ -184,7 +185,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.14 | 2026-09-08 | [85497](https://github.com/airbytehq/airbyte/pull/85497) | Update dependencies |
 | 0.1.13 | 2026-08-18 | [84554](https://github.com/airbytehq/airbyte/pull/84554) | Update dependencies |
 | 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
-| 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
+| 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Request the `gmail.modify` scope in Airbyte Cloud's OAuth flow |
 | 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
 | 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
 | 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
@@ -194,8 +195,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.4 | 2026-06-16 | [79869](https://github.com/airbytehq/airbyte/pull/79869) | Update dependencies |
 | 0.1.3 | 2026-06-09 | [79310](https://github.com/airbytehq/airbyte/pull/79310) | Update dependencies |
 | 0.1.2 | 2026-06-02 | [78732](https://github.com/airbytehq/airbyte/pull/78732) | Update dependencies |
-| 0.1.1 | 2026-05-04 | [76065](https://github.com/airbytehq/airbyte/pull/76065) | Add OAuth flow with credentials wrapper, config migration, and Service Account auth |
-| 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
+| 0.1.1 | 2026-05-04 | [76065](https://github.com/airbytehq/airbyte/pull/76065) | Add OAuth and service account authentication |
+| 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add incremental `messages_details` sync, `start_date` filtering and rate-limit handling |
 | 0.0.52 | 2026-04-28 | [77264](https://github.com/airbytehq/airbyte/pull/77264) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76616](https://github.com/airbytehq/airbyte/pull/76616) | Update dependencies |
 | 0.0.50 | 2026-03-24 | [75387](https://github.com/airbytehq/airbyte/pull/75387) | Update dependencies |
