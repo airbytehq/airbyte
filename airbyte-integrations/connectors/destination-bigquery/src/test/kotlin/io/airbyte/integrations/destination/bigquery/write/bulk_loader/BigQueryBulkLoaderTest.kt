@@ -86,6 +86,7 @@ class BigQueryBulkLoaderTest {
             )
         return BigqueryConfiguration(
             projectId = "project",
+            jobProjectId = "project",
             datasetLocation = BigqueryRegion.US,
             datasetId = "dataset",
             loadingMethod = GcsStagingConfiguration(gcsConfig, GcsFilePostProcessing.KEEP),
