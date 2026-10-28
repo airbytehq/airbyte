@@ -54,13 +54,13 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 
 To fill out the required information:
 <FieldAnchor field="host, port, database">
-1. Enter the hostname, port number, and name for your Postgres database.
+1. Enter the hostname, port number, and name for your Postgres database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#ssh-tunneling), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 </FieldAnchor>
 <FieldAnchor field="schemas">
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
 3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. Airbyte Cloud never connects unencrypted: the unencrypted modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel (see [Connecting with SSL or SSH Tunneling](#connecting-with-ssl-or-ssh-tunneling)).
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
@@ -71,7 +71,11 @@ To fill out the required information:
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
+Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `require`, `verify-ca` or `verify-full`) or go through an [SSH tunnel](#ssh-tunneling), which encrypts the hop between Airbyte Cloud and your network. The unencrypted SSL modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel. A database on `localhost` or on a private network is not reachable from Airbyte Cloud directly: connect to it through an SSH tunnel. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+
+If the test fails with `Airbyte could not reach the database at the configured host and port`, Airbyte could not open a TCP connection to your database. Check the host and port, that Postgres accepts remote connections (`listen_addresses` in `postgresql.conf` and a matching entry in `pg_hba.conf`), and that your firewall or security group allows the Airbyte IP addresses listed above.
 
 <!-- /env:cloud -->
 
@@ -99,6 +103,8 @@ These are the additional steps required (after following the [quick start](#quic
 ### Step 1: Prepopulate your Postgres source configuration
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
+
+CDC requires PostgreSQL 14 or later. Debezium 3.4, the CDC engine in connector version 3.8.10 and later, no longer supports PostgreSQL 13 and earlier.
 
 For CDC, you may connect to primary/master databases or replicas. To use a replica as a source, Postgres must be at version 16.1 or later and this connector must be at version 3.6.21 or later. You must also enable additional configurations on the database instance (for help, see the [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)).
 
@@ -228,7 +234,7 @@ This is a good solution if:
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+Airbyte uses SSL (`require`) by default. Airbyte Cloud never connects to a database unencrypted: the connection must use TLS/SSL (`require`, `verify-ca` or `verify-full`), or go through an [SSH tunnel](#ssh-tunneling), which encrypts the hop between Airbyte Cloud and your network. The unencrypted modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel; with `No Tunnel` the connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel`. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
 Here is a breakdown of available SSL connection modes:
 
@@ -242,7 +248,7 @@ Here is a breakdown of available SSL connection modes:
 
 ### SSH Tunneling
 
-If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select `SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or `prefer` as the SSL Mode; otherwise, the connection will fail.
+Airbyte Cloud requires encrypted communication, and an SSH tunnel provides it: the hop between Airbyte Cloud and your bastion host is encrypted by SSH. The unencrypted SSL modes `disable`, `allow` and `prefer` are therefore accepted on Airbyte Cloud only when you also select `SSH Key Authentication` or `Password Authentication`; with `No Tunnel` the connection fails. An SSH tunnel is also the only way for Airbyte Cloud to reach a database that is not exposed to the internet, such as one on `localhost` or on a private network: Airbyte connects to a bastion host that you expose to the Airbyte IPs, and the bastion forwards the connection to the database.
 
 For SSH Tunnel Method, select:
 
@@ -363,6 +369,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.10 | 2026-10-21 | [89623](https://github.com/airbytehq/airbyte/pull/89623) | Upgrade to Bulk CDK 1.2.1, which brings Debezium 3.4.3 (CDC requires PostgreSQL 14 or later; the JDBC driver's keep-alive no longer advances the replication slot while the captured tables are idle, so configure the Debezium heartbeat query on low-activity databases), CDC records written while Debezium shuts down are counted in the final checkpoint, Kotlin 2.4 / K2 runtime, Micronaut 4.10.31, Jackson 2.21.7. |
+| 3.8.9 | 2026-10-14 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream. |
+| 3.8.8 | 2026-10-12 | [88498](https://github.com/airbytehq/airbyte/pull/88498) | Classify unreachable-host connection errors (connection refused, unknown host, connect timeout) as configuration errors that point to the host and port, the Postgres remote-connection settings and the Airbyte Cloud IP allowlist. Explain the `Discovered zero tables.` connection-test failure: the message now names the schema `USAGE` and table `SELECT` grants to add and asks to check the database name, the Schemas setting and the table filters. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 3.8.7 | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14. |
 | 3.8.6   | 2026-09-16 | [86369](https://github.com/airbytehq/airbyte/pull/86369) | Fix NULL array columns taking the previous record's value on the socket/protobuf CDC path.                                                                                 |
 | 3.8.5   | 2026-07-29 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
@@ -417,6 +426,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.4.25  | 2024-07-12 | [41651](https://github.com/airbytehq/airbyte/pull/41651) | Throw transient error if tables of interest and undergoing full vacuum.                                                                                                    |
 | 3.4.24  | 2024-07-05 | [41067](https://github.com/airbytehq/airbyte/pull/41067) | Fix Postgres sending duplicated streams                                                                                                                                    |
 | 3.4.23  | 2024-07-01 | [40757](https://github.com/airbytehq/airbyte/pull/40757) | Rollback 3.4.22.                                                                                                                                                           |
+| 3.4.22 | 2024-07-05 | [40719](https://github.com/airbytehq/airbyte/pull/40719) | Fix Postgres sending duplicated streams (rolled back in 3.4.23) |
 | 3.4.21  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                                                                                       |
 | 3.4.20  | 2024-06-23 | [40559](https://github.com/airbytehq/airbyte/pull/40559) | Remove strict check for stream states of unknown types                                                                                                                     |
 | 3.4.19  | 2024-06-23 | [40223](https://github.com/airbytehq/airbyte/pull/40223) | Revert the changes introduced in version 3.4.15.                                                                                                                           |
@@ -433,6 +443,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.4.9   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Publish CDK                                                                                                                                                                |
 | 3.4.8   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Stream status for postgres                                                                                                                                                 |
 | 3.4.7   | 2024-05-20 | [38365](https://github.com/airbytehq/airbyte/pull/38365) | Rollback a previously version (3.4.6)                                                                                                                                      |
+| 3.4.6 | 2024-05-20 | [38289](https://github.com/airbytehq/airbyte/pull/38289) | Connect with `adaptiveFetch=true` (rolled back in 3.4.7) |
 | 3.4.5   | 2024-05-16 | [38303](https://github.com/airbytehq/airbyte/pull/38303) | Streams not in the CDC publication still have a cursor and PK.                                                                                                             |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message.                                                                                                                    |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages.                                                                                                                                           |

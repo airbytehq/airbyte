@@ -45,7 +45,7 @@ class AggregateStoreTest {
                 maxEstBytesAllAggregates = 5000L,
                 maxRecordsPerAgg = 100L,
                 maxEstBytesPerAgg = 2000L,
-                stalenessDeadlinePerAgg = 10.seconds
+                stalenessDeadlinePerAgg = 10.seconds,
             )
 
         aggregateStore = AggregateStore(aggregateFactory, memoryConfig)
@@ -183,7 +183,7 @@ class AggregateStoreTest {
                 Fixtures.dto(
                     partitionKey = "partition$index",
                     sizeBytes = recordSize,
-                    emittedAtMs = 1000L
+                    emittedAtMs = 1000L,
                 )
             aggregateStore.acceptFor(key, record)
         }
@@ -208,7 +208,7 @@ class AggregateStoreTest {
             listOf(
                 DestinationStream.Descriptor(namespace = "test", name = "stream1"),
                 DestinationStream.Descriptor(namespace = "test", name = "stream2"),
-                DestinationStream.Descriptor(namespace = "test", name = "stream3")
+                DestinationStream.Descriptor(namespace = "test", name = "stream3"),
             )
 
         keys.forEach { key ->
@@ -231,7 +231,7 @@ class AggregateStoreTest {
                 partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(10).apply { repeat(10) { increment(1) } },
-                estimatedBytesTrigger = SizeTrigger(1000)
+                estimatedBytesTrigger = SizeTrigger(1000),
             )
 
         assertTrue(entry.isComplete())
@@ -247,7 +247,7 @@ class AggregateStoreTest {
                 partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
-                estimatedBytesTrigger = SizeTrigger(1000).apply { increment(1000) }
+                estimatedBytesTrigger = SizeTrigger(1000).apply { increment(1000) },
             )
 
         assertTrue(entry.isComplete())
@@ -263,7 +263,7 @@ class AggregateStoreTest {
                 partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
-                estimatedBytesTrigger = SizeTrigger(1000)
+                estimatedBytesTrigger = SizeTrigger(1000),
             )
 
         assertFalse(entry.isComplete())
@@ -279,7 +279,7 @@ class AggregateStoreTest {
                 partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(1000).apply { update(5000) },
                 recordCountTrigger = SizeTrigger(100),
-                estimatedBytesTrigger = SizeTrigger(1000)
+                estimatedBytesTrigger = SizeTrigger(1000),
             )
 
         assertFalse(entry.isStale(5500))
@@ -295,13 +295,13 @@ class AggregateStoreTest {
                         val key =
                             DestinationStream.Descriptor(
                                 namespace = "test",
-                                name = "stream$threadId"
+                                name = "stream$threadId",
                             )
                         val record =
                             Fixtures.dto(
                                 partitionKey = "partition$recordId",
                                 sizeBytes = 10,
-                                emittedAtMs = System.currentTimeMillis()
+                                emittedAtMs = System.currentTimeMillis(),
                             )
                         aggregateStore.acceptFor(key, record)
                     }

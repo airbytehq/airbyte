@@ -4579,10 +4579,16 @@ Classes
     `end_cursor: str | None`
     :   The type of the None singleton.
 
+    `errors: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `stargazer_count: int | None`
     :   The type of the None singleton.
 
 <a id="StargazersSearchData"></a>

@@ -50,7 +50,7 @@ class MSSQLChecker(
             generationId = 0L,
             minimumGenerationId = 0L,
             syncId = 0L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     override fun check(config: MSSQLConfiguration) {
@@ -79,7 +79,7 @@ class MSSQLChecker(
         connection: Connection,
         config: MSSQLConfiguration,
         dataSource: DataSource,
-        sqlBuilder: MSSQLQueryBuilder
+        sqlBuilder: MSSQLQueryBuilder,
     ) {
         val bulkLoadConfig =
             config.mssqlLoadTypeConfiguration.loadTypeConfiguration as BulkLoadConfiguration
@@ -87,13 +87,13 @@ class MSSQLChecker(
         // Create necessary helpers
         val azureBlobClient =
             AzureBlobStorageClientCreator.createAzureBlobClient(
-                bulkLoadConfiguration = bulkLoadConfig
+                bulkLoadConfiguration = bulkLoadConfig,
             )
         val mssqlFormatFileCreator =
             MSSQLFormatFileCreator(
                 dataSource,
                 stream = testStream,
-                azureBlobClient = azureBlobClient
+                azureBlobClient = azureBlobClient,
             )
         val mssqlBulkLoadHandler =
             MSSQLBulkLoadHandler(
@@ -101,7 +101,7 @@ class MSSQLChecker(
                 config.schema,
                 testStream.mappedDescriptor.name,
                 bulkLoadConfig.bulkLoadDataSource,
-                sqlBuilder
+                sqlBuilder,
             )
 
         // Prepare test CSV data
@@ -141,7 +141,7 @@ class MSSQLChecker(
                         .withRecord(
                             AirbyteRecordMessage()
                                 .withEmittedAt(0)
-                                .withData(Jsons.valueToTree(mapOf(COLUMN_NAME to TEST_ID_VALUE)))
+                                .withData(Jsons.valueToTree(mapOf(COLUMN_NAME to TEST_ID_VALUE))),
                         )
                         .let { message ->
                             DestinationRecordRaw(
@@ -172,7 +172,7 @@ class MSSQLChecker(
                     val count = resultSet.getInt(1)
                     if (count != 1) {
                         throw RuntimeException(
-                            "Bulk load verification failed: Expected 1 record but found $count"
+                            "Bulk load verification failed: Expected 1 record but found $count",
                         )
                     }
                 } else {

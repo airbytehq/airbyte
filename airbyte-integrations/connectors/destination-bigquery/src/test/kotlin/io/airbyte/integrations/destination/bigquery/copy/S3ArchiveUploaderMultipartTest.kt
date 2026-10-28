@@ -103,11 +103,10 @@ class S3ArchiveUploaderMultipartTest {
         FakeS3(failPermanently = true).use { server ->
             val uploader = uploader(server)
             try {
-                val failure =
-                    runCatching {
-                            uploader.upload(largeFile(), "fusion/batch.csv.gz", "application/gzip")
-                        }
-                        .exceptionOrNull()
+                val failure = runCatching {
+                    uploader.upload(largeFile(), "fusion/batch.csv.gz", "application/gzip")
+                }
+                    .exceptionOrNull()
                 assertNotNull(failure)
                 assertFalse(failure is ArchiveReaderStillActiveException)
                 withContext(Dispatchers.IO) {
@@ -180,7 +179,7 @@ class S3ArchiveUploaderMultipartTest {
                         "fusion/streaming.jsonl",
                         "application/x-ndjson",
                         mapOf("batch-id" to "streaming"),
-                        directory
+                        directory,
                     )
                 val first = ByteArray(S3ArchiveUploader.PART_SIZE.toInt()) { (it % 127).toByte() }
                 val second = ByteArray(first.size) { (it % 113).toByte() }
@@ -205,7 +204,7 @@ class S3ArchiveUploaderMultipartTest {
                     assertEquals("COMPOSITE", server.checksumType)
                     assertEquals(
                         mapOf(1 to "CRC32", 2 to "CRC32", 3 to "CRC32"),
-                        server.partChecksumAlgorithms
+                        server.partChecksumAlgorithms,
                     )
                     assertEquals("application/x-ndjson", server.contentType)
                     assertEquals("streaming", server.batchId)
@@ -217,7 +216,7 @@ class S3ArchiveUploaderMultipartTest {
                     listOf(first, second, last).forEachIndexed { index, bytes ->
                         assertArrayEquals(
                             MessageDigest.getInstance("SHA-256").digest(bytes),
-                            server.digests.getValue(index + 1).single()
+                            server.digests.getValue(index + 1).single(),
                         )
                     }
                     assertEquals(0, Files.list(directory).use { it.count() })
@@ -421,8 +420,8 @@ class S3ArchiveUploaderMultipartTest {
                 "x-amz-checksum-crc32",
                 java.util.Base64.getEncoder()
                     .encodeToString(
-                        java.nio.ByteBuffer.allocate(4).putInt(crc.value.toInt()).array()
-                    )
+                        java.nio.ByteBuffer.allocate(4).putInt(crc.value.toInt()).array(),
+                    ),
             )
             return hash.digest()
         }
@@ -465,7 +464,7 @@ class S3ArchiveUploaderMultipartTest {
             input: InputStream,
             size: Long,
             hash: MessageDigest,
-            crc: java.util.zip.CRC32? = null
+            crc: java.util.zip.CRC32? = null,
         ) {
             val buffer = ByteArray(8192)
             var remaining = size

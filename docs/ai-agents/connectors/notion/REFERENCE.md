@@ -2968,7 +2968,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].entity.id` | `string` | Source record field |
 | `data[].entity.last_edited_time` | `string` | Source record field |
 | `data[].entity.page_id` | `string` | Source record field |
-| `data[].entity.block_id` | `string` | Source record field |
 | `data[].entity.discussion_id` | `string` | Source record field |
 | `data[].entity.created_by_id` | `string` | Source record field |
 | `data[].metadata` | `object` | Match metadata |

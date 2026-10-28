@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -64,9 +63,8 @@ data class CheckpointKey(
  * record index range associated with each checkpoint message.
  *
  * TODO: Force flush on a configured schedule
- *
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
- * before the destination can succeed.
+ *   before the destination can succeed.
  */
 class CheckpointManager(
     val catalog: DestinationCatalog,
@@ -74,7 +72,7 @@ class CheckpointManager(
     val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit,
     val timeProvider: TimeProvider,
     val socketMode: Boolean,
-    val namespaceMapper: NamespaceMapper
+    val namespaceMapper: NamespaceMapper,
 ) {
     private val log = KotlinLogging.logger {}
     private val storedCheckpointsLock = Mutex()
@@ -88,7 +86,7 @@ class CheckpointManager(
     private val streamCheckpoints:
         ConcurrentHashMap<
             DestinationStream.Descriptor,
-            ConcurrentSkipListMap<CheckpointKey, Reserved<CheckpointMessage>>
+            ConcurrentSkipListMap<CheckpointKey, Reserved<CheckpointMessage>>,
         > =
         ConcurrentHashMap()
     private val globalCheckpoints = ConcurrentSkipListMap<CheckpointKey, GlobalCheckpointHolder>()
@@ -107,7 +105,7 @@ class CheckpointManager(
         storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
                 throw IllegalStateException(
-                    "Global checkpoints cannot be mixed with non-global checkpoints"
+                    "Global checkpoints cannot be mixed with non-global checkpoints",
                 )
             }
 
@@ -122,12 +120,12 @@ class CheckpointManager(
     // TODO: Is it an error if we don't get all the streams every time?
     suspend fun addGlobalCheckpoint(
         checkpointKey: CheckpointKey,
-        checkpointMessage: Reserved<CheckpointMessage>
+        checkpointMessage: Reserved<CheckpointMessage>,
     ) {
         storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
-                    "Global checkpoint cannot be mixed with non-global checkpoints"
+                    "Global checkpoint cannot be mixed with non-global checkpoints",
                 )
             }
 
@@ -186,7 +184,7 @@ class CheckpointManager(
 
     private fun checkGlobalStreams(
         key: CheckpointKey,
-        sourceReportedCount: CheckpointMessage.Stats?
+        sourceReportedCount: CheckpointMessage.Stats?,
     ): Boolean {
         val allCommitted =
             catalog.streams.all {
@@ -207,7 +205,7 @@ class CheckpointManager(
     }
 
     private fun checkSnapshotStreams(
-        entry: MutableMap.MutableEntry<CheckpointKey, GlobalCheckpointHolder>
+        entry: MutableMap.MutableEntry<CheckpointKey, GlobalCheckpointHolder>,
     ): Boolean {
         val snapshot = entry.value.checkpointMessage.value as GlobalSnapshotCheckpoint
         var committedFromPartitions = 0L
@@ -225,14 +223,14 @@ class CheckpointManager(
         } else {
             checkGlobalStreams(
                 snapshot.checkpointKey!!,
-                CheckpointMessage.Stats(recordCount = expected - committedFromPartitions)
+                CheckpointMessage.Stats(recordCount = expected - committedFromPartitions),
             )
         }
     }
 
     private suspend fun flushGlobalState(
         checkpointKey: CheckpointKey,
-        checkpoint: GlobalCheckpointHolder
+        checkpoint: GlobalCheckpointHolder,
     ) {
         log.info { "Flushing global checkpoint with key $checkpointKey" }
         if (socketMode) {
@@ -241,7 +239,7 @@ class CheckpointManager(
             // and source counts match thus it's safe to set the destinationStats to source stats
             // value
             checkpoint.checkpointMessage.value.updateStats(
-                destinationStats = checkpoint.checkpointMessage.value.sourceStats
+                destinationStats = checkpoint.checkpointMessage.value.sourceStats,
             )
         }
 
@@ -330,7 +328,7 @@ class CheckpointManager(
                 if (
                     !wasPreviousStateEmitted(
                         stream.mappedDescriptor,
-                        nextCheckpointKey.checkpointIndex
+                        nextCheckpointKey.checkpointIndex,
                     )
                 ) {
                     break
@@ -352,7 +350,7 @@ class CheckpointManager(
                             CheckpointMessage.Stats(
                                 recordCount = delta.records,
                                 rejectedRecordCount = delta.rejectedRecords,
-                            )
+                            ),
                     )
                     sendStateMessage(
                         nextMessage,
@@ -375,7 +373,7 @@ class CheckpointManager(
                             manager.readCountForCheckpoint(nextCheckpointKey.checkpointId)
                         val committedCount =
                             manager.persistedRecordCountForCheckpoint(
-                                nextCheckpointKey.checkpointId
+                                nextCheckpointKey.checkpointId,
                             )
                         "Not flushing next checkpoint for index $nextCheckpointKey (committed $committedCount records of expected $expectedCount)"
                     }
@@ -390,7 +388,7 @@ class CheckpointManager(
 
     private fun wasPreviousStateEmitted(
         descriptor: DestinationStream.Descriptor,
-        nextCheckpointIndex: CheckpointIndex
+        nextCheckpointIndex: CheckpointIndex,
     ): Boolean {
         val lastIndex = lastCheckpointKeyEmitted[descriptor]?.checkpointIndex?.value ?: 0
         if (nextCheckpointIndex.value != lastIndex + 1) {
@@ -421,10 +419,9 @@ class CheckpointManager(
 
     suspend fun awaitAllCheckpointsFlushed() {
         while (true) {
-            val allCheckpointsFlushed =
-                storedCheckpointsLock.withLock {
-                    globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
-                }
+            val allCheckpointsFlushed = storedCheckpointsLock.withLock {
+                globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
+            }
             if (allCheckpointsFlushed) {
                 log.info { "All checkpoints flushed" }
                 break
@@ -438,10 +435,6 @@ class CheckpointManager(
     }
 }
 
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
-)
 @Singleton
 class FreeingAnnotatingCheckpointConsumer(
     private val consumer: OutputConsumer,

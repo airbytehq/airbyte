@@ -332,8 +332,9 @@ class GcsArchiveSpoolerTest {
     fun `four daemon workers bound concurrent reads and reject a fifth`() = runBlocking {
         val inputs = List(4) { BlockingInput(closeReleasesRead = true) }
         val spooler = GcsArchiveSpooler(cleanupTimeoutMillis = 1000)
-        val downloads =
-            inputs.map { input -> launch { spooler.download(Client { input }, blob, path()) } }
+        val downloads = inputs.map { input ->
+            launch { spooler.download(Client { input }, blob, path()) }
+        }
         try {
             inputs.forEach { it.entered.awaitSuspending() }
             val threads = inputs.map { it.thread.get() }

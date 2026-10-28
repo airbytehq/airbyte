@@ -44,7 +44,7 @@ class RedshiftTableOperationsTest(
 
     @Test
     @Disabled(
-        "CDK fixture (bulk-cdk-core-load 1.0.7) contains a 37-char UUID that exceeds Redshift's varchar(36) for _airbyte_raw_id. Re-enable once the CDK publishes a fix."
+        "CDK fixture (bulk-cdk-core-load 1.0.7) contains a 37-char UUID that exceeds Redshift's varchar(36) for _airbyte_raw_id. Re-enable once the CDK publishes a fix.",
     )
     override fun `count table rows`() {
         super.`count table rows`()
