@@ -184,6 +184,23 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+def test_read_products_count_not_multiple_of_records_per_slice():
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": 50, "records_per_slice": 20, "always_updated": True, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    rows = list(source.read(logger, config, catalog, {}))
+
+    records = [row.record.data for row in rows if row.type is Type.RECORD]
+    state_count = sum(row.type is Type.STATE for row in rows)
+    assert [record["id"] for record in records] == list(range(1, 51))
+    assert state_count == 2
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
