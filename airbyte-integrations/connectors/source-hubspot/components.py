@@ -273,6 +273,52 @@ class MarketingEmailStatisticsTransformation(RecordTransformation):
 
 
 @dataclass
+class HubspotFlowDetailsTransformation(RecordTransformation):
+    """
+    Custom transformation for the `flows` stream that fetches a full workflow definition.
+
+    HubSpot's Flows v4 list endpoint (GET /automation/v4/flows) only returns a summary of each
+    flow (`id`, `name`, `flowType`, `isEnabled`, `objectTypeId`, `revisionId`, `createdAt`,
+    `updatedAt`, `uuid`). The action graph, enrollment criteria, data sources and scheduling
+    settings are only available from GET /automation/v4/flows/{flowId}, so this transformation
+    makes one detail request per flow and merges the response into the listing record.
+
+    Unlike `AddFieldsFromEndpointTransformation`, a failed detail request does not abort the sync.
+    HubSpot requires additional `*.sensitive.read` scopes for flows that touch sensitive data, so a
+    single inaccessible flow in an otherwise readable portal would otherwise fail the whole stream.
+    When the detail request fails, the summary record from the listing endpoint is emitted as-is and
+    a warning naming the flow is logged.
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        flow_id = record.get("id")
+        try:
+            details_response = self.requester.send_request(stream_slice=StreamSlice(partition={"parent_id": flow_id}, cursor_slice={}))
+            details = self.record_selector.select_records(response=details_response, stream_state={}, records_schema={})
+
+            for detail in details:
+                record.update(detail)
+
+        except Exception as exception:
+            # Emit the listing-level record rather than failing the stream. The most common cause is a
+            # 403 for a flow that requires sensitive-data scopes the connector was not granted.
+            logger.warning(
+                f"Failed to fetch the full definition for flow {flow_id}: {exception}. "
+                f"Emitting summary fields only. If this flow contains sensitive data, grant the matching "
+                f"'*.sensitive.read' scopes to the HubSpot app and re-run the sync."
+            )
+
+
+@dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only

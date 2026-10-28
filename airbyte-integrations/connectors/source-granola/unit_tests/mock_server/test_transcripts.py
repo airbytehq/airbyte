@@ -27,9 +27,9 @@ from mock_server.request_builder import GranolaRequestBuilder
 
 _NOW = "2026-01-15T12:00:00Z"
 _START_DATE = "2026-01-01"
-# A start date within one 30-day step keeps the parent stream to a single slice, so each
-# note is partitioned exactly once and the child request assertions stay unambiguous.
-_ONLY_SLICE = ("2026-01-01T00:00:00Z", _NOW)
+# The parent stream sends a single `updated_after` slice, so each note is
+# partitioned exactly once and the child request assertions stay unambiguous.
+_UPDATED_AFTER = "2026-01-01T00:00:00Z"
 
 _TRANSCRIPT_TOO_LARGE = {
     "code": "TRANSCRIPT_TOO_LARGE",
@@ -38,12 +38,16 @@ _TRANSCRIPT_TOO_LARGE = {
 
 
 def _note(note_id: str) -> Dict[str, Any]:
-    return {"id": note_id, "title": f"Meeting {note_id}", "created_at": "2026-01-10T10:00:00Z"}
+    return {
+        "id": note_id,
+        "title": f"Meeting {note_id}",
+        "created_at": "2026-01-10T10:00:00Z",
+        "updated_at": "2026-01-10T10:00:00Z",
+    }
 
 
 def _notes_request() -> HttpRequest:
-    created_after, created_before = _ONLY_SLICE
-    return GranolaRequestBuilder.notes_endpoint().with_created_after(created_after).with_created_before(created_before).build()
+    return GranolaRequestBuilder.notes_endpoint().with_updated_after(_UPDATED_AFTER).build()
 
 
 def _notes_response(*note_ids: str) -> HttpResponse:

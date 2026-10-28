@@ -41,6 +41,7 @@ Sub-modules
 * [airbyte_agent_sdk.connectors.monday](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/monday)
 * [airbyte_agent_sdk.connectors.notion](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion)
 * [airbyte_agent_sdk.connectors.orb](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/orb)
+* [airbyte_agent_sdk.connectors.outreach](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/outreach)
 * [airbyte_agent_sdk.connectors.pinterest](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest)
 * [airbyte_agent_sdk.connectors.pylon](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pylon)
 * [airbyte_agent_sdk.connectors.reddit_ads](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/reddit_ads)

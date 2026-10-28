@@ -8,7 +8,6 @@ import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -35,10 +34,6 @@ private val log = KotlinLogging.logger {}
  * Encapsulates ClickHouse specific buffering and writing logic separate from the loader
  * state machine.
  */
-@SuppressFBWarnings(
-    value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
-)
 class BinaryRowInsertBuffer(
     val tableName: TableName,
     private val clickhouseClient: Client,
@@ -63,7 +58,7 @@ class BinaryRowInsertBuffer(
                 .insert(
                     "`${tableName.namespace}`.`${tableName.name}`",
                     inner.toInputStream(),
-                    ClickHouseFormat.RowBinary
+                    ClickHouseFormat.RowBinary,
                 )
                 .await()
 
@@ -101,6 +96,7 @@ class BinaryRowInsertBuffer(
         /**
          * Get an input stream based on the contents of this output stream. Do not use the output
          * stream after calling this method.
+         *
          * @return an {@link InputStream}
          */
         fun toInputStream(): ByteArrayInputStream {

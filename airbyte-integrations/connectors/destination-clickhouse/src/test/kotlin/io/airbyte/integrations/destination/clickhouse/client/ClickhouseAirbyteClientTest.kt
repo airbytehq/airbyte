@@ -47,7 +47,7 @@ class ClickhouseAirbyteClientTest {
                 client,
                 clickhouseSqlGenerator,
                 tempTableNameGenerator,
-            )
+            ),
         )
 
     @Test
@@ -164,8 +164,8 @@ class ClickhouseAirbyteClientTest {
                         "something" to
                             ColumnTypeChange(
                                 ColumnType("IrrelevantValue", false),
-                                ColumnType("IrrelevantValue", true)
-                            )
+                                ColumnType("IrrelevantValue", true),
+                            ),
                     ),
                 columnsToDrop = mapOf("test" to ColumnType("String", true)),
                 columnsToRetain = emptyMap(),

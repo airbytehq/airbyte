@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
  * - Add any required custom fields to the spec w/ jackson annotations
  *
  * - Add annotation overrides (note that this will replace the original annotation, so to extend an
- * existing annotation, you must copy the original annotation and add the new fields).
+ *   existing annotation, you must copy the original annotation and add the new fields).
  *
  * - Create a class `{MyDestination}Configuration` extending [DestinationConfiguration]
  *
@@ -31,13 +31,12 @@ import jakarta.inject.Singleton
  * - Add custom config to the configuration as needed
  *
  * - Implement `DestinationConfigurationFactory` as a @[Singleton], using the `to...Configuration`
- * methods from the specs to map to the provided configuration fields
+ *   methods from the specs to map to the provided configuration fields
  *
  * - (Set your custom fields as needed.)
  *
  * - Add a @[Factory] injected with [DestinationConfiguration], returning a @[Singleton] downcast to
- * your implementation; ie,
- *
+ *   your implementation; ie,
  * ```
  *   @Factory
  *   class MyDestinationConfigurationProvider(
@@ -50,7 +49,6 @@ import jakarta.inject.Singleton
  * ```
  *
  * Now your configuration will be automatically parsed and available for injection. ie,
- *
  * ```
  * @Singleton
  * class MyDestinationWriter(

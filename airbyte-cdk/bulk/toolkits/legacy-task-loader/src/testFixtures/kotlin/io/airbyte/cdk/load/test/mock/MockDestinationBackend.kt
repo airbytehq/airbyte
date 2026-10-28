@@ -31,7 +31,7 @@ object MockDestinationBackend {
         filename: String,
         primaryKey: List<List<String>>,
         cursor: List<String>,
-        vararg records: OutputRecord
+        vararg records: OutputRecord,
     ) {
         fun getField(path: List<String>, record: OutputRecord): AirbyteValue? {
             var currentValue: ObjectValue = record.data
@@ -42,7 +42,7 @@ object MockDestinationBackend {
                     is NullValue -> return null
                     !is ObjectValue -> {
                         throw IllegalStateException(
-                            "Attempted to traverse field list in ${record.data} but found non-object value at $pathElement: $next"
+                            "Attempted to traverse field list in ${record.data} but found non-object value at $pathElement: $next",
                         )
                     }
                     else -> currentValue = next
@@ -50,8 +50,9 @@ object MockDestinationBackend {
             }
             return currentValue.values[path.last()]
         }
-        fun getPk(record: OutputRecord): List<AirbyteValue?> =
-            primaryKey.map { pkField -> getField(pkField, record) }
+        fun getPk(record: OutputRecord): List<AirbyteValue?> = primaryKey.map { pkField ->
+            getField(pkField, record)
+        }
         fun getCursor(record: OutputRecord): AirbyteValue? =
             if (cursor.isEmpty()) {
                 TimestampWithTimezoneValue(record.extractedAt.atOffset(ZoneOffset.UTC))
@@ -67,10 +68,9 @@ object MockDestinationBackend {
             val incomingPk = getPk(incomingRecord)
             // Assume that in dedup mode, we don't have duplicates - so we can just find the first
             // record with the same PK as the incoming record
-            val existingRecord =
-                file.firstOrNull {
-                    RecordDiffer.comparePks(incomingPk, getPk(it), nullEqualsUnset = false) == 0
-                }
+            val existingRecord = file.firstOrNull {
+                RecordDiffer.comparePks(incomingPk, getPk(it), nullEqualsUnset = false) == 0
+            }
             val isNotDeletion =
                 getField(listOf("_ab_cdc_deleted_at"), incomingRecord).let {
                     it == null || it is NullValue
@@ -134,16 +134,16 @@ object MockDestinationBackend {
 object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            getFilename(stream.mappedDescriptor.namespace, stream.mappedDescriptor.name)
+            getFilename(stream.mappedDescriptor.namespace, stream.mappedDescriptor.name),
         )
     }
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         // Not needed since the test is disabled for file transfer
         throw NotImplementedError()
@@ -151,6 +151,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
 
     fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
         getFilename(stream.namespace, stream.name, staging)
+
     fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
         if (staging) {
             "(${namespace},${name},staging)"

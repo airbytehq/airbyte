@@ -94,19 +94,25 @@ internal class SnowflakeInsertBufferDualUploadTest {
     }
 
     @Test
-    fun `Snowflake failure waits for cancellation resistant S3 reader before deleting file`() {
+    fun `Snowflake failure waits for S3 upload and reader before deleting file`() {
         val failure = IOException("Snowflake COPY failed")
         val fixture = Fixture(snowflakeFailure = failure)
         exercise(fixture) { flush ->
             fixture.releaseSnowflake.countDown()
             fixture.snowflakeFinished.await()
-            // Do not release the normal upload gate: sibling failure cancels that wait.
-            // The fake then retains a real open reader in NonCancellable cleanup.
+            // The Snowflake failure does not cancel the upload; flush waits for it to finish.
+            assertFalse(fixture.archiveFinished.isCompleted)
+            fixture.assertPending(flush)
+            fixture.releaseArchive.complete(Unit)
             fixture.readerCleanupEntered.await()
-            assertFalse(fixture.releaseArchive.isCompleted)
             fixture.assertPending(flush)
             fixture.releaseReader.complete(Unit)
-            assertFailureCause(failure, flush.await().exceptionOrNull())
+            val thrown = flush.await().exceptionOrNull()
+            assertFailureCause(failure, thrown)
+            assertTrue(
+                generateSequence(thrown) { it.cause }.all { it.suppressed.isEmpty() },
+                "A completed upload must not attach a CancellationException to the failure",
+            )
             fixture.assertCleaned()
             fixture.verifyUploads()
         }
@@ -184,7 +190,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                 fixture.assertPending(flush)
                 assertTrue(
                     Files.exists(upload.path),
-                    "The real archive service still owns this file"
+                    "The real archive service still owns this file",
                 )
                 upload.result.complete(Unit)
                 val thrown = flush.await().exceptionOrNull()
@@ -231,8 +237,9 @@ internal class SnowflakeInsertBufferDualUploadTest {
         assertions: suspend (Deferred<Result<Unit>>) -> Unit,
     ) = runBlocking {
         // Catch inside the child so a flush failure is an observable result, not cancellation
-        // of the test driver before it can release the reader gates.
-        val flush = async { runCatching { fixture.buffer.flush() } }
+        // of the test driver before it can release the reader gates. PUT/COPY blocks the calling
+        // thread, so flush runs off the runBlocking event loop that drives the gates.
+        val flush = async(Dispatchers.IO) { runCatching { fixture.buffer.flush() } }
         try {
             withTimeout(10_000) {
                 fixture.snowflakeEntered.await()
@@ -264,7 +271,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                 "_AIRBYTE_EXTRACTED_AT",
                 "_AIRBYTE_META",
                 "_AIRBYTE_GENERATION_ID",
-                "VALUE"
+                "VALUE",
             )
         private val schema =
             ColumnSchema(
@@ -311,7 +318,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                     Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234),
                     Meta.COLUMN_NAME_AB_META to StringValue("{}"),
                     Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
-                )
+                ),
             )
             path = requireNotNull(buffer.csvFilePath)
             assertEquals(1, buffer.recordCount)
@@ -347,7 +354,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                                         withTimeout(10_000) { releaseReader.await() }
                                         assertTrue(
                                             Files.exists(path),
-                                            "Buffer deleted a live reader's file"
+                                            "Buffer deleted a live reader's file",
                                         )
                                         assertTrue(reader.readBytes().isNotEmpty())
                                     }

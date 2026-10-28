@@ -7241,6 +7241,9 @@ Classes
 
     ### Class variables
 
+    `idempotency_key: str`
+    :   The type of the None singleton.
+
     `input: airbyte_agent_sdk.connectors.shopify.models.InventoryAdjustQuantitiesParamsInput`
     :   The type of the None singleton.
 
@@ -7297,6 +7300,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `change_from_quantity: int | None`
+    :   The quantity currently at the location, for a compare-and-set check; pass null to skip the check
 
     `delta: int`
     :   Amount to adjust (positive to add, negative to subtract)
@@ -7728,6 +7734,9 @@ Classes
 
     ### Class variables
 
+    `idempotency_key: str`
+    :   The type of the None singleton.
+
     `input: airbyte_agent_sdk.connectors.shopify.models.InventorySetQuantitiesParamsInput`
     :   The type of the None singleton.
 
@@ -7784,6 +7793,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `change_from_quantity: int | None`
+    :   The quantity currently at the location, for a compare-and-set check; pass null to skip the check
 
     `inventory_item_id: str`
     :   GraphQL GID of the inventory item

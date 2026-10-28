@@ -248,7 +248,7 @@ jobs:
       - name: Launch hands-free triage for this PR
         if: steps.eligibility.outputs.eligible == 'true' && steps.guard.outputs.launch != 'false'
         id: devin
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
@@ -259,6 +259,7 @@ jobs:
           tags: |
             ai-oncall
             hydra-stage-handoff
+            airbyte-pr-${{ steps.marker.outputs.pr }}
           # devin-action interpolates prompt-text verbatim into a bash [[ ]] test and
           # an array literal, so the text must not contain double quotes, backticks,
           # or unescaped $ — they break the shell or get command-substituted.
