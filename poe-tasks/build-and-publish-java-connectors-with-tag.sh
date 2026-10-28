@@ -126,10 +126,12 @@ if $do_publish; then
               ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
   fi
 
-  if [[ "$semver_suffix" == "none" && "$docker_tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  if [[ "$semver_suffix" == "none" &&
+        "$base_tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ &&
+        "$docker_tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     image_digest=$(docker buildx imagetools inspect "${docker_repository}:${docker_tag}" --format '{{.Manifest.Digest}}')
     echo "Updating ${docker_repository}:latest to ${docker_repository}@${image_digest}"
-    docker buildx imagetools create --tag "${docker_repository}:latest" "${docker_repository}@${image_digest}"
+    docker buildx imagetools create --prefer-index=false --tag "${docker_repository}:latest" "${docker_repository}@${image_digest}"
   fi
 else
   echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"

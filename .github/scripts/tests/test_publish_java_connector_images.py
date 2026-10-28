@@ -88,7 +88,7 @@ def test_stable_publish_updates_latest_by_digest(publish_root: Path, tag_exists:
     expected.extend(
         [
             f"docker buildx imagetools inspect {REPOSITORY}:{version} --format {{{{.Manifest.Digest}}}}",
-            f"docker buildx imagetools create --tag {REPOSITORY}:latest {REPOSITORY}@{DIGEST}",
+            f"docker buildx imagetools create --prefer-index=false --tag {REPOSITORY}:latest {REPOSITORY}@{DIGEST}",
         ]
     )
     assert commands == expected
@@ -101,6 +101,8 @@ def test_stable_publish_updates_latest_by_digest(publish_root: Path, tag_exists:
         ("preview", "1.2.3", "", "1.2.3-preview.abcdef0"),
         ("rc", "1.2.3", "", "1.2.3-rc1"),
         ("none", "1.2.3-rc1", "", "1.2.3-rc1"),
+        ("none", "1.2.3-rc1", "1.2.3", "1.2.3"),
+        ("none", "1.2.3-preview.abcdef0", "1.2.3", "1.2.3"),
         ("none", "1.2.3", "1.2.3-rc2", "1.2.3-rc2"),
         ("none", "1.2.3", "1.2.3-preview.abcdef0", "1.2.3-preview.abcdef0"),
         ("preview", "1.2.3", "4.5.6", "4.5.6"),
