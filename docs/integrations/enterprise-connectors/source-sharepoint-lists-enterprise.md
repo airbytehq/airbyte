@@ -271,6 +271,7 @@ The connector automatically handles the following SharePoint column types:
 
 | Version | Date       | Pull Request | Subject                                                                                               |
 | ------- | ---------- | ------------ | ----------------------------------------------------------------------------------------------------- |
+| 0.1.1   | 2026-10-28 | [477](https://github.com/airbytehq/airbyte-enterprise/pull/477) | Populate Person/Group and Lookup columns from their LookupId values and emit standard fields with their declared string types |
 | 0.1.0   | 2025-01-07 | 338          | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
 
 </details>
