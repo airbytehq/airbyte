@@ -168,7 +168,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.0.1 | 2026-10-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Request 500 items per page from Gmail list endpoints |
+| 1.0.1 | 2026-10-28 | [90147](https://github.com/airbytehq/airbyte/pull/90147) | Request 500 items per page from Gmail list endpoints |
 | 1.0.0 | 2026-10-27 | [89502](https://github.com/airbytehq/airbyte/pull/89502) | Add profile primary key and type count and size fields as integers |
 | 0.3.0 | 2026-10-27 | [89756](https://github.com/airbytehq/airbyte/pull/89756) | Bound incremental `messages_details` reads to the previous sync with a one-hour lookback |
 | 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota |
