@@ -43,7 +43,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
     companion object {
         fun toV3StateValue(
             v2: PostgresSourceJdbcV2CompatibilityStreamStateValue,
-            stream: Stream
+            stream: Stream,
         ): PostgresSourceJdbcStreamStateValue {
 
             // the internal incremental_state value
@@ -54,7 +54,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                     }
                     Jsons.treeToValue(
                         it,
-                        PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                        PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java,
                     )
                 }
             }
@@ -78,8 +78,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                         }
                                         else -> emptyMap()
                                     }
-                                }
-                                    ?: emptyMap()
+                                } ?: emptyMap()
                             else -> emptyMap()
                         },
                     xmin =
@@ -101,7 +100,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                 }
                             }
                             else -> null
-                        }
+                        },
                 )
 
             return v3
@@ -110,7 +109,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
         private fun buildCursorMap(
             stream: Stream,
             cursorFieldNames: List<String>?,
-            cursorValue: JsonNode?
+            cursorValue: JsonNode?,
         ): Map<String, JsonNode> {
             val cursorField: EmittedField? =
                 stream.fields.firstOrNull { it.id == cursorFieldNames?.firstOrNull() }
@@ -171,7 +170,7 @@ fun stateValueToJsonNode(field: DataOrMetaField, stateValue: String?): JsonNode 
 
                         Jsons.textNode(
                             LocalDateTime.parse(stateValue, formatter)
-                                .format(LocalDateTimeCodec.formatter)
+                                .format(LocalDateTimeCodec.formatter),
                         )
                     } catch (_: RuntimeException) {
                         // Resolve to use the new format.
@@ -212,7 +211,7 @@ fun stateValueToJsonNode(field: DataOrMetaField, stateValue: String?): JsonNode 
             }
         else ->
             throw IllegalStateException(
-                "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+                "PK field must be leaf type but is ${field.type.airbyteSchemaType}.",
             )
     }
 }

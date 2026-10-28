@@ -40,7 +40,7 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                 .put(JdbcUtils.DATABASE_KEY, db!!.databaseName)
                 .put(JdbcUtils.PORT_KEY, resolvePort(db!!))
                 .put(JdbcUtils.SSL_KEY, true)
-                .build()
+                .build(),
         )
     }
 
@@ -53,7 +53,7 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                 .put(JdbcUtils.DATABASE_KEY, db!!.databaseName)
                 .put(JdbcUtils.PORT_KEY, resolvePort(db!!))
                 .put(JdbcUtils.SSL_KEY, false)
-                .build()
+                .build(),
         )
     }
 
@@ -62,14 +62,14 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
             .stream()
             .map<JsonNode>(
                 Function<JsonNode, JsonNode> { r: JsonNode ->
                     r.get(JavaBaseConstants.COLUMN_NAME_DATA)
-                }
+                },
             )
             .collect(Collectors.toList<JsonNode>())
     }
@@ -79,7 +79,7 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
     override fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
-        namespace: String?
+        namespace: String?,
     ): List<JsonNode> {
         val tableName = namingResolver.getIdentifier(streamName!!)
         val schema = namingResolver.getIdentifier(namespace!!)
@@ -107,9 +107,9 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                     "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
                     db!!.host,
                     db!!.firstMappedPort,
-                    db!!.databaseName
+                    db!!.databaseName,
                 ),
-                SQLDialect.DEFAULT
+                SQLDialect.DEFAULT,
             )
     }
 
@@ -127,8 +127,8 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                         "SELECT * FROM %s.%s ORDER BY %s ASC;",
                         schemaName,
                         tableName,
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-                    )
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+                    ),
                 )
                 .stream()
                 .map<JsonNode> { record: Record -> this.getJsonFromRecord(record) }
@@ -146,7 +146,7 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
 
     private fun grantCorrectPermissions() {
         executeQuery(
-            "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db!!.username + "@'%';"
+            "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db!!.username + "@'%';",
         )
     }
 
@@ -160,9 +160,9 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                     "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
                     db!!.host,
                     db!!.firstMappedPort,
-                    db!!.databaseName
+                    db!!.databaseName,
                 ),
-                SQLDialect.DEFAULT
+                SQLDialect.DEFAULT,
             )
         try {
             Database(dslContext).query { ctx: DSLContext? -> ctx!!.execute(query) }
@@ -178,16 +178,16 @@ class SslMySQLDestinationAcceptanceTest : MySQLDestinationAcceptanceTest() {
                 MySQLDestinationAcceptanceTest.Companion.USERNAME_WITHOUT_PERMISSION +
                 "'@'%' IDENTIFIED BY '" +
                 MySQLDestinationAcceptanceTest.Companion.PASSWORD_WITHOUT_PERMISSION +
-                "';\n"
+                "';\n",
         )
         val config: JsonNode =
             (getConfig() as ObjectNode).put(
                 JdbcUtils.USERNAME_KEY,
-                MySQLDestinationAcceptanceTest.Companion.USERNAME_WITHOUT_PERMISSION
+                MySQLDestinationAcceptanceTest.Companion.USERNAME_WITHOUT_PERMISSION,
             )
         (config as ObjectNode).put(
             "password",
-            MySQLDestinationAcceptanceTest.Companion.PASSWORD_WITHOUT_PERMISSION
+            MySQLDestinationAcceptanceTest.Companion.PASSWORD_WITHOUT_PERMISSION,
         )
         val destination = MySQLDestination()
         val status = destination.check(config)

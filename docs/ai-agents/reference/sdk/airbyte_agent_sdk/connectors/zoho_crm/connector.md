@@ -45,8 +45,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -58,15 +59,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `create(self, data: list[AccountsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Creates a new account record in Zoho CRM
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
         
         Args:
-            data: Array containing the account record to create
-            **kwargs: Additional parameters
+            sql: SQL query to execute.
+            limit: Maximum results to return.
         
         Returns:
-            WriteResponse
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single account by ID
@@ -92,17 +98,6 @@ Classes
         Returns:
             AccountsListResult
 
-    `update(self, data: list[AccountsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Updates an existing account record in Zoho CRM
-        
-        Args:
-            data: Array containing the account fields to update
-            id: Account ID
-            **kwargs: Additional parameters
-        
-        Returns:
-            WriteResponse
-
 <a id="CallsQuery"></a>
 
 `CallsQuery(connector: ZohoCrmConnector)`
@@ -121,6 +116,8 @@ Classes
         Available filter fields (CallsSearchFilter):
         - id: Unique record identifier
         - subject: Subject of the call
+        - who_id: Contact or lead on the call, as a lookup object with `name` and `id`
+        - what_id: Account, deal, or other record the call is linked to, as a lookup object with `name` and `id`
         - call_type: Type of call (Inbound or Outbound)
         - call_start_time: Start time of the call
         - call_duration: Duration of the call as a formatted string
@@ -128,14 +125,17 @@ Classes
         - call_purpose: Purpose of the call
         - call_result: Result or outcome of the call
         - caller_id: Caller ID number
-        - outgoing_call_status: Status of outgoing calls
+        - call_status: Disposition of the call (Missed, Received, Overdue, Scheduled). Zoho names this field `Call_Status`; there is no `Outgoing_Call_Status` field on the Calls module.
+        
+        - call_agenda: Free-text agenda written before the call
         - description: Description or notes about the call
         - created_time: Time the record was created
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -146,6 +146,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against calls records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single call by ID
@@ -203,8 +218,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -215,6 +231,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaigns records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single campaign by ID
@@ -265,6 +296,7 @@ Classes
         - mobile: Contact's mobile number
         - title: Contact's job title
         - department: Department the contact belongs to
+        - account_name: Account the contact belongs to, as a lookup object with `name` and `id`
         - lead_source: Source from which the contact was generated
         - date_of_birth: Contact's date of birth
         - mailing_city: Mailing address city
@@ -275,8 +307,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -288,15 +321,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `create(self, data: list[ContactsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Creates a new contact record in Zoho CRM
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against contacts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
         
         Args:
-            data: Array containing the contact record to create
-            **kwargs: Additional parameters
+            sql: SQL query to execute.
+            limit: Maximum results to return.
         
         Returns:
-            WriteResponse
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single contact by ID
@@ -322,17 +360,6 @@ Classes
         Returns:
             ContactsListResult
 
-    `update(self, data: list[ContactsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Updates an existing contact record in Zoho CRM
-        
-        Args:
-            data: Array containing the contact fields to update
-            id: Contact ID
-            **kwargs: Additional parameters
-        
-        Returns:
-            WriteResponse
-
 <a id="DealsQuery"></a>
 
 `DealsQuery(connector: ZohoCrmConnector)`
@@ -351,6 +378,7 @@ Classes
         Available filter fields (DealsSearchFilter):
         - id: Unique record identifier
         - deal_name: Name of the deal
+        - account_name: Account the deal belongs to, as a lookup object with `name` and `id`
         - amount: Monetary value of the deal
         - stage: Current stage of the deal in the pipeline
         - probability: Probability of closing the deal (percentage)
@@ -363,8 +391,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -376,15 +405,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `create(self, data: list[DealsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Creates a new deal record in Zoho CRM
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against deals records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
         
         Args:
-            data: Array containing the deal record to create
-            **kwargs: Additional parameters
+            sql: SQL query to execute.
+            limit: Maximum results to return.
         
         Returns:
-            WriteResponse
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single deal by ID
@@ -410,17 +444,6 @@ Classes
         Returns:
             DealsListResult
 
-    `update(self, data: list[DealsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Updates an existing deal record in Zoho CRM
-        
-        Args:
-            data: Array containing the deal fields to update
-            id: Deal ID
-            **kwargs: Additional parameters
-        
-        Returns:
-            WriteResponse
-
 <a id="EventsQuery"></a>
 
 `EventsQuery(connector: ZohoCrmConnector)`
@@ -439,17 +462,21 @@ Classes
         Available filter fields (EventsSearchFilter):
         - id: Unique record identifier
         - event_title: Title of the event
+        - who_id: Contact or lead invited to the event, as a lookup object with `name` and `id`
+        - what_id: Account, deal, or other record the event is linked to, as a lookup object with `name` and `id`
         - start_date_time: Event start date and time
         - end_date_time: Event end date and time
         - all_day: Whether this is an all-day event
-        - location: Event location
+        - venue: Event location. Zoho names this field `Venue`; there is no `Location` field on the Events module.
+        
         - description: Description or notes about the event
         - created_time: Time the record was created
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -460,6 +487,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against events records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single event by ID
@@ -520,8 +562,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -532,6 +575,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against invoices records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single invoice by ID
@@ -581,7 +639,8 @@ Classes
         - phone: Lead's phone number
         - mobile: Lead's mobile number
         - company: Company the lead is associated with
-        - title: Lead's job title
+        - designation: Lead's job title. Zoho names this `Designation` on Leads and `Title` on Contacts; there is no `Title` field on the Leads module.
+        
         - lead_source: Source from which the lead was generated
         - industry: Industry the lead belongs to
         - annual_revenue: Annual revenue of the lead's company
@@ -597,8 +656,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -610,15 +670,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `create(self, data: list[LeadsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Creates a new lead record in Zoho CRM
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against leads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
         
         Args:
-            data: Array containing the lead record to create
-            **kwargs: Additional parameters
+            sql: SQL query to execute.
+            limit: Maximum results to return.
         
         Returns:
-            WriteResponse
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single lead by ID
@@ -644,16 +709,83 @@ Classes
         Returns:
             LeadsListResult
 
-    `update(self, data: list[LeadsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Updates an existing lead record in Zoho CRM
+<a id="NotesQuery"></a>
+
+`NotesQuery(connector: ZohoCrmConnector)`
+:   Query class for Notes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: NotesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[NotesSearchData]`
+    :   Search notes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (NotesSearchFilter):
+        - id: Unique record identifier
+        - note_content: Body of the note. This is where rep-authored free text actually accumulates in Zoho CRM -- notes attach to any module record and, unlike the per-record `Description` textarea, are mandatory content by construction.
+        
+        - note_title: Optional short title for the note
+        - parent_id: Record the note is attached to, as a lookup object with `name` and `id`
+        - created_time: Time the record was created
+        - modified_time: Time the record was last modified
         
         Args:
-            data: Array containing the lead fields to update
-            id: Lead ID
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            NotesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against notes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Get a single note by ID
+        
+        Args:
+            id: Note ID
             **kwargs: Additional parameters
         
         Returns:
-            WriteResponse
+            dict[str, Any]
+
+    `list(self, page: int | None = None, per_page: int | None = None, page_token: str | None = None, sort_by: str | None = None, sort_order: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.ZohoCrmExecuteResultWithMeta[list[Note], NotesListResultMeta]`
+    :   Returns a paginated list of notes
+        
+        Args:
+            page: Page number
+            per_page: Number of records per page
+            page_token: Page token for fetching beyond 2000 records
+            sort_by: Field to sort by
+            sort_order: Sort order
+            **kwargs: Additional parameters
+        
+        Returns:
+            NotesListResult
 
 <a id="ProductsQuery"></a>
 
@@ -689,8 +821,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -701,6 +834,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against products records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single product by ID
@@ -758,8 +906,9 @@ Classes
         - modified_time: Time the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -770,6 +919,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against quotes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single quote by ID
@@ -813,6 +977,8 @@ Classes
         Available filter fields (TasksSearchFilter):
         - id: Unique record identifier
         - subject: Subject or title of the task
+        - who_id: Contact or lead the task is with, as a lookup object with `name` and `id`
+        - what_id: Account, deal, or other record the task is linked to, as a lookup object with `name` and `id`
         - due_date: Due date for the task
         - status: Current status (e.g., Not Started, In Progress, Completed)
         - priority: Priority level (e.g., High, Highest, Low, Lowest, Normal)
@@ -823,8 +989,9 @@ Classes
         - closed_time: Time the task was closed
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -836,15 +1003,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `create(self, data: list[TasksCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Creates a new task record in Zoho CRM
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
         
         Args:
-            data: Array containing the task record to create
-            **kwargs: Additional parameters
+            sql: SQL query to execute.
+            limit: Maximum results to return.
         
         Returns:
-            WriteResponse
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single task by ID
@@ -870,17 +1042,6 @@ Classes
         Returns:
             TasksListResult
 
-    `update(self, data: list[TasksUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
-    :   Updates an existing task record in Zoho CRM
-        
-        Args:
-            data: Array containing the task fields to update
-            id: Task ID
-            **kwargs: Additional parameters
-        
-        Returns:
-            WriteResponse
-
 <a id="ZohoCrmConnector"></a>
 
 `ZohoCrmConnector(auth_config: ZohoCrmAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, dc_region: str | None = None)`
@@ -902,7 +1063,7 @@ Classes
     
     Examples:
         # Local mode (direct API calls)
-        connector = ZohoCrmConnector(auth_config=ZohoCrmAuthConfig(client_id="...", client_secret="...", refresh_token="..."))
+        connector = ZohoCrmConnector(auth_config=ZohoCrmAuthConfig(client_id="...", client_secret="...", refresh_token="..."), dc_region="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ZohoCrmConnector(
             auth_config=AirbyteAuthConfig(
@@ -935,48 +1096,148 @@ Classes
 
     ### Static methods
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Decorator for new user-written connector tool functions.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @ZohoCrmConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = ZohoCrmConnector(...)
         
-            @mcp.tool()
-            @ZohoCrmConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ZohoCrmConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @ZohoCrmConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ZohoCrmConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @ZohoCrmConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
-                import in order. Explicit always wins.
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = ZohoCrmConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @ZohoCrmConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @ZohoCrmConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @ZohoCrmConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1021,7 +1282,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1047,6 +1308,17 @@ Classes
                 params=\{"id": "cus_123"\}
             )
 
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
         
@@ -1060,3 +1332,15 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")

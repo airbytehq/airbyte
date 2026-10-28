@@ -4970,36 +4970,6 @@
       "is_resumable": true
     },
     {
-      "name": "issue_field_configurations",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "id": {
-            "description": "The ID of the field configuration.",
-            "type": "integer"
-          },
-          "name": {
-            "description": "The name of the field configuration.",
-            "type": "string"
-          },
-          "description": {
-            "description": "The description of the field configuration.",
-            "type": "string"
-          },
-          "isDefault": {
-            "description": "Whether the field configuration is the default.",
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": true,
-        "description": "Details of a field configuration."
-      },
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_primary_key": [["id"]],
-      "is_resumable": true
-    },
-    {
       "name": "issue_link_types",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",

@@ -43,8 +43,7 @@ enum class LeafAirbyteSchemaType(
     INTEGER(JsonSchemaType.INTEGER),
     NUMBER(JsonSchemaType.NUMBER),
     NULL(JsonSchemaType.NULL),
-    JSONB(JsonSchemaType.JSONB),
-    ;
+    JSONB(JsonSchemaType.JSONB);
 
     override fun asJsonSchemaType(): JsonSchemaType = jsonSchemaType
 }

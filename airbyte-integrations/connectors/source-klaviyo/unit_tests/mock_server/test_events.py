@@ -20,6 +20,45 @@ from mock_server.response_builder import KlaviyoPaginatedResponseBuilder
 _NOW = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
 _STREAM_NAME = "events"
 _API_KEY = "test_api_key_abc123"
+_START_DATE = datetime(2024, 5, 31, tzinfo=timezone.utc)
+_TIME_WINDOW_FILTER = "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-than(datetime,2024-06-01T12:00:00+0000)"
+
+
+def _events_request(filter_expr: str):
+    """Build an exact-match request for the events stream, discriminating on the filter query param."""
+    return (
+        KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+        .with_fields_event("event_properties,timestamp,uuid,datetime")
+        .with_fields_metric("name,created,updated,integration")
+        .with_include("metric,attributions")
+        .with_filter(filter_expr)
+        .with_sort("datetime")
+        .build()
+    )
+
+
+def _events_response(record_id: str, metric_id: str) -> HttpResponse:
+    return HttpResponse(
+        body=json.dumps(
+            {
+                "data": [
+                    {
+                        "type": "event",
+                        "id": record_id,
+                        "attributes": {
+                            "timestamp": "2024-05-31T10:00:00+00:00",
+                            "datetime": "2024-05-31T10:00:00+00:00",
+                            "uuid": f"uuid-{record_id}",
+                            "event_properties": {},
+                        },
+                        "relationships": {"metric": {"data": {"type": "metric", "id": metric_id}}, "attributions": {"data": []}},
+                    }
+                ],
+                "links": {"self": "https://a.klaviyo.com/api/events", "next": None},
+            }
+        ),
+        status_code=200,
+    )
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -207,7 +246,8 @@ class TestEventsStream(TestCase):
 
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
-        assert "datetime" in latest_state
+        # With ListPartitionRouter, state is nested under "state" key
+        assert "datetime" in latest_state.get("state", latest_state)
 
     @HttpMocker()
     def test_incremental_sync_with_prior_state(self, http_mocker: HttpMocker):
@@ -471,3 +511,79 @@ class TestEventsStream(TestCase):
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_multiple_event_metric_ids_produce_one_request_per_metric(self, http_mocker: HttpMocker):
+        """
+        Test that each configured metric ID becomes its own partition and request.
+
+        Given: event_metric_ids set to "AAA111, BBB222" (with a stray space to be trimmed)
+        When: Running a sync
+        Then: One request per metric ID is issued with equals(metric_id,"<id>") appended to the filter,
+              and the records of both partitions are emitted
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(_START_DATE).with_event_metric_ids("AAA111, BBB222").build()
+
+        http_mocker.get(
+            _events_request(f'{_TIME_WINDOW_FILTER},equals(metric_id,"AAA111")'),
+            _events_response("event_aaa", "AAA111"),
+        )
+        http_mocker.get(
+            _events_request(f'{_TIME_WINDOW_FILTER},equals(metric_id,"BBB222")'),
+            _events_response("event_bbb", "BBB222"),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert {record.record.data["id"] for record in output.records} == {"event_aaa", "event_bbb"}
+
+    @HttpMocker()
+    def test_single_event_metric_id_appends_one_filter_clause(self, http_mocker: HttpMocker):
+        """
+        Test that a single configured metric ID adds exactly one equals(metric_id,...) filter clause.
+
+        Given: event_metric_ids set to a single metric ID
+        When: Running a sync
+        Then: Exactly one request is issued and its filter ends with a single equals(metric_id,...) clause
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(_START_DATE).with_event_metric_ids("AAA111").build()
+
+        http_mocker.get(
+            _events_request(f'{_TIME_WINDOW_FILTER},equals(metric_id,"AAA111")'),
+            _events_response("event_aaa", "AAA111"),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "event_aaa"
+
+    @HttpMocker()
+    def test_incremental_sync_migrates_legacy_flat_state(self, http_mocker: HttpMocker):
+        """
+        Guards legacy-state migration: connections that predate the ListPartitionRouter stored a flat
+        {"datetime": ...} state, and the CDK must migrate it under the new per-partition cursor.
+
+        Given: A flat legacy state and no event_metric_ids configured
+        When: Running an incremental sync
+        Then: The single request uses the state datetime as the greater-or-equal bound (not config start_date)
+              and the filter carries no equals(metric_id,...) clause
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-05-28T00:00:00+0000"}).build()
+
+        http_mocker.get(
+            _events_request("greater-or-equal(datetime,2024-05-28T00:00:00+0000),less-than(datetime,2024-06-01T12:00:00+0000)"),
+            _events_response("event_legacy", "m1"),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "event_legacy"

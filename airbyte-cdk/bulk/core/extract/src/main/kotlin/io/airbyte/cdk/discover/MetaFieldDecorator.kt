@@ -53,13 +53,13 @@ interface MetaFieldDecorator {
         /** Current state of the [Global] feed, if applicable. */
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     )
 
     fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     )
 }

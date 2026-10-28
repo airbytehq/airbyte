@@ -125,7 +125,7 @@ class DefaultJdbcUnsplittableSnapshotWithCursorPartition(
         get() =
             DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = streamState.cursorUpperBound!!
+                cursorCheckpoint = streamState.cursorUpperBound!!,
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -249,7 +249,7 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val completeState: OpaqueStateValue
@@ -258,7 +258,7 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
                 null ->
                     DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
-                        cursorUpperBound
+                        cursorUpperBound,
                     )
                 else ->
                     DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -346,7 +346,7 @@ class DefaultJdbcCursorIncrementalPartition(
         streamState,
         listOf(cursor),
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)

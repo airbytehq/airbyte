@@ -80,8 +80,6 @@ The interface is the same across every connector and every access path. Airbyte 
 
 - Ask questions that span Salesforce, Zendesk, and Stripe in a single conversation.
 
-- Build a scheduled automation that summarizes daily pipeline activity.
-
 - Connect ChatGPT, Claude, or Cursor to your business data with a one-line MCP config.
 
 ## Who Airbyte Agents is for

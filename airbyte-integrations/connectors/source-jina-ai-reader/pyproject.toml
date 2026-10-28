@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.40"
+version = "0.1.41"
 name = "source-jina-ai-reader"
 description = "Source implementation for jina-ai-reader."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,11 +12,11 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/jina-ai-reader"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_jina_ai_reader" }, {include = "main.py" } ]
+packages = [ { include = "source_jina_ai_reader" } ]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+python = "^3.10,<3.14"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-jina-ai-reader = "source_jina_ai_reader.run:run"

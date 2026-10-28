@@ -32,6 +32,17 @@ interface TableOperationsClient {
         replace: Boolean,
     )
 
+    /**
+     * Creates a temporary table.Override in connectors where temp tables need different handling
+     * (e.g. skipping stage creation, using transient storage, etc.).
+     */
+    suspend fun createTempTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
+    ) = createTable(stream, tableName, columnNameMapping, replace)
+
     /** Checks if a table exists. */
     suspend fun tableExists(table: TableName) = false
 
@@ -40,6 +51,9 @@ interface TableOperationsClient {
 
     /** Returns the row count of a table, or null if the table doesn't exist. */
     suspend fun countTable(tableName: TableName): Long? = null
+
+    /** Returns whether the table contains no rows */
+    suspend fun tableIsEmpty(tableName: TableName): Boolean = countTable(tableName) == 0L
 
     /** Returns generation ID from an arbitrary record in the table (0 if null). */
     suspend fun getGenerationId(tableName: TableName): Long = 0

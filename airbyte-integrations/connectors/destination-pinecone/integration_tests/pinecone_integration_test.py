@@ -8,9 +8,6 @@ import os
 import time
 
 from destination_pinecone.destination import DestinationPinecone
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Pinecone
-from pinecone import Pinecone as PineconeREST
 from pinecone import PineconeException
 from pinecone.grpc import PineconeGRPC
 
@@ -34,8 +31,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
     def _init_pinecone(self):
         self.pc = PineconeGRPC(api_key=self.config["indexing"]["pinecone_key"])
         self.pinecone_index = self.pc.Index(self.config["indexing"]["index"])
-        self.pc_rest = PineconeREST(api_key=self.config["indexing"]["pinecone_key"])
-        self.pinecone_index_rest = self.pc_rest.Index(name=self.config["indexing"]["index"])
 
     def _wait(self):
         print("Waiting for Pinecone...", end="", flush=True)
@@ -118,13 +113,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         assert (
             result.matches[0].metadata["text"] == "str_col: Cats are nice"
         ), 'Ensure that "str_col" is included in the "text_fields" array under the "processing" section of /secrets/config.json.'
-
-        # test langchain integration
-        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        self._init_pinecone()
-        vector_store = Pinecone(self.pinecone_index_rest, embeddings.embed_query, "text")
-        result = vector_store.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "mystream_2"
 
     def test_write_with_namespace(self):
         catalog = self._get_configured_catalog_with_namespace(DestinationSyncMode.overwrite)

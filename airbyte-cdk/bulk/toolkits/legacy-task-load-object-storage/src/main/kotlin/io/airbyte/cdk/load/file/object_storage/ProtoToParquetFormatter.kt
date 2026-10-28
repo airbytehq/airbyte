@@ -63,7 +63,7 @@ class ProtoToParquetFormatter(
     init {
         if (unknownColumns.isNotEmpty()) {
             throw RuntimeException(
-                "Unknown columns $unknownColumns encountered for stream ${stream.mappedDescriptor}"
+                "Unknown columns $unknownColumns encountered for stream ${stream.mappedDescriptor}",
             )
         }
         if (!rootLevelFlattening) {
@@ -99,6 +99,7 @@ class ProtoToParquetFormatter(
     }
 
     override fun flush() = Unit
+
     override fun close() = writer.close()
 
     private fun buildColumnWriters(): List<ColumnWriter> {
@@ -123,98 +124,99 @@ class ProtoToParquetFormatter(
 
             val writer: (GenericRecord, AirbyteValueProxy, MutableList<Meta.Change>) -> Unit =
                 when (acc.type) {
-                    is BooleanType -> { rec, p, _ -> rec.put(fieldName, p.getBoolean(acc)) }
+                    is BooleanType -> { rec, p, _ ->
+                        rec.put(fieldName, p.getBoolean(acc))
+                    }
                     is IntegerType -> { rec, p, ch ->
-                            p.getInteger(acc)?.let { v ->
-                                if (v in longMin..longMax) rec.put(fieldName, v.toLong())
-                                else {
-                                    rec.put(fieldName, null)
-                                    ch.add(
-                                        Meta.Change(
-                                            acc.name,
-                                            AirbyteRecordMessageMetaChange.Change.NULLED,
-                                            AirbyteRecordMessageMetaChange.Reason
-                                                .DESTINATION_FIELD_SIZE_LIMITATION,
-                                        ),
-                                    )
-                                }
+                        p.getInteger(acc)?.let { v ->
+                            if (v in longMin..longMax) rec.put(fieldName, v.toLong())
+                            else {
+                                rec.put(fieldName, null)
+                                ch.add(
+                                    Meta.Change(
+                                        acc.name,
+                                        AirbyteRecordMessageMetaChange.Change.NULLED,
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION,
+                                    ),
+                                )
                             }
                         }
+                    }
                     is NumberType -> { rec, p, _ ->
-                            p.getNumber(acc)?.toDouble()?.let { rec.put(fieldName, it) }
-                        }
+                        p.getNumber(acc)?.toDouble()?.let { rec.put(fieldName, it) }
+                    }
                     is StringType -> { rec, p, _ ->
-                            p.getString(acc)?.let { rec.put(fieldName, it) }
-                        }
+                        p.getString(acc)?.let { rec.put(fieldName, it) }
+                    }
                     is DateType -> { rec, p, ch ->
-                            p.getDate(acc)?.let {
-                                runCatching { LocalDate.parse(it).toEpochDay().toInt() }
-                                    .onSuccess { d -> rec.put(fieldName, d) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getDate(acc)?.let {
+                            runCatching { LocalDate.parse(it).toEpochDay().toInt() }
+                                .onSuccess { d -> rec.put(fieldName, d) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimeTypeWithTimezone -> { rec, p, ch ->
-                            p.getTimeWithTimezone(acc)?.let {
-                                runCatching { microsOfDayTz(OffsetTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimeWithTimezone(acc)?.let {
+                            runCatching { microsOfDayTz(OffsetTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimeTypeWithoutTimezone -> { rec, p, ch ->
-                            p.getTimeWithoutTimezone(acc)?.let {
-                                runCatching { microsOfDay(LocalTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimeWithoutTimezone(acc)?.let {
+                            runCatching { microsOfDay(LocalTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimestampTypeWithTimezone -> { rec, p, ch ->
-                            p.getTimestampWithTimezone(acc)?.let {
-                                runCatching { epochMicrosTz(OffsetDateTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimestampWithTimezone(acc)?.let {
+                            runCatching { epochMicrosTz(OffsetDateTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimestampTypeWithoutTimezone -> { rec, p, ch ->
-                            p.getTimestampWithoutTimezone(acc)?.let {
-                                runCatching { epochMicros(LocalDateTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimestampWithoutTimezone(acc)?.let {
+                            runCatching { epochMicros(LocalDateTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is UnknownType -> { rec, _, ch ->
-                            rec.put(fieldName, null)
-                            addError(ch)
-                        }
+                        rec.put(fieldName, null)
+                        addError(ch)
+                    }
                     else -> { rec, p, ch ->
-                            val node = p.getJsonNode(acc)
-                            val converted =
-                                runCatching {
-                                        jsonToParquet(
-                                            node,
-                                            logicalSchema.properties[acc.name]!!.type,
-                                            subSchema,
-                                            ch,
-                                            acc.name,
-                                        )
-                                    }
-                                    .getOrElse { null }
-                            rec.put(fieldName, converted)
+                        val node = p.getJsonNode(acc)
+                        val converted = runCatching {
+                            jsonToParquet(
+                                node,
+                                logicalSchema.properties[acc.name]!!.type,
+                                subSchema,
+                                ch,
+                                acc.name,
+                            )
                         }
+                            .getOrElse { null }
+                        rec.put(fieldName, converted)
+                    }
                 }
 
             ColumnWriter(fieldName, acc, subSchema, writer)
@@ -226,7 +228,7 @@ class ProtoToParquetFormatter(
         airbyteSchema: AirbyteType,
         avroSchema: Schema,
         ch: MutableList<Meta.Change>,
-        path: String
+        path: String,
     ): Any? {
         if (node == null || node.isNull) return null
 
@@ -258,8 +260,8 @@ class ProtoToParquetFormatter(
                                 airbyteSchema.items.type,
                                 elemSchema,
                                 ch,
-                                "$path[$i]"
-                            )
+                                "$path[$i]",
+                            ),
                         )
                     }
                     arr
@@ -324,15 +326,16 @@ class ProtoToParquetFormatter(
         objSchema: ObjectType,
         avro: Schema,
         ch: MutableList<Meta.Change>,
-        path: String
+        path: String,
     ): GenericRecord? {
         val rec = GenericData.Record(avro)
 
         val candidates: List<Pair<String, FieldType>> =
             objSchema.properties.entries.filter { it.key != "type" }.map { it.key to it.value }
 
-        val chosen: Pair<String, FieldType>? =
-            candidates.firstOrNull { (_, field) -> nodeMatches(node, field.type) }
+        val chosen: Pair<String, FieldType>? = candidates.firstOrNull { (_, field) ->
+            nodeMatches(node, field.type)
+        }
 
         if (chosen == null) {
             ch.add(
@@ -457,7 +460,7 @@ class ProtoToParquetFormatter(
                 )
             is ArrayType ->
                 ArrayType(
-                    FieldType(unionToDisjointRecord(schema.items.type), schema.items.nullable)
+                    FieldType(unionToDisjointRecord(schema.items.type), schema.items.nullable),
                 )
             else -> schema
         }

@@ -12,11 +12,80 @@ notes, and attachments for sales analytics and customer relationship management.
 
 The Salesforce connector is optimized to handle prompts like these.
 
+- What Salesforce objects (sObjects) are available in my org?
+- List the 10 most recently modified accounts in my Salesforce org
 - List recent contacts in my Salesforce account
+- List my 10 most recently created leads and their status
+- List my 10 open opportunities with their stage and amount
 - List open cases in my Salesforce account
-- Show me the notes and attachments for a recent account
 - List all available reports in Salesforce
-- Run my quarterly revenue report and show the results
+- Who are the active users in my Salesforce org?
+- What opportunity stages are configured in my org and which ones are closed/won?
+- Create a test Account record named 'devin-test-sobject' through the generic sObject endpoint
+- Fetch the generic sObject Account record I just created by its Id
+- Update the Description of that generic sObject Account record
+- Delete the generic sObject Account test record
+- Create a new account named 'devin-test-account' in the Technology industry
+- Show me the details of the devin-test-account I just created
+- Update the phone number and website of the devin-test-account
+- Search my accounts for the name 'devin-test'
+- Delete the devin-test-account test record
+- Create a contact named 'Devin Test Contact' with a title of 'QA Engineer'
+- Show me the details of the Devin Test Contact I just created
+- Update the title and email of the Devin Test Contact
+- Search my contacts for the name 'Devin Test'
+- Delete the Devin Test Contact test record
+- Create a new lead named 'Devin Test Lead' from the company 'Devin Test Company'
+- Show me the details of the Devin Test Lead I just created
+- Update the status of the Devin Test Lead to 'Working - Contacted'
+- Search my leads for the company 'Devin Test Company'
+- Delete the Devin Test Lead test record
+- Create an opportunity named 'devin-test-opportunity' in the Prospecting stage closing next month
+- Show me the details of the devin-test-opportunity I just created
+- Move the devin-test-opportunity to the Qualification stage with an amount of 5000
+- Search my opportunities for the name 'devin-test'
+- Delete the devin-test-opportunity test record
+- List my 10 most recent tasks with their status and priority
+- Create a task titled 'devin-test-task' with High priority
+- Show me the details of the devin-test-task I just created
+- Mark the devin-test-task as Completed
+- Search my tasks for the subject 'devin-test'
+- Delete the devin-test-task test record
+- List my 10 upcoming or most recent calendar events
+- Schedule a 30-minute event titled 'devin-test-event' for next week
+- Show me the details of the devin-test-event I just created
+- Change the devin-test-event duration to 60 minutes and add a location
+- Search my events for the subject 'devin-test'
+- Delete the devin-test-event test record
+- List my 10 most recent campaigns with their status and type
+- Create a campaign named 'devin-test-campaign' of type Email
+- Show me the details of the devin-test-campaign I just created
+- Set the devin-test-campaign status to In Progress with a budget of 1000
+- Search my campaigns for the name 'devin-test'
+- Delete the devin-test-campaign test record
+- Open a new case with the subject 'devin-test-case' originating from the Web
+- Show me the details of the devin-test-case I just created
+- Escalate the devin-test-case to High priority and set it to Working
+- Search my cases for the subject 'devin-test'
+- Delete the devin-test-case test record
+- Show me the notes and attachments for a recent account
+- Add a note titled 'devin-test-note' to a recent account
+- Show me the details of the devin-test-note I just created
+- Update the body of the devin-test-note
+- Search my notes for the title 'devin-test'
+- Delete the devin-test-note test record
+- List the 5 most recent files (content versions) in my org
+- Show me the details of the most recent file in my org
+- Download the content of the most recent file in my org
+- List the 5 most recent classic attachments in my org
+- Show me the details of the most recent attachment in my org
+- Download the content of the most recent attachment in my org
+- Run the 'Accounts with Activities' report and show me its results
+- Create a new Salesforce user named 'devin-test-user' with the Chatter Free User profile
+- Show me the details of the devin-test-user I just created
+- Deactivate the devin-test-user
+- Show me the details of the 'Prospecting' opportunity stage
+- How many opportunities do I have in each stage?
 - Show me my top 5 opportunities this month
 - List all contacts from \{company\} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
@@ -30,11 +99,11 @@ The Salesforce connector is optimized to handle prompts like these.
 
 The Salesforce connector isn't currently able to handle prompts like these.
 
-- Create a new lead for \{person\}
-- Update the status of my sales opportunity
-- Schedule a follow-up meeting with \{customer\}
-- Delete this old contact record
 - Send an email to all contacts in this campaign
+- Convert this lead into an account, contact, and opportunity
+- Merge these two duplicate accounts
+- Upload a new file and attach it to this opportunity
+- Delete this Salesforce user
 
 ## Entities and actions
 
@@ -43,20 +112,20 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](./REFERENCE.md#sobjects-list), [Create](./REFERENCE.md#sobjects-create), [Get](./REFERENCE.md#sobjects-get), [Update](./REFERENCE.md#sobjects-update), [Delete](./REFERENCE.md#sobjects-delete) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Delete](./REFERENCE.md#accounts-delete), [API Search](./REFERENCE.md#accounts-api_search), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Leads | [List](./REFERENCE.md#leads-list), [Create](./REFERENCE.md#leads-create), [Get](./REFERENCE.md#leads-get), [Update](./REFERENCE.md#leads-update), [Delete](./REFERENCE.md#leads-delete), [API Search](./REFERENCE.md#leads-api_search), [Context Store Search](./REFERENCE.md#leads-context-store-search) |
-| Opportunities | [List](./REFERENCE.md#opportunities-list), [Create](./REFERENCE.md#opportunities-create), [Get](./REFERENCE.md#opportunities-get), [Update](./REFERENCE.md#opportunities-update), [Delete](./REFERENCE.md#opportunities-delete), [API Search](./REFERENCE.md#opportunities-api_search), [Context Store Search](./REFERENCE.md#opportunities-context-store-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [API Search](./REFERENCE.md#tasks-api_search), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
-| Events | [List](./REFERENCE.md#events-list), [Create](./REFERENCE.md#events-create), [Get](./REFERENCE.md#events-get), [Update](./REFERENCE.md#events-update), [Delete](./REFERENCE.md#events-delete), [API Search](./REFERENCE.md#events-api_search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Delete](./REFERENCE.md#campaigns-delete), [API Search](./REFERENCE.md#campaigns-api_search) |
-| Cases | [List](./REFERENCE.md#cases-list), [Create](./REFERENCE.md#cases-create), [Get](./REFERENCE.md#cases-get), [Update](./REFERENCE.md#cases-update), [Delete](./REFERENCE.md#cases-delete), [API Search](./REFERENCE.md#cases-api_search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [API Search](./REFERENCE.md#notes-api_search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Delete](./REFERENCE.md#accounts-delete), [Search](./REFERENCE.md#accounts-search), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [Search](./REFERENCE.md#contacts-search), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Leads | [List](./REFERENCE.md#leads-list), [Create](./REFERENCE.md#leads-create), [Get](./REFERENCE.md#leads-get), [Update](./REFERENCE.md#leads-update), [Delete](./REFERENCE.md#leads-delete), [Search](./REFERENCE.md#leads-search), [Context Store Search](./REFERENCE.md#leads-context-store-search), [Context Store SQL Query](./REFERENCE.md#leads-context-store-sql-query) |
+| Opportunities | [List](./REFERENCE.md#opportunities-list), [Create](./REFERENCE.md#opportunities-create), [Get](./REFERENCE.md#opportunities-get), [Update](./REFERENCE.md#opportunities-update), [Delete](./REFERENCE.md#opportunities-delete), [Search](./REFERENCE.md#opportunities-search), [Context Store Search](./REFERENCE.md#opportunities-context-store-search), [Context Store SQL Query](./REFERENCE.md#opportunities-context-store-sql-query) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Search](./REFERENCE.md#tasks-search), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query) |
+| Events | [List](./REFERENCE.md#events-list), [Create](./REFERENCE.md#events-create), [Get](./REFERENCE.md#events-get), [Update](./REFERENCE.md#events-update), [Delete](./REFERENCE.md#events-delete), [Search](./REFERENCE.md#events-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Delete](./REFERENCE.md#campaigns-delete), [Search](./REFERENCE.md#campaigns-search) |
+| Cases | [List](./REFERENCE.md#cases-list), [Create](./REFERENCE.md#cases-create), [Get](./REFERENCE.md#cases-get), [Update](./REFERENCE.md#cases-update), [Delete](./REFERENCE.md#cases-delete), [Search](./REFERENCE.md#cases-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Search](./REFERENCE.md#notes-search) |
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
-| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Opportunity Stages | [List](./REFERENCE.md#opportunity-stages-list), [Get](./REFERENCE.md#opportunity-stages-get), [Context Store Search](./REFERENCE.md#opportunity-stages-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Opportunity Stages | [List](./REFERENCE.md#opportunity-stages-list), [Get](./REFERENCE.md#opportunity-stages-get), [Context Store Search](./REFERENCE.md#opportunity-stages-context-store-search), [Context Store SQL Query](./REFERENCE.md#opportunity-stages-context-store-sql-query) |
 | Query | [List](./REFERENCE.md#query-list) |
 
 
@@ -133,6 +202,169 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `SalesforceConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Salesforce Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Salesforce Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `SalesforceConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+@SalesforceConnector.agent_tool(
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@SalesforceConnector.agent_tool()
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@SalesforceConnector.agent_tool()
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (salesforce_inspect, salesforce_read_docs, salesforce_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `SalesforceConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -207,12 +439,15 @@ async def salesforce_execute(entity: str, action: str, params: dict | None = Non
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -226,18 +461,15 @@ connector = SalesforceConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@SalesforceConnector.tool_utils
-async def salesforce_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -250,18 +482,21 @@ connector = SalesforceConnector(
     )
 )
 
-@tool
-@SalesforceConnector.tool_utils
-async def salesforce_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Salesforce connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -275,21 +510,16 @@ connector = SalesforceConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@SalesforceConnector.tool_utils(framework="openai_agents")
-async def salesforce_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Salesforce connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Salesforce Assistant", tools=[salesforce_execute])
+agent = Agent(name="Salesforce Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -305,18 +535,220 @@ connector = SalesforceConnector(
 
 mcp = FastMCP("Salesforce Agent")
 
-@mcp.tool
-@SalesforceConnector.tool_utils
-async def salesforce_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Salesforce connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
+
 
 ##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Salesforce Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+mcp = FastMCP("Salesforce Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `SalesforceConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+@SalesforceConnector.agent_tool(
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@SalesforceConnector.agent_tool()
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@SalesforceConnector.agent_tool()
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (salesforce_inspect, salesforce_read_docs, salesforce_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `SalesforceConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -329,7 +761,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -352,7 +785,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 @tool
@@ -376,7 +810,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -403,7 +838,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 mcp = FastMCP("Salesforce Agent")
@@ -415,6 +851,7 @@ async def salesforce_execute(entity: str, action: str, params: dict | None = Non
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 

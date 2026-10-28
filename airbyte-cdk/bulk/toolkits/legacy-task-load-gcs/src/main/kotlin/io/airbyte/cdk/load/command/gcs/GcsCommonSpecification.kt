@@ -13,7 +13,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 interface GcsCommonSpecification {
     @get:JsonSchemaTitle("GCS Bucket Name")
     @get:JsonPropertyDescription(
-        """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>."""
+        """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>.""",
     )
     @get:JsonProperty("gcs_bucket_name")
     @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"], "order": 1}""")
@@ -28,7 +28,7 @@ interface GcsCommonSpecification {
     @get:JsonSchemaTitle("Credential")
     // we have to put this description here, or it doesn't show up in the UI
     @get:JsonPropertyDescription(
-        """An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>."""
+        """An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>.""",
     )
     @get:JsonSchemaInject(json = """{"order": 0}""")
     val credential: GcsAuthSpecification
