@@ -117,6 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.23 | 2026-10-28 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Support multiple project slugs in `project`, add `start_date` and `events_full_payload` options, back off on Sentry rate limits, and read `events` in 7-day slices |
 | 1.0.16 | 2026-10-20 | [89398](https://github.com/airbytehq/airbyte/pull/89398) | Update dependencies |
 | 1.0.15 | 2026-10-13 | [88408](https://github.com/airbytehq/airbyte/pull/88408) | Type the `sentry:replay_rage_click_issues` project option as boolean in `project_detail` and `all_projects_detail` |
 | 1.0.14 | 2026-10-13 | [88806](https://github.com/airbytehq/airbyte/pull/88806) | Update dependencies |
