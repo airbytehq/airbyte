@@ -178,7 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.2.0 | 2026-10-27 | [85773](https://github.com/airbytehq/airbyte/pull/85773) | Add OAuth2.0 as the default authentication; existing API token configs move into `credentials` automatically |
+| 4.2.0 | 2026-10-28 | [85773](https://github.com/airbytehq/airbyte/pull/85773) | Add OAuth2.0 as the default authentication; existing API token configs move into `credentials` automatically |
 | 4.1.3 | 2026-10-27 | [90008](https://github.com/airbytehq/airbyte/pull/90008) | Update dependencies |
 | 4.1.2 | 2026-10-24 | [89714](https://github.com/airbytehq/airbyte/pull/89714) | Rebuild error handling for child and plan-gated streams as one handler per stream; an unexpected HTML page on those streams, such as an endpoint Pipedrive no longer serves, now fails the sync instead of reading as empty or being retried |
 | 4.1.1 | 2026-10-20 | [89349](https://github.com/airbytehq/airbyte/pull/89349) | Update dependencies |
