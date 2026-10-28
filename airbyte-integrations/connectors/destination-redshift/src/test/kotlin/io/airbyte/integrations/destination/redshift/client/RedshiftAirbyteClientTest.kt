@@ -721,14 +721,28 @@ internal class RedshiftAirbyteClientTest {
         every { credentialsProvider.resolveCredentials() } returns
             AwsBasicCredentials.create("AKIA", "secret")
         every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", null, "us-east-1")
+            sqlGenerator.copyFromS3(
+                testTable,
+                "s3://bucket/key",
+                "AKIA",
+                "secret",
+                null,
+                "us-east-1",
+            )
         } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
 
         client.copyFromS3(testTable, "s3://bucket/key", "us-east-1")
 
         verify {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", null, "us-east-1")
+            sqlGenerator.copyFromS3(
+                testTable,
+                "s3://bucket/key",
+                "AKIA",
+                "secret",
+                null,
+                "us-east-1",
+            )
         }
         verify { mockStatement.execute("COPY SQL") }
     }
@@ -738,7 +752,14 @@ internal class RedshiftAirbyteClientTest {
         every { credentialsProvider.resolveCredentials() } returns
             AwsSessionCredentials.create("ASIA", "secret", "tok")
         every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "ASIA", "secret", "tok", "us-east-1")
+            sqlGenerator.copyFromS3(
+                testTable,
+                "s3://bucket/key",
+                "ASIA",
+                "secret",
+                "tok",
+                "us-east-1",
+            )
         } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
 

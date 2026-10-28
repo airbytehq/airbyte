@@ -30,9 +30,10 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
 
     fun createCredentialsProvider(): AwsCredentialsProvider {
         val s3Config = configuration.uploadingMethod!!
-        val providers = mutableListOf<AwsCredentialsProvider>(
-            WebIdentityTokenFileCredentialsProvider.create(),
-        )
+        val providers =
+            mutableListOf<AwsCredentialsProvider>(
+                WebIdentityTokenFileCredentialsProvider.create(),
+            )
         if (!s3Config.accessKeyId.isNullOrBlank() && !s3Config.secretAccessKey.isNullOrBlank()) {
             providers.add(
                 StaticCredentialsProvider.create(
@@ -44,7 +45,7 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
     }
 
     fun createS3Client(
-        credentialsProvider: AwsCredentialsProvider = createCredentialsProvider()
+        credentialsProvider: AwsCredentialsProvider = createCredentialsProvider(),
     ): S3Client {
         val s3Config = configuration.uploadingMethod!!
 

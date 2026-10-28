@@ -42,7 +42,8 @@ internal class S3ConnectTest {
 
     @Test
     fun `falls back to static keys when no web identity token is present`() {
-        val creds = S3Connect(config("AKID", "SECRET")).createCredentialsProvider().resolveCredentials()
+        val creds =
+            S3Connect(config("AKID", "SECRET")).createCredentialsProvider().resolveCredentials()
 
         assertEquals("AKID", creds.accessKeyId())
         assertEquals("SECRET", creds.secretAccessKey())
