@@ -5,7 +5,6 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.models.outcome import ExpectedOutcome
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -28,11 +27,11 @@ _PAGE_SIZE = "30"
 _START_DATE = "2026-10-09T00:00:00Z"
 _BEFORE_END_REQUEST = request(
     f"/report/users/{_USER_ID}/meetings",
-    ANY_QUERY_PARAMS,
+    {"type": "past", "page_size": "300", "from": "2026-10-09", "to": "2026-10-10"},
 )
 _AFTER_END_REQUEST = request(
     f"/report/users/{_USER_ID}/meetings",
-    ANY_QUERY_PARAMS,
+    {"type": "past", "page_size": "300", "from": "2026-10-09", "to": "2026-10-12"},
 )
 _PRIOR_SESSION = {
     "uuid": "prior-session",
@@ -101,7 +100,11 @@ def test_late_meeting_reports_resume_after_session_end(stream_name):
     state = StateBuilder().with_stream_state(stream_name, first.most_recent_state.stream_state.__dict__).build()
     with freezegun.freeze_time("2026-10-12T12:00:00Z"):
         with HttpMocker() as http_mocker:
-            users_request = _mock_parent_chain(http_mocker, _AFTER_END_REQUEST, [_LATE_SESSION])
+            users_request = _mock_parent_chain(
+                http_mocker,
+                _AFTER_END_REQUEST,
+                [_LATE_SESSION],
+            )
             if stream_name == "report_meeting_participants":
                 http_mocker.get(
                     late_report_request,
@@ -157,9 +160,84 @@ def test_late_meeting_reports_resume_after_session_end(stream_name):
         pytest.param("report_meeting_participants", id="meeting-participants"),
     ],
 )
+def test_meeting_report_parent_excludes_webinars(stream_name):
+    meeting_session = {
+        "uuid": "meeting-session",
+        "id": 123,
+        "end_time": "2026-10-11T11:00:00Z",
+        "type": 2,
+    }
+    webinar_session = {
+        "uuid": "webinar-session",
+        "id": 456,
+        "end_time": "2026-10-11T12:00:00Z",
+        "type": 5,
+    }
+    parent_request = request(
+        f"/report/users/{_USER_ID}/meetings",
+        {"type": "past", "page_size": "300", "from": "2026-10-09", "to": "2026-10-12"},
+    )
+    meeting_report_request = _report_request(stream_name, meeting_session["uuid"])
+    webinar_report_request = _report_request(stream_name, webinar_session["uuid"])
+
+    with freezegun.freeze_time("2026-10-12T12:00:00Z"):
+        with HttpMocker() as http_mocker:
+            users_request = _mock_parent_chain(http_mocker, parent_request, [meeting_session, webinar_session])
+            if stream_name == "report_meeting_participants":
+                participant_response = {
+                    "participants": [
+                        {
+                            "id": "participant-1",
+                            "user_id": "attendee-1",
+                            "join_time": "2026-10-11T10:00:00Z",
+                            "leave_time": "2026-10-11T11:00:00Z",
+                        }
+                    ],
+                    "next_page_token": "",
+                }
+                http_mocker.get(meeting_report_request, json_response(participant_response))
+                http_mocker.get(webinar_report_request, json_response(participant_response))
+            else:
+                http_mocker.get(meeting_report_request, json_response(_report_response(meeting_session)))
+                http_mocker.get(webinar_report_request, json_response(_report_response(webinar_session)))
+
+            output = read_stream(
+                stream_name,
+                config={**CONFIG, "start_date": _START_DATE},
+                sync_mode=SyncMode.incremental,
+            )
+            http_mocker.assert_number_of_calls(users_request, 1)
+            http_mocker.assert_number_of_calls(parent_request, 1)
+            http_mocker.assert_number_of_calls(meeting_report_request, 1)
+            http_mocker.assert_number_of_calls(webinar_report_request, 0)
+
+    assert_completed_without_errors(output, stream_name)
+    if stream_name == "report_meeting_participants":
+        assert records_data(output) == [
+            {
+                "id": "participant-1",
+                "user_id": "attendee-1",
+                "join_time": "2026-10-11T10:00:00Z",
+                "leave_time": "2026-10-11T11:00:00Z",
+                "meeting_id": meeting_session["id"],
+                "meeting_uuid": meeting_session["uuid"],
+                "meeting_end_time": meeting_session["end_time"],
+            }
+        ]
+    else:
+        assert records_data(output) == [_report_response(meeting_session)]
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("report_meetings", id="meeting-report"),
+        pytest.param("report_meeting_participants", id="meeting-participants"),
+    ],
+)
 def test_meeting_report_streams_accept_legacy_state(stream_name):
     late_report_request = _report_request(stream_name, _LATE_SESSION["uuid"])
-    parent_request = request(f"/report/users/{_USER_ID}/meetings", ANY_QUERY_PARAMS)
+    parent_request = _AFTER_END_REQUEST
 
     with freezegun.freeze_time("2026-10-12T12:00:00Z"):
         with HttpMocker() as http_mocker:
@@ -213,7 +291,7 @@ def test_meeting_report_streams_accept_legacy_state(stream_name):
 
 
 def test_report_meetings_missing_scope_fails_with_granular_scope_error():
-    parent_request = request(f"/report/users/{_USER_ID}/meetings", ANY_QUERY_PARAMS)
+    parent_request = _AFTER_END_REQUEST
 
     with freezegun.freeze_time("2026-10-12T12:00:00Z"):
         with HttpMocker() as http_mocker:

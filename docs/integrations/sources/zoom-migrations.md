@@ -11,7 +11,7 @@ Clearing a Full Refresh | Append stream permanently deletes destination history 
 ### WHAT
 
 - Primary keys are added or changed for `meeting_polls` (`[meeting_id, id]`), `meeting_registration_questions` (`[meeting_id]`), `report_meetings` (`[uuid]`), and `report_meeting_participants` (`[meeting_uuid, user_id]`). Webinar keys are `webinar_panelists`, `webinar_registrants`, and `webinar_polls` (`[webinar_id, id]`); `webinar_registration_questions` (`[webinar_id]`); `report_webinars` (`[uuid]`); and `report_webinar_participants` (`[webinar_uuid, user_id]`). `meeting_poll_results`, `webinar_poll_results`, and `webinar_qna_results` have no primary key because a result name is not unique.
-- `webinar_id` is numeric in `webinar_registrants`, `webinar_polls`, and `webinar_registration_questions`. The `webinar_poll_results` and `webinar_qna_results` streams add a numeric `webinar_id`.
+- `webinar_id` is an integer in `webinar_panelists`, `webinar_registrants`, `webinar_polls`, `webinar_registration_questions`, `webinar_poll_results`, and `webinar_qna_results`. The two result streams add the field, and `webinar_tracking_sources.webinar_id` changes from a string to an integer.
 - Timestamp fields now use the `date-time` schema format: `users.created_at`, `users.user_created_at`, and `users.last_login_time`; `meetings` and `webinars` `created_at`, `start_time`, `occurrences[].start_time`, and `recurrence.end_date_time`; `meeting_registrants.create_time`, `webinar_registrants.create_time`, and `webinar_absentees.create_time`; `start_time` and `end_time` in the meeting and webinar report streams; and `join_time` and `leave_time` in the meeting and webinar report participant streams.
 - The `users` stream adds `login_types`. The `report_meeting_participants` stream adds `meeting_uuid` and `meeting_end_time`; `meeting_id` remains the numeric meeting ID. Registration-question streams emit one record per meeting or webinar with questions nested in arrays, so their keys use the parent ID rather than a nested `field_name`.
 - Incremental sync is supported for `meetings`, `report_meetings`, `report_meeting_participants`, `webinars`, and `report_user_meetings`. `report_webinars`, `report_webinar_participants`, and `report_daily` use Full Refresh.
@@ -22,7 +22,7 @@ The poll-results `question_details[].date_time` fields remain unformatted becaus
 
 ### Report meeting streams
 
-`report_meetings` and `report_meeting_participants` now use Zoom's past-meetings report, which returns one row per meeting session. This includes separate rows for sessions of recurring meetings. Zoom retains these reports for roughly six months, and `start_date` further limits the requested report window.
+`report_meetings` and `report_meeting_participants` now use Zoom's past-meetings report, which can return rows for eligible meeting sessions, including separate rows for sessions of recurring meetings. Zoom's past-meetings report omits sessions with fewer than two participants, so those sessions produce no report rows. Zoom retains these reports for roughly six months, and `start_date` further limits the requested report window.
 
 These streams require the classic `report:read:admin` scope or the granular `report:read:user:admin` scope. Zoom apps set up before source-zoom 1.5.0 may not have the required scope; without it, sync fails with a configuration error naming the missing scope. After adding the scope, users with OAuth credentials must re-authenticate the source.
 
@@ -32,9 +32,9 @@ Composite keys distinguish records that repeat across meetings or webinars, and 
 
 ### WHO
 
-Users syncing `users`, `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_registration_questions`, `webinars`, `webinar_panelists`, `webinar_registrants`, `webinar_absentees`, `webinar_polls`, `webinar_poll_results`, `webinar_registration_questions`, `webinar_qna_results`, `report_meetings`, `report_meeting_participants`, `report_webinars`, or `report_webinar_participants` are affected.
+Users syncing `users`, `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_registration_questions`, `webinars`, `webinar_panelists`, `webinar_registrants`, `webinar_absentees`, `webinar_polls`, `webinar_poll_results`, `webinar_registration_questions`, `webinar_qna_results`, `webinar_tracking_sources`, `report_meetings`, `report_meeting_participants`, `report_webinars`, or `report_webinar_participants` are affected.
 
-Users syncing only `chat_channels`, `meeting_poll_results`, `report_user_meetings`, `report_daily`, `zoom_events`, or `webinar_tracking_sources` are not affected by this upgrade.
+Users syncing only `chat_channels`, `meeting_poll_results`, `report_user_meetings`, `report_daily`, or `zoom_events` are not affected by this upgrade.
 
 ### STEPS
 

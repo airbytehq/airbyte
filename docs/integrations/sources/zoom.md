@@ -38,19 +38,19 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Required scopes and plans
 
-`report_user_meetings`, `report_meetings`, and `report_meeting_participants` require the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. The meeting report streams return one row per meeting session; Zoom retains report data for roughly six months. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
+`report_user_meetings`, `report_meetings`, and `report_meeting_participants` require the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. The meeting report streams can return rows for eligible meeting sessions, including separate rows for sessions of recurring meetings. Zoom's past-meetings report omits sessions with fewer than two unique participants, so those sessions produce no report rows. Zoom retains report data for roughly six months. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
 
 Zoom apps set up before version 1.5.0 may be missing report scopes for `report_user_meetings`, `report_meetings`, `report_meeting_participants`, or `report_daily`. Add the required scopes before syncing; users with OAuth credentials must re-authenticate so the new token includes them. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection.
 
 ### Features
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes (`meetings`, `report_meetings`, `report_meeting_participants`, `webinars`, `report_user_meetings`) |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+| Feature                       | Supported?                                                                                   |
+| :---------------------------- | :------------------------------------------------------------------------------------------- |
+| Full Refresh Sync             | Yes                                                                                          |
+| Incremental Sync              | Yes (meetings, report_meetings, report_meeting_participants, webinars, report_user_meetings) |
+| Replicate Incremental Deletes | Coming soon                                                                                  |
+| SSL connection                | Yes                                                                                          |
+| Namespaces                    | No                                                                                           |
 
 ### Performance considerations
 

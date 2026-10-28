@@ -3523,7 +3523,7 @@ definitions:
           webinar_id:
             type:
             - 'null'
-            - number
+            - integer
           id:
             type:
             - 'null'
@@ -7124,6 +7124,32 @@ definitions:
     - uuid
     type: DeclarativeStream
     name: "report_user_meetings"
+  report_user_meetings_filtered_parent_stream:
+    retriever:
+      requester:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/requester"
+      paginator:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/paginator"
+      record_selector:
+        extractor:
+          $ref: "#/definitions/report_user_meetings_stream/retriever/record_selector/extractor"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('type') not in [5, 6, 9] }}"
+        type: RecordSelector
+      partition_router:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/partition_router"
+      type: SimpleRetriever
+    incremental_sync:
+      $ref: "#/definitions/report_user_meetings_stream/incremental_sync"
+    transformations:
+      $ref: "#/definitions/report_user_meetings_stream/transformations"
+    schema_loader:
+      $ref: "#/definitions/report_user_meetings_stream/schema_loader"
+    primary_key:
+    - uuid
+    type: DeclarativeStream
+    name: "report_user_meetings"
 streams:
 - retriever:
     requester:
@@ -10432,7 +10458,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         id:
           type:
           - 'null'
@@ -10737,7 +10763,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         id:
           type:
           - 'null'
@@ -11458,7 +11484,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         id:
           type:
           - 'null'
@@ -11830,10 +11856,10 @@ streams:
           type:
           - 'null'
           - string
-        webinar_id:
-          type:
-          - 'null'
-          - number
+          webinar_id:
+            type:
+            - 'null'
+            - integer
         email:
           type:
           - 'null'
@@ -12123,7 +12149,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         custom_questions:
           type:
           - 'null'
@@ -12428,7 +12454,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - integer
         id:
           type:
           - 'null'
@@ -12772,7 +12798,7 @@ streams:
       parent_stream_configs:
       - type: ParentStreamConfig
         stream:
-          $ref: "#/definitions/report_user_meetings_stream"
+          $ref: "#/definitions/report_user_meetings_filtered_parent_stream"
         parent_key: uuid
         partition_field: parent_id
         incremental_dependency: true
@@ -12936,7 +12962,7 @@ streams:
       parent_stream_configs:
       - type: ParentStreamConfig
         stream:
-          $ref: "#/definitions/report_user_meetings_stream"
+          $ref: "#/definitions/report_user_meetings_filtered_parent_stream"
         parent_key: uuid
         partition_field: parent_id
         incremental_dependency: true

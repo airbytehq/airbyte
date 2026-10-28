@@ -17,6 +17,32 @@ _MANIFEST_PATH = _MANIFEST_DIR / "manifest.yaml"
 _METADATA_PATH = _MANIFEST_DIR / "metadata.yaml"
 _TOKEN_URL = "https://zoom.us/oauth/token"
 
+EXPECTED_PRIMARY_KEYS = {
+    "users": [["id"]],
+    "meetings": [["id"]],
+    "meeting_registrants": [["id"]],
+    "meeting_polls": [["meeting_id"], ["id"]],
+    "meeting_poll_results": None,
+    "meeting_registration_questions": [["meeting_id"]],
+    "webinars": [["id"]],
+    "webinar_panelists": [["webinar_id"], ["id"]],
+    "webinar_registrants": [["webinar_id"], ["id"]],
+    "webinar_absentees": [["id"]],
+    "webinar_polls": [["webinar_id"], ["id"]],
+    "webinar_poll_results": None,
+    "webinar_registration_questions": [["webinar_id"]],
+    "webinar_tracking_sources": [["id"]],
+    "webinar_qna_results": None,
+    "report_meetings": [["uuid"]],
+    "report_meeting_participants": [["meeting_uuid"], ["user_id"]],
+    "report_webinars": [["uuid"]],
+    "report_webinar_participants": [["webinar_uuid"], ["user_id"]],
+    "report_user_meetings": [["uuid"]],
+    "report_daily": [["date"]],
+    "chat_channels": [["id"], ["user_id"]],
+    "zoom_events": [["event_id"]],
+}
+
 
 def _manifest_streams():
     manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
@@ -29,27 +55,16 @@ def _manifest_streams():
         yield stream
 
 
-def _manifest_primary_keys():
-    for stream in _manifest_streams():
-        primary_key = stream.get("primary_key")
-        if isinstance(primary_key, str):
-            expected = [[primary_key]]
-        elif primary_key is None:
-            expected = None
-        else:
-            expected = [key if isinstance(key, list) else [key] for key in primary_key]
-        yield pytest.param(stream["name"], expected, id=stream["name"])
-
-
 @pytest.fixture(scope="module")
 def discovered_streams():
     catalog = discover(get_source(config=CONFIG), CONFIG).catalog.catalog
     return {stream.name: stream for stream in catalog.streams}
 
 
-@pytest.mark.parametrize("stream_name,expected_primary_key", list(_manifest_primary_keys()))
-def test_discovery_primary_keys_match_manifest(stream_name, expected_primary_key, discovered_streams):
-    assert discovered_streams[stream_name].source_defined_primary_key == expected_primary_key
+def test_discovery_primary_keys_match_expected_contract(discovered_streams):
+    assert set(discovered_streams) == set(EXPECTED_PRIMARY_KEYS)
+    for stream_name, expected_primary_key in EXPECTED_PRIMARY_KEYS.items():
+        assert discovered_streams[stream_name].source_defined_primary_key == expected_primary_key
 
 
 @pytest.mark.parametrize("timestamp", [pytest.param("not-a-date", id="invalid-date-time")])
