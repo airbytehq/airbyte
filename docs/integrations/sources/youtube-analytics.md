@@ -82,7 +82,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
 
-Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. See the [1.4.0 changelog entry](#changelog) for details.
+Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data.
 
 ## Report availability
 
@@ -114,12 +114,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 Each selected report stream makes requests to find its reporting job and available reports, then downloads each available report file. Selecting more report streams can therefore use more of your project's quota.
 
+The optional **Number of Concurrent Workers** setting controls how many report files download in parallel. The default is 2 and the maximum is 4. More workers can shorten syncs with many report files, but every worker shares the same request limit and YouTube API quota, so higher values can reach rate limits sooner.
+
 ## Limitations & Troubleshooting
 
 - **401: no channel associated with the Google account.** The error starts with `The authorized Google account does not appear to have an associated YouTube channel.` Use an account that owns or manages a YouTube channel. If you are connecting as a content owner, also confirm the Content Owner ID is correct.
-- **403: access denied.** The connection can display `HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource.` Confirm that the Google account has access to the YouTube Reporting API and that the OAuth consent screen includes the required scope.
+- **401: credentials rejected.** The error starts with `Google rejected the YouTube Reporting API credentials:` followed by Google's message. Re-authenticate the source. If the error continues, the Google account likely has no associated YouTube channel.
+- **403: access denied.** The error starts with `The YouTube Reporting API denied access:` followed by Google's message. Confirm that the authorized Google account owns or manages the channel and that the OAuth consent screen includes the required scope. If you set a Content Owner ID, confirm that the account can act on behalf of that content owner.
+- **Refresh token is invalid or expired.** Google rejected the refresh token, for example because it was revoked or expired. Re-authenticate the source on Airbyte Cloud, or create a new refresh token on Airbyte Open Source.
 - **Daily quota exhausted.** If the sync reports **Daily YouTube API project quota is exhausted.**, check your project's quota and try again after quota becomes available.
 - **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours.
+- **Skipped report files.** If YouTube lists a report file but it can no longer be downloaded (HTTP 404), most likely because it passed its [retention period](#report-availability), the connector skips that file, records a message in the sync logs, and the rest of the sync continues. The rows in that file are not synced.
 - **Refresh token expires after 7 days.** This applies to External OAuth apps in Testing status. Add the channel's Google account as a test user, or publish the app according to Google's requirements.
 - **Content-owner reports are not available as streams.** The available streams are channel and playlist reports. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
 
