@@ -25,7 +25,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/projects
+          path: /v4/projects
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -34,7 +34,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - projects
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -49,7 +49,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -63,7 +63,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/absences
+          path: /v4/absences
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -72,7 +72,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - absences
+              - data
         partition_router:
           type: ListPartitionRouter
           values: "{{ config['years'] }}"
@@ -80,7 +80,7 @@ definitions:
           request_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: year
+            field_name: filter[year]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -94,7 +94,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/customers
+          path: /v3/customers
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -103,7 +103,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - customers
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -118,7 +118,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,7 +151,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: time_last_change
@@ -187,7 +187,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /holidayscarry
+          path: /v3/holidaysCarry
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -196,7 +196,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - holidayscarry
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,7 +210,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /holidaysquota
+          path: /v2/holidaysQuota
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -219,7 +219,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - holidaysquota
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -233,7 +233,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/lumpsumservices
+          path: /v4/lumpSumServices
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -242,7 +242,22 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - lumpSumServices
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -256,7 +271,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /nonbusinessdays
+          path: /v2/nonbusinessDays
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -265,7 +280,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - nonbusinessdays
+              - data
         partition_router:
           type: ListPartitionRouter
           values: "{{ config.years }}"
@@ -287,7 +302,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /overtimecarry
+          path: /v3/overtimeCarry
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -296,7 +311,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - overtimecarry
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -310,7 +325,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/services
+          path: /v4/services
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -319,7 +334,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - services
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -334,7 +349,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -348,7 +363,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/surcharges
+          path: /v2/surchargeModels
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -357,7 +372,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - surcharges
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -394,7 +409,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/teams
+          path: /v3/teams
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -403,7 +418,22 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - teams
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -446,7 +476,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/users
+          path: /v3/users
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -455,7 +485,22 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - users
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -507,8 +552,8 @@ definitions:
           http_method: GET
           request_parameters:
             users_id: "{{ stream_partition.user_id }}"
-            date_since: "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
-            date_until: "{{ format_datetime(config[\"end_time\"], '%Y-%m-%d') }}"
+            date_since: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            date_until: "{{ now_utc().strftime('%Y-%m-%d') }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -526,7 +571,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ response.paging.count_pages | int <= response.paging.current_page | int }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -770,6 +815,14 @@ schemas:
         type:
           - boolean
           - "null"
+      automatic_completion:
+        type:
+          - boolean
+          - "null"
+      bill_service_id:
+        type:
+          - string
+          - "null"
       billable_default:
         type:
           - boolean
@@ -778,25 +831,66 @@ schemas:
         type:
           - boolean
           - "null"
-      budget_is_hours:
-        type:
-          - boolean
-          - "null"
-      budget_is_not_strict:
-        type:
-          - boolean
-          - "null"
-      budget_money:
+      billed_money:
         type:
           - number
           - "null"
+      budget:
+        type:
+          - object
+          - "null"
+        properties:
+          monetary:
+            type:
+              - boolean
+              - "null"
+          hard:
+            type:
+              - boolean
+              - "null"
+          from_subprojects:
+            type:
+              - boolean
+              - "null"
+          interval:
+            type:
+              - number
+              - "null"
+          amount:
+            type:
+              - number
+              - "null"
+          subprojects_budget_total:
+            type:
+              - number
+              - "null"
+          notification_thresholds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
       completed:
         type:
           - boolean
           - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      count_subprojects:
+        type:
+          - number
+          - "null"
       customers_id:
         type:
           - number
+          - "null"
+      deadline:
+        type:
+          - string
           - "null"
       id:
         type: number
@@ -804,9 +898,29 @@ schemas:
         type:
           - string
           - "null"
+      note:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
       revenue_factor:
         type:
           - number
+          - "null"
+      service_assignments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      start_date:
+        type:
+          - string
           - "null"
       test_data:
         type:
@@ -819,10 +933,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      type:
-        type:
-          - number
-          - "null"
       approved_by:
         type:
           - number
@@ -831,7 +941,15 @@ schemas:
         type:
           - number
           - "null"
+      count_hours:
+        type:
+          - number
+          - "null"
       date_approved:
+        type:
+          - string
+          - "null"
+      date_enquired:
         type:
           - string
           - "null"
@@ -845,7 +963,23 @@ schemas:
           - "null"
       id:
         type: number
+      note:
+        type:
+          - string
+          - "null"
+      public_note:
+        type:
+          - string
+          - "null"
+      sick_note:
+        type:
+          - boolean
+          - "null"
       status:
+        type:
+          - number
+          - "null"
+      type:
         type:
           - number
           - "null"
@@ -864,6 +998,10 @@ schemas:
         type:
           - boolean
           - "null"
+      bill_service_id:
+        type:
+          - string
+          - "null"
       billable_default:
         type:
           - boolean
@@ -878,6 +1016,22 @@ schemas:
         type:
           - string
           - "null"
+      note:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      service_assignments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
       test_data:
         type:
           - boolean
@@ -1049,6 +1203,14 @@ schemas:
         type:
           - string
           - "null"
+      note:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
       price:
         type:
           - number
@@ -1064,21 +1226,45 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      date:
+      day:
+        type:
+          - number
+          - "null"
+      evaluated_date:
         type:
           - string
           - "null"
       half_day:
         type:
-          - number
+          - boolean
           - "null"
       id:
         type: number
+      month:
+        type:
+          - number
+          - "null"
       name:
         type:
           - string
           - "null"
-      nonbusinessgroups_id:
+      nonbusiness_group_id:
+        type:
+          - number
+          - "null"
+      special_id:
+        type:
+          - number
+          - "null"
+      surcharge_special:
+        type:
+          - boolean
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      year:
         type:
           - number
           - "null"
@@ -1118,9 +1304,21 @@ schemas:
         type:
           - boolean
           - "null"
+      bill_service_id:
+        type:
+          - string
+          - "null"
       id:
         type: number
       name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      number:
         type:
           - string
           - "null"
@@ -1298,6 +1496,14 @@ schemas:
         type:
           - string
           - "null"
+      user_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
     required:
       - id
   user_reports:
@@ -1444,7 +1650,27 @@ schemas:
           type:
             - number
             - "null"
+      access_groups_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
       active:
+        type:
+          - boolean
+          - "null"
+      bill_service_id:
+        type:
+          - string
+          - "null"
+      boss:
+        type:
+          - number
+          - "null"
+      budget_notifications:
         type:
           - boolean
           - "null"
@@ -1460,6 +1686,10 @@ schemas:
         type:
           - boolean
           - "null"
+      created_at:
+        type:
+          - string
+          - "null"
       creator:
         type:
           - number
@@ -1472,6 +1702,18 @@ schemas:
         type:
           - boolean
           - "null"
+      default_work_time_regulation:
+        type:
+          - boolean
+          - "null"
+      edit_lock:
+        type:
+          - string
+          - "null"
+      edit_lock_dyn:
+        type:
+          - number
+          - "null"
       edit_lock_sync:
         type:
           - boolean
@@ -1479,6 +1721,18 @@ schemas:
       email:
         type:
           - string
+          - "null"
+      exempt_from_flextime:
+        type:
+          - boolean
+          - "null"
+      exit_date:
+        type:
+          - string
+          - "null"
+      future_coworker:
+        type:
+          - boolean
           - "null"
       id:
         type: number
@@ -1494,13 +1748,33 @@ schemas:
         type:
           - string
           - "null"
+      nonbusiness_groups_id:
+        type:
+          - number
+          - "null"
+      nonbusinessgroups_id:
+        type:
+          - number
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
       role:
+        type:
+          - string
+          - "null"
+      start_date:
         type:
           - string
           - "null"
       support_pin:
         type:
           - string
+          - "null"
+      teams_id:
+        type:
+          - number
           - "null"
       timeformat_12h:
         type:
@@ -1509,6 +1783,10 @@ schemas:
       timezone:
         type:
           - string
+          - "null"
+      wage_type:
+        type:
+          - number
           - "null"
       weekend_friday:
         type:
@@ -1519,6 +1797,10 @@ schemas:
           - boolean
           - "null"
       work_time_edit_lock_days:
+        type:
+          - number
+          - "null"
+      work_time_regulations_id:
         type:
           - number
           - "null"
@@ -1546,7 +1828,7 @@ schemas:
           - type: boolean
           - type: object
             properties:
-              "3797976":
+              '3797976':
                 type: boolean
       user_id:
         type: number

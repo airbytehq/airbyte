@@ -11,16 +11,16 @@ Gmail is the email service provided by Google. The Gmail source connector replic
 ## Prerequisites
 
 - A Google account with access to the mailbox you want to replicate.
-- A Gmail API scope that allows reading mail. Airbyte Cloud's OAuth flow requests `https://www.googleapis.com/auth/gmail.modify`, which includes read access. Self-managed OAuth clients and service accounts can grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope. In either case, the connector only issues read requests.
+- A Gmail API scope that allows reading mail. Airbyte Cloud's OAuth flow requests `https://www.googleapis.com/auth/gmail.modify`, which includes read access. An OAuth client you manage yourself can grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope. In either case, the connector only issues read requests.
 <!-- env:oss -->
-- For **Airbyte Open Source**: a Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com), plus either an OAuth 2.0 client and refresh token, or a service account key.
+- For **Airbyte Open Source**: a Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com), plus an OAuth 2.0 client and refresh token.
 <!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up authentication
 
-The Gmail source connector supports two authentication methods: **OAuth** and **Service Account Key**. Both methods require a scope that grants read access to the mailbox.
+The Gmail source connector offers two authentication methods: **OAuth** and **Service Account Key**. Use OAuth. Service Account Key authentication can't currently read a mailbox.
 
 <!-- env:cloud -->
 
@@ -52,14 +52,8 @@ If you configured this source before version 0.1.1, **Client ID**, **Client Secr
 
 #### Service Account Key for Airbyte Open Source
 
-You can also authenticate with a Google service account key. Because Gmail mailboxes are owned by individual users, the service account must use [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to access mailboxes in a Google Workspace domain.
-
-1. Open the [Service Accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts) in your Google Cloud console and create a new service account, or select an existing one.
-2. In the **Keys** tab, click **Add Key** > **Create new key**, select **JSON**, and download the key file. Store it securely — Google does not let you re-download it.
-3. In your Google Workspace [admin console](https://admin.google.com/), enable [domain-wide delegation](https://support.google.com/a/answer/162106) for the service account's client ID and authorize the `https://www.googleapis.com/auth/gmail.readonly` scope.
-
-:::note
-Only a Google Workspace super administrator can configure domain-wide delegation. Domain-wide delegation lets the service account impersonate users in your Workspace organization to read their mailboxes.
+:::warning
+Service Account Key authentication can't currently read a mailbox. To read a user's mailbox, Google requires the token request to name the user to impersonate in the `sub` claim, and only applies [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) when that claim is set. The connector doesn't set `sub` and has no field for the user to impersonate, so Google issues a token for the service account itself. A service account has no Gmail mailbox, so the connection test and syncs fail with `Precondition check failed`, whether or not domain-wide delegation is configured. Use OAuth instead.
 :::
 
 <!-- /env:oss -->
@@ -70,11 +64,11 @@ Only a Google Workspace super administrator can configure domain-wide delegation
 2. Select **Gmail** from the source type dropdown.
 3. Choose your authentication method:
    - **Authenticate via Google (OAuth)** — Click **Authenticate your account** and complete the Google sign-in flow. **Airbyte Cloud** users authenticate against Airbyte's pre-registered OAuth app. **Airbyte Open Source** users provide their own **Client ID**, **Client Secret**, and **Refresh Token**.
-   - **Service Account Key Authentication** — Paste the contents of your service account JSON key file into the **Service Account Information** field.
+   - **Service Account Key Authentication** — Not currently usable. The connector authenticates as the service account itself, which has no mailbox. Use OAuth instead.
 4. (Optional) Set **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. Only messages, drafts, and threads received on or after this date are replicated. If you leave it blank, the connector replicates the full mailbox history.
 5. (Optional) Toggle **Include Spam & Trash** to include drafts and messages from the Spam and Trash folders. Defaults to off.
 6. (Optional) Adjust **Number of concurrent workers** (between `2` and `10`, default `5`) to control how many requests the connector issues in parallel. Lower this value if you see frequent rate-limit errors.
-7. Click **Set up source** to test the connection and save the configuration.
+7. Click **Set up source** to test the connection and save the configuration. The connection test reads the authenticated user's Gmail profile.
 
 ## Supported sync modes
 
@@ -91,41 +85,64 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 
 ## Streams
 
-| Stream             | Primary Key | Sync Mode                   | Description                                                                              |
-|--------------------|:-----------:|-----------------------------|------------------------------------------------------------------------------------------|
-| `profile`          | _(none)_    | Full Refresh                | The authenticated user's Gmail profile, including email address and history ID.          |
-| `drafts`           | `id`        | Full Refresh                | Stub records (`id`, `message.id`, `message.threadId`) returned by `users.drafts.list`.   |
-| `labels`           | `id`        | Full Refresh                | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels.|
-| `labels_details`   | `id`        | Full Refresh                | Per-label metadata such as message and thread counts. Substream of `labels`.             |
-| `messages`         | `id`        | Full Refresh                | Stub records (`id`, `threadId`) returned by `users.messages.list`.                       |
-| `messages_details` | `id`        | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels. Substream of `messages`.          |
-| `threads`          | `id`        | Full Refresh                | Stub records (`id`, `historyId`) returned by `users.threads.list`.                       |
-| `threads_details`  | `id`        | Full Refresh                | Per-thread details and the messages in each thread. Substream of `threads`.              |
+| Stream             | Primary Key    | Sync Mode                     | Description                                                                               |
+|--------------------|:--------------:|-------------------------------|-------------------------------------------------------------------------------------------|
+| `profile`          | `emailAddress` | Full Refresh                  | The authenticated user's Gmail profile, including email address and history ID.           |
+| `drafts`           | `id`           | Full Refresh                  | Stub records (`id`, `message.id`, `message.threadId`) returned by `users.drafts.list`.    |
+| `labels`           | `id`           | Full Refresh                  | All Gmail labels, including system labels (e.g. `INBOX`, `SENT`) and user-created labels. |
+| `labels_details`   | `id`           | Full Refresh                  | Per-label metadata such as message and thread counts. Substream of `labels`.              |
+| `messages`         | `id`           | Full Refresh                  | Stub records (`id`, `threadId`) returned by `users.messages.list`.                        |
+| `messages_details` | `id`           | Incremental on `internalDate` | Full message payloads, headers, snippet, and labels.                                      |
+| `threads`          | `id`           | Full Refresh                  | Stub records (`id`, `snippet`, `historyId`) returned by `users.threads.list`.             |
+| `threads_details`  | `id`           | Full Refresh                  | Per-thread details and the messages in each thread. Substream of `threads`.               |
 
-The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. Other streams expose only `id` and `threadId` from the upstream `list` calls and have no record-level cursor field, so they run as full refresh.
+The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. The other streams have no record-level cursor field, so they run as full refresh.
 
-On incremental syncs of `messages_details`, the connector still lists every message in the parent `messages` stream, then drops the messages whose `internalDate` predates the stored cursor. Incremental sync reduces what lands in your destination, not the API quota the `list` calls consume. If you leave **Start date** blank, the cursor starts at 2004-04-01, the date Gmail launched.
+On incremental syncs, `messages_details` lists messages received since the previous sync, with a one-hour lookback, and fetches details only for those returned IDs. This re-emits messages received during the hour before the previous sync, so append-only destinations can receive duplicates; **Append + Deduped** avoids them. Gmail's `after:` filter uses received time rather than modification time, so incremental syncs don't pick up changes to older messages, such as new labels or read state. They also never fetch a message that enters the mailbox later with an older received time, such as mail moved out of Spam or Trash while **Include Spam & Trash** is off, or mail imported from another account. To keep labels and read state current for older messages, run a full refresh periodically. If you leave **Start date** blank, the initial lower bound is 2004-04-01, the date Gmail launched.
 
-When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages`, `drafts`, and `threads` `list` requests so the API skips records older than that date.
+The first incremental sync of `messages_details` reads every message since **Start date**. This includes the first sync after you upgrade to version 0.3.0, because state saved by earlier versions doesn't bound the list request. The connector lists messages in 30-day windows and saves state after each window, so if the sync fails, the next sync resumes from the last completed window.
+
+When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages` (including the internal list used by `messages_details`), `drafts`, and `threads` `list` requests so the API skips records older than that date.
 
 ## Performance considerations
 
-The Gmail API enforces two simultaneous quota limits, measured in [quota units](https://developers.google.com/gmail/api/reference/quota):
+The Gmail API enforces a per-project and a per-user rate limit, measured in [quota units](https://developers.google.com/gmail/api/reference/quota). The limits and the cost of each call depend on when the Google Cloud project behind your credentials started using the Gmail API:
 
-| Limit type              | Limit                                  | Error code              |
-|-------------------------|----------------------------------------|-------------------------|
-| Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
-| Per user rate limit     | 15,000 quota units per minute per user | `userRateLimitExceeded` |
+| Quota                                    | Earlier projects (used the API November 2025 to April 2026) | Projects created on or after May 1, 2026 |
+|------------------------------------------|-------------------------------------------------------------|------------------------------------------|
+| Per-project limit (`rateLimitExceeded`)  | 1,200,000 units per minute                                  | 1,200,000 units per minute               |
+| Per-user limit (`userRateLimitExceeded`) | 15,000 units per minute per user                            | 6,000 units per minute per user          |
+| `threads.get`                            | 10 units                                                    | 120 units                                |
+| `messages.get`                           | 5 units                                                     | 60 units                                 |
+| `threads.list`                           | 10 units                                                    | 10 units                                 |
+| `messages.list`                          | 5 units                                                     | 5 units                                  |
 
-Each `messages.list` and `messages.get` call costs 5 units, and each `threads.list` and `threads.get` call costs 10 units. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+On projects created on or after May 1, 2026, `drafts.list` costs 5 units, and `labels` and `profile` calls cost 1 unit. The `get` costs for these projects apply to full-format reads, which is what the connector requests. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
 
-The connector retries `429 Too Many Requests` and `403` quota-saturation errors with exponential backoff. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
+The connector paces its requests to stay under the per-user limit, based on the authentication method:
+
+- **OAuth**: the connector assumes the earlier quota, because Airbyte Cloud's OAuth app belongs to a project that kept it. If you use your own OAuth client on a project created on or after May 1, 2026, the connector can send more requests than your quota allows, and relies on Gmail's rate-limit responses instead.
+- **Service Account Key**: the connector assumes the newer quota, since the service account belongs to your own project. Service Account Key authentication can't currently read a mailbox, so this has no effect yet.
+
+The per-project limit is shared with every other user of the project, so the connector can't track it and relies on Gmail's rate-limit responses for it.
+
+The connector retries `429 Too Many Requests` and `403` quota-saturation errors. It decides how long to wait before each retry as follows:
+
+1. If the response has a `Retry-After` header, it waits that long.
+2. Otherwise, if the error message contains a `Retry after <timestamp>` time, it waits until that time, up to 30 minutes.
+3. Otherwise, it uses exponential backoff.
+
+A request is retried up to 10 times, and the connector stops retrying after about 10 minutes. A wait taken from the error message can run past that limit. In that case, the connector retries once after the wait and fails the request if that retry also fails. After a `429`, every request also waits up to a minute for the current quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
 ## Limitations & troubleshooting
 
-- **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
-- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users.
-- **The Cloud consent screen asks for more access than the connector uses.** `https://www.googleapis.com/auth/gmail.modify` lets an app read, compose, and send mail, change labels, and trash messages. This connector only issues GET requests. To grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope instead, use your own OAuth client or a service account on a self-managed Airbyte instance.
+- **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, snippet, historyId}`) per record. To replicate the full message body, headers, or labels, sync `messages_details` or `threads_details`. You don't need to also select `messages` or `threads`, and selecting `messages` adds a full mailbox list on every sync.
+- **Service account keys can't read a mailbox.** The connector doesn't set the `sub` claim that Google requires for a service account to impersonate a user, so the token belongs to the service account, which has no mailbox. Domain-wide delegation doesn't change this. Use OAuth instead.
+- **`Precondition check failed`.** The authenticated account has no Gmail mailbox. Either you used Service Account Key authentication, or you authorized a Google Workspace user who doesn't have Gmail enabled. Authenticate with OAuth as the user whose mailbox you want to sync.
+- **The Gmail API isn't enabled.** On Airbyte Open Source with your own OAuth client, the connector fails with a configuration error until you [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) in the Google Cloud project that owns the client.
+- **The authorized account lacks the required scope.** If Gmail returns `insufficientPermissions`, re-authenticate and grant `https://www.googleapis.com/auth/gmail.readonly` (a refresh token you obtained yourself) or `https://www.googleapis.com/auth/gmail.modify` (the **Authenticate your account** flow).
+- **Your Workspace administrator has disabled Gmail apps.** If Gmail returns `domainPolicy`, ask your Google Workspace administrator to allow Gmail API access for the app, then retry.
+- **The Cloud consent screen asks for more access than the connector uses.** `https://www.googleapis.com/auth/gmail.modify` lets an app read, compose, and send mail, change labels, and trash messages. This connector only issues GET requests. To grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope instead, use your own OAuth client on a self-managed Airbyte instance.
 
 ## Configuration
 
@@ -151,6 +168,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-10-27 | [89502](https://github.com/airbytehq/airbyte/pull/89502) | Add profile primary key and type count and size fields as integers |
+| 0.3.0 | 2026-10-27 | [89756](https://github.com/airbytehq/airbyte/pull/89756) | Bound incremental `messages_details` reads to the previous sync with a one-hour lookback; label and read-state changes on older messages now need a full refresh |
+| 0.2.0 | 2026-10-27 | [89703](https://github.com/airbytehq/airbyte/pull/89703) | Pace requests to the Gmail per-user quota, using the previous quota for OAuth and the current quota and full-format read costs for service accounts |
+| 0.1.24 | 2026-10-27 | [89912](https://github.com/airbytehq/airbyte/pull/89912) | Update dependencies |
+| 0.1.23 | 2026-10-20 | [88896](https://github.com/airbytehq/airbyte/pull/88896) | Declare nested message parts in schema; run acceptance tests with GSM test secrets; wait for the Retry after time in rate-limit responses |
+| 0.1.22 | 2026-10-20 | [89234](https://github.com/airbytehq/airbyte/pull/89234) | Update dependencies |
+| 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
+| 0.1.20 | 2026-10-13 | [88635](https://github.com/airbytehq/airbyte/pull/88635) | Update dependencies |
+| 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
 | 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
 | 0.1.17 | 2026-09-22 | [86632](https://github.com/airbytehq/airbyte/pull/86632) | Update dependencies |
 | 0.1.16 | 2026-09-15 | [86066](https://github.com/airbytehq/airbyte/pull/86066) | Update dependencies |

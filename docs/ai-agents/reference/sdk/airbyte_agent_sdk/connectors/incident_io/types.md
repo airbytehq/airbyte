@@ -676,9 +676,6 @@ Classes
     `schema_: Any`
     :   Schema definition for the catalog type
 
-    `semantic_type: Any`
-    :   Semantic type for special behavior
-
     `type_name: Any`
     :   Programmatic type name
 
@@ -872,9 +869,6 @@ Classes
     `schema_: list[dict[str, typing.Any]]`
     :   Schema definition for the catalog type
 
-    `semantic_type: list[str]`
-    :   Semantic type for special behavior
-
     `type_name: list[str]`
     :   Programmatic type name
 
@@ -1043,9 +1037,6 @@ Classes
     `schema_: dict[str, typing.Any] | None`
     :   Schema definition for the catalog type
 
-    `semantic_type: str | None`
-    :   Semantic type for special behavior
-
     `type_name: str | None`
     :   Programmatic type name
 
@@ -1122,9 +1113,6 @@ Classes
     `schema_: Literal['asc', 'desc']`
     :   Schema definition for the catalog type
 
-    `semantic_type: Literal['asc', 'desc']`
-    :   Semantic type for special behavior
-
     `type_name: Literal['asc', 'desc']`
     :   Programmatic type name
 
@@ -1197,9 +1185,6 @@ Classes
 
     `schema_: str`
     :   Schema definition for the catalog type
-
-    `semantic_type: str`
-    :   Semantic type for special behavior
 
     `type_name: str`
     :   Programmatic type name

@@ -33,7 +33,7 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: current_page
+            field_name: page
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"
@@ -64,7 +64,7 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: current_page
+            field_name: page
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"
@@ -98,7 +98,7 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: current_page
+            field_name: page
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"

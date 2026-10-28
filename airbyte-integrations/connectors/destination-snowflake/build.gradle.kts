@@ -48,7 +48,7 @@ dependencies {
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
 
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
-    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")

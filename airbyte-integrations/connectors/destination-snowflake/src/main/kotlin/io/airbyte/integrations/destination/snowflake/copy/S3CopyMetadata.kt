@@ -16,7 +16,7 @@ internal class S3CopyMetadata(config: FusionConfiguration, runId: UUID, epochSec
     fun schema(
         stream: DestinationStream,
         descriptor: Map<String, Any?>,
-        schemaId: String
+        schemaId: String,
     ): Map<String, Any?> = metadata.schema(descriptor, schemaId, stream.generationId, stream.syncId)
 
     fun streamComplete(stream: DestinationStream): Map<String, Any> =

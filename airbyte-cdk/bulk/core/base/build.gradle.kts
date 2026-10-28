@@ -90,7 +90,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.module:jackson-module-afterburner")
     implementation("info.picocli:picocli:4.7.6")
-    implementation("io.micronaut.picocli:micronaut-picocli:5.5.0")
+    implementation("io.micronaut.picocli:micronaut-picocli:5.9.0")
     implementation("jakarta.validation:jakarta.validation-api:3.1.0")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("org.apache.logging.log4j:log4j-api")
@@ -116,8 +116,8 @@ dependencies {
     testFixturesApi("org.testcontainers:testcontainers") {
         exclude(group="org.apache.commons", module="commons-compress")
     }
-    testFixturesApi("io.micronaut.test:micronaut-test-core:4.5.0")
-    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.5.0")
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.10.3")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.10.3")
     testFixturesApi("io.github.deblockt:json-diff:1.1.0")
 }
 

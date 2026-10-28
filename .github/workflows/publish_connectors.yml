@@ -326,6 +326,9 @@ jobs:
         env:
           # Disable Segment.io Telemetry in PyAirbyte
           DO_NOT_TRACK: "1"
+          # `airbyte-ops registry connector-version next` fetches metadata.yaml from
+          # master via the GitHub API; without a token it hits the anonymous rate limit.
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
           set -euo pipefail
           CONNECTOR_VERSION="${{ steps.connector-metadata.outputs.connector-version }}"

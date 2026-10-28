@@ -29,14 +29,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -61,13 +53,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
+          $ref: "#/definitions/base_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -98,22 +84,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: shop_id
-              stream:
-                $ref: "#/definitions/streams/shops"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -136,22 +106,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: shop_id
-              stream:
-                $ref: "#/definitions/streams/shops"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -169,6 +123,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v1/shops/{{ stream_partition['shop_id'] }}/products.json
           http_method: GET
+          request_parameters:
+            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -176,13 +132,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
+          $ref: "#/definitions/base_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -215,14 +165,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next_page_url') }}"
-            stop_condition: "{{ response.get('next_page_url') is none }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -250,6 +192,16 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_token\"] }}"
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('current_page', 1) + 1 }}"
+      stop_condition: "{{ response.get('next_page_url') is none }}"
 
 streams:
   - $ref: "#/definitions/streams/shops"

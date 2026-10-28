@@ -65,7 +65,7 @@ dependencies {
     implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
 
     // Testing
-    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")

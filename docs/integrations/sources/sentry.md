@@ -117,6 +117,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.16 | 2026-10-20 | [89398](https://github.com/airbytehq/airbyte/pull/89398) | Update dependencies |
+| 1.0.15 | 2026-10-13 | [88408](https://github.com/airbytehq/airbyte/pull/88408) | Type the `sentry:replay_rage_click_issues` project option as boolean in `project_detail` and `all_projects_detail` |
+| 1.0.14 | 2026-10-13 | [88806](https://github.com/airbytehq/airbyte/pull/88806) | Update dependencies |
+| 1.0.13 | 2026-10-06 | [88017](https://github.com/airbytehq/airbyte/pull/88017) | Update dependencies |
 | 1.0.12 | 2026-09-29 | [87328](https://github.com/airbytehq/airbyte/pull/87328) | Update dependencies |
 | 1.0.11 | 2026-09-22 | [86799](https://github.com/airbytehq/airbyte/pull/86799) | Update dependencies |
 | 1.0.10 | 2026-09-16 | [78108](https://github.com/airbytehq/airbyte/pull/78108) | Improve Sentry configuration validation and 404 error messaging. |

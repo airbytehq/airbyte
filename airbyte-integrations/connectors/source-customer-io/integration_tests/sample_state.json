@@ -10,7 +10,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated": 1692304734 },
-      "stream_descriptor": { "name": "campaigns_action" }
+      "stream_descriptor": { "name": "campaigns_actions" }
     }
   },
   {

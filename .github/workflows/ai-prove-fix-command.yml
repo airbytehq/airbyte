@@ -72,3 +72,4 @@ jobs:
           start-message: "🔍 **AI Prove Fix session starting...** Running readiness checks and testing against customer connections. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/prove_fix.md)"
           tags: |
             ai-oncall
+            ${{ inputs.pr && format('airbyte-pr-{0}', inputs.pr) || '' }}

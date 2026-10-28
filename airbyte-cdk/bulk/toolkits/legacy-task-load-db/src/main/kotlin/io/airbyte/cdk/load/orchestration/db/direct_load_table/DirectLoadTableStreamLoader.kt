@@ -155,7 +155,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     nativeTableOperations.ensureSchemaMatches(
                         stream,
                         tempTableName,
-                        columnNameMapping
+                        columnNameMapping,
                     )
                 } else {
                     logger.info {
@@ -165,14 +165,14 @@ class DirectLoadTableAppendTruncateStreamLoader(
                         stream,
                         tempTableName,
                         columnNameMapping,
-                        replace = true
+                        replace = true,
                     )
                 }
             }
             isWritingToTemporaryTable = true
             streamStateStore.put(
                 stream.mappedDescriptor,
-                DirectLoadTableExecutionConfig(tempTableName)
+                DirectLoadTableExecutionConfig(tempTableName),
             )
         } else {
             if (initialStatus.realTable == null) {
@@ -183,7 +183,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     stream,
                     realTableName,
                     columnNameMapping,
-                    replace = true
+                    replace = true,
                 )
                 isWritingToTemporaryTable = false
             } else if (
@@ -201,7 +201,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     stream,
                     tempTableName,
                     columnNameMapping,
-                    replace = true
+                    replace = true,
                 )
                 isWritingToTemporaryTable = true
             }
@@ -213,7 +213,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
         }
         streamStateStore.put(
             stream.mappedDescriptor,
-            DirectLoadTableExecutionConfig(targetTableName)
+            DirectLoadTableExecutionConfig(targetTableName),
         )
     }
 
@@ -224,7 +224,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
             }
             sqlTableOperations.overwriteTable(
                 sourceTableName = tempTableName,
-                targetTableName = realTableName
+                targetTableName = realTableName,
             )
         }
     }
@@ -240,7 +240,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
  * 1. May upsert directly to the real table if appropriate
  * 2. May create a real table and upsert into it
  * 3. May use a temp-temp table approach to ensure proper deduplication before overwriting the real
- * table
+ *    table
  *
  * This strategy ensures optimal performance while maintaining data integrity across various
  * scenarios, including interrupted syncs and schema changes.
@@ -270,7 +270,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     nativeTableOperations.ensureSchemaMatches(
                         stream,
                         tempTableName,
-                        columnNameMapping
+                        columnNameMapping,
                     )
                 } else {
                     logger.info {
@@ -280,7 +280,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                         stream,
                         tempTableName,
                         columnNameMapping,
-                        replace = true
+                        replace = true,
                     )
                 }
             }
@@ -342,7 +342,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             stream,
             columnNameMapping,
             sourceTableName = tempTableName,
-            targetTableName = realTableName
+            targetTableName = realTableName,
         )
 
         // Clean up temporary table
@@ -361,13 +361,13 @@ class DirectLoadTableDedupTruncateStreamLoader(
             stream,
             columnNameMapping,
             sourceTableName = tempTableName,
-            targetTableName = tempTempTable
+            targetTableName = tempTempTable,
         )
 
         // Overwrite real table with final data
         sqlTableOperations.overwriteTable(
             sourceTableName = tempTempTable,
-            targetTableName = realTableName
+            targetTableName = realTableName,
         )
     }
 }

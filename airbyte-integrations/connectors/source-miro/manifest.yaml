@@ -119,15 +119,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: cursor
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
             page_size: 50
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('cursor') }}"
+            stop_condition: "{{ not response.get('cursor') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -207,6 +208,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get('cursor') }}"
+            stop_condition: "{{ not response.get('cursor') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -247,15 +263,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: cursor
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
             page_size: 50
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('cursor') }}"
+            stop_condition: "{{ not response.get('cursor') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
