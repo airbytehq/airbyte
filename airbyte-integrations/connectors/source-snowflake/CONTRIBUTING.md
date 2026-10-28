@@ -1,7 +1,19 @@
 # Contributing to source-snowflake
 
-A Kotlin connector on the Bulk CDK (`extract` core + `extract-jdbc` toolkit). Needs JDK 21 and
-Docker. CI compiles with warnings as errors, so prefix Gradle with `CI=true` locally.
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/platform/connector-development).
+
+## Unique behaviors (summary)
+
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
+
+1. **Snowflake timestamps round up to microseconds** -- Sub-microsecond timestamps round up to microseconds, with maximum-date sentinels capped, preserving incremental cursor boundaries.
+2. **Programmatic access-token authentication omits the JDBC username** -- Programmatic access-token authentication identifies the user from the token, rather than a JDBC username.
+3. **Metadata error tolerance is limited to discovery** -- Discovery can continue past certain object-level metadata errors, but the same tolerance does not apply to CHECK or READ.
+4. **The SSH tunnel field is retained for compatibility** -- The retained SSH field is for compatibility, not evidence that SSH tunneling is supported for Snowflake.
+5. **TIME columns use a Snowflake-specific reader** -- Snowflake `TIME` values retain fractional precision and do not round past midnight.
+6. **CHECK validates the default warehouse, database, and schema** -- By default, CHECK rejects invalid or unauthorized settings as configuration errors; JDBC URL parameters can override this validation.
+7. **Metadata schema filters disable JDBC wildcard matching** -- By default, schema names containing `_` or `%` are matched literally, avoiding broad scans and similarly named schemas.
+8. **NTZ cursor bounds are bound as TIMESTAMP_NTZ** -- Session time zone settings cannot shift an incremental cursor boundary.
 
 ## Build and unit tests
 
@@ -71,3 +83,24 @@ comparisons, cursor canary), use the harness in `.agents/skills/source-snowflake
 
 Kotlin is formatted with ktfmt (kotlinlang style) through spotless:
 `mvn -f spotless-maven-pom.xml spotless:apply` from the repository root.
+
+## Reproducing bugs
+
+The remote-backend harness for this connector is documented in
+[`.agents/skills/source-snowflake-e2e-tests/SKILL.md`](.agents/skills/source-snowflake-e2e-tests/SKILL.md).
+It creates a per-run `PROVEFIX_<run_id>` schema in the shared Snowflake
+integration account using a GSM key-pair secret; there is no local container,
+and `--reset=backend` is rejected. The `poe e2e-local` task is the entrypoint.
+
+The worked example is
+`.agents/skills/source-snowflake-e2e-tests/cases/cursor-upper-bound.sh`.
+After a run, check for leaked schemas with
+`sweep-orphans.sh --older-than-hours=0 --dry-run`.
+
+## Troubleshooting
+
+Files under `airbyte-integrations/connectors/source-snowflake/`, including
+`.agents/`, are treated as connector changes by CI. The matrix detector
+requires a `dockerImageTag` bump and a changelog entry when these files
+change. Do not edit metadata solely to bypass this check without confirming
+the required versioning decision.

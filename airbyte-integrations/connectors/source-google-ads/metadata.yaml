@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 6.1.6
+  dockerImageTag: 6.1.7
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
@@ -24,6 +24,12 @@ data:
     - title: Feature deprecations and unversioned changes
       url: https://developers.google.com/google-ads/api/docs/deprecations
       type: api_deprecations
+    - title: OAuth2 authentication overview
+      url: https://developers.google.com/google-ads/api/docs/oauth/overview
+      type: authentication_guide
+    - title: OAuth security requirements
+      url: https://developers.google.com/google-ads/api/docs/oauth/security-requirements
+      type: authentication_guide
     - title: Developer token sunset and API access management guide
       url: https://developers.google.com/google-ads/api/docs/api-policy/developer-token
       type: authentication_guide
