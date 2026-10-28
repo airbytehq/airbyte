@@ -24,6 +24,7 @@ The Sentry API supports date-based filtering on events and issues endpoints, whi
 | issues | medium | top-level parent | lastSeen | lastSeen | incremental |  |
 | project_detail | small | top-level parent | none | none | deferred_no_api_support | Singleton project config endpoint |
 | projects | medium | top-level parent | dateCreated | dateCreated | incremental |  |
+| all_projects_detail | medium | child of `projects_all` | none | none | full refresh | Parent is a full org project list (no `start_date` record filter) so overwrite/deduped destinations keep every project detail row each sync. |
 | releases | medium | top-level parent | dateCreated | dateCreated | incremental |  |
 
 ### Future incremental stream candidates
