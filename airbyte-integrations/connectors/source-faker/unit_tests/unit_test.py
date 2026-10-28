@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from pathlib import Path
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -167,6 +170,37 @@ def test_read_products():
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
+
+
+def test_read_products_emits_full_catalog():
+    source = SourceFaker()
+    config = {"count": 1000, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [row.record.data for row in source.read(logger, config, catalog, {}) if row.type is Type.RECORD]
+
+    assert sorted(record["id"] for record in records) == list(range(1, 101))
+
+    products_path = Path(__file__).resolve().parents[1] / "source_faker" / "record_data" / "products.json"
+    with products_path.open() as products_file:
+        catalog_products = json.load(products_file)
+    products_by_id = {product["id"]: product for product in catalog_products}
+    for record in records:
+        record_data = {key: value for key, value in record.items() if key != "updated_at"}
+        assert record_data == products_by_id[record_data["id"]]
+
+    assert products_by_id[100] == {
+        "id": 100,
+        "make": "Buick",
+        "model": "Somerset",
+        "year": 2023,
+        "price": 29981,
+        "created_at": "2024-04-08T18:07:20+00:00",
+    }
 
 
 def test_read_big_random_data():
