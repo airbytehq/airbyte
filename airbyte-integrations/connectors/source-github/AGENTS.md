@@ -90,9 +90,8 @@ Things worth knowing before touching either half:
     `{repo: {completed_at}}` into that shape; the parent's own legacy migration then converts
     `parent_state`. A record filter needs `is not none`, not a bare value: Jinja renders `None`
     as "None", which the CDK's boolean does not treat as false.
-  - `contributor_activity` retries 202 with a 90s constant backoff. `WaitUntilTimeFromHeader` must
-    not sit in front of it in `backoff_strategies`, because it answers `min_wait` whenever its
-    header is absent and would turn every 202 into a 60s wait.
+  - `contributor_activity` retries 202 with a 90s constant backoff. Its `Retry-After` wait is
+    wrapped in `RateLimitedResponseBackoffStrategy`, so an unmarked 202 keeps that existing wait.
   - `commits` slices per branch through `components.CommitsBranchPartitionRouter`, a
     `SubstreamPartitionRouter` over `repository_branches_resolver` that keeps the configured
     branches that exist and falls back to the default branch otherwise, exactly like
@@ -116,7 +115,7 @@ Things worth knowing before touching either half:
   mirroring `GITHUB_DEFAULT_ERROR_MAPPING`. When migrating a stream, pick the handler that
   matches what the legacy `GithubStreamABC.read_records` did for it, and remember that 410 is absent from
   the CDK default mapping — an endpoint GitHub answers 410 on needs a filter or it burns five
-  retries behind the 60s backoff floor before failing.
+  retries with exponential backoff before failing.
 - `stargazers` uses `stargazers_error_handler` — `skip_inaccessible_error_handler` with 404/403
   filters naming GitHub's admin/collaborator restriction on the stargazers listing; keep its
   filter list in step when changing `skip_inaccessible_error_handler`. Each skip message starts
