@@ -36,7 +36,7 @@ interface WriteOpOverride : Task
 class WriteOperation(
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
-    private val writeOpOverride: WriteOpOverride? = null
+    private val writeOpOverride: WriteOpOverride? = null,
 ) : Operation {
     val log = KotlinLogging.logger {}
 
@@ -47,7 +47,7 @@ class WriteOperation(
             writeOpOverride.execute()
             log.info { "Write operation override took ${System.currentTimeMillis() - now} ms" }
             throw IllegalStateException(
-                "WriteOpOverride is not intended for production use. This exception exists to prevent accidental release. To create a test tag, comment out this exception and uncomment `return @runBlocking` below."
+                "WriteOpOverride is not intended for production use. This exception exists to prevent accidental release. To create a test tag, comment out this exception and uncomment `return @runBlocking` below.",
             )
             // return@runBlocking
         }

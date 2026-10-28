@@ -16,13 +16,13 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
  *
  * Two JSON shapes are used:
  * - **record values** ([toRecordValue]): the plain JSON the connector emits in RECORD messages,
- * following the legacy connector's `DynamodbAttributeSerializer` (`S` string, `N` number, `B`
- * base64 string, sets and lists as arrays, `M` as an object, `BOOL`, `NULL`). One deliberate
- * difference: an `N` value that does not fit a `long` is emitted as an exact decimal, where the
- * legacy connector converted it to a lossy `double`;
+ *   following the legacy connector's `DynamodbAttributeSerializer` (`S` string, `N` number, `B`
+ *   base64 string, sets and lists as arrays, `M` as an object, `BOOL`, `NULL`). One deliberate
+ *   difference: an `N` value that does not fit a `long` is emitted as an exact decimal, where the
+ *   legacy connector converted it to a lossy `double`;
  * - **DynamoDB JSON** ([toDynamoDbJson], [fromDynamoDbJson]): the typed wire format (`{"S": "x"}`,
- * `{"N": "1"}`, `{"B": "<base64>"}`, ...), which round-trips a value exactly and is used for the
- * key attributes saved in the stream state (`ExclusiveStartKey`).
+ *   `{"N": "1"}`, `{"B": "<base64>"}`, ...), which round-trips a value exactly and is used for the
+ *   key attributes saved in the stream state (`ExclusiveStartKey`).
  */
 object DynamoDbJson {
 
@@ -115,7 +115,7 @@ object DynamoDbJson {
         require(node.isObject && node.size() == 1) {
             "Expected a DynamoDB JSON value with exactly one type key, got $node"
         }
-        val (type: String, value: JsonNode) = node.fields().next().let { it.key to it.value }
+        val (type: String, value: JsonNode) = node.properties().first().let { it.key to it.value }
         val builder: AttributeValue.Builder = AttributeValue.builder()
         when (type) {
             "S" -> builder.s(value.asText())
@@ -136,7 +136,7 @@ object DynamoDbJson {
     /** Parses an item or key in DynamoDB JSON: attribute name to typed value. */
     fun itemFromDynamoDbJson(node: JsonNode): Map<String, AttributeValue> {
         require(node.isObject) { "Expected a DynamoDB JSON item, got $node" }
-        return node.fields().asSequence().associate { (name, value) ->
+        return node.properties().asSequence().associate { (name, value) ->
             name to fromDynamoDbJson(value)
         }
     }

@@ -16,7 +16,7 @@ internal class WaitingUtilsTest {
         val condition: Supplier<Boolean> = mock()
         Mockito.`when`(condition.get()).thenReturn(false).thenReturn(false).thenReturn(true)
         Assertions.assertTrue(
-            WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition)
+            WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition),
         )
     }
 
@@ -25,7 +25,7 @@ internal class WaitingUtilsTest {
         val condition: Supplier<Boolean> = mock()
         Mockito.`when`(condition.get()).thenReturn(false)
         Assertions.assertFalse(
-            WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition)
+            WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition),
         )
     }
 }

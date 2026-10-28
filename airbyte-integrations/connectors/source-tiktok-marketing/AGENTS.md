@@ -69,7 +69,8 @@ TikTok's API does not use standard HTTP 429 status codes for rate limiting. Inst
 (advertiser-level limit). The error handler uses a predicate
 (`response.get('code') in [40016, 40100, 40133]`) to detect rate limiting, and separate predicates
 (`response.get('code') == 50000`, `response.get('code') == 51041`,
-`response.get('code') == 51004`, and `response.get('code') == 51002`) retry transient server-side errors, while
+`response.get('code') == 51004`, `response.get('code') == 51002`, `response.get('code') == 51001`, and
+`response.get('code') == 51043`) retry transient server-side errors, while
 (`response.get('code') != 0`) detects general API errors.
 
 **Why this matters:** Standard HTTP status code-based rate limit detection will not work with TikTok's

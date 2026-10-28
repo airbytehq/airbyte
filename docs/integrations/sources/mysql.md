@@ -85,9 +85,9 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 
 To fill out the required information:
 
-1. Enter the hostname, port number, and name for your MySQL database.
+1. Enter the hostname, port number, and name for your MySQL database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#connection-via-ssh-tunnel), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling. On Airbyte Cloud, the connection must be encrypted: use one of these SSL modes, or an [SSH tunnel](#connection-via-ssh-tunnel).
 4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
 
 <!-- env:cloud -->
@@ -97,7 +97,11 @@ To fill out the required information:
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
+Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `required`, `verify_ca` or `verify_identity`) or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop between Airbyte Cloud and your network. The `preferred` SSL mode falls back to plaintext when the server offers no TLS, so Airbyte Cloud accepts it only together with an SSH tunnel. A database on `localhost` or on a private network is reachable from Airbyte Cloud only through an SSH tunnel to a bastion host that can reach it. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
+
+If the connection test fails with `Airbyte could not reach the database at the configured host and port`, check the host and port, that MySQL accepts remote connections (`bind-address` and the user's host grants), and that your firewall or security group allows the Airbyte IP addresses listed above. If it fails with `Your MySQL server does not offer TLS`, either enable TLS on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel.
 
 <!-- /env:cloud -->
 
@@ -130,6 +134,8 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
+Airbyte Cloud never connects to a database unencrypted: the connection must use TLS/SSL, or go through an [SSH tunnel](#connection-via-ssh-tunnel), which encrypts the hop. If your MySQL server does not offer TLS, either enable it on the server (`require_secure_transport` and server certificates) or connect through an SSH tunnel; otherwise the connection test fails with `Your MySQL server does not offer TLS`. Self-managed Airbyte deployments can use the `preferred` mode without a tunnel.
+
 Here is a breakdown of available SSL connection modes:
 
 - `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
@@ -144,6 +150,8 @@ Here is a breakdown of available SSL connection modes:
 You can connect to a MySQL server via an SSH tunnel.
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+
+The SSH tunnel encrypts the hop between Airbyte and the bastion. On Airbyte Cloud, which never connects unencrypted, it is therefore the only way to use the `preferred` SSL mode against a server without TLS, and the only way to reach a database on `localhost` or on a private network that is not exposed to the internet.
 
 To connect to a MySQL server via an SSH tunnel:
 
@@ -221,7 +229,7 @@ Any database or table encoding combination of charset and collation is supported
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list. A connection test or sync that fails with `Airbyte could not reach the database at the configured host and port` usually means these addresses are blocked by a firewall or security group.
 
 ## Changelog
 
@@ -230,7 +238,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.7 | 2026-10-09 | [88430](https://github.com/airbytehq/airbyte/pull/88430) | Upgrade to Bulk CDK 1.1.14. |
+| 3.53.9      | 2026-10-20 | [89014](https://github.com/airbytehq/airbyte/pull/89014)   | Bump Debezium to 3.4.3 (Bulk CDK 1.2.1): CDC no longer fails with `Incumbent CDC state is invalid` when the GTID set gains a new server UUID.    |
+| 3.53.8      | 2026-10-12 | [88499](https://github.com/airbytehq/airbyte/pull/88499)       | Explain unreachable hosts and servers without TLS in connection errors, and document that Airbyte Cloud requires TLS or an SSH tunnel. Explain a connection test that finds no tables (missing SELECT grants, wrong database name, or a table filter that excludes every table), and retry a sync whose established MySQL connection is lost ("Communications link failure" after packets were received) instead of failing it as a configuration error. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
+| 3.53.7      | 2026-10-09 | [88430](https://github.com/airbytehq/airbyte/pull/88430)   | Upgrade to Bulk CDK 1.1.14.                                                                                                                      |
 | 3.53.6      | 2026-10-02 | [87650](https://github.com/airbytehq/airbyte/pull/87650)   | Classify MySQL EOF errors whose byte counts contain thousands separators, and the "Expected X bytes, received only Y bytes" format, as transient so syncs retry. |
 | 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
 | 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |

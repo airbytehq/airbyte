@@ -54,7 +54,7 @@ class DynamoDbSourceDiscoverTest {
         val catalogs: List<AirbyteCatalog> =
             CliRunner.source(
                     "discover",
-                    container.config(extra = mapOf("discover_sample_size" to 1))
+                    container.config(extra = mapOf("discover_sample_size" to 1)),
                 )
                 .run()
                 .catalogs()
@@ -116,11 +116,11 @@ class DynamoDbSourceDiscoverTest {
             )
             Assertions.assertEquals(
                 listOf("id" to LeafAirbyteSchemaType.NUMBER),
-                keys("numeric_key")
+                keys("numeric_key"),
             )
             Assertions.assertEquals(
                 listOf("id" to LeafAirbyteSchemaType.BINARY),
-                keys("binary_key")
+                keys("binary_key"),
             )
             Assertions.assertEquals(listOf("id" to LeafAirbyteSchemaType.STRING), keys(EMPTY_TABLE))
         }

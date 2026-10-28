@@ -98,18 +98,21 @@ class BigqueryS3CopyTest {
             BigqueryS3CopyFactory.createForOperation("write", env) {
                 captured = it
                 archive
-            }
+            },
         )
-        assertEquals("platform-bucket", captured!!.bucket)
-        assertEquals("us-east-2", captured!!.region)
-        assertEquals("platform-prefix", captured!!.prefix)
-        assertEquals(UUID(0, 42), captured!!.sourceId)
+        val configuration = captured!!
+        assertEquals("platform-bucket", configuration.bucket)
+        assertEquals("us-east-2", configuration.region)
+        assertEquals("platform-prefix", configuration.prefix)
+        assertEquals(UUID(0, 42), configuration.sourceId)
         assertSame(
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                env + ("AIRBYTE_FUSION_ENABLED" to "false")
-            ) { error("Disabled writes must not construct an uploader") }
+                env + ("AIRBYTE_FUSION_ENABLED" to "false"),
+            ) {
+                error("Disabled writes must not construct an uploader")
+            },
         )
     }
 
@@ -360,14 +363,14 @@ class BigqueryS3CopyTest {
             assertEquals(1L, Files.list(directory).use { it.count() })
             assertTrue(
                 runCatching {
-                        archive.copyCompletedGcsObject(
-                            fixture.storage(gzip("header\r\n")),
-                            fixture.blob,
-                            context,
-                            0,
-                        )
-                    }
-                    .isFailure
+                    archive.copyCompletedGcsObject(
+                        fixture.storage(gzip("header\r\n")),
+                        fixture.blob,
+                        context,
+                        0,
+                    )
+                }
+                    .isFailure,
             )
             assertEquals(1L, Files.list(directory).use { it.count() })
         }
@@ -403,14 +406,14 @@ class BigqueryS3CopyTest {
                 }
                 assertTrue(
                     runCatching {
-                            archive.copyCompletedGcsObject(
-                                fixture.storage(gzip("header\r\n")),
-                                fixture.blob,
-                                context,
-                                0,
-                            )
-                        }
-                        .isFailure
+                        archive.copyCompletedGcsObject(
+                            fixture.storage(gzip("header\r\n")),
+                            fixture.blob,
+                            context,
+                            0,
+                        )
+                    }
+                        .isFailure,
                 )
                 assertEquals(1L, Files.list(directory).use { it.count() })
                 assertThrows(IllegalStateException::class.java) { archive.context(fixture.stream) }
@@ -914,11 +917,13 @@ class BigqueryS3CopyTest {
                 try {
                     session.close()
                 } catch (error: Throwable) {
-                    if (failure == null) failure = error else failure!!.addSuppressed(error)
+                    val previous = failure
+                    if (previous == null) failure = error else previous.addSuppressed(error)
                 }
             }
             closeFailure?.let { error ->
-                if (failure == null) failure = error else failure!!.addSuppressed(error)
+                val previous = failure
+                if (previous == null) failure = error else previous.addSuppressed(error)
             }
             failure?.let { throw it }
         }

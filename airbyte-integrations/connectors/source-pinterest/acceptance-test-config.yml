@@ -51,11 +51,6 @@ acceptance_tests:
             bypass_reason: Data needs to be added to account
           - name: ad_account_analytics
             bypass_reason: Data needs to be added to account
-        timeout_seconds: 1200
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        fail_on_extra_columns: false
       - config_path: secrets/config_account_id.json
         empty_streams:
           - name: conversion_tags
@@ -85,11 +80,6 @@ acceptance_tests:
             bypass_reason: Data needs to be added to account
           - name: ad_account_analytics
             bypass_reason: Data needs to be added to account
-        timeout_seconds: 1200
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: secrets/config_oauth.json

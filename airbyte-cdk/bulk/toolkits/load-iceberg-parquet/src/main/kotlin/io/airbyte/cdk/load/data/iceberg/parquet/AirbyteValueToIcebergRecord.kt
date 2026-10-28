@@ -78,7 +78,7 @@ class AirbyteValueToIcebergRecord {
                         airbyteValue.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimeValue"
+                            "${type.typeId()} type is not allowed for TimeValue",
                         )
                 }
             is TimeWithoutTimezoneValue ->
@@ -86,7 +86,7 @@ class AirbyteValueToIcebergRecord {
                     Type.TypeID.TIME -> airbyteValue.value
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimeValue"
+                            "${type.typeId()} type is not allowed for TimeValue",
                         )
                 }
             is TimestampWithTimezoneValue ->
@@ -103,7 +103,7 @@ class AirbyteValueToIcebergRecord {
                     }
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimestampValue"
+                            "${type.typeId()} type is not allowed for TimestampValue",
                         )
                 }
             is TimestampWithoutTimezoneValue ->
@@ -120,7 +120,7 @@ class AirbyteValueToIcebergRecord {
                     }
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimestampValue"
+                            "${type.typeId()} type is not allowed for TimestampValue",
                         )
                 }
         }
