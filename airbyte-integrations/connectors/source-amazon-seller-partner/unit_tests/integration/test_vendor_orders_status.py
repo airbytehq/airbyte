@@ -40,7 +40,7 @@ _STREAM_NAME = "VendorOrdersStatus"
 
 
 def test_cursor_field_is_declared_in_schema() -> None:
-    schema = get_stream_by_name(_STREAM_NAME, config().build()).get_json_schema()
+    schema = get_stream_by_name(_STREAM_NAME, config().with_account_type("Vendor").build()).get_json_schema()
     properties = schema.get("properties", {})
     assert _CURSOR_FIELD in properties, (
         f"Expected cursor field {_CURSOR_FIELD!r} to be declared in the {_STREAM_NAME} schema "
