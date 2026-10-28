@@ -25,9 +25,14 @@ from .zoom_mocks import (
 _USER_ID = "u1"
 _PAGE_SIZE = "30"
 _START_DATE = "2026-10-09T00:00:00Z"
+_LATE_SESSION_START_DATE = "2026-09-01T00:00:00Z"
+_BEFORE_START_REQUEST = request(
+    f"/report/users/{_USER_ID}/meetings",
+    {"type": "past", "page_size": "300", "from": "2026-09-01", "to": "2026-09-28"},
+)
 _BEFORE_END_REQUEST = request(
     f"/report/users/{_USER_ID}/meetings",
-    {"type": "past", "page_size": "300", "from": "2026-10-09", "to": "2026-10-10"},
+    {"type": "past", "page_size": "300", "from": "2026-09-29", "to": "2026-10-10"},
 )
 _AFTER_END_REQUEST = request(
     f"/report/users/{_USER_ID}/meetings",
@@ -81,15 +86,17 @@ def test_late_meeting_reports_resume_after_session_end(stream_name):
 
     with freezegun.freeze_time("2026-10-10T12:00:00Z"):
         with HttpMocker() as http_mocker:
-            users_request = _mock_parent_chain(http_mocker, _BEFORE_END_REQUEST, [_PRIOR_SESSION])
+            users_request = _mock_parent_chain(http_mocker, _BEFORE_START_REQUEST, [])
+            http_mocker.get(_BEFORE_END_REQUEST, json_response({"meetings": [_PRIOR_SESSION]}))
             http_mocker.get(prior_report_request, zoom_error(300, "No report is available.", status_code=404))
             http_mocker.get(late_report_request, json_response(_report_response(_LATE_SESSION)))
             first = read_stream(
                 stream_name,
-                config={**CONFIG, "start_date": _START_DATE},
+                config={**CONFIG, "start_date": _LATE_SESSION_START_DATE},
                 sync_mode=SyncMode.incremental,
             )
             http_mocker.assert_number_of_calls(users_request, 1)
+            http_mocker.assert_number_of_calls(_BEFORE_START_REQUEST, 1)
             http_mocker.assert_number_of_calls(_BEFORE_END_REQUEST, 1)
             http_mocker.assert_number_of_calls(prior_report_request, 1)
             http_mocker.assert_number_of_calls(late_report_request, 0)
@@ -126,7 +133,7 @@ def test_late_meeting_reports_resume_after_session_end(stream_name):
                 http_mocker.get(late_report_request, json_response(_report_response(_LATE_SESSION)))
             second = read_stream(
                 stream_name,
-                config={**CONFIG, "start_date": _START_DATE},
+                config={**CONFIG, "start_date": _LATE_SESSION_START_DATE},
                 sync_mode=SyncMode.incremental,
                 state=state,
             )
