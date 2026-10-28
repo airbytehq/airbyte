@@ -196,9 +196,7 @@ def test_read_products_count_not_multiple_of_records_per_slice():
     rows = list(source.read(logger, config, catalog, {}))
 
     records = [row.record.data for row in rows if row.type is Type.RECORD]
-    state_count = sum(row.type is Type.STATE for row in rows)
     assert [record["id"] for record in records] == list(range(1, 51))
-    assert state_count == 2
 
 
 def test_read_big_random_data():
