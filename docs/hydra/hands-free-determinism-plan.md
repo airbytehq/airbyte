@@ -101,8 +101,6 @@ Keep what works, add what's missing, and trust the engine to debounce.
 
 - `issue_comment: [created, edited]` — only until Phase 1 lands; replace with
   the completion-driven path below.
-- `workflow_run` on `Connector CI` success — covers first-green on `/ai-fix`
-  PRs and post-push re-eval.
 - `workflow_dispatch` — manual.
 
 **Add:**
@@ -110,8 +108,18 @@ Keep what works, add what's missing, and trust the engine to debounce.
 - `wait-for-stopped-status: true` on prove-fix / review / resolve-conflicts
   dispatchers; each dispatcher calls the handoff via `repository_dispatch` on
   completion. Removes comment-marker regex entirely.
-- `pull_request: [synchronize]` — push-driven re-eval. Fires on every PR push;
-  hydra returns `wait` while CI pending, action when settled.
+- `check_run: [completed]` filtered to the 7 required status checks on
+  `master`. Verified from the repo ruleset: all 7 required checks arrive as
+  `CheckRun` entries (6 from GH Actions, 1 — "Connector CI Checks Summary" —
+  from a GitHub App via the Checks API). `check_run` is the only trigger that
+  covers all of them uniformly, and `status` events buy nothing here (no
+  required check uses legacy commit statuses). Filter inside the job to the
+  required-check names before calling hydra so unrelated check completions
+  don't wake a runner needlessly.
+- `pull_request: [synchronize]` — push-driven re-eval. Fires immediately on
+  push (before CI starts), so hydra sees the new HEAD and can invalidate stale
+  markers right away. Complementary to `check_run: completed`, which fires
+  when CI finishes.
 - `pull_request: [labeled]` filtered to `hyd-chain` — opt-in moment, one-pass
   kickstart.
 - `schedule` — Monday 08:00 UTC (midnight PT), scoped to `label:hyd-chain` PRs
@@ -124,8 +132,14 @@ Keep what works, add what's missing, and trust the engine to debounce.
 
 **Drop:**
 
-- Nothing yet. Comment-marker trigger stays dormant as a fallback until the
-  completion-driven path is proven for a week in prod.
+- `workflow_run` on `Connector CI` success — superseded by `check_run:
+  completed`. The old `workflow_run` trigger only covered the subset of
+  required checks produced by that specific workflow and missed the
+  App-produced "Connector CI Checks Summary" rollup entirely. `check_run`
+  covers all 7 required checks uniformly.
+- Comment-marker trigger stays dormant as a fallback until the completion-
+  driven path (`wait-for-stopped-status` + `repository_dispatch`) is proven
+  for a week in prod, then retire.
 
 **"Settle" is not a trigger problem.** Trigger broadly, let `assess` return
 `wait` when CI is pending or sessions are in flight, trust the next event.
