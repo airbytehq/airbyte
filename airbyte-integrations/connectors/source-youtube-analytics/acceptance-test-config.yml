@@ -17,22 +17,41 @@ acceptance_tests:
         backward_compatibility_tests_config:
           disable_for_version: "0.1.0"
   basic_read:
-    bypass_reason: "Test account doesn't have records. Uncomment section below when we have data."
-  #    tests:
-  #      - config_path: "secrets/config.json"
-  #        configured_catalog_path: "integration_tests/configured_catalog.json"
-  #        timeout_seconds: 1200
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: channel_annotations_a1
+            bypass_reason: "The test channel's videos have no annotations; every report file is header-only."
+          - name: channel_cards_a1
+            bypass_reason: "The test channel's videos have no cards; every report file is header-only."
+          - name: channel_demographics_a1
+            bypass_reason: "The test channel's traffic is below YouTube's demographics privacy threshold; every report file is header-only."
+          - name: channel_end_screens_a1
+            bypass_reason: "The test channel's videos have no end screens; every report file is header-only."
+          - name: channel_province_a3
+            bypass_reason: "The test channel has no US province-level traffic; every report file is header-only."
+          - name: channel_sharing_service_a1
+            bypass_reason: "The test channel's videos have no shares; every report file is header-only."
+          - name: playlist_basic_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
+          - name: playlist_combined_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
+          - name: playlist_device_os_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
+          - name: playlist_playback_location_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
+          - name: playlist_province_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
+          - name: playlist_traffic_source_a2
+            bypass_reason: "The test channel has no playlists; every playlist report file is header-only."
   incremental:
-    bypass_reason: "Test account doesn't have records. Uncomment section below when we have data."
-  #    tests:
-  #      - config_path: "secrets/config.json"
-  #        configured_catalog_path: "integration_tests/configured_catalog.json"
-  #        future_state:
-  #          future_state_path: "integration_tests/abnormal_state.json"
-  #        timeout_seconds: 7200
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    bypass_reason: "Test account doesn't have records. Uncomment section below when we have data."
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        timeout_seconds: 3600
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
