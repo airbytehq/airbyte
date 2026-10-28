@@ -7662,6 +7662,9 @@ Classes
 
     ### Class variables
 
+    `idempotency_key: str`
+    :   The type of the None singleton.
+
     `input: airbyte_agent_sdk.connectors.shopify.types.InventoryAdjustCreateParamsInput`
     :   The type of the None singleton.
 
@@ -7698,6 +7701,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `change_from_quantity: int | None`
+    :   The type of the None singleton.
 
     `delta: int`
     :   The type of the None singleton.
@@ -8632,6 +8638,9 @@ Classes
 
     ### Class variables
 
+    `idempotency_key: str`
+    :   The type of the None singleton.
+
     `input: airbyte_agent_sdk.connectors.shopify.types.InventorySetCreateParamsInput`
     :   The type of the None singleton.
 
@@ -8668,6 +8677,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `change_from_quantity: int | None`
+    :   The type of the None singleton.
 
     `inventory_item_id: str`
     :   The type of the None singleton.
