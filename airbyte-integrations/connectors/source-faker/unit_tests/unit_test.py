@@ -216,7 +216,7 @@ def test_read_big_random_data():
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "parallelism": 1, "records_per_slice": 100}
+    config = {"count": 1000, "parallelism": 1}
     stream_dicts = [
         {
             "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},

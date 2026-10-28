@@ -13,17 +13,17 @@ def test_check_with_optional_settings_omitted(config):
 
 
 @pytest.mark.parametrize("config", [{"count": 5000, "seed": 42}, {}])
-def test_streams_use_spec_defaults(config):
+def test_streams_preserve_existing_defaults(config):
     source = SourceFaker()
-    properties = source.spec(logging.getLogger(__name__)).connectionSpecification["properties"]
+    defaults = {"count": 1000, "seed": None, "records_per_slice": 100, "always_updated": True, "parallelism": 4}
     original = dict(config)
     streams = source.streams(config)
     assert len(streams) == 3
     for stream in streams:
-        for key, setting in properties.items():
+        for key, default in defaults.items():
             if key == "parallelism" and stream.name == "products":
                 continue
-            assert getattr(stream, key) == config.get(key, setting["default"])
+            assert getattr(stream, key) == config.get(key, default)
     assert config == original
 
 

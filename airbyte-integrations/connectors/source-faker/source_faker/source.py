@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams import Stream
 from .streams import Products, Purchases, Users
 
 
-DEFAULT_CONFIG = {"count": 1_000, "seed": -1, "records_per_slice": 1_000, "always_updated": True, "parallelism": 4}
+DEFAULT_CONFIG = {"count": 1_000, "seed": None, "records_per_slice": 100, "always_updated": True, "parallelism": 4}
 POSITIVE_INTEGER_SETTINGS = ("count", "records_per_slice", "parallelism")
 
 
