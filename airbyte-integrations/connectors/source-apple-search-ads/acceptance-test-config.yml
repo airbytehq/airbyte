@@ -1,6 +1,7 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-apple-search-ads:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
@@ -8,43 +9,44 @@ acceptance_tests:
   connection:
     tests:
       - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
         status: "failed"
-
-  ## Uncomment the following tests and mark above connection test status as "succeeded" when we have a usable sandbox environment
-  # discovery:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  # basic_read:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
-  #       empty_streams: []
-  #       timeout_seconds: 3600
-  # incremental:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
-  #       future_state:
-  #         future_state_path: "integration_tests/abnormal_state.json"
-  #       timeout_seconds: 3600
-  # full_refresh:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
-  #       ignored_fields:
-  #         adgroups_report_daily:
-  #           - name: granularity
-  #             bypass_reason: "Can't be idempotent by nature"
-  #           - name: metadata
-  #             bypass_reason: "Can't be idempotent by nature"
-  #         campaigns_report_daily:
-  #           - name: granularity
-  #             bypass_reason: "Can't be idempotent by nature"
-  #           - name: metadata
-  #             bypass_reason: "Can't be idempotent by nature"
-  #         keywords_report_daily:
-  #           - name: granularity
-  #             bypass_reason: "Can't be idempotent by nature"
-  #           - name: metadata
-  #             bypass_reason: "Can't be idempotent by nature"
-  #       timeout_seconds: 3600
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        # Add every stream the test account has no data for, each with a bypass_reason.
+        empty_streams: []
+        timeout_seconds: 3600
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          campaigns_report_daily:
+            - name: granularity
+              bypass_reason: "Today's metrics keep changing between two reads"
+          adgroups_report_daily:
+            - name: granularity
+              bypass_reason: "Today's metrics keep changing between two reads"
+          keywords_report_daily:
+            - name: granularity
+              bypass_reason: "Today's metrics keep changing between two reads"
+          ads_report_daily:
+            - name: granularity
+              bypass_reason: "Today's metrics keep changing between two reads"
+          search_terms_report_daily:
+            - name: granularity
+              bypass_reason: "Today's metrics keep changing between two reads"
+        timeout_seconds: 3600
