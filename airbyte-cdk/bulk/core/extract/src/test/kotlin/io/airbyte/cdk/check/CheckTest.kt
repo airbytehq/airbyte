@@ -100,7 +100,21 @@ class CheckTest {
     )
     @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testUnknownSection() {
-        assertFailed("Unknown check-section 'nope'; .* connection, sync_method".toRegex())
+        assertFailed("Unknown check-section 'nope'; .* connection, naming, sync_method".toRegex())
+        Assertions.assertEquals(emptyList<String>(), sectionHandler.checkedSections)
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.config.json",
+        value = """{"host":"localhost","check-section":"naming"}""",
+    )
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+    fun testSectionWithoutCheckIsRejected() {
+        // `naming` is declared with `"check": false`: neither the handler nor the full check runs.
+        assertFailed(
+            "Section 'naming' cannot be checked on its own; .* connection, sync_method".toRegex(),
+        )
         Assertions.assertEquals(emptyList<String>(), sectionHandler.checkedSections)
     }
 

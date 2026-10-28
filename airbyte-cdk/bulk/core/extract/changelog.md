@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.2.3 — 2026-10-27
 
-[#89691](https://github.com/airbytehq/airbyte/pull/89691) — Section-aware CHECK for the stepped setup form: a top-level `check-section` key in the config JSON names one of the `sections` the spec declares; `CheckOperation` runs the full check for the last section and delegates the others to a new connector-provided `CheckSectionHandler` bean; without the key CHECK is unchanged.
+[#89691](https://github.com/airbytehq/airbyte/pull/89691) — Section-aware CHECK for the stepped setup form: a top-level `check-section` key in the config JSON names one of the `sections` the spec declares with `"check": true`; `CheckOperation` rejects the other sections, runs the full check for the last section and delegates the rest to a new connector-provided `CheckSectionHandler` bean; without the key CHECK is unchanged.
 
 ### 1.2.2 — 2026-10-21
 
