@@ -523,10 +523,10 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.DATE,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.FechaD",
+                    "dbo.alias_date",
                     dateValues,
                     LeafAirbyteSchemaType.DATE,
-                    setupDdl = listOf(aliasType("FechaD", "date")),
+                    setupDdl = listOf(aliasType("alias_date", "date")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "SMALLDATETIME",
@@ -534,10 +534,10 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.FechaSmall",
+                    "dbo.alias_smalldatetime",
                     smalldatetimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    setupDdl = listOf(aliasType("FechaSmall", "smalldatetime")),
+                    setupDdl = listOf(aliasType("alias_smalldatetime", "smalldatetime")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIME",
@@ -545,10 +545,10 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.Fecha",
+                    "dbo.alias_datetime",
                     datetimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    setupDdl = listOf(aliasType("Fecha", "datetime")),
+                    setupDdl = listOf(aliasType("alias_datetime", "datetime")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIME2",
@@ -556,10 +556,10 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.FechaDt2",
+                    "dbo.alias_datetime2",
                     datetime2Values,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    setupDdl = listOf(aliasType("FechaDt2", "datetime2")),
+                    setupDdl = listOf(aliasType("alias_datetime2", "datetime2")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "TIME",
@@ -567,10 +567,10 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.Hora",
+                    "dbo.alias_time",
                     timeValues,
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
-                    setupDdl = listOf(aliasType("Hora", "time(7)")),
+                    setupDdl = listOf(aliasType("alias_time", "time(7)")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIMEOFFSET",

@@ -107,34 +107,21 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
                 registration.register(SchemaBuilder.string().optional(), this::convertSqlVariant)
             }
             else -> {
+                // User-defined alias types (e.g. CREATE TYPE x FROM datetime) report the alias
+                // as typeName, so resolve temporal aliases via their JDBC type instead.
                 val jdbcType = field.jdbcType()
-                val converterRegistered =
+                val temporalConverter: ((Any?) -> Any?)? =
                     when (jdbcType) {
-                        Types.TIMESTAMP -> {
-                            registration.register(
-                                SchemaBuilder.string().optional(),
-                                this::convertDateTime,
-                            )
-                            true
-                        }
-                        Types.DATE -> {
-                            registration.register(
-                                SchemaBuilder.string().optional(),
-                                this::convertDate,
-                            )
-                            true
-                        }
-                        Types.TIME -> {
-                            registration.register(
-                                SchemaBuilder.string().optional(),
-                                this::convertTime,
-                            )
-                            true
-                        }
-                        else -> false
+                        Types.TIMESTAMP -> this::convertDateTime
+                        Types.DATE -> this::convertDate
+                        Types.TIME -> this::convertTime
+                        else -> null
                     }
 
-                if (converterRegistered) {
+                if (temporalConverter != null) {
+                    registration.register(SchemaBuilder.string().optional()) { value ->
+                        temporalConverter(value)
+                    }
                     logger.info(
                         "Resolved user-defined type {} for column {} via JDBC type {}",
                         field.typeName(),
