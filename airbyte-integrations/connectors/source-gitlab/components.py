@@ -2,9 +2,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 from dataclasses import dataclass
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.validators import ValidationStrategy
@@ -37,6 +38,39 @@ class ValidateApiUrl(ValidationStrategy):
             return False, "", ""
         host, *_ = parts
         return True, scheme, host
+
+
+@dataclass
+class PipelinesSourcePartitionStateMigration(StateMigration):
+    """Re-keys per-project `pipelines` state to the (project, pipeline_source) partitions.
+
+    The `default` partition inherits the old cursor. `parent_pipeline` (child pipelines) was never
+    read before, so it gets an explicit cursor at the configured `start_date` to backfill from.
+
+    State saved in global-cursor mode (`use_global_cursor: true`, no per-partition entries) has no
+    per-project cursors to re-key and no persisted marker to make a reset idempotent, so it is left
+    untouched; those connections need a manual stream reset to backfill child pipelines.
+    """
+
+    config: Mapping[str, Any]
+
+    @staticmethod
+    def _is_legacy(partition_state: Mapping[str, Any]) -> bool:
+        return "pipeline_source" not in (partition_state.get("partition") or {})
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return any(self._is_legacy(s) for s in stream_state.get("states", []))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        start_cursor = {"updated_at": self.config.get("start_date", "2014-01-01T00:00:00Z")}
+        states = []
+        for s in stream_state["states"]:
+            if not self._is_legacy(s):
+                states.append(s)
+                continue
+            states.append({**s, "partition": {**s["partition"], "pipeline_source": "default"}})
+            states.append({"partition": {**s["partition"], "pipeline_source": "parent_pipeline"}, "cursor": start_cursor})
+        return {**stream_state, "states": states}
 
 
 @dataclass

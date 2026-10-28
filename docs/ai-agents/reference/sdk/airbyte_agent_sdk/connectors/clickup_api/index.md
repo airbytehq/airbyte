@@ -249,24 +249,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-<a id="TasksSearchResult"></a>
-
-`TasksSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 <a id="TeamsSearchResult"></a>
 
 `TeamsSearchResult(**data: Any)`
@@ -584,7 +566,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['get', 'list', 'search', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -646,6 +628,27 @@ Classes
         Example:
             outline = await connector.read_skill_docs()
             details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="CommentsSearchData"></a>
 

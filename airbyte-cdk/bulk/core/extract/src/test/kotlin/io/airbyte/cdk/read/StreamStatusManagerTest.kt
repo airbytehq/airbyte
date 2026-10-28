@@ -183,6 +183,7 @@ class StreamStatusManagerTest {
         }
     }
 
+    @ConsistentCopyVisibility
     data class TestCase
     private constructor(
         val started: Set<StreamIdentifier>,

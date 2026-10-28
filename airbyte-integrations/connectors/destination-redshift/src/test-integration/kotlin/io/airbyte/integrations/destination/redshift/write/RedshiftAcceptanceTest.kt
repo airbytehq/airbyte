@@ -203,7 +203,7 @@ abstract class RedshiftBaseAcceptanceTest(
                                 linkedMapOf(
                                     "small_field" to FieldType(StringType, nullable = true),
                                     "large_field" to FieldType(StringType, nullable = true),
-                                )
+                                ),
                             ),
                             nullable = true,
                         ),
@@ -281,7 +281,7 @@ abstract class RedshiftBaseAcceptanceTest(
                                 linkedMapOf(
                                     "name" to FieldType(StringType, nullable = true),
                                     "value" to FieldType(StringType, nullable = true),
-                                )
+                                ),
                             ),
                             nullable = true,
                         ),

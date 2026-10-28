@@ -1,15 +1,8 @@
-const fs = require("fs");
-const path = require("path");
 const visit = require("unist-util-visit").visit;
 const { toAttributes } = require("../helpers/objects");
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
-
-const SOURCES_DIR = path.resolve(__dirname, "../../../docs/integrations/sources");
-
-const hasDataReplicationPage = (slug) =>
-  fs.existsSync(path.join(SOURCES_DIR, `${slug}.md`));
 
 const isAgentConnectorPage = (vfile) => {
   return (
@@ -25,13 +18,6 @@ const getConnectorSlug = (vfile) => {
   return parts[connectorsIdx + 1];
 };
 
-function formatConnectorName(slug) {
-  return slug
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 const plugin = () => {
   const transformer = async (ast, vfile) => {
     if (!isAgentConnectorPage(vfile)) return;
@@ -40,7 +26,6 @@ const plugin = () => {
     if (!slug) return;
 
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
-    const connectorName = formatConnectorName(slug);
 
     let headingTransformed = false;
 
@@ -58,33 +43,6 @@ const plugin = () => {
 
       headingTransformed = true;
     });
-
-    if (!headingTransformed) return;
-
-    // Insert banner at the root level, after the heading node.
-    // The heading may be wrapped by Docusaurus (e.g. in a <header> element),
-    // so we find it by looking for the transformed AgentConnectorTitle or
-    // any wrapper that contains it.
-    const headingIdx = ast.children.findIndex(
-      (ch) =>
-        (ch.type === "mdxJsxFlowElement" && ch.name === "AgentConnectorTitle") ||
-        (ch.type === "mdxJsxFlowElement" && ch.name === "header") ||
-        (ch.type === "heading" && ch.depth === 1),
-    );
-
-    if (headingIdx !== -1 && hasDataReplicationPage(slug)) {
-      const bannerNode = {
-        type: "mdxJsxFlowElement",
-        name: "ConnectorTypeBanner",
-        attributes: toAttributes({
-          connectorType: "agent",
-          counterpartUrl: `/integrations/sources/${slug}`,
-          connectorName,
-        }),
-        children: [],
-      };
-      ast.children.splice(headingIdx + 1, 0, bannerNode);
-    }
   };
   return transformer;
 };

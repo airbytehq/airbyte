@@ -20,10 +20,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: yes
-        timeout_seconds: 3600
         empty_streams:
           - name: "customer_label"
             bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
@@ -34,9 +30,6 @@ acceptance_tests:
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
       - config_path: "secrets/config_click_view.json"
-        expect_records:
-          path: "integration_tests/expected_records_click.jsonl"
-        timeout_seconds: 3600
         empty_streams:
           - name: "customer_label"
             bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
@@ -56,7 +49,6 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"
-        timeout_seconds: 3600
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

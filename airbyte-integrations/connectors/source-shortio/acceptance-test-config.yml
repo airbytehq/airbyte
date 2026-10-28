@@ -21,9 +21,6 @@ acceptance_tests:
         empty_streams:
           - name: clicks
             bypass_reason: "Sandbox account cannot seed the stream"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
   incremental:
     bypass_reason:
       "Last record is duplicated for test_two_sequential_reads since

@@ -11,6 +11,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.io.FileUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Base implementation of a [SerializableBuffer]. It is composed of a [BufferStorage] where the
  * actual data is being stored in a serialized format.
@@ -45,17 +46,17 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     protected abstract fun writeRecord(
         record: AirbyteRecordMessage,
         generationId: Long = 0,
-        syncId: Long = 0
+        syncId: Long = 0,
     )
 
     /**
-     * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
-     * AirbyteRecord
-     *
      * @param recordString serialized record
      * @param airbyteMetaString
      * @param emittedAt timestamp of the record in milliseconds
      * @throws IOException
+     *
+     * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
+     *   AirbyteRecord
      */
     @Throws(IOException::class)
     protected abstract fun writeRecord(
@@ -108,7 +109,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ): Long {
         if (!isStarted) {
             if (useCompression) {

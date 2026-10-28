@@ -115,8 +115,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                              |
-|:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
+| 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
+| 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
 | 1.1.24 | 2025-05-10 | [59786](https://github.com/airbytehq/airbyte/pull/59786) | Update dependencies |
 | 1.1.23 | 2025-05-03 | [58801](https://github.com/airbytehq/airbyte/pull/58801) | Update dependencies |

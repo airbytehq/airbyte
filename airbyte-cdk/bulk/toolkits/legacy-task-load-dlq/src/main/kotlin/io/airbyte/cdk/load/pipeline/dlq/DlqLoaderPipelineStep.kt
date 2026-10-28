@@ -64,13 +64,13 @@ class DlqLoaderAccumulator<S>(
      *
      * If the [DlqLoader] returns:
      * - [DlqLoader.Incomplete]: it assumes that no data was persisted, and continue with the
-     * current state.
+     *   current state.
      * - [DlqLoader.Complete]: it assumes that data was at least partially persisted. If no records
-     * are returned, it means that the upload was successful, the batch is complete since there are
-     * no data to write to the dead letter queue. The CDK should be able to persist the
-     * AirbyteState. On the other hand, if records are returned, they are sent to the
-     * DeadLetterQueue and the BatchState is PERSISTED in order to let the CDK know that it
-     * shouldn't ack the AirbyteState until those records are persisted in the DeadLetterQueue.
+     *   are returned, it means that the upload was successful, the batch is complete since there
+     *   are no data to write to the dead letter queue. The CDK should be able to persist the
+     *   AirbyteState. On the other hand, if records are returned, they are sent to the
+     *   DeadLetterQueue and the BatchState is PERSISTED in order to let the CDK know that it
+     *   shouldn't ack the AirbyteState until those records are persisted in the DeadLetterQueue.
      */
     override suspend fun accept(
         input: DestinationRecordRaw,

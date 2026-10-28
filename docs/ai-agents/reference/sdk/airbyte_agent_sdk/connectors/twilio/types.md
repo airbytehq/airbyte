@@ -1949,6 +1949,9 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+    `status: str`
+    :   The type of the None singleton.
+
 <a id="ConferencesLtCondition"></a>
 
 `ConferencesLtCondition(*args, **kwargs)`
