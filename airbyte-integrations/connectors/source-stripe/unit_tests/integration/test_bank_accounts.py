@@ -353,6 +353,7 @@ class FullRefreshTest(TestCase):
             for error in output.errors
         )
         assert output.records == []
+        assert output.state_messages == []
 
     @HttpMocker()
     def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
