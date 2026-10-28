@@ -763,6 +763,13 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 8
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [502, 503, 504]
+              action: RETRY
       record_selector:
         type: RecordSelector
         extractor:
