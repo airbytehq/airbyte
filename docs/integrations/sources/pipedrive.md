@@ -4,8 +4,9 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 ## Prerequisites
 
-- A Pipedrive account
-- On Airbyte Cloud, nothing else: you authorize Airbyte's Pipedrive app with OAuth during setup. Otherwise, a personal API token, which needs API access enabled for your user
+- A Pipedrive account.
+- To authenticate with OAuth on Airbyte Cloud, nothing else. You authorize Airbyte's Pipedrive app during setup.
+- To authenticate with an API token, or on self-managed Airbyte, a personal API token. API access must be enabled for your Pipedrive user.
 
 ## Setup guide
 
@@ -13,7 +14,7 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 The connector authenticates with OAuth or with a personal API token. Either credential belongs to one Pipedrive user, so the connector can only read data that user is allowed to see.
 
-**OAuth (default on Airbyte Cloud)**: No preparation is needed. During setup you authorize Airbyte's Pipedrive app in a browser window, and Pipedrive returns your company's own API host, which the connector uses for every request.
+**OAuth (default on Airbyte Cloud)**: No preparation is needed. During setup you authorize Airbyte's Pipedrive app in a browser window, and Pipedrive returns your company's own API host, which the connector uses for every request. Pipedrive asks you to accept all of the app's scopes at once. The `roles`, `permission_sets` and `permission_set_assignments` streams rely on the app's `admin` scope, which Pipedrive only honors when the user who authorizes the app is a company admin. See Pipedrive's [scopes and permission explanations](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations).
 
 **API token**:
 
@@ -157,6 +158,7 @@ How the connector treats Pipedrive HTTP errors:
 
 - Deletions are replicated for `deals` and `deals_archived`, for 30 days after the deletion (`is_deleted: true`), and for `projects` (`status: deleted`). Records deleted in other streams stay in your destination until you clear and resync the stream.
 - With OAuth, requests go to the company host Pipedrive returned during authorization (`https://<company>.pipedrive.com/api/...`); with an API token they go to `https://api.pipedrive.com`.
+- With OAuth, Pipedrive issues access tokens that expire after 60 minutes, and the connector refreshes them automatically. The refresh token itself expires if it isn't used for 60 days, so a source that doesn't sync for 60 days must be re-authenticated. See Pipedrive's [OAuth authorization guide](https://pipedrive.readme.io/docs/marketplace-oauth-authorization).
 - With OAuth, a 403 "Scope and URL mismatch" means Airbyte's Pipedrive app lacks the scope a stream needs. It fails the sync with a configuration error on every stream, including those that otherwise skip a 403.
 
 ### Troubleshooting
