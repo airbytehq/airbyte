@@ -5391,7 +5391,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Stargazers List
 
-Returns a list of users who have starred the repository using GraphQL
+Lists users who have starred the repository using GraphQL. Since July 2026,
+GitHub restricts stargazer and watcher listings to repository administrators
+and collaborators. A token without that access gets one of two shapes:
+stargazer_count greater than zero with empty results, or stargazer_count
+null with empty results and a FORBIDDEN entry in the errors metadata. Either
+way the aggregate count is authoritative (fall back to stargazers_count from
+repositories.get when it is null): report it and explain that individual
+stargazers are unavailable; in this restricted case, never report zero
+stargazers.
+
 
 #### CLI
 
@@ -5455,7 +5464,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `has_next_page` | `boolean` |  |
-| `end_cursor` | `string` |  |
+| `end_cursor` | `null \| string` |  |
+| `stargazer_count` | `integer` |  |
+| `errors` | `array<object>` |  |
 
 </details>
 
