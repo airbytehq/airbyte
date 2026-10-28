@@ -28,7 +28,7 @@ application {
 dependencies {
     implementation project(':airbyte-integrations:connectors:destination-mysql')
 
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'com.mysql:mysql-connector-j:9.6.0'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
     integrationTestJavaImplementation 'org.testcontainers:mysql:1.21.4'
