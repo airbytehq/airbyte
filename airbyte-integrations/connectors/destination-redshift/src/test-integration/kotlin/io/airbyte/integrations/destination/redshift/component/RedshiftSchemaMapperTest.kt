@@ -42,7 +42,7 @@ class RedshiftSchemaMapperTest(
             TableName(
                 "namespace_test___________________________________",
                 "table_test___________________________________",
-            )
+            ),
         )
     }
 

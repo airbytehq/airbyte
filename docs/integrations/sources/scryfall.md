@@ -58,6 +58,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.70 | 2026-10-20 | [89400](https://github.com/airbytehq/airbyte/pull/89400) | Update dependencies |
+| 0.0.69 | 2026-10-13 | [88769](https://github.com/airbytehq/airbyte/pull/88769) | Update dependencies |
 | 0.0.68 | 2026-10-07 | [88240](https://github.com/airbytehq/airbyte/pull/88240) | Throttle requests to Scryfall's documented rate limits and wait 35 seconds before retrying HTTP 429, so full `cards` syncs no longer fail |
 | 0.0.67 | 2026-10-06 | [88025](https://github.com/airbytehq/airbyte/pull/88025) | Update dependencies |
 | 0.0.66 | 2026-10-03 | [87644](https://github.com/airbytehq/airbyte/pull/87644) | Send a custom User-Agent (Scryfall rejects default HTTP-library agents with 400) |

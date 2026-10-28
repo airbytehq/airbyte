@@ -42,7 +42,7 @@ class DirectLoadPipelineStep<S : DirectLoader>(
             accumulator,
             partition,
             numWorkers,
-            maxNumConcurrentKeys = maxNumConcurrentKeys
+            maxNumConcurrentKeys = maxNumConcurrentKeys,
         )
     }
 }

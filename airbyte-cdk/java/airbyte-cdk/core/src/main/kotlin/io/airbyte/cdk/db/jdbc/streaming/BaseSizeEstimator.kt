@@ -14,7 +14,7 @@ protected constructor( // desired buffer size in memory
     private val targetBufferByteSize: Long,
     private val minFetchSize: Int,
     private val defaultFetchSize: Int,
-    private val maxFetchSize: Int
+    private val maxFetchSize: Int,
 ) : FetchSizeEstimator {
     var maxRowByteSize: Double = 0.0
         protected set
@@ -34,7 +34,7 @@ protected constructor( // desired buffer size in memory
             }
             return max(
                     minFetchSize.toDouble(),
-                    min(maxFetchSize.toDouble(), rawFetchSize.toInt().toDouble())
+                    min(maxFetchSize.toDouble(), rawFetchSize.toInt().toDouble()),
                 )
                 .toInt()
         }

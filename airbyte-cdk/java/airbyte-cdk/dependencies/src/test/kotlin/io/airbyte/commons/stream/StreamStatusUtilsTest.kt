@@ -38,7 +38,7 @@ internal class StreamStatusUtilsTest {
             StreamStatusUtils.statusTrackingRecordCollector(
                 stream,
                 messageConsumer,
-                streamStatusEmitter
+                streamStatusEmitter,
             )
 
         Assertions.assertNotEquals(messageConsumer, wrappedMessageConsumer)
@@ -59,7 +59,7 @@ internal class StreamStatusUtilsTest {
             StreamStatusUtils.statusTrackingRecordCollector(
                 stream,
                 messageConsumer,
-                streamStatusEmitter
+                streamStatusEmitter,
             )
 
         Assertions.assertNotEquals(messageConsumer, wrappedMessageConsumer)
@@ -73,7 +73,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -92,7 +92,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -139,7 +139,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -183,7 +183,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -207,7 +207,7 @@ internal class StreamStatusUtilsTest {
         Assertions.assertDoesNotThrow {
             StreamStatusUtils.emitRunningStreamStatus(
                 Optional.of(airbyteStream),
-                streamStatusEmitter
+                streamStatusEmitter,
             )
         }
     }
@@ -227,7 +227,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -274,7 +274,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -318,7 +318,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -359,7 +359,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -406,7 +406,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -450,7 +450,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -474,7 +474,7 @@ internal class StreamStatusUtilsTest {
         Assertions.assertDoesNotThrow {
             StreamStatusUtils.emitCompleteStreamStatus(
                 Optional.of(airbyteStream),
-                streamStatusEmitter
+                streamStatusEmitter,
             )
         }
     }
@@ -494,7 +494,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -541,7 +541,7 @@ internal class StreamStatusUtilsTest {
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -581,14 +581,14 @@ internal class StreamStatusUtilsTest {
 
         StreamStatusUtils.emitIncompleteStreamStatus(
             Optional.of(airbyteStream),
-            streamStatusEmitter
+            streamStatusEmitter,
         )
 
         Mockito.verify(statusEmitter, Mockito.times(1))
             .accept(airbyteStreamStatusHolderArgumentCaptor!!.capture())
         Assertions.assertEquals(
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
-            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status
+            airbyteStreamStatusHolderArgumentCaptor.value.toTraceMessage().streamStatus.status,
         )
     }
 
@@ -612,7 +612,7 @@ internal class StreamStatusUtilsTest {
         Assertions.assertDoesNotThrow {
             StreamStatusUtils.emitIncompleteStreamStatus(
                 Optional.of(airbyteStream),
-                streamStatusEmitter
+                streamStatusEmitter,
             )
         }
     }

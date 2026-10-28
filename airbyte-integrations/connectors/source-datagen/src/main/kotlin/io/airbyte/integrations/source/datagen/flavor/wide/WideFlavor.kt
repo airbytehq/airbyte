@@ -27,6 +27,7 @@ class WideFlavor(columnCount: Int) : Flavor {
             throw ConfigErrorException("Column count must be between 1 and 1000, got $columnCount")
         }
     }
+
     companion object {
         private const val TABLE_NAME = "wide"
 
