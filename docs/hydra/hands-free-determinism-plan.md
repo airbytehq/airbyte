@@ -50,8 +50,22 @@ Handoff Mode" cross-reference the old handoff prompt-text had into
 
 ## Phase 1 — Rebuild handoff on hydra + assess
 
-Replace `hydra-stage-handoff.yml`'s eligibility bash and the launched session's
-§2.5 traversal with a code path.
+Build the dispatcher-based handoff as a **new workflow file alongside** the
+existing `hydra-stage-handoff.yml`, rather than refactoring in place. The
+existing workflow stays unchanged throughout and continues launching
+`!hands_free_item` as it does today. The new workflow runs in parallel.
+
+**Why parallel instead of in-place:**
+
+- Clean rollback: if the new workflow misbehaves, disable its triggers; the
+  old one is still running untouched.
+- Clean diff: a new file instead of a major refactor to a heavily-reviewed one.
+- Both workflows can run simultaneously during dry-run → direct side-by-side
+  comparison of decisions.
+- No git-blame churn on `hydra-stage-handoff.yml` while the work is in flight.
+
+New file name TBD (e.g. `.github/workflows/hydra-stage-handoff-v2.yml` or
+`hydra-dispatch.yml`).
 
 **New handoff shape:**
 
@@ -87,13 +101,34 @@ Replace `hydra-stage-handoff.yml`'s eligibility bash and the launched session's
   warning; Phase 4 closes this.
 - `blockers: ["GitHub hadn't computed merge state"]` → exit; next event re-fires.
 
+**Dry-run rollout:** ship the new workflow with `DRY_RUN=true` (env var or
+repo variable) that logs the decision + the dispatch it *would* have fired,
+but doesn't actually fire the `curl`. The old workflow keeps dispatching for
+real during this period, so no PR actually stalls. Flip to `DRY_RUN=false`
+after ~48h of clean logs with representative event volume.
+
+**Cutover:**
+
+1. New workflow in DRY_RUN=true, parallel to old (which keeps real-dispatching).
+2. Flip new to DRY_RUN=false → both workflows now dispatching for real. The
+   `(pr, head_sha, next_action)` idempotency key prevents double-dispatch.
+3. Soak for a week with both live.
+4. Empty the old workflow's `on:` block (or restrict to `workflow_dispatch`)
+   — becomes inert.
+5. After another soak with the new as sole dispatcher, delete the old file.
+
 **Acceptance:** handoff workflow no longer launches a Devin session for the
 decision itself. Decision latency drops from minutes to seconds. Per-handoff
-ACU → 0 for the common case.
+ACU → 0 for the common case. Old `hydra-stage-handoff.yml` deleted at end of
+cutover.
 
 ---
 
 ## Phase 2 — Trigger set
+
+Triggers go on the **new** workflow (per Phase 1's parallel-workflow approach).
+The old `hydra-stage-handoff.yml` keeps its original trigger set unchanged
+until it's retired at the end of Phase 1's cutover.
 
 Keep what works, add what's missing, and trust the engine to debounce.
 
@@ -130,13 +165,15 @@ Keep what works, add what's missing, and trust the engine to debounce.
   `/ai-triage → /ai-fix` ever moves into this chain. Not required for v1 — the
   sweep still catches that transition.
 
-**Drop:**
+**Do not carry over to the new workflow:**
 
 - `workflow_run` on `Connector CI` success — superseded by `check_run:
   completed`. The old `workflow_run` trigger only covered the subset of
   required checks produced by that specific workflow and missed the
   App-produced "Connector CI Checks Summary" rollup entirely. `check_run`
-  covers all 7 required checks uniformly.
+  covers all 7 required checks uniformly. (Under the parallel-workflow
+  approach, "drop" means "do not include in the new workflow's `on:` block" —
+  the old workflow keeps the trigger until retirement.)
 - Comment-marker trigger stays dormant as a fallback until the completion-
   driven path (`wait-for-stopped-status` + `repository_dispatch`) is proven
   for a week in prod, then retire.
@@ -330,3 +367,8 @@ outcomes carry the specific blocking gate.
 4. **Pending third-party checks.** Hydra handles via `wait`, but if a check
    never completes, the PR sits. Add an alert if a hydra `wait` persists >24h
    on a `hyd-chain` PR.
+5. **Double-dispatch during the parallel soak.** Once the new workflow flips
+   out of DRY_RUN and before the old workflow is disabled, both are live. The
+   `(pr, head_sha, next_action)` idempotency key collapses duplicates, but
+   verify this works on a real event before extending the soak. Fallback:
+   shorten the parallel-live period if duplicates leak through.
