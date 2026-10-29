@@ -261,10 +261,6 @@ module.exports = {
           type: "doc",
           id: "using-airbyte/core-concepts/readme",
         },
-        {
-          type: "doc",
-          id: "using-airbyte/getting-started/academy",
-        },
         sectionHeader("Move and manage data"),
         {
           type: "category",
