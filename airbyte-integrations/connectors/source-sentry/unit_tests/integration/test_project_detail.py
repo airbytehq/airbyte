@@ -54,6 +54,40 @@ class TestProjectDetailStream(TestCase):
         assert len(output.records) >= 1, "Expected project detail record"
         assert output.records[0].record.data["slug"] == "test-project"
 
+    @HttpMocker()
+    def test_text_project_config_is_migrated_to_a_list(self, http_mocker: HttpMocker):
+        """A config saved before 1.1.0 ("project": "<slug>") is wrapped in a list, passes the spec check, and syncs that project."""
+        config = {**self._config(), "project": _PROJECT}
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1, f"Expected the text-config project to sync, got {len(output.records)} records"
+        assert output.records[0].record.data["slug"] == _PROJECT
+
+    @HttpMocker()
+    def test_duplicate_project_slugs_sync_once(self, http_mocker: HttpMocker):
+        """
+        A slug listed twice is read once. Incremental streams already merge duplicate
+        partitions, but full-refresh streams like this one rely on the router's dedupe.
+        """
+        config = ConfigBuilder().with_projects([_PROJECT, _PROJECT]).build()
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1, f"Expected the duplicated slug to be read once, got {len(output.records)}"
+
     def test_spec_project_is_string_array(self):
         connector_spec = get_source(config={}).spec(logger=None)
 

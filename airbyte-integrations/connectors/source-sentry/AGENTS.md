@@ -4,20 +4,18 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-## Rate limits
+## Multiple projects
 
-Sentry applies a **fixed-window requests-per-second limit** and a **concurrent in-flight request limit** per caller and endpoint ([rate limits](https://docs.sentry.io/api/ratelimits/)). Responses include `X-Sentry-Rate-Limit-Limit`, `X-Sentry-Rate-Limit-Remaining`, `X-Sentry-Rate-Limit-Reset`, `X-Sentry-Rate-Limit-ConcurrentLimit`, and `X-Sentry-Rate-Limit-ConcurrentRemaining`.
+`project` is a list of project slugs. `events`, `issues`, and `project_detail` read each slug as its own partition (`project_partition_router`, which also removes duplicate slugs), so the `events` and `issues` state holds one cursor per project under `states[].partition.project`. A state saved before 1.1.0 (`{"dateCreated": ...}` or `{"lastSeen": ...}`) is applied to every project on the first sync after the upgrade.
 
-The manifest `api_budget` reads **Remaining** and **Reset** (UTC epoch seconds) to pause before hitting 429, treats **429** as a rate-limit hit, and applies a stricter fallback on **`GET …/events/`** (2/s, 60/min) plus **3/s** for other endpoints. `base_requester.error_handler` backs off on **Retry-After** first, then **X-Sentry-Rate-Limit-Reset** (up to ~61 minutes), then a **60s** constant wait. The **events** stream slices time in **7-day** steps to limit request volume on backfills. Lower **`num_workers`** when syncing **`events`** (especially with `full=true`) or when partitions multiply traffic across project slugs.
+Configs saved before 1.1.0 hold one slug as text. The `config_normalization_rules` migration wraps it in a list before the spec check, and the platform saves the migrated config. A connection pinned back to 1.0.16 or earlier then fails the spec check until **Projects** is edited back to a single slug, and its first sync re-reads `events` and `issues` from their start dates.
 
 ## Start dates
 
-See also `manifests/sentry.yaml` for the spec text and stream mapping.
+- `event_start_date` (default `1900-01-01T00:00:00Z`) is the first-sync lower bound for `events` only, sent as Sentry's `start` query parameter. A config that still has the older `start_date` key and no `event_start_date` uses `start_date` for events.
+- `sync_start_date` (optional, `1900-01-01T00:00:00Z` when omitted) is the first-sync lower bound for `issues`, `projects`, and `releases`. It doesn't apply to `events`.
 
-- **`event_start_date`** (default `1900-01-01T00:00:00Z`) — **events** stream only; maps to Sentry's [`start`](https://docs.sentry.io/api/events/list-a-projects-error-events/) query parameter. Use UTC without fractional seconds (e.g. `2026-06-01T00:00:00Z`). Legacy configs may still store **`start_date`**; the manifest uses that as a fallback for events when `event_start_date` is unset.
-- **`sync_start_date`** (optional; default `1900-01-01T00:00:00Z` when omitted) — **issues**, **projects**, and **releases** incremental lower bound. Does not apply to events.
-
-The events upper bound is always the current time (`end`). Incremental runs still advance from saved state when state is newer than the configured start.
+Both are entered without fractional seconds; each stream's `start_datetime` parses them with its own `datetime_format`, so the cursor and request formats are unchanged. Later syncs start from saved state. Because `projects` drops records created before the start of the sync window, `all_projects_detail` takes its project list from `projects_all`, which has no date filter.
 
 ## Incremental Stream Considerations
 

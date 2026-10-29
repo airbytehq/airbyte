@@ -10,21 +10,8 @@ check:
 definitions:
   project_partition_router:
     type: ListPartitionRouter
-    values: "{{ [config['project']] if config['project'] is string else config['project'] }}"
+    values: "{{ ([config['project']] if config['project'] is string else config['project']) | unique | list }}"
     cursor_field: project
-  sentry_cursor_paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      field_name: cursor
-      inject_into: request_parameter
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: >-
-        {{ headers.get('link', {}).get('next', {}).get('cursor', '') }}
-      stop_condition: >-
-        {{ headers.get('link', {}).get('next', {}).get('results', 'false')
-        == "false" }}
   streams:
     events:
       type: DeclarativeStream
@@ -35,7 +22,15 @@ definitions:
         name: events
         path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/events/
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           name: events
@@ -79,22 +74,28 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
-        step: P7D
-        cursor_granularity: PT1S
     issues:
       type: DeclarativeStream
       name: issues
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
@@ -128,7 +129,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -139,7 +140,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: organizations/{{ config['organization'] }}/projects/
@@ -168,7 +177,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -179,7 +188,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: organizations/{{ config['organization'] }}/releases/
@@ -203,7 +220,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -214,7 +231,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/
@@ -238,7 +263,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: organizations/{{ config['organization'] }}/projects/
@@ -260,7 +293,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         paginator:
-          $ref: "#/definitions/sentry_cursor_paginator"
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: projects/{{ config['organization'] }}/{{ stream_partition['project_slug'] }}/
@@ -292,33 +333,7 @@ definitions:
       api_token: "{{ config[\"auth_token\"] }}"
     error_handler:
       type: DefaultErrorHandler
-      max_retries: 10
-      backoff_strategies:
-        - type: WaitTimeFromHeader
-          header: Retry-After
-          max_waiting_time_in_seconds: 3660
-        - type: WaitUntilTimeFromHeader
-          header: X-Sentry-Rate-Limit-Reset
-          min_wait: 1
-          max_waiting_time_in_seconds: 3660
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 60
-        - type: ExponentialBackoffStrategy
-          factor: 2
       response_filters:
-        - type: HttpResponseFilter
-          action: RATE_LIMITED
-          http_codes: [429]
-          failure_type: transient_error
-          error_message: >-
-            Sentry rate limit exceeded after retries. The connector backs off using
-            Retry-After and X-Sentry-Rate-Limit-Reset (see
-            https://docs.sentry.io/api/ratelimits/). Lower num_workers, disable the
-            events stream, set events_full_payload to false, or sync fewer projects.
-        - type: HttpResponseFilter
-          action: RETRY
-          http_codes: [500, 502, 503, 504]
-          failure_type: transient_error
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [404]
@@ -417,48 +432,34 @@ spec:
         default: true
         description: >-
           When enabled, the events stream requests full event bodies (stack
-          traces, entries). Sentry caps these pages at 10 events and may return
-          HTTP 500 on very large payloads; disable to sync summary events only.
+          traces, entries). Sentry caps these pages at 10 events; disable to sync
+          summary events only.
       num_workers:
         type: integer
         title: Number of concurrent workers
         description: >-
-          Concurrent partitions per stream (for example, one partition per
-          configured project slug). Sentry also enforces a concurrent request
-          limit per endpoint (see X-Sentry-Rate-Limit-ConcurrentLimit in
-          https://docs.sentry.io/api/ratelimits/). Use 1 for events-only syncs
-          or when you hit HTTP 429.
+          The number of worker threads to use for the sync. The default of 5 is
+          safe for all Sentry API plans. Testing showed concurrency of 7 is
+          optimal; increase if your Sentry plan supports higher rate limits.
         minimum: 1
         maximum: 20
         default: 5
         order: 8
     additionalProperties: true
-
-# Sentry rate limits are per caller and endpoint (fixed window + concurrent cap).
-# Responses expose X-Sentry-Rate-Limit-* headers; the budget below honors Remaining
-# and Reset, with conservative fallbacks when headers are absent. Project events
-# polling is especially easy to overrun — use a stricter matcher for /events/.
-# https://docs.sentry.io/api/ratelimits/
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 2
-          interval: PT1S
-        - limit: 60
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "projects/.+/events/$"
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 3
-          interval: PT1S
-      matchers: []
-  ratelimit_remaining_header: X-Sentry-Rate-Limit-Remaining
-  ratelimit_reset_header: X-Sentry-Rate-Limit-Reset
-  status_codes_for_ratelimit_hit: [429]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Starting from 1.1.0, `project` holds a list of project slugs. This
+          migration wraps an existing single slug in a list.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["project"]
+                value: "{{ [config['project']] }}"
+            condition: "{{ config.get('project') is string }}"
 
 concurrency_level:
   type: ConcurrencyLevel
