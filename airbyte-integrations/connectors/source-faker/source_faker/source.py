@@ -12,14 +12,18 @@ from .streams import Products, Purchases, Users
 
 
 DEFAULT_COUNT = 1_000
+POSITIVE_INTEGER_SETTINGS = ("count", "records_per_slice", "parallelism")
 
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        if type(config["count"]) == int or type(config["count"]) == float:
-            return True, None
-        else:
-            return False, "Count option is missing"
+        # Reject settings the streams can't run with (e.g. `parallelism: 0`
+        # can't start the worker pool) before a sync starts.
+        for key in POSITIVE_INTEGER_SETTINGS:
+            value = config.get(key, 0)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 1:
+                return False, f"`{key}` must be a number greater than or equal to 1, got {value!r}"
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
