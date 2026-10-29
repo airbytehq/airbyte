@@ -23,12 +23,19 @@ STREAM_NAMES = [
     "keywords_report_daily",
     "ads",
     "ads_report_daily",
+    "organization",
+    "creatives",
+    "campaign_negative_keywords",
+    "adgroup_negative_keywords",
+    "product_pages",
+    "search_terms_report_daily",
 ]
 REPORT_STREAM_NAMES = [
     "campaigns_report_daily",
     "adgroups_report_daily",
     "keywords_report_daily",
     "ads_report_daily",
+    "search_terms_report_daily",
 ]
 
 
@@ -72,15 +79,7 @@ def _get_response_filters(manifest, stream):
     return [_resolve_ref(manifest, response_filter) for response_filter in error_handler.get("response_filters", [])]
 
 
-@pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
-        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
-        pytest.param("keywords_report_daily", id="keywords_report_daily"),
-        pytest.param("ads_report_daily", id="ads_report_daily"),
-    ],
-)
+@pytest.mark.parametrize("stream_name", REPORT_STREAM_NAMES)
 def test_report_stream_date_field_uses_start_time(manifest, stream_name):
     """DatetimeBasedCursor produces slices with start_time/end_time keys.
     The date transformation must use stream_slice.start_time."""
@@ -109,19 +108,7 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
     assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
 
 
-@pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("campaigns", id="campaigns"),
-        pytest.param("adgroups", id="adgroups"),
-        pytest.param("keywords", id="keywords"),
-        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
-        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
-        pytest.param("keywords_report_daily", id="keywords_report_daily"),
-        pytest.param("ads", id="ads"),
-        pytest.param("ads_report_daily", id="ads_report_daily"),
-    ],
-)
+@pytest.mark.parametrize("stream_name", STREAM_NAMES)
 def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
     """Apple Ads may return 401 before the CDK's tracked token expiry."""
     stream = _get_stream_def(manifest, stream_name)
@@ -178,6 +165,12 @@ def test_num_workers_spec_field(manifest):
         ("adgroups_report_daily", "#/definitions/report_error_handler"),
         ("keywords_report_daily", "#/definitions/keywords_report_error_handler"),
         ("ads_report_daily", "#/definitions/report_error_handler"),
+        ("organization", "#/definitions/error_handler"),
+        ("creatives", "#/definitions/error_handler"),
+        ("campaign_negative_keywords", "#/definitions/error_handler"),
+        ("adgroup_negative_keywords", "#/definitions/error_handler"),
+        ("product_pages", "#/definitions/error_handler"),
+        ("search_terms_report_daily", "#/definitions/search_terms_report_error_handler"),
     ],
 )
 def test_streams_use_expected_shared_error_handler(manifest, stream_name, expected_ref):
@@ -198,7 +191,8 @@ def test_each_stream_resolves_to_default_error_handler(manifest):
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
 def test_streams_classify_api_errors(manifest, stream_name):
     filters = _get_response_filters(manifest, _get_stream_def(manifest, stream_name))
-    bad_request = "config_error" if stream_name.endswith("_report_daily") else "system_error"
+    # Report requests carry the user's dates; search terms start inside Apple's 90-day window, so a 400 there is not a config problem.
+    bad_request = "config_error" if stream_name.endswith("_report_daily") and stream_name != "search_terms_report_daily" else "system_error"
     for status_code, failure_type in ((400, bad_request), (403, "config_error"), (404, "system_error")):
         matching = [response_filter for response_filter in filters if status_code in response_filter.get("http_codes", [])]
         assert matching
@@ -241,3 +235,55 @@ def test_schemas_include_additive_campaign_and_adgroup_fields(manifest):
     ]
     assert adgroups["automatedKeywordsRequired"]["type"] == ["boolean", "null"]
     assert adgroups["biddingStrategy"]["type"] == ["string", "null"]
+
+
+def test_report_schemas_declare_apples_spend_row_metrics(manifest):
+    # Every metric of Apple's ExtendedSpendRow, so destinations stop seeing undeclared fields in granularity.
+    metrics = {
+        "avgCPM",
+        "avgCPT",
+        "impressions",
+        "localSpend",
+        "tapInstallCPI",
+        "tapInstallRate",
+        "tapInstalls",
+        "tapNewDownloads",
+        "tapRedownloads",
+        "taps",
+        "tapPreOrdersPlaced",
+        "totalAvgCPI",
+        "totalInstallRate",
+        "totalInstalls",
+        "totalNewDownloads",
+        "totalRedownloads",
+        "totalPreOrdersPlaced",
+        "ttr",
+        "viewInstalls",
+        "viewNewDownloads",
+        "viewPreOrdersPlaced",
+        "viewRedownloads",
+    }
+    for stream in (
+        "campaigns_report_daily",
+        "adgroups_report_daily",
+        "keywords_report_daily",
+        "ads_report_daily",
+        "search_terms_report_daily",
+    ):
+        declared = set(manifest["schemas"][stream]["properties"]["granularity"]["items"]["properties"])
+        assert metrics <= declared, (stream, sorted(metrics - declared))
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 2), (1, 2), (5, 5)])
+def test_concurrency_never_drops_below_two(manifest, num_workers, expected):
+    # The CDK's lowest safe concurrency is 2, and the spec still allows 1 for saved configs.
+    from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
+
+    config = {} if num_workers is None else {"num_workers": num_workers}
+    level = ConcurrencyLevel(
+        default_concurrency=manifest["concurrency_level"]["default_concurrency"],
+        max_concurrency=manifest["concurrency_level"]["max_concurrency"],
+        config=config,
+        parameters={},
+    )
+    assert level.get_concurrency_level() == expected
