@@ -570,9 +570,7 @@ def test_given_429_then_200_when_read_suggested_keywords_then_retry_and_return_r
         output = read_stream("sponsored_product_ad_group_suggested_keywords", SyncMode.full_refresh, config)
 
     recommendation_requests = [
-        request
-        for request in requests_mock.request_history
-        if request.url.endswith("/sp/targets/keywords/recommendations")
+        request for request in requests_mock.request_history if request.url.endswith("/sp/targets/keywords/recommendations")
     ]
     assert len(recommendation_requests) == 2
     assert output.errors == []
