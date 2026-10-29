@@ -22,7 +22,7 @@ Scrape.ly is a web scraping platform: ready-made scrapers (Actors) run in the cl
 2. Search for and select **Scrape.ly**.
 3. Enter your **API key**.
 4. Optional: enter **Actors** (as `username/actor-name` or an Actor ID) to fill the `actor_results` stream with the results of their runs, and **Dataset IDs** to fill the `dataset_items` stream. Leave either list empty to skip that stream.
-5. Optional: enter a **Start date** to skip runs started before it.
+5. Optional: enter a **Start date** to skip older runs: for `actor_runs` and `actor_results`, runs that finished before it; for `runs`, runs that started before it.
 6. Click **Set up source**. Airbyte checks the key by listing your runs.
 
 ## Supported sync modes
