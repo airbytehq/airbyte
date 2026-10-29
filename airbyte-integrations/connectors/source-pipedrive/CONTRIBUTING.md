@@ -25,8 +25,8 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    drops every custom field. Lead custom fields arrive as top-level hash keys (API v1), the only
    undeclared fields a read returns, hence `fail_on_extra_columns: false`. `components.py` is gone;
    plain `DpathExtractor` on `data` is correct. Details in AGENTS.md section 2.
-3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`)
-   are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
+3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`,
+   `mailThreads`, `call_logs`) are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time`, and
    `deal_flow.old_value`/`new_value` (they take the type of whichever field changed), stay untyped.
    Adding or changing a `format` is a breaking change; 5.0.0 typed the last date-like fields.

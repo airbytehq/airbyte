@@ -4,8 +4,8 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 5.0.0
 
-:::danger Risk of permanent data loss
-Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return most deleted records (deleted projects are the exception), so their rows aren't restored. Back up the affected tables before you clear them if you need that history.
+:::danger Risk of permanent data loss if you clear
+Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return most deleted records (deleted projects are the exception), so their rows aren't restored. Clear only where step 2 requires it, and back up the affected tables first if you need that history.
 :::
 
 Version 5.0.0 gives the remaining date and time fields a date or timestamp type and corrects a few declared shapes to match Pipedrive's API reference. The values Pipedrive returns are unchanged; typed destinations now create these columns with the matching type.
@@ -29,12 +29,15 @@ If you don't sync any of the streams above, you don't need to take any action.
 
 To upgrade:
 
-1. Open the connection, go to **Schema** and click **Refresh source schema**.
-   If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
-2. Clear the affected streams you sync. A clear is required on destinations that can't change a column's type in place, such as S3 Data Lake and GCS Data Lake, and for streams in Incremental or Full refresh | Append mode (`deal_flow`, `leads`), where it is the only way to rewrite rows synced before the upgrade. Streams in Full refresh | Overwrite mode are rebuilt on every sync, so on other destinations you can skip clearing them.
-3. Run a sync.
+1. On Postgres or Redshift, drop any view or materialized view that selects a retyped column; the first 5.0.0 sync changes the column type, which a dependent view blocks. Recreate the views after that sync.
+2. Open the connection, go to **Schema** and click **Refresh source schema**.
+3. Clear only where your destination needs it:
+   - **BigQuery, Snowflake, Redshift, Postgres, Databricks, ClickHouse, MSSQL:** no clear. The first sync after the schema refresh converts the existing columns in place. `leads`, `leads_archived`, `deal_fields` and the nested `goals` fields are stored as JSON on these destinations, so their columns don't change.
+   - **S3 Data Lake and GCS Data Lake:** clear every affected stream that isn't in Full refresh | Overwrite mode; without the clear the sync fails with `Schema evolution for column ... is not allowed`. Overwrite streams are retyped by the next sync. If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
+   - **S3 or GCS in Avro or Parquet, MotherDuck, DuckDB:** optional. Without a clear, files written before the upgrade keep the old schema and existing MotherDuck or DuckDB tables keep string columns.
+4. Run a sync.
 
-If you skip the clear, rows synced before the upgrade keep the old column type until the destination rebuilds the table, and a destination that can't change the type fails the sync with a schema evolution error.
+After the first 5.0.0 sync, don't pin the connection back to 4.x: Data Lake streams fail again, and warehouses cast the columns back to strings in their own text format. Restore from your backup instead.
 
 ### Update downstream consumers
 

@@ -131,6 +131,7 @@ def test_vendor_shaped_collections_validate(stream, record):
     [
         pytest.param("leads", {"id": _LEAD_UUID, "label_ids": [1]}, id="lead_label_ids_reject_integers"),
         pytest.param("deal_fields", {"id": 1, "show_in_pipelines": {"pipeline_ids": ["x"]}}, id="pipeline_ids_reject_strings"),
+        pytest.param("mailThreads", {"id": 1, "drafts_parties": ["x"]}, id="drafts_parties_reject_strings"),
     ],
 )
 def test_collection_item_types_are_enforced(stream, record):
