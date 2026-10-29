@@ -87,6 +87,7 @@ def _prop(stream, path):
         ("deal_installments", ["billing_date"], _DATE),
         ("goals", ["duration", "start"], _DATE),
         ("goals", ["duration", "end"], _DATE),
+        ("leads", ["archive_time"], _TZ),
     ],
 )
 def test_date_like_fields_declare_their_vendor_shape(stream, path, expected):
@@ -137,3 +138,24 @@ def test_vendor_shaped_collections_validate(stream, record):
 def test_collection_item_types_are_enforced(stream, record):
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(record, _SCHEMAS[stream])
+
+
+_STR, _INT = ["null", "string"], ["null", "integer"]
+
+
+@pytest.mark.parametrize(
+    "stream, field, expected_type",
+    [
+        *[(s, "description", _STR) for s in ("deal_fields", "person_fields", "organization_fields", "activity_fields", "product_fields")],
+        *[(s, "group_id", _INT) for s in ("person_fields", "activity_fields", "product_fields")],
+        *[(s, "id_suffix", _STR) for s in ("person_fields", "product_fields")],
+        ("tasks", "last_updated_by_id", _INT),
+        ("tasks", "marked_as_done_by_id", _INT),
+        # Pipedrive documents none of these and the test account returns none, so any value must pass.
+        *[(s, "restriction_settings", None) for s in ("deal_fields", "person_fields", "organization_fields", "activity_fields")],
+        ("deal_fields", "user_restrictions", None),
+        ("goals", "seasonality", None),
+    ],
+)
+def test_fields_seen_in_production_are_declared(stream, field, expected_type):
+    assert _prop(stream, [field]).get("type") == expected_type

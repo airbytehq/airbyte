@@ -2372,6 +2372,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
+      user_restrictions:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -2535,6 +2543,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      seasonality:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       type:
         type:
           - object
@@ -2879,6 +2889,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archive_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visible_to:
         type:
           - "null"
@@ -3422,6 +3438,16 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -4004,6 +4030,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -4393,6 +4425,20 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       autocomplete:
         type:
           - "null"
@@ -4689,6 +4735,18 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
       created_by_user_id:
         type:
           - "null"
@@ -5699,6 +5757,14 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      last_updated_by_id:
+        type:
+          - "null"
+          - integer
+      marked_as_done_by_id:
+        type:
+          - "null"
+          - integer
       add_time:
         type:
           - "null"

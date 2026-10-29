@@ -34,8 +34,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    `integer` flags, epoch milliseconds and `mailThreads.version`, `goals.expected_outcome.target`
    kept `number` for currency amounts) and the three fields whose
    values really vary in kind (`deal_fields.mandatory_flag`, `deal_flow.additional_data`,
-   `options[].id`) are listed with their reasons there. A type change is a breaking change. Details
-   in AGENTS.md section 3.
+   `options[].id`) are listed with their reasons there. Undocumented plan-dependent keys
+   (`restriction_settings`, `deal_fields.user_restrictions`, `goals.seasonality`) stay untyped until a
+   sample shows their shape. A type change is a breaking change. Details in AGENTS.md section 3.
 4. **OAuth Is the Default, the API Token Travels in a Header, Old Configs Are Migrated** -- a
    `SelectiveAuthenticator` on `base_requester`: OAuth (Declarative OAuth, requests to the company
    host from `credentials.api_domain`) or the API token in the `x-api-token` header; never put the
