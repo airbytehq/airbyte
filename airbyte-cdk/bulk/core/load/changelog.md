@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.9 — 2026-10-28
+
+[#79180](https://github.com/airbytehq/airbyte/pull/79180) — Fix: prevent user columns from colliding with reserved Airbyte column names (`_airbyte_raw_id`, `_airbyte_meta`, etc.) by seeding the collision resolver with reserved names.
+
 ### 1.1.8 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
