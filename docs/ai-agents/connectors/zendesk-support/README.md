@@ -103,7 +103,7 @@ This connector supports the following entities and actions. For more details, se
 | Organization Memberships | [List](./REFERENCE.md#organization-memberships-list), [Context Store Search](./REFERENCE.md#organization-memberships-context-store-search), [Context Store SQL Query](./REFERENCE.md#organization-memberships-context-store-sql-query) |
 | Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get), [Context Store Search](./REFERENCE.md#sla-policies-context-store-search), [Context Store SQL Query](./REFERENCE.md#sla-policies-context-store-sql-query) |
 | Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-forms-context-store-sql-query) |
-| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search), [Context Store SQL Query](./REFERENCE.md#articles-context-store-sql-query) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search), [Context Store SQL Query](./REFERENCE.md#articles-context-store-sql-query), [Semantic Search](./REFERENCE.md#articles-semantic-search) |
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download), [Context Store Search](./REFERENCE.md#article-attachments-context-store-search), [Context Store SQL Query](./REFERENCE.md#article-attachments-context-store-sql-query) |
 
 
