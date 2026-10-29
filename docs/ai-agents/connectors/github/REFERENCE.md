@@ -12,11 +12,11 @@ The Github connector supports the following entities and actions.
 | Org Repositories | [List](#org-repositories-list), [Context Store Search](#org-repositories-context-store-search), [Context Store SQL Query](#org-repositories-context-store-sql-query) |
 | Branches | [List](#branches-list), [Get](#branches-get), [Context Store Search](#branches-context-store-search), [Context Store SQL Query](#branches-context-store-sql-query) |
 | Commits | [List](#commits-list), [Get](#commits-get), [Context Store Search](#commits-context-store-search), [Context Store SQL Query](#commits-context-store-sql-query) |
-| Releases | [List](#releases-list), [Get](#releases-get), [Context Store Search](#releases-context-store-search), [Context Store SQL Query](#releases-context-store-sql-query) |
+| Releases | [List](#releases-list), [Get](#releases-get), [Context Store Search](#releases-context-store-search), [Context Store SQL Query](#releases-context-store-sql-query), [Semantic Search](#releases-semantic-search) |
 | Issues | [List](#issues-list), [Get](#issues-get), [Search](#issues-search), [Create](#issues-create), [Update](#issues-update), [Context Store Search](#issues-context-store-search), [Context Store SQL Query](#issues-context-store-sql-query), [Semantic Search](#issues-semantic-search) |
 | Comments | [Create](#comments-create), [List](#comments-list), [Get](#comments-get), [Context Store Search](#comments-context-store-search), [Context Store SQL Query](#comments-context-store-sql-query), [Semantic Search](#comments-semantic-search) |
 | Pull Requests | [Create](#pull-requests-create), [List](#pull-requests-list), [Get](#pull-requests-get), [Search](#pull-requests-search), [Context Store Search](#pull-requests-context-store-search), [Context Store SQL Query](#pull-requests-context-store-sql-query), [Semantic Search](#pull-requests-semantic-search) |
-| Reviews | [List](#reviews-list), [Context Store Search](#reviews-context-store-search), [Context Store SQL Query](#reviews-context-store-sql-query) |
+| Reviews | [List](#reviews-list), [Context Store Search](#reviews-context-store-search), [Context Store SQL Query](#reviews-context-store-sql-query), [Semantic Search](#reviews-semantic-search) |
 | Pr Comments | [List](#pr-comments-list), [Get](#pr-comments-get), [Context Store Search](#pr-comments-context-store-search), [Context Store SQL Query](#pr-comments-context-store-sql-query) |
 | Labels | [List](#labels-list), [Get](#labels-get), [Context Store Search](#labels-context-store-search), [Context Store SQL Query](#labels-context-store-sql-query) |
 | Milestones | [List](#milestones-list), [Get](#milestones-get), [Context Store Search](#milestones-context-store-search), [Context Store SQL Query](#milestones-context-store-sql-query) |
@@ -1434,6 +1434,94 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Releases Semantic Search
+
+Search releases records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "releases",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `releases.context_store_search` helper only accepts `query`.
+
+```python
+await github.execute(
+    "releases",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "releases",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Markdown body / release notes |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.tag_name` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.published_at` | `string` | Source record field |
+| `data[].entity.html_url` | `string` | Source record field |
+| `data[].entity.node_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
@@ -3393,6 +3481,93 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Reviews Semantic Search
+
+Search reviews records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "reviews",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `reviews.context_store_search` helper only accepts `query`.
+
+```python
+await github.execute(
+    "reviews",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reviews",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Review body text |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.state` | `string` | Source record field |
+| `data[].entity.submitted_at` | `string` | Source record field |
+| `data[].entity.html_url` | `string` | Source record field |
+| `data[].entity.node_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
@@ -5391,7 +5566,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Stargazers List
 
-Returns a list of users who have starred the repository using GraphQL
+Lists users who have starred the repository using GraphQL. Since July 2026,
+GitHub restricts stargazer and watcher listings to repository administrators
+and collaborators. A token without that access gets one of two shapes:
+stargazer_count greater than zero with empty results, or stargazer_count
+null with empty results and a FORBIDDEN entry in the errors metadata. Either
+way the aggregate count is authoritative (fall back to stargazers_count from
+repositories.get when it is null): report it and explain that individual
+stargazers are unavailable; in this restricted case, never report zero
+stargazers.
+
 
 #### CLI
 
@@ -5455,7 +5639,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `has_next_page` | `boolean` |  |
-| `end_cursor` | `string` |  |
+| `end_cursor` | `null \| string` |  |
+| `stargazer_count` | `integer` |  |
+| `errors` | `array<object>` |  |
 
 </details>
 
