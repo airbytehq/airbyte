@@ -1,7 +1,7 @@
 # Contributing to source-bigquery
 
 `source-bigquery` 1.0.0 is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core + `extract-jdbc` toolkit,
-`cdkVersion=1.1.11`) rewrite of the connector. Versions up to 0.4.5, called the legacy connector
+`cdkVersion=1.1.14`) rewrite of the connector. Versions up to 0.4.5, called the legacy connector
 below, were built on the old Java CDK with the native `google-cloud-bigquery` client and lived in
 the same directory; their code was removed in 1.0.0. The connector connects through Google's Apache-2.0 JDBC driver
 (`com.google.cloud:google-cloud-bigquery-jdbc:1.4.0`) and discovers schemas through the native
