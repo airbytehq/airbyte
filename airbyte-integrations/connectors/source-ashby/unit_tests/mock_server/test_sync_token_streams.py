@@ -144,20 +144,26 @@ def test_incremental_sync_sends_the_stored_token_on_every_page(stream_name, path
 
 
 @pytest.mark.parametrize(
-    "error_body",
+    "error_body,expected_instruction",
     [
-        {"success": False, "errors": [{"code": "incremental_sync_too_large", "message": "Too many pages"}]},
-        {"success": False, "errors": ["sync_token_expired"]},
-        {"success": False, "errorInfo": {"code": "sync_token_invalid", "message": "Token invalid"}},
+        (
+            {"success": False, "errors": [{"code": "incremental_sync_too_large", "message": "Too many pages"}]},
+            "Switch this stream to Full Refresh",
+        ),
+        ({"success": False, "errors": ["incremental_sync_too_large"]}, "Switch this stream to Full Refresh"),
+        ({"success": False, "errors": ["sync_token_expired"]}, "Refresh this stream"),
+        ({"success": False, "errorInfo": {"code": "sync_token_invalid", "message": "Token invalid"}}, "Refresh this stream"),
     ],
-    ids=["incremental_sync_too_large", "sync_token_expired", "sync_token_invalid"],
+    ids=["incremental_sync_too_large", "incremental_sync_too_large_string", "sync_token_expired", "sync_token_invalid"],
 )
 @pytest.mark.parametrize(
     "stream_name,path,body,cursor_field",
     [stream for stream in _SYNC_TOKEN_STREAMS if stream[0] in ("users", "interview_schedules")],
     ids=["interview_schedules", "users"],
 )
-def test_rejected_token_fails_the_stream_and_keeps_the_stored_token(stream_name, path, body, cursor_field, error_body):
+def test_rejected_token_fails_the_stream_and_keeps_the_stored_token(
+    stream_name, path, body, cursor_field, error_body, expected_instruction
+):
     first_page = _request(path, body, sync_token="tok_old")
     second_page = _request(path, body, cursor="c1", sync_token="tok_old")
     with HttpMocker() as http_mocker:
@@ -169,7 +175,7 @@ def test_rejected_token_fails_the_stream_and_keeps_the_stored_token(stream_name,
     assert output.errors
     error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Refresh this stream" in error.message
+    assert expected_instruction in error.message
     assert all(token == "tok_old" for token in _emitted_tokens(output))
     http_mocker.assert_number_of_calls(first_page, 1)
     http_mocker.assert_number_of_calls(second_page, 1)

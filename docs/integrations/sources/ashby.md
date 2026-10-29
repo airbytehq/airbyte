@@ -46,7 +46,11 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 | Incremental - Append | Yes, for every stream except `application_criteria_evaluations`, `archive_reasons`, `interview_stage_groups`, `interview_stages`, `job_boards`, `job_postings`, and `sources` |
 | Incremental - Append + Deduped | Yes, for every stream except `application_criteria_evaluations`, `archive_reasons`, `interview_stage_groups`, `interview_stages`, `job_boards`, `job_postings`, and `sources` |
 
-Starting in version 1.5.0, the `applications` and `application_history` streams support incremental sync on the application's `updatedAt` timestamp. Starting in version 2.1.0, the other incremental streams use Ashby's `syncToken`. If Ashby rejects a stored token, the stream fails and keeps its state. Ashby rejects a token that is older than 14 days, or when more than 10,000 records changed since the last sync, for example after a bulk data migration. Refresh that stream in the connection to re-read it in full.
+Starting in version 1.5.0, the `applications` and `application_history` streams support incremental sync on the application's `updatedAt` timestamp. Starting in version 2.1.0, the other incremental streams use Ashby's `syncToken`. If Ashby rejects a stored token, the stream fails and keeps its state.
+
+:::warning
+Ashby limits a sync-token incremental sync to 100 pages, about 10,000 records changed since the stream's last sync. A larger change set, for example after a bulk data migration, fails the stream with `incremental_sync_too_large`, and syncing again with the same state fails the same way. To recover, either switch the stream to Full Refresh, or refresh the stream and then sync the connection more often, at least daily. Ashby's sync tokens also expire after 14 days, so sync incremental streams at least weekly.
+:::
 
 Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated no earlier than 1 day before the latest `updatedAt` from the previous sync. The 1-day lookback exists because Ashby returns applications in creation order, so an application updated during a sync could otherwise be missed. Applications updated within that day are emitted again on the next sync, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per application. Because every incremental sync still reads the full application list, the time savings come from `application_history`, described below. On existing connections, refresh the source schema to see the Incremental mode and the `application_updated_at` column on `application_history`.
 
@@ -128,6 +132,8 @@ Ashby reports most errors as HTTP 200 responses with `success: false` in the bod
 
 - **HTTP 401 Unauthorized**: Ashby rejected the API key. Check that the key in the source settings is correct and still active, or generate a new key in Ashby.
 - **HTTP 403 Forbidden**: The API key may be deactivated or lack access. Generate a new key in Ashby.
+- **`incremental_sync_too_large`**: More than about 10,000 records changed since the stream's last incremental sync. Switch the stream to Full Refresh, or refresh the stream and then sync the connection more often, at least daily.
+- **`sync_token_expired` or `sync_token_invalid`**: The stream's stored sync token is older than 14 days or can't be read. Refresh the stream to re-read it in full.
 - **`missing_endpoint_permission`**: The API key lacks the read permission a selected stream needs. The error message names the missing permission. Enable it on the key, using the [permission table](#prerequisites), or deselect the stream.
 
 The connector retries HTTP 429 and 5xx responses before failing.

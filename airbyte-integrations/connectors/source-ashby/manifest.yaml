@@ -38,6 +38,21 @@ definitions:
       error_message: >-
         Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
         lack access; generate a new key in Ashby under Admin > API Keys.
+    incremental_sync_too_large:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set errors = response.get('errors') or [] -%}
+        {%- set codes = [info.get('code')] + (errors | select('string') | list)
+        + (errors | select('mapping') | map(attribute='code') | list) -%}
+        {{ response.get('success', true) == false and 'incremental_sync_too_large' in codes }}
+      error_message: >-
+        Ashby refused this stream's incremental sync (incremental_sync_too_large) because more
+        than 10,000 records changed since the last sync. Switch this stream to Full Refresh, or
+        refresh the stream and then sync the connection more often, at least daily, so fewer
+        records change between syncs.
     sync_token_rejected:
       type: HttpResponseFilter
       action: FAIL
@@ -48,7 +63,7 @@ definitions:
         {%- set codes = [info.get('code')] + (errors | select('string') | list)
         + (errors | select('mapping') | map(attribute='code') | list) -%}
         {{ response.get('success', true) == false and (codes | select('in', [
-        'sync_token_expired', 'sync_token_invalid', 'incremental_sync_too_large'
+        'sync_token_expired', 'sync_token_invalid'
         ]) | list | length > 0) }}
       error_message: >-
         {%- set info = response.get('errorInfo') or {} -%}
@@ -104,6 +119,7 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/rate_limited"
       - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/incremental_sync_too_large"
       - $ref: "#/definitions/response_filters/sync_token_rejected"
       - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/missing_endpoint_permission"
