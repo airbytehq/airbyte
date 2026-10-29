@@ -82,7 +82,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
 
-Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data.
+Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
 
 ## Report availability
 
