@@ -34,13 +34,23 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 # meanwhile.
 
 on:
-  # Dispatcher-emitted completion signals. The slash-command workflows that
-  # pivot to wait-for-stopped-status in HYD-369 will POST to the dispatches
-  # API with event_type=handoff and {pr, head_sha, source_stage} in the
-  # client_payload. Until that pivot lands, this fires only via
-  # workflow_dispatch.
+  # Dispatcher-emitted completion signals. The slash-command workflows pivoted
+  # in HYD-369 POST to the dispatches API with event_type=handoff and
+  # {pr, head_sha, source_stage} in the client_payload.
   repository_dispatch:
     types: [handoff]
+  # Required-CI-check completions. All 7 required checks on `master` arrive
+  # as CheckRun entries (verified from the branch-protection ruleset:
+  # 6 from GH Actions, 1 — "Connector CI Checks Summary" — from the
+  # octavia-bot GitHub App via the Checks API). `check_run` is the only
+  # trigger that uniformly covers all of them; `status` events buy nothing
+  # here because no required check uses legacy commit statuses.
+  #
+  # The required-check *name* filter is applied at the job level below. The
+  # hardcoded list is intentionally duplicated from branch protection for v1;
+  # HYD-375 extracts it to a repo variable with a drift-detection CI check.
+  check_run:
+    types: [completed]
   workflow_dispatch:
     inputs:
       pr:
@@ -53,7 +63,7 @@ on:
         type: boolean
         default: true
 
-run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr }}"
+run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.check_run.pull_requests[0].number }}"
 
 # GITHUB_TOKEN is unused: all reads/writes go through the Octavia app token.
 permissions: {}
@@ -62,24 +72,45 @@ concurrency:
   # Serialise handoff runs per PR so burst-firing events don't double-dispatch.
   # cancel-in-progress is deliberately false: cancelling after a slash-command
   # dispatch has fired would leave a session running that nobody owns.
-  group: hydra-stage-handoff-v2-${{ github.event.inputs.pr || github.event.client_payload.pr }}
+  group: hydra-stage-handoff-v2-${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.check_run.pull_requests[0].number }}
   cancel-in-progress: false
 
 jobs:
   handoff:
     name: Compute next_action and dispatch
     runs-on: ubuntu-latest
+    # Filter check_run events here, before the runner starts, so unrelated
+    # check completions (dozens per PR for matrix no-ops, docs builds, etc.)
+    # don't wake a runner. Keep this list in sync with the required status
+    # checks ruleset on `master`; HYD-375 adds a drift-detection CI check.
+    # Same-repo-branch only — fork PRs have empty pull_requests[] and are
+    # correctly dropped by the array-index check.
+    if: |
+      github.event_name != 'check_run' ||
+      (
+        github.event.check_run.pull_requests[0] != null &&
+        contains(fromJson('[
+          "Connector CI Checks Summary",
+          "Connectors CDK Version Check",
+          "CDK Check",
+          "Bulk CDK version check result",
+          "Enforce PR structure",
+          "Format Check",
+          "Check Changelog Updated"
+        ]'), github.event.check_run.name)
+      )
     steps:
       - name: Resolve PR number
         id: pr
         env:
           INPUT_PR: ${{ github.event.inputs.pr }}
           CLIENT_PR: ${{ github.event.client_payload.pr }}
+          CHECK_PR: ${{ github.event.check_run.pull_requests[0].number }}
         run: |
           set -euo pipefail
-          PR="${INPUT_PR:-$CLIENT_PR}"
+          PR="${INPUT_PR:-${CLIENT_PR:-$CHECK_PR}}"
           if [[ -z "$PR" ]]; then
-            echo "::error::no PR number resolved from inputs or client_payload"
+            echo "::error::no PR number resolved from inputs, client_payload, or check_run"
             exit 1
           fi
           echo "number=$PR" | tee -a "$GITHUB_OUTPUT"
