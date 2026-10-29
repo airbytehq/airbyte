@@ -10,14 +10,14 @@ The Woocommerce connector supports the following entities and actions.
 |--------|---------|
 | Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search), [Context Store SQL Query](#customers-context-store-sql-query) |
 | Orders | [List](#orders-list), [Get](#orders-get), [Context Store Search](#orders-context-store-search), [Context Store SQL Query](#orders-context-store-sql-query) |
-| Products | [List](#products-list), [Get](#products-get), [Context Store Search](#products-context-store-search), [Context Store SQL Query](#products-context-store-sql-query) |
+| Products | [List](#products-list), [Get](#products-get), [Context Store Search](#products-context-store-search), [Context Store SQL Query](#products-context-store-sql-query), [Semantic Search](#products-semantic-search) |
 | Coupons | [List](#coupons-list), [Get](#coupons-get), [Context Store Search](#coupons-context-store-search), [Context Store SQL Query](#coupons-context-store-sql-query) |
 | Product Categories | [List](#product-categories-list), [Get](#product-categories-get), [Context Store Search](#product-categories-context-store-search), [Context Store SQL Query](#product-categories-context-store-sql-query) |
 | Product Tags | [List](#product-tags-list), [Get](#product-tags-get), [Context Store Search](#product-tags-context-store-search), [Context Store SQL Query](#product-tags-context-store-sql-query) |
-| Product Reviews | [List](#product-reviews-list), [Get](#product-reviews-get), [Context Store Search](#product-reviews-context-store-search), [Context Store SQL Query](#product-reviews-context-store-sql-query) |
+| Product Reviews | [List](#product-reviews-list), [Get](#product-reviews-get), [Context Store Search](#product-reviews-context-store-search), [Context Store SQL Query](#product-reviews-context-store-sql-query), [Semantic Search](#product-reviews-semantic-search) |
 | Product Attributes | [List](#product-attributes-list), [Get](#product-attributes-get), [Context Store Search](#product-attributes-context-store-search), [Context Store SQL Query](#product-attributes-context-store-sql-query) |
 | Product Variations | [List](#product-variations-list), [Get](#product-variations-get), [Context Store Search](#product-variations-context-store-search), [Context Store SQL Query](#product-variations-context-store-sql-query) |
-| Order Notes | [List](#order-notes-list), [Get](#order-notes-get), [Context Store Search](#order-notes-context-store-search), [Context Store SQL Query](#order-notes-context-store-sql-query) |
+| Order Notes | [List](#order-notes-list), [Get](#order-notes-get), [Context Store Search](#order-notes-context-store-search), [Context Store SQL Query](#order-notes-context-store-sql-query), [Semantic Search](#order-notes-semantic-search) |
 | Refunds | [List](#refunds-list), [Get](#refunds-get), [Context Store Search](#refunds-context-store-search), [Context Store SQL Query](#refunds-context-store-sql-query) |
 | Payment Gateways | [List](#payment-gateways-list), [Get](#payment-gateways-get), [Context Store Search](#payment-gateways-context-store-search), [Context Store SQL Query](#payment-gateways-context-store-sql-query) |
 | Shipping Methods | [List](#shipping-methods-list), [Get](#shipping-methods-get), [Context Store Search](#shipping-methods-context-store-search), [Context Store SQL Query](#shipping-methods-context-store-sql-query) |
@@ -1339,6 +1339,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Products Semantic Search
+
+Search products records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce",
+  "entity": "products",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `products.context_store_search` helper only accepts `query`.
+
+```python
+await woocommerce.execute(
+    "products",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 | Product description |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date_modified_gmt` | `string` | Source record field |
+| `data[].entity.date_created_gmt` | `string` | Source record field |
+| `data[].entity.permalink` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Coupons
 
 ### Coupons List
@@ -2617,6 +2702,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Product Reviews Semantic Search
+
+Search product reviews records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce",
+  "entity": "product_reviews",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "review", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `product_reviews.context_store_search` helper only accepts `query`.
+
+```python
+await woocommerce.execute(
+    "product_reviews",
+    "context_store_search",
+    {"semantic": {"field": "review", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "product_reviews",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "review", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `review` | 2048 | The content of the review |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date_created_gmt` | `string` | Source record field |
+| `data[].entity.product_id` | `string` | Source record field |
+| `data[].entity.status` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Product Attributes
 
 ### Product Attributes List
@@ -3639,6 +3809,90 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Order Notes Semantic Search
+
+Search order notes records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce",
+  "entity": "order_notes",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "note", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `order_notes.context_store_search` helper only accepts `query`.
+
+```python
+await woocommerce.execute(
+    "order_notes",
+    "context_store_search",
+    {"semantic": {"field": "note", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "order_notes",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "note", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `note` | 2048 | Order note content |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date_created_gmt` | `string` | Source record field |
+| `data[].entity.date_created` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>

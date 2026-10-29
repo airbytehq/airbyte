@@ -9,8 +9,8 @@ The Confluence connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Spaces | [List](#spaces-list), [Get](#spaces-get), [Context Store Search](#spaces-context-store-search), [Context Store SQL Query](#spaces-context-store-sql-query) |
-| Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query) |
-| Blog Posts | [List](#blog-posts-list), [Get](#blog-posts-get), [Context Store Search](#blog-posts-context-store-search), [Context Store SQL Query](#blog-posts-context-store-sql-query) |
+| Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query), [Semantic Search](#pages-semantic-search) |
+| Blog Posts | [List](#blog-posts-list), [Get](#blog-posts-get), [Context Store Search](#blog-posts-context-store-search), [Context Store SQL Query](#blog-posts-context-store-sql-query), [Semantic Search](#blog-posts-semantic-search) |
 | Groups | [List](#groups-list), [Context Store Search](#groups-context-store-search), [Context Store SQL Query](#groups-context-store-sql-query) |
 | Audit | [List](#audit-list), [Context Store Search](#audit-context-store-search), [Context Store SQL Query](#audit-context-store-sql-query) |
 
@@ -650,6 +650,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Pages Semantic Search
+
+Search pages records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "confluence",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `pages.context_store_search` helper only accepts `query`.
+
+```python
+await confluence.execute(
+    "pages",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Page body content |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.createdAt` | `string` | Source record field |
+| `data[].entity.version_createdAt` | `string` | Source record field |
+| `data[].entity.spaceId` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Blog Posts
 
 ### Blog Posts List
@@ -949,6 +1034,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Blog Posts Semantic Search
+
+Search blog posts records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "confluence",
+  "entity": "blog_posts",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `blog_posts.context_store_search` helper only accepts `query`.
+
+```python
+await confluence.execute(
+    "blog_posts",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "blog_posts",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Blog post body content |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.createdAt` | `string` | Source record field |
+| `data[].entity.version_createdAt` | `string` | Source record field |
+| `data[].entity.spaceId` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>

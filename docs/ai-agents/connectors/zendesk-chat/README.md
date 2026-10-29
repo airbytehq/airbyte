@@ -76,7 +76,7 @@ This connector supports the following entities and actions. For more details, se
 | Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Context Store Search](./REFERENCE.md#agents-context-store-search), [Context Store SQL Query](./REFERENCE.md#agents-context-store-sql-query) |
 | Agent Timeline | [List](./REFERENCE.md#agent-timeline-list) |
 | Bans | [List](./REFERENCE.md#bans-list), [Get](./REFERENCE.md#bans-get) |
-| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Context Store Search](./REFERENCE.md#chats-context-store-search), [Context Store SQL Query](./REFERENCE.md#chats-context-store-sql-query) |
+| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Context Store Search](./REFERENCE.md#chats-context-store-search), [Context Store SQL Query](./REFERENCE.md#chats-context-store-sql-query), [Semantic Search](./REFERENCE.md#chats-semantic-search) |
 | Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Context Store Search](./REFERENCE.md#departments-context-store-search), [Context Store SQL Query](./REFERENCE.md#departments-context-store-sql-query) |
 | Goals | [List](./REFERENCE.md#goals-list), [Get](./REFERENCE.md#goals-get) |
 | Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
