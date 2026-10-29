@@ -194,6 +194,11 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         @JvmOverloads
         fun withCdcReplication(
             LsnCommitBehaviour: String = "While reading Data",
+            // The connector arms its CDC watchdog with this value before the Debezium engine
+            // starts, and the first event it can see is the 10 s Debezium heartbeat. The CDK
+            // default of 15 s leaves Debezium 3.4 engine start-up (2-3 s, more on a loaded CI
+            // host) no margin.
+            initialWaitingSeconds: Long = 60,
         ): PostgresConfigBuilder {
             return this.with("is_test", true)
                 .with(
@@ -203,8 +208,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
                             "method" to "CDC",
                             "replication_slot" to testDatabase.replicationSlotName,
                             "publication" to testDatabase.publicationName,
-                            "initial_waiting_seconds" to
-                                DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+                            "initial_waiting_seconds" to initialWaitingSeconds,
                             "lsn_commit_behaviour" to LsnCommitBehaviour,
                         ),
                     ),
