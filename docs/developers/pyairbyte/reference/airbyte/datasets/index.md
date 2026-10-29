@@ -1,183 +1,399 @@
 ---
 id: airbyte-datasets-index
-title: airbyte.datasets.index
+title: "airbyte.datasets Module"
+sidebar_label: "airbyte.datasets"
+toc_max_heading_level: 5
 ---
 
-Module airbyte.datasets
-=======================
+# `airbyte.datasets` Module
+
 PyAirbyte dataset classes.
 
-Classes
--------
+### `CachedDataset` {#airbyte.datasets.CachedDataset}
 
-`CachedDataset(cache: CacheBase, stream_name: str, stream_configuration: ConfiguredAirbyteStream | Literal[False] | None = None)`
-:   A dataset backed by a SQL table cache.
-    
-    Because this dataset includes all records from the underlying table, we also expose the
-    underlying table as a SQLAlchemy Table object.
-    
-    We construct the query statement by selecting all columns from the table.
-    
-    This prevents the need to scan the table schema to construct the query statement.
-    
-    If stream_configuration is None, we attempt to retrieve the stream configuration from the
-    cache processor. This is useful when constructing a dataset from a CachedDataset object,
-    which already has the stream configuration.
-    
-    If stream_configuration is set to False, we skip the stream configuration retrieval.
+<ApiMember kind="class">
 
-    ### Ancestors (in MRO)
+<ApiSignature>
 
-    * airbyte.datasets._sql.SQLDataset
-    * airbyte.datasets._base.DatasetBase
-    * abc.ABC
+```python
+class CachedDataset(
+    cache: CacheBase,
+    stream_name: str,
+    stream_configuration: ConfiguredAirbyteStream | Literal[False] | None = None,
+)
+```
 
-    ### Methods
+</ApiSignature>
 
-    `to_arrow(self, *, max_chunk_size: int = 100000) ‑> Dataset`
-    :   Return an Arrow Dataset containing the data from the specified stream.
-        
-        Args:
-            stream_name (str): Name of the stream to retrieve data from.
-            max_chunk_size (int): max number of records to include in each batch of pyarrow dataset.
-        
-        Returns:
-            pa.dataset.Dataset: Arrow Dataset containing the stream's data.
+A dataset backed by a SQL table cache.
 
-    `to_pandas(self) ‑> DataFrame`
-    :   Return the underlying dataset data as a pandas DataFrame.
+Because this dataset includes all records from the underlying table, we also expose the
+underlying table as a SQLAlchemy Table object.
 
-    `to_sql_table(self) ‑> Table`
-    :   Return the underlying SQL table as a SQLAlchemy Table object.
+We construct the query statement by selecting all columns from the table.
 
-`DatasetBase(stream_metadata: ConfiguredAirbyteStream)`
-:   Base implementation for all datasets.
+This prevents the need to scan the table schema to construct the query statement.
 
-    ### Ancestors (in MRO)
+If stream_configuration is None, we attempt to retrieve the stream configuration from the
+cache processor. This is useful when constructing a dataset from a CachedDataset object,
+which already has the stream configuration.
 
-    * abc.ABC
+If stream_configuration is set to False, we skip the stream configuration retrieval.
 
-    ### Descendants
+#### Bases {#airbyte.datasets.CachedDataset--bases}
 
-    * airbyte.datasets._inmemory.InMemoryDataset
-    * airbyte.datasets._lazy.LazyDataset
-    * airbyte.datasets._sql.SQLDataset
+`airbyte.datasets._sql.SQLDataset`
+#### Methods {#airbyte.datasets.CachedDataset--methods}
 
-    ### Instance variables
+##### `to_arrow` {#airbyte.datasets.CachedDataset.to_arrow}
 
-    `column_names: list[str]`
-    :   Return the list of top-level column names.
+<ApiMember kind="method">
 
-    ### Methods
+<ApiSignature>
 
-    `to_arrow(self, *, max_chunk_size: int = 100000) ‑> Dataset`
-    :   Return an Arrow Dataset representation of the dataset.
-        
-        This method should be implemented by subclasses.
+```python
+def to_arrow(self, *, max_chunk_size: int = 100000) -> Dataset
+```
 
-    `to_documents(self, title_property: str | None = None, content_properties: list[str] | None = None, metadata_properties: list[str] | None = None, *, render_metadata: bool = False) ‑> Iterable[Document]`
-    :   Return the iterator of documents.
-        
-        If metadata_properties is not set, all properties that are not content will be added to
-        the metadata.
-        
-        If render_metadata is True, metadata will be rendered in the document, as well as the
-        the main content. Otherwise, metadata will be attached to the document but not rendered.
+</ApiSignature>
 
-    `to_pandas(self) ‑> pandas.core.frame.DataFrame`
-    :   Return a pandas DataFrame representation of the dataset.
-        
-        The base implementation simply passes the record iterator to Panda's DataFrame constructor.
+Return an Arrow Dataset containing the data from the specified stream.
 
-`DatasetMap()`
-:   A generic interface for a set of streams or datasets.
+**Args:**
 
-    ### Ancestors (in MRO)
+- **`stream_name` (*str*)**: Name of the stream to retrieve data from.
+- **`max_chunk_size` (*int*)**: max number of records to include in each batch of pyarrow dataset.
 
-    * collections.abc.Mapping
-    * collections.abc.Collection
-    * collections.abc.Sized
-    * collections.abc.Iterable
-    * collections.abc.Container
+**Returns:**
 
-`LazyDataset(iterator: Iterator[dict[str, Any]], *, stream_metadata: ConfiguredAirbyteStream, stop_event: threading.Event | None, progress_tracker: progress.ProgressTracker)`
-:   A dataset that is loaded incrementally from a source or a SQL query.
+- **`pa.dataset.Dataset`**: Arrow Dataset containing the stream's data.
 
-    ### Ancestors (in MRO)
+</ApiMember>
 
-    * airbyte.datasets._base.DatasetBase
-    * abc.ABC
+##### `to_pandas` {#airbyte.datasets.CachedDataset.to_pandas}
 
-    ### Methods
+<ApiMember kind="method">
 
-    `close(self) ‑> None`
-    :   Stop the dataset iterator.
-        
-        This method is used to signal the dataset to stop fetching records, for example
-        when the dataset is being fetched incrementally and the user wants to stop the
-        fetching process.
+<ApiSignature>
 
-    `fetch_all(self) ‑> airbyte.datasets._inmemory.InMemoryDataset`
-    :   Fetch all records to memory and return an InMemoryDataset.
+```python
+def to_pandas(self) -> DataFrame
+```
 
-`SQLDataset(cache: CacheBase, stream_name: str, query_statement: Select, stream_configuration: ConfiguredAirbyteStream | Literal[False] | None = None)`
-:   A dataset that is loaded incrementally from a SQL query.
-    
-    The CachedDataset class is a subclass of this class, which simply passes a SELECT over the full
-    table as the query statement.
-    
-    Initialize the dataset with a cache, stream name, and query statement.
-    
-    This class is not intended to be created directly. Instead, you can retrieve
-    datasets from caches or Cloud connection objects, etc.
-    
-    The query statement should be a SQLAlchemy Selectable object that can be executed to
-    retrieve records from the dataset.
-    
-    If stream_configuration is not provided, we attempt to retrieve the stream configuration
-    from the cache processor. This is useful when constructing a dataset from a CachedDataset
-    object, which already has the stream configuration.
-    
-    If stream_configuration is set to False, we skip the stream configuration retrieval.
+</ApiSignature>
 
-    ### Ancestors (in MRO)
+Return the underlying dataset data as a pandas DataFrame.
 
-    * airbyte.datasets._base.DatasetBase
-    * abc.ABC
+</ApiMember>
 
-    ### Descendants
+##### `to_sql_table` {#airbyte.datasets.CachedDataset.to_sql_table}
 
-    * airbyte.datasets._sql.CachedDataset
+<ApiMember kind="method">
 
-    ### Instance variables
+<ApiSignature>
 
-    `column_names: list[str]`
-    :   Return the list of top-level column names, including internal Airbyte columns.
+```python
+def to_sql_table(self) -> Table
+```
 
-    `stream_name: str`
-    :
+</ApiSignature>
 
-    ### Methods
+Return the underlying SQL table as a SQLAlchemy Table object.
 
-    `to_arrow(self, *, max_chunk_size: int = 100000) ‑> Dataset`
-    :   Return an Arrow Dataset representation of the dataset.
-        
-        This method should be implemented by subclasses.
+</ApiMember>
 
-    `to_pandas(self) ‑> DataFrame`
-    :   Return a pandas DataFrame representation of the dataset.
-        
-        The base implementation simply passes the record iterator to Panda's DataFrame constructor.
+</ApiMember>
 
-    `with_filter(self, *filter_expressions: ClauseElement | str) ‑> SQLDataset`
-    :   Filter the dataset by a set of column values.
-        
-        Filters can be specified as either a string or a SQLAlchemy expression.
-        
-        Filters are lazily applied to the dataset, so they can be chained together. For example:
-        
-                dataset.with_filter("id > 5").with_filter("id < 10")
-        
-        is equivalent to:
-        
-                dataset.with_filter("id > 5", "id < 10")
+### `DatasetBase` {#airbyte.datasets.DatasetBase}
+
+<ApiMember kind="class">
+
+<ApiSignature>
+
+```python
+class DatasetBase(stream_metadata: ConfiguredAirbyteStream)
+```
+
+</ApiSignature>
+
+Base implementation for all datasets.
+
+#### Bases {#airbyte.datasets.DatasetBase--bases}
+
+`abc.ABC`
+#### Descendants {#airbyte.datasets.DatasetBase--descendants}
+
+`airbyte.datasets._inmemory.InMemoryDataset`, `airbyte.datasets._lazy.LazyDataset`, `airbyte.datasets._sql.SQLDataset`
+#### Instance Variables {#airbyte.datasets.DatasetBase--instance-variables}
+
+- **`column_names`**&nbsp;(`list[str]`)
+
+  Return the list of top-level column names.
+
+#### Methods {#airbyte.datasets.DatasetBase--methods}
+
+##### `to_arrow` {#airbyte.datasets.DatasetBase.to_arrow}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_arrow(self, *, max_chunk_size: int = 100000) -> Dataset
+```
+
+</ApiSignature>
+
+Return an Arrow Dataset representation of the dataset.
+
+This method should be implemented by subclasses.
+
+</ApiMember>
+
+##### `to_documents` {#airbyte.datasets.DatasetBase.to_documents}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_documents(
+    self,
+    title_property: str | None = None,
+    content_properties: list[str] | None = None,
+    metadata_properties: list[str] | None = None,
+    *,
+    render_metadata: bool = False,
+) -> Iterable[Document]
+```
+
+</ApiSignature>
+
+Return the iterator of documents.
+
+If metadata_properties is not set, all properties that are not content will be added to
+the metadata.
+
+If render_metadata is True, metadata will be rendered in the document, as well as the
+the main content. Otherwise, metadata will be attached to the document but not rendered.
+
+</ApiMember>
+
+##### `to_pandas` {#airbyte.datasets.DatasetBase.to_pandas}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_pandas(self) -> pandas.core.frame.DataFrame
+```
+
+</ApiSignature>
+
+Return a pandas DataFrame representation of the dataset.
+
+The base implementation simply passes the record iterator to Panda's DataFrame constructor.
+
+</ApiMember>
+
+</ApiMember>
+
+### `DatasetMap` {#airbyte.datasets.DatasetMap}
+
+<ApiMember kind="class">
+
+<ApiSignature>
+
+```python
+class DatasetMap()
+```
+
+</ApiSignature>
+
+A generic interface for a set of streams or datasets.
+
+#### Bases {#airbyte.datasets.DatasetMap--bases}
+
+`collections.abc.Mapping`
+
+</ApiMember>
+
+### `LazyDataset` {#airbyte.datasets.LazyDataset}
+
+<ApiMember kind="class">
+
+<ApiSignature>
+
+```python
+class LazyDataset(
+    iterator: Iterator[dict[str, Any]],
+    *,
+    stream_metadata: ConfiguredAirbyteStream,
+    stop_event: threading.Event | None,
+    progress_tracker: progress.ProgressTracker,
+)
+```
+
+</ApiSignature>
+
+A dataset that is loaded incrementally from a source or a SQL query.
+
+#### Bases {#airbyte.datasets.LazyDataset--bases}
+
+`airbyte.datasets._base.DatasetBase`
+#### Methods {#airbyte.datasets.LazyDataset--methods}
+
+##### `close` {#airbyte.datasets.LazyDataset.close}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def close(self) -> None
+```
+
+</ApiSignature>
+
+Stop the dataset iterator.
+
+This method is used to signal the dataset to stop fetching records, for example
+when the dataset is being fetched incrementally and the user wants to stop the
+fetching process.
+
+</ApiMember>
+
+##### `fetch_all` {#airbyte.datasets.LazyDataset.fetch_all}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def fetch_all(self) -> airbyte.datasets._inmemory.InMemoryDataset
+```
+
+</ApiSignature>
+
+Fetch all records to memory and return an InMemoryDataset.
+
+</ApiMember>
+
+</ApiMember>
+
+### `SQLDataset` {#airbyte.datasets.SQLDataset}
+
+<ApiMember kind="class">
+
+<ApiSignature>
+
+```python
+class SQLDataset(
+    cache: CacheBase,
+    stream_name: str,
+    query_statement: Select,
+    stream_configuration: ConfiguredAirbyteStream | Literal[False] | None = None,
+)
+```
+
+</ApiSignature>
+
+A dataset that is loaded incrementally from a SQL query.
+
+The CachedDataset class is a subclass of this class, which simply passes a SELECT over the full
+table as the query statement.
+
+Initialize the dataset with a cache, stream name, and query statement.
+
+This class is not intended to be created directly. Instead, you can retrieve
+datasets from caches or Cloud connection objects, etc.
+
+The query statement should be a SQLAlchemy Selectable object that can be executed to
+retrieve records from the dataset.
+
+If stream_configuration is not provided, we attempt to retrieve the stream configuration
+from the cache processor. This is useful when constructing a dataset from a CachedDataset
+object, which already has the stream configuration.
+
+If stream_configuration is set to False, we skip the stream configuration retrieval.
+
+#### Bases {#airbyte.datasets.SQLDataset--bases}
+
+`airbyte.datasets._base.DatasetBase`
+#### Descendants {#airbyte.datasets.SQLDataset--descendants}
+
+`airbyte.datasets._sql.CachedDataset`
+#### Instance Variables {#airbyte.datasets.SQLDataset--instance-variables}
+
+- **`column_names`**&nbsp;(`list[str]`)
+
+  Return the list of top-level column names, including internal Airbyte columns.
+
+- **`stream_name`**&nbsp;(`str`)
+
+#### Methods {#airbyte.datasets.SQLDataset--methods}
+
+##### `to_arrow` {#airbyte.datasets.SQLDataset.to_arrow}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_arrow(self, *, max_chunk_size: int = 100000) -> Dataset
+```
+
+</ApiSignature>
+
+Return an Arrow Dataset representation of the dataset.
+
+This method should be implemented by subclasses.
+
+</ApiMember>
+
+##### `to_pandas` {#airbyte.datasets.SQLDataset.to_pandas}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_pandas(self) -> DataFrame
+```
+
+</ApiSignature>
+
+Return a pandas DataFrame representation of the dataset.
+
+The base implementation simply passes the record iterator to Panda's DataFrame constructor.
+
+</ApiMember>
+
+##### `with_filter` {#airbyte.datasets.SQLDataset.with_filter}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def with_filter(self, *filter_expressions: ClauseElement | str) -> SQLDataset
+```
+
+</ApiSignature>
+
+Filter the dataset by a set of column values.
+
+Filters can be specified as either a string or a SQLAlchemy expression.
+
+Filters are lazily applied to the dataset, so they can be chained together. For example:
+
+        dataset.with_filter("id > 5").with_filter("id < 10")
+
+is equivalent to:
+
+        dataset.with_filter("id > 5", "id < 10")
+
+</ApiMember>
+
+</ApiMember>

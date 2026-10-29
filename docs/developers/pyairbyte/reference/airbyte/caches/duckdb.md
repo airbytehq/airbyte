@@ -1,10 +1,12 @@
 ---
 id: airbyte-caches-duckdb
-title: airbyte.caches.duckdb
+title: "airbyte.caches.duckdb Module"
+sidebar_label: "airbyte.caches.duckdb"
+toc_max_heading_level: 5
 ---
 
-Module airbyte.caches.duckdb
-============================
+# `airbyte.caches.duckdb` Module
+
 A DuckDB implementation of the PyAirbyte cache.
 
 ## Usage Example
@@ -19,77 +21,107 @@ cache = DuckDBCache(
 )
 ```
 
-Classes
--------
+### `DuckDBCache` {#airbyte.caches.duckdb.DuckDBCache}
 
-`DuckDBCache(**data: Any)`
-:   A DuckDB cache.
-    
-    Initialize the cache and backends.
+<ApiMember kind="class">
 
-    ### Ancestors (in MRO)
+<ApiSignature>
 
-    * airbyte._processors.sql.duckdb.DuckDBConfig
-    * airbyte.caches.base.CacheBase
-    * airbyte.shared.sql_processor.SqlConfig
-    * pydantic.main.BaseModel
-    * airbyte._writers.base.AirbyteWriterInterface
-    * abc.ABC
+```python
+class DuckDBCache(**data: Any)
+```
 
-    ### Descendants
+</ApiSignature>
 
-    * airbyte.caches.motherduck.MotherDuckCache
+A DuckDB cache.
 
-    ### Class variables
+Initialize the cache and backends.
 
-    `model_config`
-    :
+#### Bases {#airbyte.caches.duckdb.DuckDBCache--bases}
 
-    `paired_destination_config_class: ClassVar[type | None]`
-    :   DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
+`airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`
+#### Descendants {#airbyte.caches.duckdb.DuckDBCache--descendants}
 
-    `paired_destination_name: ClassVar[str | None]`
-    :
+`airbyte.caches.motherduck.MotherDuckCache`
+#### Class Variables {#airbyte.caches.duckdb.DuckDBCache--class-variables}
 
-`DuckDBConfig(**data: Any)`
-:   Configuration for DuckDB.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
-    ### Ancestors (in MRO)
+  DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
 
-    * airbyte.shared.sql_processor.SqlConfig
-    * pydantic.main.BaseModel
-    * abc.ABC
+- **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
-    ### Descendants
+</ApiMember>
 
-    * airbyte.caches.duckdb.DuckDBCache
-    * airbyte.caches.motherduck.MotherDuckConfig
+### `DuckDBConfig` {#airbyte.caches.duckdb.DuckDBConfig}
 
-    ### Class variables
+<ApiMember kind="class">
 
-    `db_path: Path | str`
-    :   Normally db_path is a Path object.
-        
-        The database name will be inferred from the file name. For example, given a `db_path` of
-        `/path/to/my/duckdb-file`, the database name is `my_db`.
+<ApiSignature>
 
-    `model_config`
-    :
+```python
+class DuckDBConfig(**data: Any)
+```
 
-    ### Methods
+</ApiSignature>
 
-    `get_sql_alchemy_url(self) ‑> airbyte.secrets.base.SecretString`
-    :   Return the SQLAlchemy URL to use.
+Configuration for DuckDB.
 
-    `get_sql_engine(self) ‑> Engine`
-    :   Return the SQL Alchemy engine.
-        
-        This method is overridden to ensure that the database parent directory is created if it
-        doesn't exist.
+Raises ``ValidationError`` if the input data cannot be
+validated to form a valid model.
+
+`self` is explicitly positional-only to allow `self` as a field name.
+
+#### Bases {#airbyte.caches.duckdb.DuckDBConfig--bases}
+
+`airbyte.shared.sql_processor.SqlConfig`
+#### Descendants {#airbyte.caches.duckdb.DuckDBConfig--descendants}
+
+`airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.motherduck.MotherDuckConfig`
+#### Class Variables {#airbyte.caches.duckdb.DuckDBConfig--class-variables}
+
+- **`db_path`**&nbsp;(`Path | str`)
+
+  Normally db_path is a Path object.
+
+  The database name will be inferred from the file name. For example, given a `db_path` of
+  `/path/to/my/duckdb-file`, the database name is `my_db`.
+
+#### Methods {#airbyte.caches.duckdb.DuckDBConfig--methods}
+
+##### `get_sql_alchemy_url` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_alchemy_url}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_sql_alchemy_url(self) -> airbyte.secrets.base.SecretString
+```
+
+</ApiSignature>
+
+Return the SQLAlchemy URL to use.
+
+</ApiMember>
+
+##### `get_sql_engine` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_engine}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_sql_engine(self) -> Engine
+```
+
+</ApiSignature>
+
+Return the SQL Alchemy engine.
+
+This method is overridden to ensure that the database parent directory is created if it
+doesn't exist.
+
+</ApiMember>
+
+</ApiMember>
