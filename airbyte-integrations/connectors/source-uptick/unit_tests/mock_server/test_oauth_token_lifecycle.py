@@ -10,12 +10,14 @@ an expired one is refreshed exactly once with the expiry written back, a rejecte
 """
 
 import json
+from contextlib import redirect_stdout
 from datetime import datetime, timezone
+from io import StringIO
 
 import pytest
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import FailureType, SyncMode, Type
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -54,12 +56,31 @@ def _read(config: dict, streams: tuple[str, ...] = (_STREAM,)) -> EntrypointOutp
     return read(get_source(config=config), config=config, catalog=catalog.build(), state=StateBuilder().build())
 
 
+def _control_messages(stdout: str) -> list[dict]:
+    messages = []
+    for line in stdout.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if message.get("type") == "CONTROL":
+            messages.append(message)
+    return messages
+
+
+def _read_with_control_messages(config: dict, streams: tuple[str, ...] = (_STREAM,)) -> tuple[EntrypointOutput, list[dict]]:
+    stdout = StringIO()
+    with redirect_stdout(stdout):
+        output = _read(config, streams)
+    return output, _control_messages(stdout.getvalue())
+
+
 def _token_requests(http_mocker: HttpMocker) -> list:
     return [request for request in http_mocker._mocker.request_history if request.url == _TOKEN_URL]
 
 
-def _persisted_credentials(output: EntrypointOutput) -> list[dict]:
-    return [message.control.connectorConfig.config["credentials"] for message in output.get_message_by_types([Type.CONTROL])]
+def _persisted_credentials(control_messages: list[dict]) -> list[dict]:
+    return [message["control"]["connectorConfig"]["config"]["credentials"] for message in control_messages]
 
 
 def test_valid_stored_token_is_used_without_refresh(virtual_clock: list[float]) -> None:
@@ -69,13 +90,13 @@ def test_valid_stored_token_is_used_without_refresh(virtual_clock: list[float]) 
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(_TOKEN_URL, json=_token_response())
         http_mocker.get(page_request, _ok_page())
-        output = _read(config)
+        output, control_messages = _read_with_control_messages(config)
 
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == [1]
     assert _token_requests(http_mocker) == []
     http_mocker.assert_number_of_calls(page_request, 1)
-    assert _persisted_credentials(output) == []
+    assert _persisted_credentials(control_messages) == []
 
 
 @pytest.mark.parametrize(
@@ -93,12 +114,12 @@ def test_expired_stored_token_refreshes_once_and_writes_back_expiry(expired_at: 
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(_TOKEN_URL, json=_token_response("tok"))
         http_mocker.get(page_request, _ok_page())
-        output = _read(config)
+        output, control_messages = _read_with_control_messages(config)
 
     assert output.errors == []
     assert len(_token_requests(http_mocker)) == 1
     http_mocker.assert_number_of_calls(page_request, 1)
-    persisted = _persisted_credentials(output)
+    persisted = _persisted_credentials(control_messages)
     assert len(persisted) == 1
     assert persisted[0]["access_token"] == "tok"
     assert persisted[0]["refresh_token"] == "test-refresh-token"
@@ -120,7 +141,7 @@ def test_rejected_refresh_fails_as_config_error(status_code: int, body: str, vir
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(_TOKEN_URL, text=body, status_code=status_code)
         http_mocker.get(page_request, _ok_page())
-        output = _read(config)
+        output, control_messages = _read_with_control_messages(config)
 
     assert output.records == []
     matching = [
@@ -133,7 +154,7 @@ def test_rejected_refresh_fails_as_config_error(status_code: int, body: str, vir
     assert virtual_clock == []
     assert len(_token_requests(http_mocker)) == 1
     http_mocker.assert_number_of_calls(page_request, 0)
-    assert _persisted_credentials(output) == []
+    assert _persisted_credentials(control_messages) == []
 
 
 def test_stream_401_refresh_persists_rotated_refresh_token(virtual_clock: list[float]) -> None:
@@ -145,14 +166,14 @@ def test_stream_401_refresh_persists_rotated_refresh_token(virtual_clock: list[f
         http_mocker._mocker.post(_TOKEN_URL, json=_token_response("tok2", refresh_token="rotated-refresh-token"))
         http_mocker.get(stale_page_request, HttpResponse(body=_401_BODY, status_code=401))
         http_mocker.get(refreshed_page_request, _ok_page())
-        output = _read(config)
+        output, control_messages = _read_with_control_messages(config)
 
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == [1]
     assert len(_token_requests(http_mocker)) == 1
     http_mocker.assert_number_of_calls(stale_page_request, 1)
     http_mocker.assert_number_of_calls(refreshed_page_request, 1)
-    persisted = _persisted_credentials(output)
+    persisted = _persisted_credentials(control_messages)
     assert len(persisted) == 1
     assert persisted[0]["access_token"] == "tok2"
     assert persisted[0]["refresh_token"] == "rotated-refresh-token"
@@ -166,10 +187,10 @@ def test_two_streams_needing_refresh_share_one_token_request(virtual_clock: list
         http_mocker._mocker.post(_TOKEN_URL, json=_token_response("tok"))
         for stream in streams:
             http_mocker.get(UptickRequestBuilder.collection(stream, token="tok"), _ok_page())
-        output = _read(config, streams=streams)
+        output, control_messages = _read_with_control_messages(config, streams=streams)
 
     assert output.errors == []
     for stream in streams:
         assert output.get_stream_statuses(stream)[-1].name == "COMPLETE"
     assert len(_token_requests(http_mocker)) == 1
-    assert len(_persisted_credentials(output)) == 1
+    assert len(_persisted_credentials(control_messages)) == 1
