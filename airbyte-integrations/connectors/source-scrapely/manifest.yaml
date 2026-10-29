@@ -1,0 +1,305 @@
+version: 6.7.0
+
+type: DeclarativeSource
+
+description: >-
+  Scrape.ly turns websites into structured data. This source syncs the results
+  of your Actors' runs or of chosen datasets, plus your runs, datasets and Actors.
+
+check:
+  type: CheckStream
+  stream_names:
+    - runs
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.scrape.ly
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [429, 502, 503, 504]
+
+  # GET /v2/<list>: {"data": {"items": [...], "total": n, ...}}, paged with limit/offset.
+  list_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["data", "items"]
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: offset
+      page_size_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: limit
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 1000
+        inject_on_first_request: true
+
+  open_schema:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties: {}
+
+  streams:
+    actor_runs:
+      type: DeclarativeStream
+      name: actor_runs
+      primary_key: ["id"]
+      retriever:
+        $ref: "#/definitions/list_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/v2/actors/{{ stream_partition.actor_id | replace('/', '~') }}/runs"
+          request_parameters:
+            status: SUCCEEDED
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: actor_id
+          values: "{{ config.get('actor_ids', []) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: finishedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+
+    actor_results:
+      type: DeclarativeStream
+      name: actor_results
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/v2/datasets/{{ stream_partition.dataset_id }}/items"
+          request_parameters:
+            clean: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/actor_runs"
+              parent_key: defaultDatasetId
+              partition_field: dataset_id
+              incremental_dependency: true
+              extra_fields:
+                - ["id"]
+                - ["finishedAt"]
+      # Each result carries its run; the run's finish time is the cursor, so a
+      # later sync only reads the results of runs that succeeded since (a run
+      # that started earlier but finished later is not skipped).
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _scrapely_run_finished_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["_scrapely_dataset_id"]
+              value: "{{ stream_partition.dataset_id }}"
+            - path: ["_scrapely_run_id"]
+              value: "{{ stream_slice.extra_fields['id'] }}"
+            - path: ["_scrapely_run_finished_at"]
+              value: "{{ stream_slice.extra_fields['finishedAt'] }}"
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+    dataset_items:
+      type: DeclarativeStream
+      name: dataset_items
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/v2/datasets/{{ stream_partition.dataset_id }}/items"
+          request_parameters:
+            clean: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: dataset_id
+          values: "{{ config.get('dataset_ids', []) }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["_scrapely_dataset_id"]
+              value: "{{ stream_partition.dataset_id }}"
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+    runs:
+      type: DeclarativeStream
+      name: runs
+      primary_key: ["id"]
+      retriever:
+        $ref: "#/definitions/list_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/actor-runs
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: startedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      primary_key: ["id"]
+      retriever:
+        $ref: "#/definitions/list_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/datasets
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+    actors:
+      type: DeclarativeStream
+      name: actors
+      primary_key: ["id"]
+      retriever:
+        $ref: "#/definitions/list_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/acts
+      schema_loader:
+        $ref: "#/definitions/open_schema"
+
+streams:
+  - $ref: "#/definitions/streams/actor_runs"
+  - $ref: "#/definitions/streams/actor_results"
+  - $ref: "#/definitions/streams/dataset_items"
+  - $ref: "#/definitions/streams/runs"
+  - $ref: "#/definitions/streams/datasets"
+  - $ref: "#/definitions/streams/actors"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API key
+        description: >-
+          Your Scrape.ly API key, from Settings → API & Integrations in the
+          Scrape.ly dashboard (https://my.scrape.ly/settings/api).
+        airbyte_secret: true
+        order: 0
+      actor_ids:
+        type: array
+        title: Actors
+        description: >-
+          Actors whose results to sync into the actor_results stream, as
+          username/actor-name or an Actor ID. Every succeeded run since the
+          start date is synced, and later syncs add only new runs.
+        items:
+          type: string
+        order: 1
+      dataset_ids:
+        type: array
+        title: Dataset IDs
+        description: >-
+          The datasets whose results to sync into the dataset_items stream, for
+          example a run's default dataset ID. Leave empty if you use Actors
+          above, or to sync only runs, datasets and Actors.
+        items:
+          type: string
+        order: 2
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          Runs started before this date (UTC, YYYY-MM-DDTHH:MM:SSZ) are not
+          synced, for the runs and actor_results streams. Leave empty for all runs.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
+        order: 3
