@@ -94,7 +94,10 @@ aren't affected. To request approval, contact your Pinterest account manager. Fo
 10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
     connector makes during a sync. The default is 2. Higher values speed up syncs but increase
     rate-limit pressure. If you encounter rate-limit errors, reduce this value.
-11. Click **Set up source**.
+11. (Optional) Set **Attribution Window** to the number of days the connector re-reads on each
+    incremental sync of the analytics and report streams. The default is 0. For details, see
+    [Attribution window](#attribution-window).
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -127,12 +130,32 @@ aren't affected. To request approval, contact your Pinterest account manager. Fo
 10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
     connector makes during a sync. The default is 2. Higher values speed up syncs but increase
     rate-limit pressure. If you encounter rate-limit errors, reduce this value.
-11. Click **Set up source**.
+11. (Optional) Set **Attribution Window** to the number of days the connector re-reads on each
+    incremental sync of the analytics and report streams. The default is 0. For details, see
+    [Attribution window](#attribution-window).
+12. Click **Set up source**.
 <!-- /env:oss -->
 
-### Attribution Window
+### Attribution window
 
-The **Attribution Window** setting controls how many days before the last synced date the connector reads again on each incremental sync of the report and analytics streams. Pinterest updates metrics for past days while conversions are still being attributed, so setting this to match the longest click, engagement, or view window in your reports picks up those late updates. It defaults to `0`, meaning the connector only reads new days, and can be set to at most `60`. If a stream's own date limit is shorter than the lookback, the connector never reads earlier than that stream allows — hourly custom reports can look back 2 days, analytics streams 89 days, and product item reports 91 days. Re-read days are written again, so use the **Append + Deduped** sync mode with a primary key chosen in the connection to keep one row per day.
+Pinterest attributes conversions to the day of the ad interaction, so conversion metrics for a past
+day keep changing until that day's attribution window closes. By default, each incremental sync
+starts from the last synced date and never reads those earlier days again.
+
+The **Attribution Window** setting makes each incremental sync start that many days before the last
+synced date, so late updates reach your destination. It accepts 0 to 60 days and defaults to 0,
+which reads only new days. Set it to match the longest click, engagement, or view window in your
+reports. Custom reports use 30-day windows unless you change them.
+
+This setting applies to the analytics streams, the built-in report streams, `product_item_report`,
+and custom reports. It doesn't affect the campaigns, ad groups, and ads streams, which use
+`updated_time` as their cursor, or the full refresh streams. The connector never reads earlier than
+a stream's own date limit: 89 days for analytics streams, 91 days for `product_item_report`, and 2
+days for custom reports with HOUR granularity.
+
+Re-read days are written to the destination again. To keep one row per day, use the
+**Incremental - Append + Deduped** sync mode and choose a primary key for each affected stream in
+the connection. Larger values also mean larger reports and more requests to Pinterest.
 
 ## Supported sync modes
 
@@ -327,7 +350,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.0 | 2026-10-15 | [89007](https://github.com/airbytehq/airbyte/pull/89007) | Add `attribution_window` setting to re-read recent report and analytics dates on incremental syncs |
+| 2.4.0 | 2026-10-29 | [89007](https://github.com/airbytehq/airbyte/pull/89007) | Add `attribution_window` setting to re-read recent report and analytics dates on incremental syncs |
 | 2.3.6 | 2026-10-13 | [88724](https://github.com/airbytehq/airbyte/pull/88724) | Update dependencies |
 | 2.3.5 | 2026-10-06 | [87990](https://github.com/airbytehq/airbyte/pull/87990) | Update dependencies |
 | 2.3.4 | 2026-09-29 | [87273](https://github.com/airbytehq/airbyte/pull/87273) | Update dependencies |
