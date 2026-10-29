@@ -67,6 +67,22 @@ def test_discovery_primary_keys_match_expected_contract(discovered_streams):
         assert discovered_streams[stream_name].source_defined_primary_key == expected_primary_key
 
 
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        "webinar_panelists",
+        "webinar_registrants",
+        "webinar_polls",
+        "webinar_registration_questions",
+        "webinar_poll_results",
+        "webinar_qna_results",
+        "webinar_tracking_sources",
+    ],
+)
+def test_discovery_webinar_id_is_integer(discovered_streams, stream_name):
+    assert discovered_streams[stream_name].json_schema["properties"]["webinar_id"]["type"] == ["null", "integer"]
+
+
 @pytest.mark.parametrize("timestamp", [pytest.param("not-a-date", id="invalid-date-time")])
 def test_schema_validation_rejects_invalid_date_time(timestamp):
     output = SimpleNamespace(records=[SimpleNamespace(record=SimpleNamespace(data={"end_time": timestamp}))])

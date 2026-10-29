@@ -11856,10 +11856,10 @@ streams:
           type:
           - 'null'
           - string
-          webinar_id:
-            type:
-            - 'null'
-            - integer
+        webinar_id:
+          type:
+          - 'null'
+          - integer
         email:
           type:
           - 'null'
@@ -12740,7 +12740,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         email:
           type:
           - 'null'
