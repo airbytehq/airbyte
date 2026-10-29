@@ -9,6 +9,11 @@
   },
   "redirects": [
     {
+      "source": "/platform/using-airbyte/getting-started/academy",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 308
+    },
+    {
       "source": "/release_notes/v-2.1",
       "destination": "/release_notes/self-managed/v-2.1",
       "statusCode": 301
