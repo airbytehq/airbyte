@@ -16,7 +16,16 @@ max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count',
 definitions:
   sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
+    # Follow basic_error_handler for Retry-After handling.
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 900
     response_filters:
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - http_codes: [400]
         action: IGNORE
         error_message: "Skip current AdGroup because it does not support request {response.request.url} for current profile"

@@ -4,6 +4,8 @@ import json
 from unittest import TestCase
 from unittest.mock import patch
 
+import requests_mock
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -539,3 +541,40 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
         assert len(output.records) == 201
+
+
+def test_given_429_then_200_when_read_suggested_keywords_then_retry_and_return_records(requests_mock: requests_mock.Mocker):
+    config = ConfigBuilder().build()
+    requests_mock.post(
+        "https://api.amazon.com/auth/o2/token",
+        json={"access_token": "test-access-token", "token_type": "bearer", "expires_in": 3600},
+    )
+    requests_mock.get(
+        "https://advertising-api.amazon.com/v2/profiles?profileTypeFilter=seller,vendor",
+        json=[{"profileId": 1, "timezone": "UTC"}],
+        request_headers={"Authorization": "Bearer test-access-token"},
+    )
+    requests_mock.post(
+        "https://advertising-api.amazon.com/sp/adGroups/list",
+        json={"adGroups": [{"adGroupId": "ad-group-1", "campaignId": "campaign-1"}]},
+    )
+    requests_mock.post(
+        "https://advertising-api.amazon.com/sp/targets/keywords/recommendations",
+        [
+            {"status_code": 429, "headers": {"Retry-After": "1"}, "json": {"message": "Too many requests"}},
+            {"status_code": 200, "json": {"keywordTargetList": [{"keyword": "suggested"}]}},
+        ],
+    )
+
+    with patch("time.sleep", return_value=None) as sleep:
+        output = read_stream("sponsored_product_ad_group_suggested_keywords", SyncMode.full_refresh, config)
+
+    recommendation_requests = [
+        request
+        for request in requests_mock.request_history
+        if request.url.endswith("/sp/targets/keywords/recommendations")
+    ]
+    assert len(recommendation_requests) == 2
+    assert output.errors == []
+    assert [record.record.data["keyword"] for record in output.records] == ["suggested"]
+    sleep.assert_any_call(2)
