@@ -2,7 +2,7 @@
 
 Thank you for your contribution from **{{ .repo_name }}**! We're excited to have you in the Airbyte community.
 
-If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
+If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 <details>
 <summary><b>💡 Show Tips and Tricks</b></summary>

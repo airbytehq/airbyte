@@ -162,6 +162,6 @@ Do not file GitHub issues or post on our community Slack or forum for security v
 
 Airbyte takes security issues very seriously. If you have any concerns about Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io). In the message, try to describe the issue and a way to reproduce it. The security team will get back to you as soon as possible.
 
-Use this security address only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Discourse forum](https://discuss.airbyte.io/) or [Community Slack](https://slack.airbyte.com/).
+Use this security address only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Discourse forum](https://discuss.airbyte.io/) or [Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 Please report any security problems to us before disclosing it publicly.

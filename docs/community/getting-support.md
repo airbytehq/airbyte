@@ -51,7 +51,7 @@ For full details on Airbyte Agents plans, see [Billing and pricing](/ai-agents/a
 
 ## Community Slack
 
-[Join the Slack community](https://slack.airbyte.com) for help from other users and Airbyte team members. Popular channels include:
+[Join the Slack community](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg) for help from other users and Airbyte team members. Popular channels include:
 
 - Data Replication: `#ask-ai`, `#ask-community-for-troubleshooting`
 - Airbyte Agents: `#airbyte-agents`, `#airbyte-agents-ask-ai`

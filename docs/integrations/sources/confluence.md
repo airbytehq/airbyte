@@ -75,7 +75,7 @@ The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence
 The Confluence Cloud REST API uses rate limits and quotas. Atlassian doesn't publish
 fixed limits for this API. The connector automatically retries rate-limited
 requests. If you see rate limit issues that aren't retried successfully, contact
-Airbyte Support or post in the [Airbyte community Slack](https://slack.airbyte.com/).
+Airbyte Support or post in the [Airbyte community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 ## IP allow list
 
