@@ -128,3 +128,10 @@ def test_reach_stream_reads_records_from_its_reporting_job(stream_name: str) -> 
     assert record.data["date"] == 20261018
     assert record.data["video_id"] == "video-1"
     assert set(_REACH_STREAMS[stream_name] + _METRICS) <= set(record.data)
+    # CSV values arrive as strings; schema normalization casts them to the declared types.
+    assert record.data["video_thumbnail_impressions"] == 1250
+    assert record.data["video_thumbnail_impressions_ctr"] == 0.0432
+    if stream_name == "channel_reach_combined_a1":
+        assert record.data["traffic_source_type"] == 9
+        assert record.data["operating_system"] == 3
+        assert record.data["device_type"] == 101

@@ -72,8 +72,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
 - [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
 - [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
-- [channel_reach_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-reports) - Video thumbnail impressions and impressions click-through rate.
-- [channel_reach_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-reports) - Video thumbnail impressions and impressions click-through rate by traffic source, device type and operating system.
+- [channel_reach_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-basic) - Video thumbnail impressions and impressions click-through rate.
+- [channel_reach_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-combined) - Video thumbnail impressions and impressions click-through rate by traffic source, device type and operating system.
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
 - [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
 - [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
