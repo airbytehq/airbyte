@@ -55,7 +55,7 @@ class PostgresDirectLoadSqlGenerator(
         internal fun buildUsingClause(
             quotedName: String,
             oldType: String,
-            newType: String
+            newType: String,
         ): String =
             when {
                 // Converting to jsonb from any type.

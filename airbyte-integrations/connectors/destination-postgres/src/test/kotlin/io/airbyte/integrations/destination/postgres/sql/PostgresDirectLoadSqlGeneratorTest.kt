@@ -979,8 +979,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 "column_e" to
                     ColumnTypeChange(
                         originalType = ColumnType("jsonb", true),
-                        newType = ColumnType("decimal", true)
-                    )
+                        newType = ColumnType("decimal", true),
+                    ),
             )
 
         val sql =
@@ -991,7 +991,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 recreatePrimaryKeyIndex = false,
                 primaryKeyColumnNames = emptyList(),
                 recreateCursorIndex = false,
-                cursorColumnName = null
+                cursorColumnName = null,
             )
 
         assert(sql.contains("ALTER COLUMN \"column_e\" TYPE decimal"))
@@ -999,8 +999,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         assert(
             sql.contains(
                 "USING CASE WHEN jsonb_typeof(\"column_e\") IN ('object', 'array') " +
-                    "THEN NULL ELSE (\"column_e\" #>> '{}')::decimal END"
-            )
+                    "THEN NULL ELSE (\"column_e\" #>> '{}')::decimal END",
+            ),
         )
     }
 
@@ -1013,8 +1013,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 "column_f" to
                     ColumnTypeChange(
                         originalType = ColumnType("boolean", true),
-                        newType = ColumnType("bigint", true)
-                    )
+                        newType = ColumnType("bigint", true),
+                    ),
             )
 
         val sql =
@@ -1025,7 +1025,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 recreatePrimaryKeyIndex = false,
                 primaryKeyColumnNames = emptyList(),
                 recreateCursorIndex = false,
-                cursorColumnName = null
+                cursorColumnName = null,
             )
 
         assert(sql.contains("ALTER COLUMN \"column_f\" TYPE bigint"))
@@ -1041,8 +1041,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 "column_g" to
                     ColumnTypeChange(
                         originalType = ColumnType("bigint", true),
-                        newType = ColumnType("boolean", true)
-                    )
+                        newType = ColumnType("boolean", true),
+                    ),
             )
 
         val sql =
@@ -1053,7 +1053,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 recreatePrimaryKeyIndex = false,
                 primaryKeyColumnNames = emptyList(),
                 recreateCursorIndex = false,
-                cursorColumnName = null
+                cursorColumnName = null,
             )
 
         assert(sql.contains("ALTER COLUMN \"column_g\" TYPE boolean"))
@@ -1065,21 +1065,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         // jsonb -> text extraction (unchanged behavior)
         assert(
             PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "jsonb", "varchar") ==
-                "USING \"c\" #>> '{}'"
+                "USING \"c\" #>> '{}'",
         )
         // to jsonb (unchanged behavior)
         assert(
             PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "varchar", "jsonb") ==
-                "USING to_jsonb(\"c\")"
+                "USING to_jsonb(\"c\")",
         )
         // standard cast still applies for compatible pairs
         assert(
             PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "bigint", "decimal") ==
-                "USING \"c\"::decimal"
+                "USING \"c\"::decimal",
         )
         assert(
             PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "varchar", "bigint") ==
-                "USING \"c\"::bigint"
+                "USING \"c\"::bigint",
         )
     }
 
