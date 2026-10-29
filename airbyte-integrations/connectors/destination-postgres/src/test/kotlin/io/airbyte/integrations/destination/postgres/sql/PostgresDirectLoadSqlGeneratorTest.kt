@@ -987,7 +987,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             postgresDirectLoadSqlGenerator.matchSchemas(
                 tableName,
                 emptyMap(),
-                emptyMap(),
                 columnsToModify,
                 recreatePrimaryKeyIndex = false,
                 primaryKeyColumnNames = emptyList(),
@@ -1022,7 +1021,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             postgresDirectLoadSqlGenerator.matchSchemas(
                 tableName,
                 emptyMap(),
-                emptyMap(),
                 columnsToModify,
                 recreatePrimaryKeyIndex = false,
                 primaryKeyColumnNames = emptyList(),
@@ -1050,7 +1048,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val sql =
             postgresDirectLoadSqlGenerator.matchSchemas(
                 tableName,
-                emptyMap(),
                 emptyMap(),
                 columnsToModify,
                 recreatePrimaryKeyIndex = false,
