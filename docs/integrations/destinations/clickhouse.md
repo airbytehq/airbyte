@@ -204,6 +204,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.33     | 2026-10-27 | [90134](https://github.com/airbytehq/airbyte/pull/90134)   | Upgrade ClickHouse Java client to 0.11.0.                                      |
 | 2.1.32     | 2026-10-09 | [88421](https://github.com/airbytehq/airbyte/pull/88421)   | Upgrade ClickHouse Java client to 0.10.0; test against ClickHouse 26.7.        |
 | 2.1.31     | 2026-10-01 | [87612](https://github.com/airbytehq/airbyte/pull/87612)   | Upgrade to Bulk CDK 1.1.1.                                                     |
 | 2.1.30     | 2026-09-15 | [86332](https://github.com/airbytehq/airbyte/pull/86332)   | Version bump to republish the Cloud-specific connector spec.                   |

@@ -4,10 +4,6 @@ products: cloud, oss-community
 
 # Airbyte MCP tools
 
-:::info Open beta
-The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. You can also [run the Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known issues.
-:::
-
 The Airbyte MCP gives your agent a set of tools. Your agent chooses which tools to call based on your prompt, so you don't need to call them by name. This page lists each tool so you know what your agent can and can't do.
 
 Your agent acts on behalf of the Airbyte user who signed in to the Airbyte MCP. If you connect with an [Airbyte application](install.md#connect-without-a-browser), that's the user who created the application. Every tool acts with that user's Airbyte permissions. If their Airbyte [role](/platform/access-management/rbac) doesn't allow an action, the tool fails.

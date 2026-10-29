@@ -51,7 +51,7 @@ This connector supports the following entities and actions. For more details, se
 | Transaction | [List](./REFERENCE.md#transaction-list), [Get](./REFERENCE.md#transaction-get), [Context Store Search](./REFERENCE.md#transaction-context-store-search), [Context Store SQL Query](./REFERENCE.md#transaction-context-store-sql-query) |
 | Event | [List](./REFERENCE.md#event-list), [Get](./REFERENCE.md#event-get), [Context Store Search](./REFERENCE.md#event-context-store-search), [Context Store SQL Query](./REFERENCE.md#event-context-store-sql-query) |
 | Order | [List](./REFERENCE.md#order-list), [Get](./REFERENCE.md#order-get), [Context Store Search](./REFERENCE.md#order-context-store-search), [Context Store SQL Query](./REFERENCE.md#order-context-store-sql-query) |
-| Item | [List](./REFERENCE.md#item-list), [Get](./REFERENCE.md#item-get), [Context Store Search](./REFERENCE.md#item-context-store-search), [Context Store SQL Query](./REFERENCE.md#item-context-store-sql-query) |
+| Item | [List](./REFERENCE.md#item-list), [Get](./REFERENCE.md#item-get), [Context Store Search](./REFERENCE.md#item-context-store-search), [Context Store SQL Query](./REFERENCE.md#item-context-store-sql-query), [Semantic Search](./REFERENCE.md#item-semantic-search) |
 | Item Price | [List](./REFERENCE.md#item-price-list), [Get](./REFERENCE.md#item-price-get), [Context Store Search](./REFERENCE.md#item-price-context-store-search), [Context Store SQL Query](./REFERENCE.md#item-price-context-store-sql-query) |
 | Payment Source | [List](./REFERENCE.md#payment-source-list), [Get](./REFERENCE.md#payment-source-get), [Context Store Search](./REFERENCE.md#payment-source-context-store-search), [Context Store SQL Query](./REFERENCE.md#payment-source-context-store-sql-query) |
 
