@@ -50,7 +50,6 @@ private const val ERRORCODE_INVALID_IDENTIFIER = 904
  * 1. 2003 / 2043: "object does not exist or not authorized" (the same codes in application.yml)
  * 2. 2037: failure during expansion of view
  * 3. 2057: "view declared N column(s), but view query produces M column(s)"
- * 4. 904: invalid identifier; whole-object for views, per-column fallback for tables
  */
 private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
 
