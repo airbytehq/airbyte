@@ -66,6 +66,8 @@ def test_trigger_is_limited_to_initial_hydra_ownership() -> None:
     assert STEPS["Preserve explicit ownership opt-outs"]["if"] == "steps.ownership.outputs.eligible == 'true'"
     assert STEPS["Assign and verify Hydra ownership"]["if"] == "steps.opt-out.outputs.allowed == 'true'"
     assert WORKFLOW["permissions"] == {}
+    assert "concurrency" not in WORKFLOW
+    assert JOB["concurrency"]["cancel-in-progress"] is False
     assert not any("checkout" in step.get("uses", "") for step in JOB["steps"])
 
 

@@ -7,10 +7,6 @@ on:
 # Only API metadata is read; never check out or execute the PR's code.
 permissions: {}
 
-concurrency:
-  group: hydra-pr-assignment-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
-
 jobs:
   assign:
     if: >-
@@ -22,6 +18,9 @@ jobs:
         (github.event.action == 'labeled' && github.event.label.name == 'hyd-fix')
       )
     runs-on: ubuntu-24.04
+    concurrency:
+      group: hydra-pr-assignment-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
