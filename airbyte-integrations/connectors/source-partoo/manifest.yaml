@@ -1,0 +1,2221 @@
+version: 7.40.0
+type: DeclarativeSource
+
+description: >-
+  Source for the Partoo REST API v2 (https://developers.partoo.co): businesses,
+  reviews, messaging, posts, users, organizations, feedback, and presence /
+  review analytics.
+
+check:
+  type: CheckStream
+  stream_names:
+    - businesses
+
+# Partoo allows 300 requests per minute per organization; stay under it.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 280
+          interval: PT1M
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 8
+
+definitions:
+  requester:
+    type: HttpRequester
+    url_base: >-
+      {{ 'https://api.sandbox.partoo.co/v2' if config.get('environment') == 'sandbox' else 'https://api.partoo.co/v2' }}
+    http_method: GET
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: x-APIKey
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+
+  # Most list endpoints: ?page=N&per_page=M, 1-indexed.
+  page_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: per_page
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 1
+      page_size: 100
+      inject_on_first_request: true
+
+  # /conversations and /messages: ?cursor=<next_cursor>.
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: per_page
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.next_cursor }}"
+      stop_condition: "{{ not response.next_cursor }}"
+      page_size: 100
+
+  start_datetime:
+    type: MinMaxDatetime
+    datetime: "{{ config['start_date'] }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  streams:
+    businesses:
+      type: DeclarativeStream
+      name: businesses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /business/search
+          request_parameters:
+            order_by: modified
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - businesses
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      # No modified__lte filter exists, so the whole range is one slice.
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        datetime_format: "%s_as_float"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified__gte
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/businesses"
+
+    reviews:
+      type: DeclarativeStream
+      name: reviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /reviews
+          request_parameters:
+            order_by: update_date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reviews
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_date
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        step: P30D
+        cursor_granularity: PT1S
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: update_date__gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: update_date__lte
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reviews"
+
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /conversations
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_message_date
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        step: P30D
+        cursor_granularity: PT1S
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_message_date__gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: last_message_date__lte
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+
+    # One request chain per conversation. incremental_dependency re-reads only
+    # conversations whose last_message_date moved since the previous sync.
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /messages
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/conversations"
+              parent_key: id
+              partition_field: conversation_id
+              incremental_dependency: true
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: conversation_id
+      # /messages has no date filter: records older than the state are dropped client-side.
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        is_client_side_incremental: true
+        global_substream_cursor: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+
+    # The API filters posts by publication dates, not by updated_at, so this is full refresh.
+    # /posts requires an explicit business scope; apply_to_all_business covers every business.
+    posts:
+      type: DeclarativeStream
+      name: posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /posts
+          request_parameters:
+            apply_to_all_business: "True"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - posts
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/posts"
+
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /user/search
+          request_parameters:
+            display_business_ids: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - org_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /org/search
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orgs
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+
+    # Feedback Management is BETA on Partoo's side (2-week notice on changes).
+    # Its endpoints document no per_page parameter: pages are fixed at 30.
+    feedback_forms:
+      type: DeclarativeStream
+      name: feedback_forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /feedback/feedback_form
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 30
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/feedback_forms"
+
+    feedback_results:
+      type: DeclarativeStream
+      name: feedback_results
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /feedback/feedback_result
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 30
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        step: P30D
+        cursor_granularity: PT1S
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created__gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created__lte
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/feedback_results"
+
+    # Google Business Profile metrics per business per day. Google revises the
+    # last ~5 days, so each sync re-reads a week.
+    presence_metrics_daily:
+      type: DeclarativeStream
+      name: presence_metrics_daily
+      primary_key:
+        - business_id
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /presence_analytics/metrics
+          request_parameters:
+            metrics: >-
+              business_impressions_desktop_maps,business_impressions_desktop_search,business_impressions_mobile_maps,business_impressions_mobile_search,business_direction_requests,call_clicks,website_clicks
+            dimensions: business,day
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - metrics
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        step: P30D
+        cursor_granularity: P1D
+        lookback_window: P7D
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter_date__gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter_date__lte
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/presence_metrics_daily"
+
+    # Review metrics accept a single dimension, so business x day is built by
+    # requesting dimensions=business over one-day slices and stamping the date.
+    # The date filter applies to review update_date, so a day's figures cover
+    # the reviews updated that day.
+    review_metrics_daily:
+      type: DeclarativeStream
+      name: review_metrics_daily
+      primary_key:
+        - business_id
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /review_analytics/metrics
+          request_parameters:
+            metrics: average_rating,reviews_count,rating_distribution,reply_time,reply_means
+            dimensions: business
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/page_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        start_datetime:
+          $ref: "#/definitions/start_datetime"
+        step: P1D
+        cursor_granularity: PT1S
+        lookback_window: P2D
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: update_date__gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: update_date__lte
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_id
+              value: "{{ record['dimension'] }}"
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/review_metrics_daily"
+
+streams:
+  - $ref: "#/definitions/streams/businesses"
+  - $ref: "#/definitions/streams/reviews"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/feedback_forms"
+  - $ref: "#/definitions/streams/feedback_results"
+  - $ref: "#/definitions/streams/presence_metrics_daily"
+  - $ref: "#/definitions/streams/review_metrics_daily"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_key
+      - start_date
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Partoo API key, sent as the x-APIKey header. Ask your Partoo Account Manager for one.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: Earliest date to replicate for incremental streams, in UTC.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2025-01-01T00:00:00Z"
+        format: date-time
+        order: 1
+      environment:
+        type: string
+        title: Environment
+        description: Sandbox has no reviews or analytics data.
+        enum:
+          - production
+          - sandbox
+        default: production
+        order: 2
+
+# Schemas were inferred from live Partoo API responses (a production test org).
+# Keys and cursor fields are typed non-nullable; additionalProperties stays true
+# so fields absent from the sample still pass through.
+schemas:
+  businesses:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type:
+        - 'null'
+        - string
+      code:
+        type:
+        - 'null'
+        - string
+      org_id:
+        type:
+        - 'null'
+        - integer
+      reach:
+        type:
+        - 'null'
+        - string
+      groups:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - integer
+      created:
+        type:
+        - 'null'
+        - number
+      modified:
+        type: number
+      address_full:
+        type:
+        - 'null'
+        - string
+      address2:
+        type:
+        - 'null'
+        - string
+      city:
+        type:
+        - 'null'
+        - string
+      zipcode:
+        type:
+        - 'null'
+        - string
+      region:
+        type:
+        - 'null'
+        - string
+      country:
+        type:
+        - 'null'
+        - string
+      locale:
+        type:
+        - 'null'
+        - string
+      lat:
+        type:
+        - 'null'
+        - number
+      long:
+        type:
+        - 'null'
+        - number
+      national_identification_number:
+        type:
+        - 'null'
+        - string
+      description_short:
+        type:
+        - 'null'
+        - string
+      description_long:
+        type:
+        - 'null'
+        - string
+      website_url:
+        type:
+        - 'null'
+        - string
+      facebook_url:
+        type:
+        - 'null'
+        - string
+      twitter_url:
+        type:
+        - 'null'
+        - string
+      photos:
+        type:
+        - 'null'
+        - object
+        properties:
+          primary:
+            type:
+            - 'null'
+            - string
+          LOGO:
+            type:
+            - 'null'
+            - string
+          EXTERIOR:
+            type:
+            - 'null'
+            - array
+          INTERIOR:
+            type:
+            - 'null'
+            - array
+          PRODUCT:
+            type:
+            - 'null'
+            - array
+          AT_WORK:
+            type:
+            - 'null'
+            - array
+          FOOD_AND_DRINK:
+            type:
+            - 'null'
+            - array
+          MENU:
+            type:
+            - 'null'
+            - array
+          COMMON_AREAS:
+            type:
+            - 'null'
+            - array
+          ROOMS:
+            type:
+            - 'null'
+            - array
+          TEAM:
+            type:
+            - 'null'
+            - array
+          secondary:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          preferred_photo:
+            type:
+            - 'null'
+            - string
+        additionalProperties: true
+      logo_url:
+        type:
+        - 'null'
+        - string
+      opening_date:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      open_hours:
+        type:
+        - 'null'
+        - object
+        properties:
+          monday:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          tuesday:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          wednesday:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          thursday:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          friday:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          saturday:
+            type:
+            - 'null'
+            - array
+          sunday:
+            type:
+            - 'null'
+            - array
+        additionalProperties: true
+      specific_hours:
+        type:
+        - 'null'
+        - object
+        properties:
+          open:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                starts_at:
+                  type:
+                  - 'null'
+                  - string
+                ends_at:
+                  type:
+                  - 'null'
+                  - string
+                open_hours:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type:
+                    - 'null'
+                    - string
+              additionalProperties: true
+          close:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                starts_at:
+                  type:
+                  - 'null'
+                  - string
+                ends_at:
+                  type:
+                  - 'null'
+                  - string
+                open_hours:
+                  type:
+                  - 'null'
+                  - array
+              additionalProperties: true
+        additionalProperties: true
+      contacts:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            phone_numbers:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            email:
+              type:
+              - 'null'
+              - string
+            fax:
+              type:
+              - 'null'
+              - string
+            partoo_phone_number:
+              type:
+              - 'null'
+              - string
+          additionalProperties: true
+      completion_rate:
+        type:
+        - 'null'
+        - integer
+      promos:
+        type:
+        - 'null'
+        - array
+      apple_name:
+        type:
+        - 'null'
+        - string
+      categories:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      google_location_id:
+        type:
+        - 'null'
+        - string
+      google_place_id:
+        type:
+        - 'null'
+        - string
+      facebook_page_id:
+        type:
+        - 'null'
+        - string
+      time_slot_reference:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      subscriptions:
+        type:
+        - 'null'
+        - object
+        properties:
+          presence_management:
+            type:
+            - 'null'
+            - object
+            properties:
+              active:
+                type:
+                - 'null'
+                - boolean
+            additionalProperties: true
+          review_management:
+            type:
+            - 'null'
+            - object
+            properties:
+              active:
+                type:
+                - 'null'
+                - boolean
+            additionalProperties: true
+          review_booster:
+            type:
+            - 'null'
+            - object
+            properties:
+              active:
+                type:
+                - 'null'
+                - boolean
+            additionalProperties: true
+          messages:
+            type:
+            - 'null'
+            - object
+            properties:
+              active:
+                type:
+                - 'null'
+                - boolean
+            additionalProperties: true
+        additionalProperties: true
+      time_of_last_photo_update:
+        type:
+        - 'null'
+        - string
+      features:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      media_mapping:
+        type:
+        - 'null'
+        - object
+        properties:
+          https://partoo-business-photos-test.s3.amazonaws.com/prod/5d6f0144-0ae1-4070-a337-83a2ce9cadec.png:
+            type:
+            - 'null'
+            - string
+          ? https://partoo-business-photos-test.s3.amazonaws.com/prod/d6e52b4e-b84a-4172-949a-951625a5d58c.jpg?versionId=DOWSofMTYkicbtsjzXKNFo_fqRy2zlC2
+          : type:
+            - 'null'
+            - string
+        additionalProperties: true
+      address:
+        type:
+        - 'null'
+        - string
+      default_lang:
+        type:
+        - 'null'
+        - string
+      custom_fields:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            id:
+              type:
+              - 'null'
+              - integer
+            type:
+              type:
+              - 'null'
+              - string
+            order:
+              type:
+              - 'null'
+              - integer
+            name:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - boolean
+              - number
+              - string
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+                - object
+                properties:
+                  url:
+                    type:
+                    - 'null'
+                    - string
+                  texts:
+                    type:
+                    - 'null'
+                    - object
+                    properties:
+                      whatever:
+                        type:
+                        - 'null'
+                        - string
+                    additionalProperties: true
+                  size:
+                    type:
+                    - 'null'
+                    - integer
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                additionalProperties: true
+            section_name:
+              type:
+              - 'null'
+              - string
+            section_id:
+              type:
+              - 'null'
+              - integer
+            slug:
+              type:
+              - 'null'
+              - string
+          additionalProperties: true
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  reviews:
+    type: object
+    properties:
+      key:
+        type:
+        - 'null'
+        - string
+      org_id:
+        type:
+        - 'null'
+        - integer
+      id:
+        type: integer
+      business_id:
+        type:
+        - 'null'
+        - string
+      partner:
+        type:
+        - 'null'
+        - string
+      partner_id:
+        type:
+        - 'null'
+        - string
+      state:
+        type:
+        - 'null'
+        - string
+      author_name:
+        type:
+        - 'null'
+        - string
+      date:
+        type:
+        - 'null'
+        - string
+      update_date:
+        type: string
+        format: date-time
+      rating:
+        type:
+        - 'null'
+        - integer
+      recommended:
+        type:
+        - 'null'
+        - string
+      title:
+        type:
+        - 'null'
+        - string
+      content:
+        type:
+        - 'null'
+        - string
+      link:
+        type:
+        - 'null'
+        - string
+      delete_date:
+        type:
+        - 'null'
+        - string
+      comments:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            id:
+              type:
+              - 'null'
+              - integer
+            partner_id:
+              type:
+              - 'null'
+              - string
+            created:
+              type:
+              - 'null'
+              - string
+            author_name:
+              type:
+              - 'null'
+              - string
+            content:
+              type:
+              - 'null'
+              - string
+            date:
+              type:
+              - 'null'
+              - string
+            update_date:
+              type:
+              - 'null'
+              - string
+            can_edit:
+              type:
+              - 'null'
+              - boolean
+            not_fetched:
+              type:
+              - 'null'
+              - boolean
+            reply_state:
+              type:
+              - 'null'
+              - string
+            policy_violation:
+              type:
+              - 'null'
+              - string
+            review_id:
+              type:
+              - 'null'
+              - integer
+            parent_id:
+              type:
+              - 'null'
+              - string
+            user_id:
+              type:
+              - 'null'
+              - string
+            is_reply_suggestion:
+              type:
+              - 'null'
+              - boolean
+            replies:
+              type:
+              - 'null'
+              - array
+          additionalProperties: true
+      tags:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            label:
+              type:
+              - 'null'
+              - string
+            org_id:
+              type:
+              - 'null'
+              - integer
+            id:
+              type:
+              - 'null'
+              - integer
+            color:
+              type:
+              - 'null'
+              - string
+            is_ai_suggested:
+              type:
+              - 'null'
+              - boolean
+          additionalProperties: true
+      seq_unfound_count:
+        type:
+        - 'null'
+        - integer
+      media_links:
+        type:
+        - 'null'
+        - array
+      pending_auto_reply:
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  conversations:
+    type: object
+    properties:
+      id:
+        type: integer
+      consumer_img:
+        type:
+        - 'null'
+        - string
+      consumer_name:
+        type:
+        - 'null'
+        - string
+      last_message:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          conversation_id:
+            type:
+            - 'null'
+            - integer
+          date:
+            type:
+            - 'null'
+            - string
+          content_type:
+            type:
+            - 'null'
+            - string
+          sender_type:
+            type:
+            - 'null'
+            - string
+          sender_label:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+          is_deleted:
+            type:
+            - 'null'
+            - boolean
+          content:
+            type:
+            - 'null'
+            - string
+            - object
+            properties:
+              text:
+                type:
+                - 'null'
+                - string
+              buttons:
+                type:
+                - 'null'
+                - array
+                items:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    content_type:
+                      type:
+                      - 'null'
+                      - string
+                    title:
+                      type:
+                      - 'null'
+                      - string
+                    payload:
+                      type:
+                      - 'null'
+                      - string
+                    web_url:
+                      type:
+                      - 'null'
+                      - string
+                  additionalProperties: true
+            additionalProperties: true
+          is_automated:
+            type:
+            - 'null'
+            - boolean
+          custom_channel:
+            type:
+            - 'null'
+            - string
+          expires_on:
+            type:
+            - 'null'
+            - string
+        additionalProperties: true
+      is_read:
+        type:
+        - 'null'
+        - boolean
+      status:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+      has_one_user_message:
+        type:
+        - 'null'
+        - boolean
+      business:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          zipcode:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          formatted_address:
+            type:
+            - 'null'
+            - string
+          reach:
+            type:
+            - 'null'
+            - string
+        additionalProperties: true
+      messaging_partner:
+        type:
+        - 'null'
+        - string
+      first_message_date:
+        type:
+        - 'null'
+        - string
+      last_message_date:
+        type: string
+      consumer_phone_number:
+        type:
+        - 'null'
+        - string
+      consumer_email:
+        type:
+        - 'null'
+        - string
+      is_expired:
+        type:
+        - 'null'
+        - boolean
+      is_solved:
+        type:
+        - 'null'
+        - boolean
+      is_automated:
+        type:
+        - 'null'
+        - boolean
+      assigned_user_id:
+        type:
+        - 'null'
+        - string
+      display_name:
+        type:
+        - 'null'
+        - string
+      routed_business:
+        type:
+        - 'null'
+        - string
+      lead_id:
+        type:
+        - 'null'
+        - integer
+      issues:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      custom_channel:
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  messages:
+    type: object
+    properties:
+      id:
+        type: integer
+      conversation_id:
+        type:
+        - 'null'
+        - integer
+      date:
+        type: string
+      content_type:
+        type:
+        - 'null'
+        - string
+      sender_type:
+        type:
+        - 'null'
+        - string
+      sender_label:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      is_deleted:
+        type:
+        - 'null'
+        - boolean
+      content:
+        type:
+        - 'null'
+        - string
+        - object
+        properties:
+          text:
+            type:
+            - 'null'
+            - string
+          buttons:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                content_type:
+                  type:
+                  - 'null'
+                  - string
+                title:
+                  type:
+                  - 'null'
+                  - string
+                payload:
+                  type:
+                  - 'null'
+                  - string
+                web_url:
+                  type:
+                  - 'null'
+                  - string
+              additionalProperties: true
+        additionalProperties: true
+      is_automated:
+        type:
+        - 'null'
+        - boolean
+      user_id:
+        type:
+        - 'null'
+        - string
+      custom_channel:
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  posts:
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      business_id:
+        type:
+        - 'null'
+        - string
+      bulk_id:
+        type:
+        - 'null'
+        - integer
+      post_type:
+        type:
+        - 'null'
+        - string
+      language:
+        type:
+        - 'null'
+        - string
+      title:
+        type:
+        - 'null'
+        - string
+      summary:
+        type:
+        - 'null'
+        - string
+      cta_type:
+        type:
+        - 'null'
+        - string
+      cta_link:
+        type:
+        - 'null'
+        - string
+      start_at:
+        type:
+        - 'null'
+        - string
+      end_at:
+        type:
+        - 'null'
+        - string
+      schedule_time:
+        type:
+        - 'null'
+        - string
+      expiration_time:
+        type:
+        - 'null'
+        - string
+      validation_time:
+        type:
+        - 'null'
+        - string
+      post_insight:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            click_count:
+              type:
+              - 'null'
+              - integer
+            view_count:
+              type:
+              - 'null'
+              - integer
+          additionalProperties: true
+      post_status:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            state:
+              type:
+              - 'null'
+              - string
+            link:
+              type:
+              - 'null'
+              - string
+          additionalProperties: true
+      post_medias:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            media_url:
+              type:
+              - 'null'
+              - string
+            media_type:
+              type:
+              - 'null'
+              - string
+            media_format:
+              type:
+              - 'null'
+              - string
+            order:
+              type:
+              - 'null'
+              - integer
+          additionalProperties: true
+      offer_terms:
+        type:
+        - 'null'
+        - string
+      offer_code:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+      created_on_partoo:
+        type:
+        - 'null'
+        - boolean
+      updated_on_partoo:
+        type:
+        - 'null'
+        - boolean
+      business_info:
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  users:
+    type: object
+    properties:
+      id:
+        type: string
+      role:
+        type:
+        - 'null'
+        - string
+      first_name:
+        type:
+        - 'null'
+        - string
+      last_name:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - integer
+      org_id:
+        type:
+        - 'null'
+        - integer
+      status:
+        type:
+        - 'null'
+        - string
+      disabled:
+        type:
+        - 'null'
+        - boolean
+      email:
+        type:
+        - 'null'
+        - string
+      lang:
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        type:
+        - 'null'
+        - string
+      provider:
+        type:
+        - 'null'
+        - string
+      provider_name:
+        type:
+        - 'null'
+        - string
+      created_by:
+        type:
+        - 'null'
+        - string
+      has_active_api_keys:
+        type:
+        - 'null'
+        - boolean
+      rm_last_seen_date:
+        type:
+        - 'null'
+        - string
+      receive_reviews_email_notifications:
+        type:
+        - 'null'
+        - boolean
+      sso_only:
+        type:
+        - 'null'
+        - boolean
+      privacy_policy_accepted_at:
+        type:
+        - 'null'
+        - integer
+      terms_and_conditions_accepted_at:
+        type:
+        - 'null'
+        - integer
+      accesses:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - integer
+      last_activity_date:
+        type:
+        - 'null'
+        - string
+      business_ids:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      custom_role:
+        type:
+        - 'null'
+        - string
+      custom_role_name:
+        type:
+        - 'null'
+        - string
+      can_manage:
+        type:
+        - 'null'
+        - boolean
+      email_activity:
+        type:
+        - 'null'
+        - array
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  organizations:
+    type: object
+    properties:
+      org_id:
+        type: integer
+      name:
+        type:
+        - 'null'
+        - string
+      alias:
+        type:
+        - 'null'
+        - string
+      provider:
+        type:
+        - 'null'
+        - string
+      organization_type:
+        type:
+        - 'null'
+        - string
+      display_subscribe:
+        type:
+        - 'null'
+        - boolean
+      max_businesses:
+        type:
+        - 'null'
+        - string
+      businesses_count:
+        type:
+        - 'null'
+        - integer
+      last_org_api_call:
+        type:
+        - 'null'
+        - string
+      features:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      org_features:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  feedback_forms:
+    type: object
+    properties:
+      org_id:
+        type:
+        - 'null'
+        - integer
+      external_id:
+        type:
+        - 'null'
+        - string
+      email_reply_source:
+        type:
+        - 'null'
+        - string
+      email_reply_subject:
+        type:
+        - 'null'
+        - string
+      email_reply_to_business:
+        type:
+        - 'null'
+        - boolean
+      email_reply_expeditor_name:
+        type:
+        - 'null'
+        - string
+      locale:
+        type:
+        - 'null'
+        - string
+      expiration_interval_seconds:
+        type:
+        - 'null'
+        - integer
+      display_name:
+        type:
+        - 'null'
+        - string
+      id:
+        type: string
+      google_redirect_enabled:
+        type:
+        - 'null'
+        - boolean
+      nps_conditioning_enabled:
+        type:
+        - 'null'
+        - boolean
+      nps_conditioning_threshold:
+        type:
+        - 'null'
+        - string
+      custom_hidden_fields:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      survey_link:
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  feedback_results:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      business_id:
+        type:
+        - 'null'
+        - string
+      firstname:
+        type:
+        - 'null'
+        - string
+      lastname:
+        type:
+        - 'null'
+        - string
+      nps:
+        type:
+        - 'null'
+        - integer
+      content:
+        type:
+        - 'null'
+        - string
+      state:
+        type:
+        - 'null'
+        - string
+      optin:
+        type:
+        - 'null'
+        - boolean
+      created:
+        type: string
+        format: date-time
+      feedback_form:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      feedback_result_fields:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          additionalProperties: true
+      comments:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          additionalProperties: true
+      extra:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+  presence_metrics_daily:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date
+      bucket:
+        type:
+        - 'null'
+        - string
+      business_id:
+        type: string
+      business_impressions_desktop_search:
+        type:
+        - 'null'
+        - integer
+      business_impressions_mobile_search:
+        type:
+        - 'null'
+        - integer
+      business_impressions_desktop_maps:
+        type:
+        - 'null'
+        - integer
+      business_impressions_mobile_maps:
+        type:
+        - 'null'
+        - integer
+      business_direction_requests:
+        type:
+        - 'null'
+        - integer
+      call_clicks:
+        type:
+        - 'null'
+        - integer
+      website_clicks:
+        type:
+        - 'null'
+        - integer
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+  review_metrics_daily:
+    type: object
+    properties:
+      dimension:
+        type:
+        - 'null'
+        - string
+      dimension_name:
+        type:
+        - 'null'
+        - string
+      dimension_info:
+        type:
+        - 'null'
+        - object
+        properties:
+          address_full:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          zipcode:
+            type:
+            - 'null'
+            - string
+          code:
+            type:
+            - 'null'
+            - string
+        additionalProperties: true
+      metrics:
+        type:
+        - 'null'
+        - object
+        properties:
+          average_rating:
+            type:
+            - 'null'
+            - number
+          reply_time:
+            type:
+            - 'null'
+            - object
+            properties:
+              fast:
+                type:
+                - 'null'
+                - integer
+              slow:
+                type:
+                - 'null'
+                - integer
+              not_replied:
+                type:
+                - 'null'
+                - integer
+              total:
+                type:
+                - 'null'
+                - integer
+            additionalProperties: true
+          reply_means:
+            type:
+            - 'null'
+            - object
+            properties:
+              ai_suggestion:
+                type:
+                - 'null'
+                - integer
+              manual:
+                type:
+                - 'null'
+                - integer
+              auto_reply:
+                type:
+                - 'null'
+                - integer
+              reply_template:
+                type:
+                - 'null'
+                - integer
+              total:
+                type:
+                - 'null'
+                - integer
+            additionalProperties: true
+          rating_distribution:
+            type:
+            - 'null'
+            - object
+            properties:
+              '1':
+                type:
+                - 'null'
+                - integer
+              '2':
+                type:
+                - 'null'
+                - integer
+              '3':
+                type:
+                - 'null'
+                - integer
+              '4':
+                type:
+                - 'null'
+                - integer
+              '5':
+                type:
+                - 'null'
+                - integer
+            additionalProperties: true
+          reviews_count:
+            type:
+            - 'null'
+            - integer
+        additionalProperties: true
+      business_id:
+        type: string
+      date:
+        type: string
+        format: date
+    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#

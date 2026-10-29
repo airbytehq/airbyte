@@ -1,0 +1,49 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.partoo.co"
+      - "api.sandbox.partoo.co"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-partoo
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.40.0@sha256:3d103f3f38f48ef8da8eb47db5862ef03d12af81bc9e1b42a83976c81b30b2e5
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0316e269-03e9-4500-9ae9-660b77a7a247
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-partoo
+  githubIssueLabel: source-partoo
+  icon: icon.svg
+  license: ELv2
+  name: Partoo
+  releaseDate: 2026-10-29
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/partoo
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Partoo API reference
+      url: https://developers.partoo.co/api-reference/businesses/search-for-businesses
+      type: api_reference
+    - title: Partoo API keys and environments
+      url: https://developers.partoo.co/guides/api/getting-started/getting-started
+      type: authentication_guide
+    - title: Partoo API rate limits
+      url: https://developers.partoo.co/guides/api/getting-started/api-fundamentals/rate-limits
+      type: rate_limits
+    - title: Partoo API changelog
+      url: https://developers.partoo.co/changelogs/api/changelogs
+      type: api_release_history
