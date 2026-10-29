@@ -1,0 +1,78 @@
+name: Assign new Hydra fix PRs
+
+on:
+  pull_request_target:
+    types: [opened, labeled]
+
+# Only API metadata is read; never check out or execute the PR's code.
+permissions: {}
+
+concurrency:
+  group: hydra-pr-assignment-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  assign:
+    if: >-
+      github.event.pull_request.user.login == 'devin-ai-integration[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.sender.login == 'devin-ai-integration[bot]' &&
+      (
+        (github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'hyd-fix')) ||
+        (github.event.action == 'labeled' && github.event.label.name == 'hyd-fix')
+      )
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-pull-requests: write
+          permission-issues: read
+
+      - name: Check current PR ownership
+        id: ownership
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          PR_JSON=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          ELIGIBLE=$(jq -r --arg repo "$GITHUB_REPOSITORY" '
+            .state == "open" and
+            .user.login == "devin-ai-integration[bot]" and
+            .head.repo.full_name == $repo and
+            any(.labels[]; .name == "hyd-fix") and
+            (.assignees | length == 0)
+          ' <<<"$PR_JSON")
+          echo "eligible=$ELIGIBLE" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Preserve explicit ownership opt-outs
+        id: opt-out
+        if: steps.ownership.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          TIMELINE=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/timeline" --paginate --slurp)
+          ALLOWED=$(jq -r '
+            [.[][] | select(.event == "unassigned" and .assignee.login == "airbyte-support-bot")]
+            | length == 0
+          ' <<<"$TIMELINE")
+          echo "allowed=$ALLOWED" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Assign and verify Hydra ownership
+        if: steps.opt-out.outputs.allowed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/assignees" \
+            -f 'assignees[]=airbyte-support-bot' \
+            | jq -e 'any(.assignees[]; .login == "airbyte-support-bot")' \
+            || { echo "::error::Could not assign airbyte-support-bot to PR #$PR_NUMBER. Check the Octavia app's pull-request write permission and the bot's repository access, then rerun this job."; exit 1; }
+          echo "Assigned airbyte-support-bot to PR #$PR_NUMBER." >> "$GITHUB_STEP_SUMMARY"

@@ -25,6 +25,7 @@ jobs:
               - ".github/scripts/**"
               - ".github/workflows/connector-ci-checks.yml"
               - ".github/workflows/ci-scripts-tests.yml"
+              - ".github/workflows/hydra-pr-assignment.yml"
               - "poe-tasks/detect-python-cdk.py"
               - "poe-tasks/get-modified-connectors.sh"
               - "poe-tasks/build-and-publish-java-connectors-with-tag.sh"
