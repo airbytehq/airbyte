@@ -39,9 +39,6 @@ definitions:
         Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
         lack access; generate a new key in Ashby under Admin > API Keys.
     sync_token_rejected:
-      # Ashby rejects an expired or undecodable syncToken, or an incremental pass over more than
-      # 100 pages, with success: false. The codes arrive as errors: ["<code>"], errors: [{code}]
-      # or errorInfo.code. Failing keeps the stored token; IGNORE would keep it and read nothing.
       type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
@@ -89,9 +86,6 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     lookback_window: P1D
   sync_token_cursor:
-    # Ashby returns a new syncToken only on the page with moreDataAvailable: false and echoes
-    # the request's token on earlier pages, so the token is sent on every page alongside
-    # cursor and committed only when the pass completes.
     type: SyncTokenCursor
     token_path: ["syncToken"]
     token_option:
