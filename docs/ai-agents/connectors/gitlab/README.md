@@ -37,9 +37,9 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query) |
-| Merge Requests | [List](./REFERENCE.md#merge-requests-list), [Get](./REFERENCE.md#merge-requests-get), [Context Store Search](./REFERENCE.md#merge-requests-context-store-search), [Context Store SQL Query](./REFERENCE.md#merge-requests-context-store-sql-query) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query), [Semantic Search](./REFERENCE.md#projects-semantic-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query), [Semantic Search](./REFERENCE.md#issues-semantic-search) |
+| Merge Requests | [List](./REFERENCE.md#merge-requests-list), [Get](./REFERENCE.md#merge-requests-get), [Context Store Search](./REFERENCE.md#merge-requests-context-store-search), [Context Store SQL Query](./REFERENCE.md#merge-requests-context-store-sql-query), [Semantic Search](./REFERENCE.md#merge-requests-semantic-search) |
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
 | Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search), [Context Store SQL Query](./REFERENCE.md#commits-context-store-sql-query) |
 | Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#groups-context-store-sql-query) |
