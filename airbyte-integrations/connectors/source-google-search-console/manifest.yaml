@@ -1195,7 +1195,9 @@ definitions:
             value: "{{ record['keys'][2] }}"
           - path:
               - query
+            type: AddedFieldDefinition
             value: "{{ record['keys'][3] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][4] }}"
@@ -1253,7 +1255,9 @@ definitions:
             value: "{{ record['keys'][2] }}"
           - path:
               - query
+            type: AddedFieldDefinition
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1307,7 +1311,9 @@ definitions:
             value: "{{ record['keys'][2] }}"
           - path:
               - query
+            type: AddedFieldDefinition
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
