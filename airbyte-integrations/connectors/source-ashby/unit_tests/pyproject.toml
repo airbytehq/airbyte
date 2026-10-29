@@ -10,7 +10,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = { version = "7.37.0.post9.dev39463931382", allow-prereleases = true }
+airbyte-cdk = { git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "e95492916645a0b3758d255dc215a2084bd29073" }
 pytest = "^8"
 requests-mock = "^1"
 

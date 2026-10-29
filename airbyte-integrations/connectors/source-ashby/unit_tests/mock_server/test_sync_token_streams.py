@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import pytest
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -99,6 +99,14 @@ def _read(stream_name: str, state=None) -> EntrypointOutput:
     return read(get_source(config=config, state=state), config=config, catalog=catalog, state=state)
 
 
+def _emitted_tokens(output: EntrypointOutput) -> List[Any]:
+    return [
+        message.state.stream.stream_state.__dict__.get("token")
+        for message in output.state_messages
+        if message.state and message.state.stream and message.state.stream.stream_state
+    ]
+
+
 @pytest.mark.parametrize("stream_name,path,body,cursor_field", _SYNC_TOKEN_STREAMS, ids=_STREAM_IDS)
 def test_first_sync_pages_without_a_token_and_commits_the_terminal_token(stream_name, path, body, cursor_field):
     first_page = _request(path, body)
@@ -149,22 +157,22 @@ def test_incremental_sync_sends_the_stored_token_on_every_page(stream_name, path
     [stream for stream in _SYNC_TOKEN_STREAMS if stream[0] in ("users", "interview_schedules")],
     ids=["interview_schedules", "users"],
 )
-def test_rejected_token_restarts_a_full_pass_without_token_or_cursor(stream_name, path, body, cursor_field, error_body):
+def test_rejected_token_fails_the_stream_and_keeps_the_stored_token(stream_name, path, body, cursor_field, error_body):
     first_page = _request(path, body, sync_token="tok_old")
     second_page = _request(path, body, cursor="c1", sync_token="tok_old")
-    bootstrap = _request(path, body)
     with HttpMocker() as http_mocker:
         http_mocker.post(first_page, _page([{"id": "r1"}], more_data_available=True, next_cursor="c1", sync_token="tok_old"))
         http_mocker.post(second_page, HttpResponse(body=json.dumps(error_body), status_code=200))
-        http_mocker.post(bootstrap, _page([{"id": "r1"}, {"id": "r2"}], more_data_available=False, sync_token="tok_new"))
 
         output = _read(stream_name, _token_state(stream_name, "tok_old"))
 
-    assert output.errors == []
-    assert output.most_recent_state.stream_state.__dict__["token"] == "tok_new"
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "Refresh this stream" in error.message
+    assert all(token == "tok_old" for token in _emitted_tokens(output))
     http_mocker.assert_number_of_calls(first_page, 1)
     http_mocker.assert_number_of_calls(second_page, 1)
-    http_mocker.assert_number_of_calls(bootstrap, 1)
 
 
 def test_discovery_advertises_incremental_only_for_sync_token_streams():
