@@ -20,8 +20,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: "contact_lists"
-          - name: "responses"
-          - name: "surveys"
+            bypass_reason: "The test account has no contact lists."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
