@@ -293,3 +293,49 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+def test_read_users_restarts_after_completed_sync():
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=10),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    iterator = source.read(logger, config, catalog, state)
+
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, 11))
+
+
+def test_read_users_consecutive_syncs_emit_all_records():
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    first_messages = list(source.read(logger, config, catalog, {}))
+    first_records = [row.record.data for row in first_messages if row.type is Type.RECORD]
+    first_states = [row.state for row in first_messages if row.type is Type.STATE]
+    final_state = first_states[-1]
+
+    second_messages = list(source.read(logger, config, catalog, [final_state]))
+    second_records = [row.record.data for row in second_messages if row.type is Type.RECORD]
+
+    assert [record["id"] for record in first_records] == list(range(1, 11))
+    assert [record["id"] for record in second_records] == list(range(1, 11))
+    assert "loop_offset" not in vars(final_state.stream.stream_state)
