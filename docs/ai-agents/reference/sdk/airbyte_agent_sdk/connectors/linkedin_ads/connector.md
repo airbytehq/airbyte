@@ -33,8 +33,9 @@ Classes
         - user: The user details including name, email, etc.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -45,6 +46,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against account_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, role: str, account: str, user: str, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.RestliCreateResponse`
     :   Grants a user a role on an ad account. Note the non-standard Rest.li compound-key shape: this is a PUT (not POST) keyed by both the account and user URNs. Pass the raw URNs as parameters; they are URL-encoded automatically. Requires the rw_ads OAuth scope and the ACCOUNT_BILLING_ADMIN or ACCOUNT_MANAGER role.
@@ -131,8 +147,9 @@ Classes
         - status: The status of the account.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -143,6 +160,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, type: str, currency: str | None = None, reference: str | None = None, test: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[RestliCreateResponse, AccountsCreateResultMeta]`
     :   Creates a new ad account. Only type BUSINESS can be created via the API (ENTERPRISE accounts cannot). Requires the rw_ads OAuth scope. The new account ID is returned in the x-restli-id response header.
@@ -321,8 +353,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -333,6 +366,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_campaign_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by campaign. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by campaign.
@@ -467,8 +515,9 @@ Classes
         - sponsored_creative: Sponsored creative
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -479,6 +528,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_creative_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, creatives: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by creative. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by creative.
@@ -613,8 +677,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -625,6 +690,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_impression_device_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by impression device type. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by impression device type.
@@ -759,8 +839,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -771,6 +852,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_company_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member company. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member company.
@@ -905,8 +1001,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -917,6 +1014,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_company_size_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member company size. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member company size.
@@ -1051,8 +1163,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1063,6 +1176,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_country_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member country. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member country.
@@ -1197,8 +1325,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1209,6 +1338,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_industry_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member industry. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member industry.
@@ -1343,8 +1487,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1355,6 +1500,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_job_function_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member job function. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member job function.
@@ -1489,8 +1649,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1501,6 +1662,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_job_title_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member job title. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member job title.
@@ -1635,8 +1811,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1647,6 +1824,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_region_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member region. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member region.
@@ -1781,8 +1973,9 @@ Classes
         - sponsored_campaign: URN of the sponsored campaign this analytics record belongs to
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1793,6 +1986,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_member_seniority_analytics records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, pivot: str, time_granularity: str, date_range: str, campaigns: str, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult[list[AdAnalyticsRecord]]`
     :   Returns ad analytics data pivoted by member seniority. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by member seniority.
@@ -1875,8 +2083,9 @@ Classes
         - allowed_campaign_types: List of campaign types allowed for this campaign group.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1887,6 +2096,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaign_groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, account: str, name: str, run_schedule: CampaignGroupsCreateParamsRunschedule, account_id: str, status: str | None = None, total_budget: CampaignGroupsCreateParamsTotalbudget | None = None, objective_type: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[RestliCreateResponse, CampaignGroupsCreateResultMeta]`
     :   Creates a new campaign group in the ad account. Requires the rw_ads OAuth scope and a CAMPAIGN_MANAGER or higher ad-account role. The new campaign group ID is returned in the x-restli-id response header. runSchedule.start is required when creating with ACTIVE status.
@@ -2000,8 +2224,9 @@ Classes
         - offsite_preferences: Preferences related to offsite delivery.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2012,6 +2237,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaigns records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, account: str, name: str, political_intent: str, run_schedule: CampaignsCreateParamsRunschedule, offsite_delivery_enabled: bool, account_id: str, campaign_group: str | None = None, type: str | None = None, objective_type: str | None = None, status: str | None = None, cost_type: str | None = None, daily_budget: CampaignsCreateParamsDailybudget | None = None, unit_cost: CampaignsCreateParamsUnitcost | None = None, locale: CampaignsCreateParamsLocale | None = None, targeting_criteria: dict[str, Any] | None = None, audience_expansion_enabled: bool | None = None, creative_selection: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[RestliCreateResponse, CampaignsCreateResultMeta]`
     :   Creates a new campaign in the ad account. Requires the rw_ads OAuth scope and an ad-account role of CAMPAIGN_MANAGER or higher (VIEWER is read-only). The new campaign ID is returned in the x-restli-id response header. Commonly required fields beyond account and name include type, costType, unitCost or dailyBudget, locale, and targetingCriteria; LinkedIn returns a descriptive 400 when a required field is missing.
@@ -2145,8 +2385,9 @@ Classes
         - url_rules: Rules for URL matching in the conversion.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2157,6 +2398,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against conversions records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, account: str, name: str, type: str, attribution_type: str | None = None, post_click_attribution_window_size: int | None = None, view_through_attribution_window_size: int | None = None, enabled: bool | None = None, url_match_rule_expression: list[list[dict[str, Any]]] | None = None, value: ConversionsCreateParamsValue | None = None, auto_association_type: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[RestliCreateResponse, ConversionsCreateResultMeta]`
     :   Creates a new conversion tracking rule. Conversions API write access is gated behind a separate LinkedIn partner approval - the rw_conversions OAuth scope alone is not sufficient until access is granted. The new conversion ID is returned in the x-restli-id response header. Set autoAssociationType to ALL_CAMPAIGNS to associate the rule with every campaign in the account automatically.
@@ -2247,8 +2503,9 @@ Classes
         - leadgen_call_to_action: Call-to-action information for lead generation purposes.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2259,6 +2516,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against creatives records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, campaign: str, account_id: str, content: dict[str, Any] | None = None, intended_status: str | None = None, name: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[RestliCreateResponse, CreativesCreateResultMeta]`
     :   Creates a new creative in the ad account. Requires the rw_ads OAuth scope and a CREATIVE_MANAGER or higher ad-account role. The new creative URN is returned in the x-restli-id response header. The creative's content must reference existing assets (e.g. a post URN in content.reference for sponsored content).
@@ -2364,8 +2636,9 @@ Classes
                 - versioned_lead_gen_form_urn: URN identifying which form this FormResponse belongs to.
         
                 Args:
-                    query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                           in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+                    query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                           in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                           Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
                     limit: Maximum results to return (default 1000)
                     cursor: Pagination cursor from previous response's meta.cursor
                     fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2376,6 +2649,21 @@ Classes
         
                 Raises:
                     NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against lead_form_responses records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, owner: str, lead_type: str, count: int | None = None, start: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[LeadFormResponse], LeadFormResponsesListResultMeta]`
     :   Returns a list of lead form responses submitted to forms owned by a sponsored ad account
@@ -2431,8 +2719,9 @@ Classes
                 - version_tag: The number of times the form has been modified.
         
                 Args:
-                    query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                           in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+                    query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                           in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                           Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
                     limit: Maximum results to return (default 1000)
                     cursor: Pagination cursor from previous response's meta.cursor
                     fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2443,6 +2732,21 @@ Classes
         
                 Raises:
                     NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against lead_forms records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, q: str, owner: str, count: int | None = None, start: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[LeadForm], LeadFormsListResultMeta]`
     :   Returns a list of lead generation forms owned by a sponsored ad account
@@ -2511,12 +2815,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -2575,7 +2880,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -2588,6 +2897,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -2629,9 +2941,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -2686,7 +3000,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

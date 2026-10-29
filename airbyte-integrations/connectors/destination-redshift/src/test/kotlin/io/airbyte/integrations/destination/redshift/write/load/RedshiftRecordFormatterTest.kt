@@ -21,7 +21,7 @@ internal class RedshiftRecordFormatterTest {
     @Test
     fun `format produces values in column order`() {
         val columns = listOf("_airbyte_raw_id", "_airbyte_extracted_at", "name", "age")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -37,13 +37,13 @@ internal class RedshiftRecordFormatterTest {
         assertEquals("abc-123", result[0])
         assertEquals("2026-01-01T00:00:00Z", result[1])
         assertEquals("Alice", result[2])
-        assertEquals(BigInteger.valueOf(30), result[3])
+        assertEquals("30", result[3])
     }
 
     @Test
     fun `format returns empty string for missing columns`() {
         val columns = listOf("id", "name", "missing_col")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -54,15 +54,15 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(3, result.size)
-        assertEquals(BigInteger.ONE, result[0])
+        assertEquals("1", result[0])
         assertEquals("Bob", result[1])
-        assertEquals("", result[2])
+        assertEquals(null, result[2]) // missing non-varchar → null (Redshift auto-nulls)
     }
 
     @Test
     fun `format handles null values via toCsvValue`() {
         val columns = listOf("col_a", "col_b")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -73,14 +73,14 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(2, result.size)
-        assertEquals("", result[0]) // NullValue -> empty string via toCsvValue
+        assertEquals(null, result[0]) // NullValue in non-varchar → null (Redshift auto-nulls)
         assertEquals("present", result[1])
     }
 
     @Test
     fun `format serializes objects and arrays as JSON strings`() {
         val columns = listOf("json_obj", "json_arr")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -100,7 +100,7 @@ internal class RedshiftRecordFormatterTest {
     @Test
     fun `format handles boolean and number types`() {
         val columns = listOf("is_active", "price")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -111,24 +111,24 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(2, result.size)
-        assertEquals(true, result[0])
-        assertEquals(BigDecimal("19.99"), result[1])
+        assertEquals("true", result[0])
+        assertEquals("19.99", result[1])
     }
 
     @Test
-    fun `format with empty record returns all empty strings`() {
+    fun `format with empty record returns null for non-varchar columns`() {
         val columns = listOf("a", "b", "c")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val result = formatter.format(emptyMap())
 
-        assertEquals(listOf("", "", ""), result)
+        assertEquals(listOf(null, null, null), result)
     }
 
     @Test
     fun `format ignores extra fields not in column list`() {
         val columns = listOf("id")
-        val formatter = RedshiftSchemaRecordFormatter(columns)
+        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
 
         val record =
             mapOf(
@@ -139,6 +139,6 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(1, result.size)
-        assertEquals(BigInteger.ONE, result[0])
+        assertEquals("1", result[0])
     }
 }

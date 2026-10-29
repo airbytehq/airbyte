@@ -61,7 +61,7 @@ export const ProductInformation = ({ products }) => {
       </Badge>
       {embedded && <Badge available={true}>Embedded</Badge>}
       <a
-        href="https://airbyte.com/product/features"
+        href="https://airbyte.com/pricing"
         target="_blank"
         className={styles.helpIcon}
       >

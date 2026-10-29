@@ -82,7 +82,9 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuationToken
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('continuationToken') }}"

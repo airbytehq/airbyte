@@ -77,7 +77,7 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
 
@@ -168,7 +168,7 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
 class TriggerNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
     config: TriggerTableConfig,
-    val deleteQuerier: DeleteQuerier
+    val deleteQuerier: DeleteQuerier,
 ) : TriggerPartitionReader<P>(partition, config) {
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
@@ -217,7 +217,7 @@ class TriggerNonResumablePartitionReader<P : JdbcPartition<*>>(
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 }

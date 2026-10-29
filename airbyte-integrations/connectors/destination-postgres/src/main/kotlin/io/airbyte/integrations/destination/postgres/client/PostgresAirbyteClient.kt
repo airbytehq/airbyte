@@ -22,7 +22,9 @@ import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.TABLE_IS_EMPTY_ALIAS
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -34,19 +36,29 @@ private val log = KotlinLogging.logger {}
 @SuppressFBWarnings(
     value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
     justification =
-        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.",
 )
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
     private val columnManager: PostgresColumnManager,
-    private val postgresConfiguration: PostgresConfiguration
+    private val postgresConfiguration: PostgresConfiguration,
+    /**
+     * Feature flag for the pre-direct-load meta column repair in [ensureSchemaMatches]. Off by
+     * default: only customers migrating from a pre-direct-load connector version need the repair,
+     * and it is enabled for them by setting the env var
+     * `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR=true`.
+     */
+    @Value("\${airbyte.destination.postgres.meta-column-repair:false}")
+    private val metaColumnRepairEnabled: Boolean,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     companion object {
         private const val COLUMN_NAME_COLUMN = "column_name"
         /** SQLSTATE 42P01 = undefined_table; 3F000 = invalid_schema_name. */
         private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
+        /** SQLSTATE 42703 = undefined_column. */
+        private const val UNDEFINED_COLUMN_SQL_STATE = "42703"
     }
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -72,6 +84,15 @@ class PostgresAirbyteClient(
             }
         }
 
+    /**
+     * Answers the emptiness question with an existence check instead of `COUNT(*)`, which scales
+     * with table size.
+     */
+    override suspend fun tableIsEmpty(tableName: TableName): Boolean =
+        executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
+            !resultSet.next() || resultSet.getBoolean(TABLE_IS_EMPTY_ALIAS)
+        }
+
     override suspend fun namespaceExists(namespace: String): Boolean {
         return executeQuery(
             """
@@ -79,8 +100,10 @@ class PostgresAirbyteClient(
                 SELECT 1 FROM information_schema.schemata
                 WHERE schema_name = '$namespace'
             )
-            """
-        ) { rs -> rs.next() && rs.getBoolean(1) }
+            """,
+        ) { rs ->
+            rs.next() && rs.getBoolean(1)
+        }
     }
 
     override suspend fun tableExists(table: TableName): Boolean {
@@ -91,8 +114,10 @@ class PostgresAirbyteClient(
                 WHERE table_schema = '${table.namespace}'
                 AND table_name = '${table.name}'
             )
-            """
-        ) { rs -> rs.next() && rs.getBoolean(1) }
+            """,
+        ) { rs ->
+            rs.next() && rs.getBoolean(1)
+        }
     }
 
     override suspend fun createNamespace(namespace: String) {
@@ -118,7 +143,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         val (createTableSql, createIndexesSql) =
             sqlGenerator.createTable(stream, tableName, replace)
@@ -148,7 +173,7 @@ class PostgresAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         val metaColumnNames = columnManager.getMetaColumnNames()
         val targetColumnNames =
@@ -158,7 +183,7 @@ class PostgresAirbyteClient(
                 metaColumnNames + columnNameMapping.values
             }
         execute(
-            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName)
+            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName),
         )
     }
 
@@ -166,7 +191,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
@@ -175,12 +200,42 @@ class PostgresAirbyteClient(
         execute(sqlGenerator.dropTable(tableName))
     }
 
+    /**
+     * Tables created by pre-direct-load connector versions may lack the `_airbyte_meta` and
+     * `_airbyte_generation_id` columns. The schema diff can't repair them because the stream's
+     * final schema excludes the meta columns, so [ensureSchemaMatches] detects and adds missing
+     * meta columns (behind a feature flag) before the diff DDL runs.
+     */
+    private fun repairMissingMetaColumns(
+        tableName: TableName,
+        columnsInDb: Map<String, ColumnType>,
+    ) {
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filterKeys { metaColumn ->
+                columnsInDb.keys.none { it.equals(metaColumn, ignoreCase = true) }
+            }
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Table ${tableName.namespace}.${tableName.name} is missing Airbyte meta columns " +
+                    "${missingMetaColumns.keys} (likely created by a pre-direct-load connector " +
+                    "version); adding them"
+            }
+            execute(sqlGenerator.addMetaColumns(tableName, missingMetaColumns))
+        }
+    }
+
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
-        val columnsInDb = getColumnsFromDb(tableName)
+        var columnsInDb = getColumnsFromDb(tableName)
+        if (metaColumnRepairEnabled) {
+            // With the repair enabled, getColumnsFromDb also returns the airbyte meta columns:
+            // add any that are missing, then keep them out of the schema diff below.
+            repairMissingMetaColumns(tableName, columnsInDb)
+            columnsInDb = columnsInDb.filterKeys { it !in columnManager.getMetaColumnNames() }
+        }
         // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
         // In typed mode, finalSchema contains the mapped user columns
         val columnsInStream = stream.tableSchema.columnSchema.finalSchema
@@ -205,7 +260,7 @@ class PostgresAirbyteClient(
                 recreateCursorIndex =
                     !isRawTablesMode && shouldRecreateCursorIndex(stream, tableName),
                 cursorColumnName = stream.tableSchema.getCursor().firstOrNull(),
-            )
+            ),
         )
     }
 
@@ -227,7 +282,7 @@ class PostgresAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -237,7 +292,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        columnChangeset: ColumnChangeset
+        columnChangeset: ColumnChangeset,
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
@@ -256,7 +311,7 @@ class PostgresAirbyteClient(
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = false,
                     cursorColumnName = null,
-                )
+                ),
             )
         }
     }
@@ -355,8 +410,8 @@ class PostgresAirbyteClient(
             while (rs.next()) {
                 val columnName = rs.getString(COLUMN_NAME_COLUMN)
 
-                // Filter out airbyte columns
-                if (defaultColumnNames.contains(columnName)) {
+                // Filter out airbyte columns (unless the meta column repair needs to see them)
+                if (!metaColumnRepairEnabled && defaultColumnNames.contains(columnName)) {
                     continue
                 }
                 val dataType = rs.getString("data_type")
@@ -391,7 +446,7 @@ class PostgresAirbyteClient(
 
     internal fun generateSchemaChanges(
         columnsInDb: Map<String, ColumnType>,
-        columnsInStream: Map<String, ColumnType>
+        columnsInStream: Map<String, ColumnType>,
     ): Triple<Map<String, ColumnType>, Map<String, ColumnType>, Map<String, ColumnTypeChange>> {
         val addedColumns = columnsInStream.filterKeys { it !in columnsInDb.keys }
         val deletedColumns = columnsInDb.filterKeys { it !in columnsInStream.keys }
@@ -421,6 +476,14 @@ class PostgresAirbyteClient(
         } catch (e: Exception) {
             if (isMissingRelation(e)) {
                 log.debug(e) { "Table $tableName does not exist. Returning generation ID 0." }
+                0L
+            } else if (metaColumnRepairEnabled && isUndefinedColumn(e)) {
+                // Pre-direct-load tables lack _airbyte_generation_id until ensureSchemaMatches
+                // repairs them later in the sync; treat that as generation 0 (which routes
+                // truncate syncs down the overwrite path).
+                log.warn(e) {
+                    "Table $tableName does not have a generation ID column. Returning generation ID 0."
+                }
                 0L
             } else {
                 log.error(e) { "Failed to retrieve the generation ID for table $tableName." }
@@ -497,4 +560,8 @@ class PostgresAirbyteClient(
     private fun isMissingRelation(exception: Throwable): Boolean =
         generateSequence(exception) { it.cause }
             .any { it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES }
+
+    private fun isUndefinedColumn(exception: Throwable): Boolean =
+        generateSequence(exception) { it.cause }
+            .any { it is SQLException && it.sqlState == UNDEFINED_COLUMN_SQL_STATE }
 }

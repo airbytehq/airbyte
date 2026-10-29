@@ -19,8 +19,8 @@ object GcsDataLakeCleaner : DestinationCleaner {
     private val actualCleaner =
         IcebergDestinationCleaner(
             GcsDataLakeTestUtil.getCatalog(
-                GcsDataLakeTestUtil.parseConfig(GcsDataLakeTestUtil.BIGLAKE_CONFIG_PATH)
-            )
+                GcsDataLakeTestUtil.parseConfig(GcsDataLakeTestUtil.BIGLAKE_CONFIG_PATH),
+            ),
         )
 
     override fun cleanup() {

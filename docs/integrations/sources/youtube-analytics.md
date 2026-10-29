@@ -110,8 +110,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                             |
-|:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.5.0 | 2026-10-21 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
+| 1.4.7 | 2026-10-27 | [90075](https://github.com/airbytehq/airbyte/pull/90075) | Update dependencies |
+| 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
+| 1.4.5 | 2026-10-13 | [88882](https://github.com/airbytehq/airbyte/pull/88882) | Update dependencies |
+| 1.4.4 | 2026-10-06 | [88106](https://github.com/airbytehq/airbyte/pull/88106) | Update dependencies |
+| 1.4.3 | 2026-09-29 | [87431](https://github.com/airbytehq/airbyte/pull/87431) | Update dependencies |
+| 1.4.2 | 2026-09-22 | [86879](https://github.com/airbytehq/airbyte/pull/86879) | Update dependencies |
+| 1.4.1 | 2026-09-15 | [86309](https://github.com/airbytehq/airbyte/pull/86309) | Update dependencies |
+| 1.4.0 | 2026-09-09 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams, including reports that YouTube re-issues with corrected data |
+| 1.3.4 | 2026-09-08 | [85727](https://github.com/airbytehq/airbyte/pull/85727) | Update dependencies |
+| 1.3.3 | 2026-08-21 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
+| 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
 | 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
 | 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |

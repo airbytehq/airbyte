@@ -12,7 +12,7 @@ import java.util.stream.Stream
 
 class DefaultFlush(
     override val optimalBatchSizeBytes: Long,
-    private val syncOperation: SyncOperation
+    private val syncOperation: SyncOperation,
 ) : DestinationFlushFunction {
     override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         syncOperation.flushStream(streamDescriptor, stream)

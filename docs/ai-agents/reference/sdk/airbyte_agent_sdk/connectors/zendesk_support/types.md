@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticleAttachmentsAnyCondition"></a>
@@ -118,10 +118,24 @@ Classes
     `url: Any`
     :   The API URL of the attachment
 
+<a id="ArticleAttachmentsArrayContainsCondition"></a>
+
+`ArticleAttachmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ArticleAttachmentsContainsCondition"></a>
 
 `ArticleAttachmentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -150,6 +164,20 @@ Classes
     :   The type of the None singleton.
 
     `range_header: str`
+    :   The type of the None singleton.
+
+<a id="ArticleAttachmentsEndswithCondition"></a>
+
+`ArticleAttachmentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="ArticleAttachmentsEqCondition"></a>
@@ -302,20 +330,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStringFilter`
     :   The type of the None singleton.
 
-<a id="ArticleAttachmentsLikeCondition"></a>
-
-`ArticleAttachmentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ArticleAttachmentsListParams"></a>
 
 `ArticleAttachmentsListParams(*args, **kwargs)`
@@ -397,7 +411,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ArticleAttachmentsOrCondition"></a>
@@ -419,7 +433,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticleAttachmentsSearchFilter"></a>
@@ -474,7 +488,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsSortFilter]`
@@ -521,10 +535,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API URL of the attachment
 
+<a id="ArticleAttachmentsStartswithCondition"></a>
+
+`ArticleAttachmentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.ArticleAttachmentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ArticleAttachmentsStringFilter"></a>
 
 `ArticleAttachmentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -581,7 +609,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticlesAnyCondition"></a>
@@ -665,10 +693,24 @@ Classes
     `vote_sum: Any`
     :   Sum of upvotes and downvotes
 
+<a id="ArticlesArrayContainsCondition"></a>
+
+`ArticlesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ArticlesContainsCondition"></a>
 
 `ArticlesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -677,6 +719,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesEndswithCondition"></a>
+
+`ArticlesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStringFilter`
     :   The type of the None singleton.
 
 <a id="ArticlesEqCondition"></a>
@@ -844,20 +900,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStringFilter`
     :   The type of the None singleton.
 
-<a id="ArticlesLikeCondition"></a>
-
-`ArticlesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ArticlesListParams"></a>
 
 `ArticlesListParams(*args, **kwargs)`
@@ -942,7 +984,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ArticlesOrCondition"></a>
@@ -964,7 +1006,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticlesSearchFilter"></a>
@@ -1037,7 +1079,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesSortFilter]`
@@ -1102,10 +1144,24 @@ Classes
     `vote_sum: Literal['asc', 'desc']`
     :   Sum of upvotes and downvotes
 
+<a id="ArticlesStartswithCondition"></a>
+
+`ArticlesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.ArticlesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ArticlesStringFilter"></a>
 
 `ArticlesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1211,7 +1267,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AutomationsAnyCondition"></a>
@@ -1274,10 +1330,24 @@ Classes
     `updated_at: Any`
     :   The time the automation was last updated
 
+<a id="AutomationsArrayContainsCondition"></a>
+
+`AutomationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AutomationsContainsCondition"></a>
 
 `AutomationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1286,6 +1356,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsEndswithCondition"></a>
+
+`AutomationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStringFilter`
     :   The type of the None singleton.
 
 <a id="AutomationsEqCondition"></a>
@@ -1432,20 +1516,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStringFilter`
     :   The type of the None singleton.
 
-<a id="AutomationsLikeCondition"></a>
-
-`AutomationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AutomationsListParams"></a>
 
 `AutomationsListParams(*args, **kwargs)`
@@ -1533,7 +1603,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AutomationsOrCondition"></a>
@@ -1555,7 +1625,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AutomationsSearchFilter"></a>
@@ -1607,7 +1677,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsSortFilter]`
@@ -1651,10 +1721,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The time the automation was last updated
 
+<a id="AutomationsStartswithCondition"></a>
+
+`AutomationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.AutomationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AutomationsStringFilter"></a>
 
 `AutomationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1708,7 +1792,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BrandsAnyCondition"></a>
@@ -1792,10 +1876,24 @@ Classes
     `url: Any`
     :   The API URL for accessing this brand resource
 
+<a id="BrandsArrayContainsCondition"></a>
+
+`BrandsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BrandsContainsCondition"></a>
 
 `BrandsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1804,6 +1902,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BrandsEndswithCondition"></a>
+
+`BrandsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStringFilter`
     :   The type of the None singleton.
 
 <a id="BrandsEqCondition"></a>
@@ -1971,20 +2083,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStringFilter`
     :   The type of the None singleton.
 
-<a id="BrandsLikeCondition"></a>
-
-`BrandsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStringFilter`
-    :   The type of the None singleton.
-
 <a id="BrandsListParams"></a>
 
 `BrandsListParams(*args, **kwargs)`
@@ -2063,7 +2161,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BrandsOrCondition"></a>
@@ -2085,7 +2183,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BrandsSearchFilter"></a>
@@ -2158,7 +2256,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.BrandsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.BrandsSortFilter]`
@@ -2223,10 +2321,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API URL for accessing this brand resource
 
+<a id="BrandsStartswithCondition"></a>
+
+`BrandsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.BrandsStringFilter`
+    :   The type of the None singleton.
+
 <a id="BrandsStringFilter"></a>
 
 `BrandsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2301,7 +2413,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DeletedTicketsAnyCondition"></a>
@@ -2355,10 +2467,24 @@ Classes
     `subject: Any`
     :   The subject or title of the deleted ticket
 
+<a id="DeletedTicketsArrayContainsCondition"></a>
+
+`DeletedTicketsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="DeletedTicketsContainsCondition"></a>
 
 `DeletedTicketsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2367,6 +2493,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DeletedTicketsEndswithCondition"></a>
+
+`DeletedTicketsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStringFilter`
     :   The type of the None singleton.
 
 <a id="DeletedTicketsEqCondition"></a>
@@ -2490,20 +2630,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStringFilter`
     :   The type of the None singleton.
 
-<a id="DeletedTicketsLikeCondition"></a>
-
-`DeletedTicketsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DeletedTicketsListParams"></a>
 
 `DeletedTicketsListParams(*args, **kwargs)`
@@ -2588,7 +2714,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DeletedTicketsOrCondition"></a>
@@ -2610,7 +2736,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DeletedTicketsSearchFilter"></a>
@@ -2653,7 +2779,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsSortFilter]`
@@ -2688,10 +2814,24 @@ Classes
     `subject: Literal['asc', 'desc']`
     :   The subject or title of the deleted ticket
 
+<a id="DeletedTicketsStartswithCondition"></a>
+
+`DeletedTicketsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.DeletedTicketsStringFilter`
+    :   The type of the None singleton.
+
 <a id="DeletedTicketsStringFilter"></a>
 
 `DeletedTicketsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2736,7 +2876,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMembershipsAnyCondition"></a>
@@ -2793,10 +2933,24 @@ Classes
     `user_id: Any`
     :   The id of an agent
 
+<a id="GroupMembershipsArrayContainsCondition"></a>
+
+`GroupMembershipsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupMembershipsContainsCondition"></a>
 
 `GroupMembershipsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2805,6 +2959,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GroupMembershipsEndswithCondition"></a>
+
+`GroupMembershipsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStringFilter`
     :   The type of the None singleton.
 
 <a id="GroupMembershipsEqCondition"></a>
@@ -2931,20 +3099,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStringFilter`
     :   The type of the None singleton.
 
-<a id="GroupMembershipsLikeCondition"></a>
-
-`GroupMembershipsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GroupMembershipsListParams"></a>
 
 `GroupMembershipsListParams(*args, **kwargs)`
@@ -3023,7 +3177,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupMembershipsOrCondition"></a>
@@ -3045,7 +3199,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMembershipsSearchFilter"></a>
@@ -3091,7 +3245,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsSortFilter]`
@@ -3129,10 +3283,24 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   The id of an agent
 
+<a id="GroupMembershipsStartswithCondition"></a>
+
+`GroupMembershipsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.GroupMembershipsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GroupMembershipsStringFilter"></a>
 
 `GroupMembershipsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3180,7 +3348,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsAnyCondition"></a>
@@ -3243,10 +3411,24 @@ Classes
     `url: Any`
     :   The API URL of the group
 
+<a id="GroupsArrayContainsCondition"></a>
+
+`GroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsContainsCondition"></a>
 
 `GroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3255,6 +3437,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GroupsEndswithCondition"></a>
+
+`GroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="GroupsEqCondition"></a>
@@ -3401,20 +3597,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="GroupsLikeCondition"></a>
-
-`GroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GroupsListParams"></a>
 
 `GroupsListParams(*args, **kwargs)`
@@ -3496,7 +3678,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupsOrCondition"></a>
@@ -3518,7 +3700,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsSearchFilter"></a>
@@ -3570,7 +3752,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.GroupsSortFilter]`
@@ -3614,10 +3796,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API URL of the group
 
+<a id="GroupsStartswithCondition"></a>
+
+`GroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.GroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsStringFilter"></a>
 
 `GroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3671,7 +3867,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MacrosAnyCondition"></a>
@@ -3740,10 +3936,24 @@ Classes
     `url: Any`
     :   A URL to access the macro's details
 
+<a id="MacrosArrayContainsCondition"></a>
+
+`MacrosArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="MacrosContainsCondition"></a>
 
 `MacrosContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3752,6 +3962,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MacrosEndswithCondition"></a>
+
+`MacrosEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStringFilter`
     :   The type of the None singleton.
 
 <a id="MacrosEqCondition"></a>
@@ -3904,20 +4128,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStringFilter`
     :   The type of the None singleton.
 
-<a id="MacrosLikeCondition"></a>
-
-`MacrosLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStringFilter`
-    :   The type of the None singleton.
-
 <a id="MacrosListParams"></a>
 
 `MacrosListParams(*args, **kwargs)`
@@ -4017,7 +4227,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition`
     :   The type of the None singleton.
 
 <a id="MacrosOrCondition"></a>
@@ -4039,7 +4249,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MacrosSearchFilter"></a>
@@ -4097,7 +4307,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.MacrosAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.MacrosSortFilter]`
@@ -4147,10 +4357,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   A URL to access the macro's details
 
+<a id="MacrosStartswithCondition"></a>
+
+`MacrosStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.MacrosStringFilter`
+    :   The type of the None singleton.
+
 <a id="MacrosStringFilter"></a>
 
 `MacrosStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4210,7 +4434,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationMembershipsAnyCondition"></a>
@@ -4273,10 +4497,24 @@ Classes
     `view_tickets: Any`
     :   If true, this user can view tickets from this organization
 
+<a id="OrganizationMembershipsArrayContainsCondition"></a>
+
+`OrganizationMembershipsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrganizationMembershipsContainsCondition"></a>
 
 `OrganizationMembershipsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4285,6 +4523,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrganizationMembershipsEndswithCondition"></a>
+
+`OrganizationMembershipsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStringFilter`
     :   The type of the None singleton.
 
 <a id="OrganizationMembershipsEqCondition"></a>
@@ -4417,20 +4669,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStringFilter`
     :   The type of the None singleton.
 
-<a id="OrganizationMembershipsLikeCondition"></a>
-
-`OrganizationMembershipsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrganizationMembershipsListParams"></a>
 
 `OrganizationMembershipsListParams(*args, **kwargs)`
@@ -4509,7 +4747,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrganizationMembershipsOrCondition"></a>
@@ -4531,7 +4769,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationMembershipsSearchFilter"></a>
@@ -4583,7 +4821,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsSortFilter]`
@@ -4627,10 +4865,24 @@ Classes
     `view_tickets: Literal['asc', 'desc']`
     :   If true, this user can view tickets from this organization
 
+<a id="OrganizationMembershipsStartswithCondition"></a>
+
+`OrganizationMembershipsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationMembershipsStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrganizationMembershipsStringFilter"></a>
 
 `OrganizationMembershipsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4684,7 +4936,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationsAnyCondition"></a>
@@ -4765,10 +5017,24 @@ Classes
     `url: Any`
     :   The API URL of this organization
 
+<a id="OrganizationsArrayContainsCondition"></a>
+
+`OrganizationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrganizationsContainsCondition"></a>
 
 `OrganizationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4777,6 +5043,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrganizationsEndswithCondition"></a>
+
+`OrganizationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStringFilter`
     :   The type of the None singleton.
 
 <a id="OrganizationsEqCondition"></a>
@@ -4941,20 +5221,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStringFilter`
     :   The type of the None singleton.
 
-<a id="OrganizationsLikeCondition"></a>
-
-`OrganizationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrganizationsListParams"></a>
 
 `OrganizationsListParams(*args, **kwargs)`
@@ -5033,7 +5299,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrganizationsOrCondition"></a>
@@ -5055,7 +5321,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationsSearchFilter"></a>
@@ -5125,7 +5391,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsSortFilter]`
@@ -5187,10 +5453,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API URL of this organization
 
+<a id="OrganizationsStartswithCondition"></a>
+
+`OrganizationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.OrganizationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrganizationsStringFilter"></a>
 
 `OrganizationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5262,7 +5542,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsAnyCondition"></a>
@@ -5334,10 +5614,24 @@ Classes
     `url: Any`
     :   The API URL of this satisfaction rating resource
 
+<a id="SatisfactionRatingsArrayContainsCondition"></a>
+
+`SatisfactionRatingsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SatisfactionRatingsContainsCondition"></a>
 
 `SatisfactionRatingsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5346,6 +5640,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SatisfactionRatingsEndswithCondition"></a>
+
+`SatisfactionRatingsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStringFilter`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsEqCondition"></a>
@@ -5501,20 +5809,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStringFilter`
     :   The type of the None singleton.
 
-<a id="SatisfactionRatingsLikeCondition"></a>
-
-`SatisfactionRatingsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SatisfactionRatingsListParams"></a>
 
 `SatisfactionRatingsListParams(*args, **kwargs)`
@@ -5602,7 +5896,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsOrCondition"></a>
@@ -5624,7 +5918,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsSearchFilter"></a>
@@ -5685,7 +5979,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsSortFilter]`
@@ -5738,10 +6032,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API URL of this satisfaction rating resource
 
+<a id="SatisfactionRatingsStartswithCondition"></a>
+
+`SatisfactionRatingsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.SatisfactionRatingsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SatisfactionRatingsStringFilter"></a>
 
 `SatisfactionRatingsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5804,7 +6112,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SlaPoliciesAnyCondition"></a>
@@ -5867,10 +6175,24 @@ Classes
     `url: Any`
     :   URL of the SLA policy
 
+<a id="SlaPoliciesArrayContainsCondition"></a>
+
+`SlaPoliciesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SlaPoliciesContainsCondition"></a>
 
 `SlaPoliciesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5879,6 +6201,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SlaPoliciesEndswithCondition"></a>
+
+`SlaPoliciesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStringFilter`
     :   The type of the None singleton.
 
 <a id="SlaPoliciesEqCondition"></a>
@@ -6025,20 +6361,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStringFilter`
     :   The type of the None singleton.
 
-<a id="SlaPoliciesLikeCondition"></a>
-
-`SlaPoliciesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SlaPoliciesListParams"></a>
 
 `SlaPoliciesListParams(*args, **kwargs)`
@@ -6117,7 +6439,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SlaPoliciesOrCondition"></a>
@@ -6139,7 +6461,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SlaPoliciesSearchFilter"></a>
@@ -6191,7 +6513,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesSortFilter]`
@@ -6235,10 +6557,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   URL of the SLA policy
 
+<a id="SlaPoliciesStartswithCondition"></a>
+
+`SlaPoliciesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.SlaPoliciesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SlaPoliciesStringFilter"></a>
 
 `SlaPoliciesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6292,7 +6628,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -6334,10 +6670,24 @@ Classes
     `name: Any`
     :   The tag name string used to label and categorize resources
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6346,6 +6696,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TagsEndswithCondition"></a>
+
+`TagsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TagsStringFilter`
     :   The type of the None singleton.
 
 <a id="TagsEqCondition"></a>
@@ -6457,20 +6821,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TagsStringFilter`
     :   The type of the None singleton.
 
-<a id="TagsLikeCondition"></a>
-
-`TagsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TagsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TagsListParams"></a>
 
 `TagsListParams(*args, **kwargs)`
@@ -6549,7 +6899,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -6571,7 +6921,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -6602,7 +6952,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TagsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TagsSortFilter]`
@@ -6625,10 +6975,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   The tag name string used to label and categorize resources
 
+<a id="TagsStartswithCondition"></a>
+
+`TagsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TagsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TagsStringFilter"></a>
 
 `TagsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6661,7 +7025,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketAuditsAnyCondition"></a>
@@ -6721,10 +7085,24 @@ Classes
     `via: Any`
     :   Describes how the audit was created, providing context about the creation source
 
+<a id="TicketAuditsArrayContainsCondition"></a>
+
+`TicketAuditsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketAuditsContainsCondition"></a>
 
 `TicketAuditsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6733,6 +7111,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketAuditsEndswithCondition"></a>
+
+`TicketAuditsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketAuditsEqCondition"></a>
@@ -6862,20 +7254,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketAuditsLikeCondition"></a>
-
-`TicketAuditsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketAuditsListParams"></a>
 
 `TicketAuditsListParams(*args, **kwargs)`
@@ -6957,7 +7335,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketAuditsOrCondition"></a>
@@ -6979,7 +7357,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketAuditsSearchFilter"></a>
@@ -7028,7 +7406,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsSortFilter]`
@@ -7069,10 +7447,24 @@ Classes
     `via: Literal['asc', 'desc']`
     :   Describes how the audit was created, providing context about the creation source
 
+<a id="TicketAuditsStartswithCondition"></a>
+
+`TicketAuditsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketAuditsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketAuditsStringFilter"></a>
 
 `TicketAuditsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7172,7 +7564,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketCommentsAnyCondition"></a>
@@ -7259,10 +7651,24 @@ Classes
     `via_reference_id: Any`
     :   Reference identifier for the channel through which the comment was created
 
+<a id="TicketCommentsArrayContainsCondition"></a>
+
+`TicketCommentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketCommentsContainsCondition"></a>
 
 `TicketCommentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7325,6 +7731,20 @@ Classes
     :   The type of the None singleton.
 
     `public: bool`
+    :   The type of the None singleton.
+
+<a id="TicketCommentsEndswithCondition"></a>
+
+`TicketCommentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketCommentsEqCondition"></a>
@@ -7481,20 +7901,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketCommentsLikeCondition"></a>
-
-`TicketCommentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketCommentsListParams"></a>
 
 `TicketCommentsListParams(*args, **kwargs)`
@@ -7582,7 +7988,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketCommentsOrCondition"></a>
@@ -7604,7 +8010,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketCommentsSearchFilter"></a>
@@ -7680,7 +8086,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsSortFilter]`
@@ -7748,10 +8154,24 @@ Classes
     `via_reference_id: Literal['asc', 'desc']`
     :   Reference identifier for the channel through which the comment was created
 
+<a id="TicketCommentsStartswithCondition"></a>
+
+`TicketCommentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketCommentsStringFilter"></a>
 
 `TicketCommentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7829,7 +8249,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFieldsAnyCondition"></a>
@@ -7946,10 +8366,24 @@ Classes
     `visible_in_portal: Any`
     :   Whether this field is visible to end users in Help Center
 
+<a id="TicketFieldsArrayContainsCondition"></a>
+
+`TicketFieldsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFieldsContainsCondition"></a>
 
 `TicketFieldsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7958,6 +8392,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketFieldsEndswithCondition"></a>
+
+`TicketFieldsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketFieldsEqCondition"></a>
@@ -8158,20 +8606,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketFieldsLikeCondition"></a>
-
-`TicketFieldsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketFieldsListParams"></a>
 
 `TicketFieldsListParams(*args, **kwargs)`
@@ -8253,7 +8687,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketFieldsOrCondition"></a>
@@ -8275,7 +8709,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFieldsSearchFilter"></a>
@@ -8381,7 +8815,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsSortFilter]`
@@ -8479,10 +8913,24 @@ Classes
     `visible_in_portal: Literal['asc', 'desc']`
     :   Whether this field is visible to end users in Help Center
 
+<a id="TicketFieldsStartswithCondition"></a>
+
+`TicketFieldsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFieldsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFieldsStringFilter"></a>
 
 `TicketFieldsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8590,7 +9038,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFormsAnyCondition"></a>
@@ -8677,10 +9125,24 @@ Classes
     `url: Any`
     :   URL of the ticket form
 
+<a id="TicketFormsArrayContainsCondition"></a>
+
+`TicketFormsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFormsContainsCondition"></a>
 
 `TicketFormsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8689,6 +9151,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketFormsEndswithCondition"></a>
+
+`TicketFormsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketFormsEqCondition"></a>
@@ -8859,20 +9335,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketFormsLikeCondition"></a>
-
-`TicketFormsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketFormsListParams"></a>
 
 `TicketFormsListParams(*args, **kwargs)`
@@ -8957,7 +9419,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketFormsOrCondition"></a>
@@ -8979,7 +9441,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFormsSearchFilter"></a>
@@ -9055,7 +9517,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsSortFilter]`
@@ -9123,10 +9585,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   URL of the ticket form
 
+<a id="TicketFormsStartswithCondition"></a>
+
+`TicketFormsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketFormsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFormsStringFilter"></a>
 
 `TicketFormsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9204,7 +9680,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketMetricsAnyCondition"></a>
@@ -9330,10 +9806,24 @@ Classes
     `url: Any`
     :   The API url of the ticket metric
 
+<a id="TicketMetricsArrayContainsCondition"></a>
+
+`TicketMetricsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketMetricsContainsCondition"></a>
 
 `TicketMetricsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -9342,6 +9832,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketMetricsEndswithCondition"></a>
+
+`TicketMetricsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketMetricsEqCondition"></a>
@@ -9537,20 +10041,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketMetricsLikeCondition"></a>
-
-`TicketMetricsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketMetricsListParams"></a>
 
 `TicketMetricsListParams(*args, **kwargs)`
@@ -9629,7 +10119,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketMetricsOrCondition"></a>
@@ -9651,7 +10141,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketMetricsSearchFilter"></a>
@@ -9766,7 +10256,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsSortFilter]`
@@ -9873,10 +10363,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The API url of the ticket metric
 
+<a id="TicketMetricsStartswithCondition"></a>
+
+`TicketMetricsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketMetricsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketMetricsStringFilter"></a>
 
 `TicketMetricsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9993,7 +10497,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsAnyCondition"></a>
@@ -10152,10 +10656,24 @@ Classes
     `via: Any`
     :   Object describing the channel and method through which the ticket was created
 
+<a id="TicketsArrayContainsCondition"></a>
+
+`TicketsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketsContainsCondition"></a>
 
 `TicketsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -10271,6 +10789,20 @@ Classes
     :   The type of the None singleton.
 
     `value: str`
+    :   The type of the None singleton.
+
+<a id="TicketsEndswithCondition"></a>
+
+`TicketsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketsEqCondition"></a>
@@ -10513,20 +11045,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketsLikeCondition"></a>
-
-`TicketsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketsListParams"></a>
 
 `TicketsListParams(*args, **kwargs)`
@@ -10614,7 +11132,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketsOrCondition"></a>
@@ -10636,7 +11154,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsSearchFilter"></a>
@@ -10784,7 +11302,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsSortFilter]`
@@ -10924,10 +11442,24 @@ Classes
     `via: Literal['asc', 'desc']`
     :   Object describing the channel and method through which the ticket was created
 
+<a id="TicketsStartswithCondition"></a>
+
+`TicketsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketsStringFilter"></a>
 
 `TicketsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -11181,7 +11713,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TriggersAnyCondition"></a>
@@ -11253,10 +11785,24 @@ Classes
     `url: Any`
     :   The URL of the trigger
 
+<a id="TriggersArrayContainsCondition"></a>
+
+`TriggersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TriggersContainsCondition"></a>
 
 `TriggersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -11265,6 +11811,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TriggersEndswithCondition"></a>
+
+`TriggersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStringFilter`
     :   The type of the None singleton.
 
 <a id="TriggersEqCondition"></a>
@@ -11420,20 +11980,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStringFilter`
     :   The type of the None singleton.
 
-<a id="TriggersLikeCondition"></a>
-
-`TriggersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStringFilter`
-    :   The type of the None singleton.
-
 <a id="TriggersListParams"></a>
 
 `TriggersListParams(*args, **kwargs)`
@@ -11524,7 +12070,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition`
     :   The type of the None singleton.
 
 <a id="TriggersOrCondition"></a>
@@ -11546,7 +12092,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TriggersSearchFilter"></a>
@@ -11607,7 +12153,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.TriggersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.TriggersSortFilter]`
@@ -11660,10 +12206,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The URL of the trigger
 
+<a id="TriggersStartswithCondition"></a>
+
+`TriggersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.TriggersStringFilter`
+    :   The type of the None singleton.
+
 <a id="TriggersStringFilter"></a>
 
 `TriggersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -11726,7 +12286,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -11879,10 +12439,24 @@ Classes
     `verified: Any`
     :   Indicates if the user's identity has been verified
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -11952,6 +12526,20 @@ Classes
     :   The type of the None singleton.
 
     `verified: bool`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.zendesk_support.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -12188,20 +12776,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zendesk_support.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.zendesk_support.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -12286,7 +12860,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -12308,7 +12882,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -12450,7 +13024,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLikeCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.zendesk_support.types.UsersEqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNeqCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersGteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLtCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersLteCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersInCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersNotCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAndCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersOrCondition | airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_support.types.UsersSortFilter]`
@@ -12584,10 +13158,24 @@ Classes
     `verified: Literal['asc', 'desc']`
     :   Indicates if the user's identity has been verified
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.zendesk_support.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

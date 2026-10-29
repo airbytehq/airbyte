@@ -53,7 +53,7 @@ class S3DataLakeChecker(
      * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
      * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
-     * permissions)
+     *   permissions)
      */
     override fun check() {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
@@ -64,7 +64,7 @@ class S3DataLakeChecker(
                 when (it) {
                     is GlueCatalogConfiguration -> it.databaseName
                     is NessieCatalogConfiguration -> it.namespace
-                    is RestCatalogConfiguration, -> it.namespace
+                    is RestCatalogConfiguration -> it.namespace
                     is PolarisCatalogConfiguration -> it.namespace
                 }
             }
@@ -96,7 +96,7 @@ class S3DataLakeChecker(
                     catalog,
                     tableIdGenerator.toTableIdentifier(testTableIdentifier),
                     it.io(),
-                    it.location()
+                    it.location(),
                 )
             }
         }

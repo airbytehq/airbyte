@@ -38,7 +38,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsAnyCondition"></a>
@@ -137,10 +137,24 @@ Classes
     `segments_date: Any`
     :   Date segment for the report row
 
+<a id="AccountsArrayContainsCondition"></a>
+
+`AccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -149,6 +163,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AccountsEndswithCondition"></a>
+
+`AccountsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
 
 <a id="AccountsEqCondition"></a>
@@ -317,20 +345,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
 
-<a id="AccountsLikeCondition"></a>
-
-`AccountsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.AccountsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AccountsListParams"></a>
 
 `AccountsListParams(*args, **kwargs)`
@@ -343,9 +357,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -415,7 +426,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountsOrCondition"></a>
@@ -437,7 +448,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsSearchFilter"></a>
@@ -525,7 +536,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.AccountsSortFilter]`
@@ -605,10 +616,24 @@ Classes
     `segments_date: Literal['asc', 'desc']`
     :   Date segment for the report row
 
+<a id="AccountsStartswithCondition"></a>
+
+`AccountsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.AccountsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsStringFilter"></a>
 
 `AccountsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -698,7 +723,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupAdLabelsAnyCondition"></a>
@@ -749,10 +774,24 @@ Classes
     `label_resource_name: Any`
     :   Resource name of the label
 
+<a id="AdGroupAdLabelsArrayContainsCondition"></a>
+
+`AdGroupAdLabelsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupAdLabelsContainsCondition"></a>
 
 `AdGroupAdLabelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -761,6 +800,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdGroupAdLabelsEndswithCondition"></a>
+
+`AdGroupAdLabelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupAdLabelsEqCondition"></a>
@@ -881,20 +934,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupAdLabelsLikeCondition"></a>
-
-`AdGroupAdLabelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupAdLabelsListParams"></a>
 
 `AdGroupAdLabelsListParams(*args, **kwargs)`
@@ -907,9 +946,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -979,7 +1015,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupAdLabelsOrCondition"></a>
@@ -1001,7 +1037,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupAdLabelsSearchFilter"></a>
@@ -1041,7 +1077,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsSortFilter]`
@@ -1073,10 +1109,24 @@ Classes
     `label_resource_name: Literal['asc', 'desc']`
     :   Resource name of the label
 
+<a id="AdGroupAdLabelsStartswithCondition"></a>
+
+`AdGroupAdLabelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdLabelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupAdLabelsStringFilter"></a>
 
 `AdGroupAdLabelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1118,7 +1168,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupAdsAnyCondition"></a>
@@ -1208,10 +1258,24 @@ Classes
     `segments_date: Any`
     :   Date segment for the report row
 
+<a id="AdGroupAdsArrayContainsCondition"></a>
+
+`AdGroupAdsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupAdsContainsCondition"></a>
 
 `AdGroupAdsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1220,6 +1284,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdGroupAdsEndswithCondition"></a>
+
+`AdGroupAdsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupAdsEqCondition"></a>
@@ -1379,20 +1457,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupAdsLikeCondition"></a>
-
-`AdGroupAdsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupAdsListParams"></a>
 
 `AdGroupAdsListParams(*args, **kwargs)`
@@ -1405,9 +1469,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -1477,7 +1538,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupAdsOrCondition"></a>
@@ -1499,7 +1560,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupAdsSearchFilter"></a>
@@ -1578,7 +1639,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsSortFilter]`
@@ -1649,10 +1710,24 @@ Classes
     `segments_date: Literal['asc', 'desc']`
     :   Date segment for the report row
 
+<a id="AdGroupAdsStartswithCondition"></a>
+
+`AdGroupAdsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupAdsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupAdsStringFilter"></a>
 
 `AdGroupAdsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1733,7 +1808,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupLabelsAnyCondition"></a>
@@ -1784,10 +1859,24 @@ Classes
     `label_resource_name: Any`
     :   Resource name of the label
 
+<a id="AdGroupLabelsArrayContainsCondition"></a>
+
+`AdGroupLabelsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupLabelsContainsCondition"></a>
 
 `AdGroupLabelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1844,6 +1933,20 @@ Classes
     :   The type of the None singleton.
 
     `label: str`
+    :   The type of the None singleton.
+
+<a id="AdGroupLabelsEndswithCondition"></a>
+
+`AdGroupLabelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupLabelsEqCondition"></a>
@@ -1964,20 +2067,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupLabelsLikeCondition"></a>
-
-`AdGroupLabelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupLabelsListParams"></a>
 
 `AdGroupLabelsListParams(*args, **kwargs)`
@@ -1990,9 +2079,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -2062,7 +2148,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupLabelsOrCondition"></a>
@@ -2084,7 +2170,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupLabelsSearchFilter"></a>
@@ -2124,7 +2210,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsSortFilter]`
@@ -2156,10 +2242,24 @@ Classes
     `label_resource_name: Literal['asc', 'desc']`
     :   Resource name of the label
 
+<a id="AdGroupLabelsStartswithCondition"></a>
+
+`AdGroupLabelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupLabelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupLabelsStringFilter"></a>
 
 `AdGroupLabelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2201,7 +2301,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsAnyCondition"></a>
@@ -2303,10 +2403,24 @@ Classes
     `segments_date: Any`
     :   Date segment for the report row
 
+<a id="AdGroupsArrayContainsCondition"></a>
+
+`AdGroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupsContainsCondition"></a>
 
 `AdGroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2315,6 +2429,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdGroupsEndswithCondition"></a>
+
+`AdGroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupsEqCondition"></a>
@@ -2486,20 +2614,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupsLikeCondition"></a>
-
-`AdGroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupsListParams"></a>
 
 `AdGroupsListParams(*args, **kwargs)`
@@ -2512,9 +2626,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -2584,7 +2695,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupsOrCondition"></a>
@@ -2606,7 +2717,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsSearchFilter"></a>
@@ -2697,7 +2808,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.AdGroupsSortFilter]`
@@ -2780,10 +2891,24 @@ Classes
     `segments_date: Literal['asc', 'desc']`
     :   Date segment for the report row
 
+<a id="AdGroupsStartswithCondition"></a>
+
+`AdGroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.AdGroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupsStringFilter"></a>
 
 `AdGroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2961,7 +3086,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignLabelsAnyCondition"></a>
@@ -3012,10 +3137,24 @@ Classes
     `label_resource_name: Any`
     :   Resource name of the label
 
+<a id="CampaignLabelsArrayContainsCondition"></a>
+
+`CampaignLabelsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignLabelsContainsCondition"></a>
 
 `CampaignLabelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3072,6 +3211,20 @@ Classes
     :   The type of the None singleton.
 
     `label: str`
+    :   The type of the None singleton.
+
+<a id="CampaignLabelsEndswithCondition"></a>
+
+`CampaignLabelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignLabelsEqCondition"></a>
@@ -3192,20 +3345,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignLabelsLikeCondition"></a>
-
-`CampaignLabelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignLabelsListParams"></a>
 
 `CampaignLabelsListParams(*args, **kwargs)`
@@ -3218,9 +3357,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -3290,7 +3426,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignLabelsOrCondition"></a>
@@ -3312,7 +3448,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignLabelsSearchFilter"></a>
@@ -3352,7 +3488,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsSortFilter]`
@@ -3384,10 +3520,24 @@ Classes
     `label_resource_name: Literal['asc', 'desc']`
     :   Resource name of the label
 
+<a id="CampaignLabelsStartswithCondition"></a>
+
+`CampaignLabelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.CampaignLabelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignLabelsStringFilter"></a>
 
 `CampaignLabelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3429,7 +3579,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -3555,10 +3705,24 @@ Classes
     `segments_hour: Any`
     :   Hour segment
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3567,6 +3731,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -3762,20 +3940,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_ads.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -3788,9 +3952,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -3860,7 +4021,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -3882,7 +4043,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -3997,7 +4158,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.google_ads.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_ads.types.CampaignsSortFilter]`
@@ -4104,10 +4265,24 @@ Classes
     `segments_hour: Literal['asc', 'desc']`
     :   Hour segment
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_ads.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

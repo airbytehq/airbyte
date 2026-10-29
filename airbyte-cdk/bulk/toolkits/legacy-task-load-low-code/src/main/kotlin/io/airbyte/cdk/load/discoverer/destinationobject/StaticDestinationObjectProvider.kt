@@ -14,7 +14,7 @@ import io.airbyte.cdk.util.Jsons
  */
 class StaticDestinationObjectProvider(
     private val objectNames: List<String>,
-    private val namePath: String = "name"
+    private val namePath: String = "name",
 ) : DestinationObjectProvider {
     override fun get(): List<DestinationObject> {
         return objectNames.map { DestinationObject(it, Jsons.objectNode().put(namePath, it)) }
