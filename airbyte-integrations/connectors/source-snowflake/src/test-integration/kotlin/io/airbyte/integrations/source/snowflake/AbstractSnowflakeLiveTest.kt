@@ -11,13 +11,21 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
 /**
  * Points the test class at the seeded [SnowflakeSharedSchema], which is created once per JVM and
- * dropped after the last test. Each class gets its own admin connection for DDL/DML, since JDBC
- * connections are not safe to share between concurrently running classes.
+ * dropped after the last test.
+ *
+ * Test methods run concurrently (up to `testExecutionConcurrency` in `gradle.properties`), across
+ * and within classes. That is safe as long as every test only mutates tables or schemas it owns:
+ * the cursor tests insert into their own `INC_*` table, the discover test creates and drops its own
+ * extra schemas, everything else only reads. The per-class [admin] connection is shared by the
+ * class's tests, so [SnowflakeLiveTestSupport.execute] serializes statements on it.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(SnowflakeSharedSchemaExtension::class)
 abstract class AbstractSnowflakeLiveTest {
     protected lateinit var schema: String

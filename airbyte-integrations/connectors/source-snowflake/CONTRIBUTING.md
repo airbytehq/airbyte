@@ -57,9 +57,11 @@ The file has the shape of the connector spec, for example:
 The test classes share one schema `AIRBYTEIT<timestamp><letters>` per test JVM: `SnowflakeSharedSchema`
 creates it in the configured database and seeds it from `src/test-integration/resources/seed.sql` on
 first use, and drops it after the last test. The role therefore needs `CREATE SCHEMA` on the database
-and `USAGE` on the warehouse. Tests must not depend on row counts another class changes (the cursor
-tests insert into their `INC_*` tables), and anything a class needs in the catalog must come from
-the seed. Without a secrets file the tests are skipped, not failed.
+and `USAGE` on the warehouse. Tests run concurrently (`testExecutionConcurrency` in
+`gradle.properties`), so a test must only mutate tables or schemas it owns (the cursor tests insert
+into their own `INC_*` tables), must not depend on row counts another test changes, and anything a
+class needs in the catalog must come from the seed. Without a secrets file the tests are skipped, not
+failed.
 
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-snowflake:integrationTestNonDocker
