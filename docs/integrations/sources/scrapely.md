@@ -65,6 +65,6 @@ The Scrape.ly API allows 1,000 requests per minute per account, and 5,000 per mi
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2026-10-29 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Initial release |
+| 0.1.0   | 2026-10-29 | [90184](https://github.com/airbytehq/airbyte/pull/90184) | Initial release |
 
 </details>
