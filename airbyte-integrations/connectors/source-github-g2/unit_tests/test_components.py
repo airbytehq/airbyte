@@ -20,7 +20,6 @@ from components import (
     IssueTimelineEventsExtractor,
     NestedGraphQLPaginationStrategy,
     ReleasesRecordTransformation,
-    _extract_database_id_from_node_id,
     _resolve_page_size,
 )
 
@@ -474,48 +473,6 @@ def test_deep_strategy_reads_its_documents_from_parameters():
 # --- Releases transformation ---------------------------------------------------------------
 
 
-@pytest.mark.parametrize(
-    ("node_id", "expected"),
-    [
-        ("RA_kwDOAbcDEf4AAAAB", 1),
-        # Real release-asset node ids from a live read.
-        ("RA_kwDODKw3uc4Vg-A4", 360964152),
-        ("RA_kwDODKw3uc4Vg-A6", 360964154),
-        ("", None),
-        (None, None),
-        # No `_`, so there is no type prefix to strip and nothing to decode.
-        ("nounderscore", None),
-        # Anything shorter than 4 decoded bytes cannot carry a uint32.
-        ("RA_AA", None),
-    ],
-)
-def test_extract_database_id_from_node_id(node_id, expected):
-    assert _extract_database_id_from_node_id(node_id) == expected
-
-
-def test_extract_database_id_only_swallows_decode_errors():
-    """Only `ValueError`, `struct.error` and `binascii.Error` are caught. Anything else — a
-    `TypeError` from an object that is not a string, say — must propagate rather than turn into
-    a silent `None`."""
-
-    class BadNodeId:
-        def __contains__(self, item):
-            return True
-
-        def split(self, *args, **kwargs):
-            raise TypeError("split not supported")
-
-    with pytest.raises(TypeError):
-        _extract_database_id_from_node_id(BadNodeId())
-
-
-def test_extract_database_id_is_lenient_about_malformed_node_ids():
-    """Carried over from the legacy decoder unchanged: `urlsafe_b64decode` ignores characters
-    outside the alphabet, so a malformed node id yields a plausible-looking integer rather
-    than None. Pinned so the behavior is at least visible."""
-    assert _extract_database_id_from_node_id("RA_!!!not-base64!!!") == 1839931115
-
-
 def test_releases_transformation_uses_the_configured_api_url():
     """GitHub Enterprise Server installs have their own host, and the synthesized URLs have to
     follow it rather than hard-coding api.github.com."""
@@ -529,6 +486,8 @@ def test_releases_transformation_uses_the_configured_api_url():
 
     assert record["url"] == "https://github.example.com/api/v3/repos/org/repo/releases/5"
     assert record["tarball_url"] == "https://github.example.com/api/v3/repos/org/repo/tarball/v1"
+    assert record["asset_download_urls"] == []
+    assert "assets" not in record
 
 
 # --- _resolve_page_size -------------------------------------------------------------------

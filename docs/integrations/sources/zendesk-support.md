@@ -17,12 +17,16 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 The Zendesk Support source connector supports three authentication methods:
 
-- OAuth 2.0 with refresh token (recommended for Airbyte Cloud)
-- API token (recommended for Airbyte Open Source)
+- OAuth 2.0 with refresh token (recommended)
+- API token (Zendesk disables new API token creation on October 27, 2026, see the following caution)
 - OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
 
 :::note
 Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/articles/9182123625370) for all customers as of April 30, 2026. Legacy OAuth access tokens don't expire and can't be refreshed, so migrate existing connections to **OAuth 2.0 with Refresh Token**.
+:::
+
+:::caution
+Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Starting October 27, 2026, Zendesk accounts can't create new API tokens, so you can only use **API Token** authentication with an active token you already have. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Set up new sources with **OAuth 2.0 with Refresh Token**, and switch existing API token sources to OAuth before April 30, 2027.
 :::
 
 <!-- env:cloud -->
@@ -37,13 +41,13 @@ We highly recommend using OAuth to authenticate your Zendesk Support account, as
 
 **For Airbyte Open Source:**
 
-We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
-
-:::note
-If you prefer to authenticate with OAuth, see [Generate OAuth credentials](#generate-oauth-credentials).
-:::
+We recommend using OAuth to authenticate your Zendesk Support account. See [Generate OAuth credentials](#generate-oauth-credentials).
 
 ### Generate an API token
+
+:::note
+Zendesk disables API token creation on October 27, 2026. After that date, you can't create a new token with these steps. Tokens created before then keep working until April 30, 2027, when Zendesk deactivates all API tokens. If you can't create a token, [generate OAuth credentials](#generate-oauth-credentials) instead.
+:::
 
 1. Log in to your Zendesk account.
 2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin Center**.
@@ -98,7 +102,7 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 - **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
   <!-- /env:cloud -->
   <!-- env:oss -->
-- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account. To authenticate using OAuth instead, select **OAuth2.0 with Refresh Token** and enter the client ID, client secret, and refresh token you generated.
+- **For Airbyte Open Source**: To authenticate using OAuth, select **OAuth2.0 with Refresh Token** from the Authentication dropdown and enter the client ID, client secret, and refresh token you generated. To authenticate with an existing API token instead, select **API Token** and enter the token, as well as the email address associated with your Zendesk Support account. API tokens stop working on April 30, 2027.
 <!-- /env:oss -->
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
@@ -456,6 +460,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.1 | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental |
 | 1.1.0 | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields` |
 | 1.0.0 | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream |
+| 0.12.0 | 2023-08-22 | [29697](https://github.com/airbytehq/airbyte/pull/29697) | Add `manage_team_members` field to the `Custom Roles` stream |
 | 0.11.0 | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics` |
 | 0.10.7 | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec |
 | 0.10.6 | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
