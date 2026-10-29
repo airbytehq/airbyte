@@ -131,9 +131,9 @@ def _to_unix_timestamp(value: Any) -> Optional[int]:
 
 
 class TicketMetricsStateMigration(StateMigration):
-    """Converts `ticket_metrics` state written before 5.7.0 into a plain `_ab_updated_at` cursor.
+    """Converts `ticket_metrics` state written before 5.8.0 into a plain `_ab_updated_at` cursor.
 
-    Up to 5.6.x `ticket_metrics` was a `StateDelegatingStream`. Its full-refresh path wrote
+    Up to 5.7.x `ticket_metrics` was a `StateDelegatingStream`. Its full-refresh path wrote
     `{"_ab_updated_at": "<epoch>"}`, which is already the current shape and is left alone. Its
     incremental path was a per-ticket substream of `tickets`, so its state is per-partition:
 

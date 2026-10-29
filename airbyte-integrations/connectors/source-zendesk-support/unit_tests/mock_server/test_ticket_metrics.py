@@ -205,7 +205,7 @@ class TestTicketMetricsIncremental(TestCase):
 
     @HttpMocker()
     def test_given_recent_start_date_and_no_state_when_read_then_still_start_from_epoch(self, http_mocker):
-        """5.6.x never applied Start Date to `ticket_metrics`, so a recent Start Date must not drop older tickets' metric sets."""
+        """5.7.x never applied Start Date to `ticket_metrics`, so a recent Start Date must not drop older tickets' metric sets."""
         config = (
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
@@ -244,7 +244,7 @@ class TestTicketMetricsIncremental(TestCase):
 
     @HttpMocker()
     def test_given_integer_state_from_former_full_refresh_path_when_read_then_resume_from_it(self, http_mocker):
-        """5.6.x's `GET /ticket_metrics` path wrote `{"_ab_updated_at": <int>}`; it is already a valid cursor."""
+        """5.7.x's `GET /ticket_metrics` path wrote `{"_ab_updated_at": <int>}`; it is already a valid cursor."""
         config = _config()
         state_cursor = _days_ago(3)
         http_mocker.get(

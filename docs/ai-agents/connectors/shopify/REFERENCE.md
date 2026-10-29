@@ -10,7 +10,7 @@ The Shopify connector supports the following entities and actions.
 |--------|---------|
 | Customers | [List](#customers-list), [Get](#customers-get), [Create](#customers-create), [Update](#customers-update), [Delete](#customers-delete), [Context Store Search](#customers-context-store-search), [Context Store SQL Query](#customers-context-store-sql-query) |
 | Orders | [List](#orders-list), [Get](#orders-get), [Create](#orders-create), [Update](#orders-update), [Delete](#orders-delete), [Context Store Search](#orders-context-store-search), [Context Store SQL Query](#orders-context-store-sql-query) |
-| Products | [List](#products-list), [Get](#products-get), [Create](#products-create), [Update](#products-update), [Delete](#products-delete), [Context Store Search](#products-context-store-search), [Context Store SQL Query](#products-context-store-sql-query) |
+| Products | [List](#products-list), [Get](#products-get), [Create](#products-create), [Update](#products-update), [Delete](#products-delete), [Context Store Search](#products-context-store-search), [Context Store SQL Query](#products-context-store-sql-query), [Semantic Search](#products-semantic-search) |
 | Product Variants | [List](#product-variants-list), [Get](#product-variants-get), [Create](#product-variants-create), [Update](#product-variants-update), [Delete](#product-variants-delete), [Context Store Search](#product-variants-context-store-search), [Context Store SQL Query](#product-variants-context-store-sql-query) |
 | Product Images | [List](#product-images-list), [Get](#product-images-get), [Context Store Search](#product-images-context-store-search), [Context Store SQL Query](#product-images-context-store-sql-query) |
 | Abandoned Checkouts | [List](#abandoned-checkouts-list), [Context Store Search](#abandoned-checkouts-context-store-search), [Context Store SQL Query](#abandoned-checkouts-context-store-sql-query) |
@@ -40,9 +40,9 @@ The Shopify connector supports the following entities and actions.
 | Metafield Product Images | [List](#metafield-product-images-list), [Context Store Search](#metafield-product-images-context-store-search), [Context Store SQL Query](#metafield-product-images-context-store-sql-query) |
 | Customer Address | [List](#customer-address-list), [Get](#customer-address-get) |
 | Fulfillment Orders | [List](#fulfillment-orders-list), [Get](#fulfillment-orders-get), [Context Store Search](#fulfillment-orders-context-store-search), [Context Store SQL Query](#fulfillment-orders-context-store-sql-query) |
-| Pages | [List](#pages-list), [Get](#pages-get), [Create](#pages-create), [Update](#pages-update), [Delete](#pages-delete), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query) |
+| Pages | [List](#pages-list), [Get](#pages-get), [Create](#pages-create), [Update](#pages-update), [Delete](#pages-delete), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query), [Semantic Search](#pages-semantic-search) |
 | Blogs | [List](#blogs-list), [Get](#blogs-get), [Create](#blogs-create), [Update](#blogs-update), [Delete](#blogs-delete), [Context Store Search](#blogs-context-store-search), [Context Store SQL Query](#blogs-context-store-sql-query) |
-| Articles | [List](#articles-list), [Get](#articles-get), [Create](#articles-create), [Update](#articles-update), [Delete](#articles-delete), [Context Store Search](#articles-context-store-search), [Context Store SQL Query](#articles-context-store-sql-query) |
+| Articles | [List](#articles-list), [Get](#articles-get), [Create](#articles-create), [Update](#articles-update), [Delete](#articles-delete), [Context Store Search](#articles-context-store-search), [Context Store SQL Query](#articles-context-store-sql-query), [Semantic Search](#articles-semantic-search) |
 | Balance Transactions | [List](#balance-transactions-list), [Context Store Search](#balance-transactions-context-store-search), [Context Store SQL Query](#balance-transactions-context-store-sql-query) |
 | Disputes | [List](#disputes-list), [Get](#disputes-get), [Context Store Search](#disputes-context-store-search), [Context Store SQL Query](#disputes-context-store-sql-query) |
 | Metafield Pages | [List](#metafield-pages-list), [Context Store Search](#metafield-pages-context-store-search), [Context Store SQL Query](#metafield-pages-context-store-sql-query) |
@@ -2337,6 +2337,90 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Products Semantic Search
+
+Search products records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "products",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `products.context_store_search` helper only accepts `query`.
+
+```python
+await shopify.execute(
+    "products",
+    "context_store_search",
+    {"semantic": {"field": "body_html", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body_html` | 2048 | Product description in HTML |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
@@ -12007,6 +12091,90 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Pages Semantic Search
+
+Search pages records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `pages.context_store_search` helper only accepts `query`.
+
+```python
+await shopify.execute(
+    "pages",
+    "context_store_search",
+    {"semantic": {"field": "body_html", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body_html` | 2048 | HTML content of the page |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Blogs
 
 ### Blogs List
@@ -13096,6 +13264,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Articles Semantic Search
+
+Search articles records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "articles",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `articles.context_store_search` helper only accepts `query`.
+
+```python
+await shopify.execute(
+    "articles",
+    "context_store_search",
+    {"semantic": {"field": "body_html", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "articles",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body_html", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body_html` | 2048 | HTML content of the article body |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.blog_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
@@ -14462,7 +14715,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "quantities": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14475,7 +14729,8 @@ await shopify.inventory_set.create(
         "name": "<str>",
         "reason": "<str>",
         "quantities": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14493,7 +14748,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "quantities": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14511,6 +14767,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.quantities.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.quantities.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.quantities.quantity` | `integer` | Yes | Absolute quantity to set |
+| `input.quantities.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>
@@ -14552,7 +14810,8 @@ airbyte-agent connectors execute --json '{
       "name": "<str>",
       "reason": "<str>",
       "changes": []
-    }
+    },
+    "idempotencyKey": "<str>"
   }
 }'
 ```
@@ -14565,7 +14824,8 @@ await shopify.inventory_adjust.create(
         "name": "<str>",
         "reason": "<str>",
         "changes": []
-    }
+    },
+    idempotency_key="<str>"
 )
 ```
 
@@ -14583,7 +14843,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
             "name": "<str>",
             "reason": "<str>",
             "changes": []
-        }
+        },
+        "idempotencyKey": "<str>"
     }
 }'
 ```
@@ -14601,6 +14862,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `input.changes.inventoryItemId` | `string` | Yes | GraphQL GID of the inventory item |
 | `input.changes.locationId` | `string` | Yes | GraphQL GID of the location |
 | `input.changes.delta` | `integer` | Yes | Amount to adjust (positive to add, negative to subtract) |
+| `input.changes.changeFromQuantity` | `null \| integer` | Yes | The quantity currently at the location, for a compare-and-set check; pass null to skip the check |
+| `idempotencyKey` | `string` | Yes | Unique key (e.g. a UUID) so Shopify can deduplicate retries of this mutation |
 
 
 <details>

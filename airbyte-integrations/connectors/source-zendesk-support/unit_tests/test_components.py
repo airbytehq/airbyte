@@ -219,7 +219,7 @@ def test_ticket_metric_sets_extractor_returns_nothing_on_non_json_body(component
     assert components_module.ZendeskSupportTicketMetricSetsExtractor().extract_records(response) == []
 
 
-# State shapes written by the 5.6.x `ticket_metrics` StateDelegatingStream. The incremental path was a
+# State shapes written by the 5.7.x `ticket_metrics` StateDelegatingStream. The incremental path was a
 # per-ticket substream of `tickets`, so its state is the ConcurrentPerPartitionCursor shape.
 _PER_PARTITION_STATE = {
     "use_global_cursor": False,
