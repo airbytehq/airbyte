@@ -4,14 +4,22 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.write.transform
 
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.ChangedValue
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
@@ -20,17 +28,14 @@ import java.math.BigInteger
 
 /**
  * Value coercer for GCS Data Lake destination. Applies Iceberg-specific transformations and
- * validations:
- * - Stringifies union values (required for UnionBehavior.STRINGIFY)
+ * validations. It matches S3 Data Lake's Iceberg munging, except scalar unknown-type values pass
+ * through unchanged.
+ * - Stringifies objects, unions, and schemaless complex values, recursing into schematized arrays
  * - Nulls out-of-range integers (outside Long range)
  * - Nulls out-of-range numbers (outside Double range)
- * - Records all changes in airbyte_meta
- *
- * Note: Object/array stringification is handled by Iceberg schema transformation (toIcebergSchema
- * with stringifyObjects), not here.
  */
 @Singleton
-class GcsDataLakeValueCoercer : ValueCoercer {
+class GcsDataLakeValueCoercer(private val icebergUtil: IcebergUtil) : ValueCoercer {
     companion object {
         // Cache these BigDecimal/BigInteger constants to avoid expensive allocations
         // and BigInteger.pow() operations on every validation call
@@ -40,15 +45,32 @@ class GcsDataLakeValueCoercer : ValueCoercer {
         private val MAX_DOUBLE = BigDecimal(Double.MAX_VALUE)
     }
 
-    override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // Stringify union values - this happens during Parse stage where we still
-        // have type information to know which fields are unions
-        // Note: Null values should NOT be stringified - they stay as NullValue
-        if (value.type is UnionType && value.abValue !is NullValue) {
-            value.abValue = StringValue(value.abValue.serializeToString())
+    override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue =
+        with(icebergUtil) {
+            value.transformValueRecursingIntoArrays { element, elementType ->
+                when (elementType) {
+                    ArrayTypeWithoutSchema,
+                    is ObjectType,
+                    ObjectTypeWithEmptySchema,
+                    ObjectTypeWithoutSchema,
+                    is UnionType ->
+                        ChangedValue(
+                            StringValue(element.serializeToString()),
+                            changeDescription = null,
+                        )
+                    is UnknownType ->
+                        if (element is ObjectValue || element is ArrayValue) {
+                            ChangedValue(
+                                StringValue(element.serializeToString()),
+                                changeDescription = null,
+                            )
+                        } else {
+                            null
+                        }
+                    else -> null
+                }
+            }
         }
-        return value
-    }
 
     override fun validate(value: EnrichedAirbyteValue): ValidationResult {
         // Validate and null out-of-range values

@@ -81,8 +81,8 @@ class GcsDataLakeAggregate(
      * knowledge of the Iceberg schema, so they can't happen in ValueCoercer (which operates in
      * Parse stage).
      *
-     * Note: Union stringification is handled by ValueCoercer (during Parse stage). Here we only
-     * handle Object/Array stringification for STRING fields.
+     * Note: ValueCoercer stringifies objects, unions, and schemaless values, including elements in
+     * schematized arrays. Here we handle remaining Object/Array values for STRING fields.
      */
     private fun transformForIcebergSchema(
         value: AirbyteValue,
