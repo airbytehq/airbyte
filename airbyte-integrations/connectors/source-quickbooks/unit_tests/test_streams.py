@@ -15,7 +15,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-from airbyte_protocol_dataclasses.models.airbyte_protocol import StreamDescriptor
 from freezegun import freeze_time
 
 from airbyte_cdk.models import (
@@ -29,6 +28,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
+    StreamDescriptor,
     SyncMode,
     TraceType,
     Type,
