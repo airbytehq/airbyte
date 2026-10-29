@@ -9,7 +9,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      - bypass_reason: "integration_tests/invalid_config.json (an invalid access_key) passes `check`: Weatherstack answers HTTP 200 with a `success: false` error body, which the connector does not treat as an error"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
