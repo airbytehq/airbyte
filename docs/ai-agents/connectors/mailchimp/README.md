@@ -55,7 +55,7 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query), [Semantic Search](./REFERENCE.md#campaigns-semantic-search) |
 | Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search), [Context Store SQL Query](./REFERENCE.md#lists-context-store-sql-query) |
 | List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get), [Context Store Search](./REFERENCE.md#list-members-context-store-search), [Context Store SQL Query](./REFERENCE.md#list-members-context-store-sql-query) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Context Store Search](./REFERENCE.md#reports-context-store-search), [Context Store SQL Query](./REFERENCE.md#reports-context-store-sql-query) |
