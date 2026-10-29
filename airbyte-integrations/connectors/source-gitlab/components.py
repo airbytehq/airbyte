@@ -7,8 +7,10 @@ from typing import Any, Iterable, Mapping, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.validators import ValidationStrategy
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.utils import is_cloud_environment
 
 
@@ -38,6 +40,26 @@ class ValidateApiUrl(ValidationStrategy):
             return False, "", ""
         host, *_ = parts
         return True, scheme, host
+
+
+@dataclass
+class AuthTypeAwareErrorHandler(DefaultErrorHandler):
+    """Applies `REFRESH_TOKEN_THEN_RETRY` response filters only to OAuth credentials.
+
+    GitLab returns the same `invalid_token` body for an expired OAuth access token and an expired or
+    revoked Private Token, and `HttpResponseFilter` predicates cannot read the config. For a Private
+    Token the CDK would turn the refresh into slow backoff retries, so those filters are dropped and
+    the 401 falls through to the fail-fast filter.
+    """
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if self.config.get("credentials", {}).get("auth_type") != "oauth2.0":
+            self.response_filters = [
+                response_filter
+                for response_filter in self.response_filters
+                if response_filter.action != ResponseAction.REFRESH_TOKEN_THEN_RETRY
+            ]
 
 
 @dataclass
