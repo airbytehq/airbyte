@@ -31,16 +31,7 @@ class ConfigBuilder:
         return self
 
     def with_start_date(self, start_date: str) -> "ConfigBuilder":
-        """Legacy key; events stream still honors this when event_start_date is unset."""
         self._config["start_date"] = start_date
-        return self
-
-    def with_event_start_date(self, event_start_date: str) -> "ConfigBuilder":
-        self._config["event_start_date"] = event_start_date
-        return self
-
-    def with_sync_start_date(self, sync_start_date: str) -> "ConfigBuilder":
-        self._config["sync_start_date"] = sync_start_date
         return self
 
     def build(self) -> Dict[str, Any]:

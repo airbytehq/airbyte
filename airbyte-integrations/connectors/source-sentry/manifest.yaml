@@ -68,9 +68,7 @@ definitions:
           inject_into: request_parameter
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ config.get('event_start_date') or config.get('start_date') or
-            '1900-01-01T00:00:00Z' }}
+          datetime: "{{ config.get('start_date') or '1900-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -105,9 +103,8 @@ definitions:
           request_parameters:
             query: >-
               lastSeen:>{{ stream_interval.get('start_time', '') or
-              config.get('sync_start_date', '1900-01-01T00:00:00Z') if
-              stream_interval else config.get('sync_start_date',
-              '1900-01-01T00:00:00Z') }}
+              '1900-01-01T00:00:00.0Z' if stream_interval else
+              '1900-01-01T00:00:00.0Z' }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,8 +124,8 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -175,8 +172,8 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -218,8 +215,8 @@ definitions:
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('sync_start_date', '1900-01-01T00:00:00Z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -257,36 +254,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/project_detail"
-    projects_all:
-      type: DeclarativeStream
-      name: projects_all
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: cursor
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: organizations/{{ config['organization'] }}/projects/
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/projects"
     all_projects_detail:
       type: DeclarativeStream
       name: all_projects_detail
@@ -318,7 +285,7 @@ definitions:
               parent_key: slug
               partition_field: project_slug
               stream:
-                $ref: "#/definitions/streams/projects_all"
+                $ref: "#/definitions/streams/projects"
       primary_key:
         - id
       schema_loader:
@@ -337,7 +304,7 @@ definitions:
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [404]
-          error_message: "Sentry organization or project is missing or invalid."
+          error_message: "Sentry organization or project is missing or invalid. Check the organization and every slug in Projects."
           failure_type: config_error
 
 streams:
@@ -396,38 +363,28 @@ spec:
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization
-      event_start_date:
+      start_date:
         type: string
-        title: Event start date
+        title: Events start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
         order: 4
-        default: "1900-01-01T00:00:00Z"
         description: >-
-          Lower bound for the events stream only (Sentry `start` query
-          parameter, ISO-8601 UTC, e.g. 2026-06-01T00:00:00Z). Later syncs
-          use saved state when it is newer. Legacy configs may still have
-          `start_date`; that value is used for events when this field is unset.
-          See https://docs.sentry.io/api/events/list-a-projects-error-events/
-      sync_start_date:
-        type: string
-        title: Sync start date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 5
-        description: >-
-          Optional lower bound for incremental issues, projects, and releases.
-          Defaults to 1900-01-01T00:00:00Z when omitted. Does not apply to the
-          events stream.
+          The earliest date to sync events from, in UTC. Only the first sync of
+          the events stream uses it; later syncs continue from where the
+          previous sync stopped. Other streams always sync their full history.
+          Leave it empty to sync every event Sentry still has.
       discover_fields:
         type: array
         description: Fields to retrieve when fetching discover events
         item: string
-        order: 6
+        order: 5
         title: Discover Event Fields
       events_full_payload:
         type: boolean
-        order: 7
+        order: 6
         title: Events full payload
         default: true
         description: >-
@@ -444,7 +401,7 @@ spec:
         minimum: 1
         maximum: 20
         default: 5
-        order: 8
+        order: 7
     additionalProperties: true
   config_normalization_rules:
     type: ConfigNormalizationRules

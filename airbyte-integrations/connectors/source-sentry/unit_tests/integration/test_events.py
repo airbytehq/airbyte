@@ -225,39 +225,8 @@ class TestEventsStream(TestCase):
         ), f"Expected state to advance to latest record date, got {new_state}"
 
     @HttpMocker()
-    def test_incremental_sync_uses_config_event_start_date(self, http_mocker: HttpMocker):
-        """event_start_date becomes Sentry's `start` query parameter on the first sync."""
-        config = (
-            ConfigBuilder()
-            .with_organization(_ORGANIZATION)
-            .with_project(_PROJECT)
-            .with_auth_token(_AUTH_TOKEN)
-            .with_event_start_date("2024-01-01T00:00:00Z")
-            .build()
-        )
-
-        http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-            .with_query_params(
-                {
-                    "full": "true",
-                    "start": "2024-01-01T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                }
-            )
-            .build(),
-            create_response("events", has_next=False),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 2
-
-    @HttpMocker()
-    def test_incremental_sync_legacy_start_date_fallback(self, http_mocker: HttpMocker):
-        """A config that still has `start_date` and no event_start_date uses it as the events start."""
+    def test_incremental_sync_uses_config_start_date(self, http_mocker: HttpMocker):
+        """The start date setting becomes Sentry's `start` query parameter on the first sync."""
         config = (
             ConfigBuilder()
             .with_organization(_ORGANIZATION)
@@ -287,65 +256,45 @@ class TestEventsStream(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_event_start_date_wins_over_legacy_start_date(self, http_mocker: HttpMocker):
-        """When both are set, event_start_date is used and the legacy start_date is ignored."""
+    def test_project_added_later_starts_from_newest_bookmark(self, http_mocker: HttpMocker):
+        """
+        A project added to a connection that already has per-project state has no cursor of its
+        own, so it starts from the connection's newest bookmark, not from the start date. The docs
+        tell users to refresh `events` after adding a project; if this test starts failing, update them.
+        """
+        bookmark = "2024-01-15T10:00:00.000000Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "state": {"dateCreated": bookmark},
+                    "states": [{"partition": {"project": _PROJECT}, "cursor": {"dateCreated": bookmark}}],
+                },
+            )
+            .build()
+        )
         config = (
             ConfigBuilder()
             .with_organization(_ORGANIZATION)
-            .with_project(_PROJECT)
+            .with_projects([_PROJECT, "added-project"])
             .with_auth_token(_AUTH_TOKEN)
             .with_start_date("2024-01-01T00:00:00Z")
-            .with_event_start_date("2024-01-05T00:00:00Z")
             .build()
         )
-
-        http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-            .with_query_params(
-                {
-                    "full": "true",
-                    "start": "2024-01-05T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                }
+        for project in (_PROJECT, "added-project"):
+            http_mocker.get(
+                SentryRequestBuilder.events_endpoint(_ORGANIZATION, project, _AUTH_TOKEN)
+                .with_query_params({"full": "true", "start": bookmark, "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+                .build(),
+                create_response("events_incremental", has_next=False),
             )
-            .build(),
-            create_response("events", has_next=False),
-        )
 
-        source = get_source(config=config)
+        source = get_source(config=config, state=state)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 2
-
-    @HttpMocker()
-    def test_sync_start_date_does_not_move_events_start(self, http_mocker: HttpMocker):
-        """sync_start_date only applies to issues, projects, and releases, so events still start from the default."""
-        config = (
-            ConfigBuilder()
-            .with_organization(_ORGANIZATION)
-            .with_project(_PROJECT)
-            .with_auth_token(_AUTH_TOKEN)
-            .with_sync_start_date("2024-01-01T00:00:00Z")
-            .build()
-        )
-
-        http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-            .with_query_params(
-                {
-                    "full": "true",
-                    "start": "1900-01-01T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                }
-            )
-            .build(),
-            create_response("events", has_next=False),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        output = read(source, config=config, catalog=catalog)
+        output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) == 2
 

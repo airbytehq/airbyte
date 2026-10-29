@@ -19,13 +19,12 @@ For Sentry SaaS, you can create an organization-wide token with a Sentry [intern
 3. For **Authentication Tokens**, enter your Sentry authentication token.
 4. For **Host Name**, keep `sentry.io` for Sentry SaaS, or enter the hostname of your self-hosted Sentry server without `https://` or a path. You can also use your Sentry SaaS [region-specific domain](https://docs.sentry.io/api/#choosing-the-right-api-base-domain), such as `us.sentry.io`, `us2.sentry.io`, or `de.sentry.io`.
 5. For **Organization**, enter the organization slug. Use the slug from your Sentry URL, such as `my-org` in `https://my-org.sentry.io`, not the display name.
-6. For **Projects**, enter one or more project slugs. The `events`, `issues`, and `project_detail` streams sync each project you list. Organization-level streams aren't limited to these projects.
-7. Optionally, for **Event start date**, enter the earliest date to sync events from, in UTC, such as `2026-01-01T00:00:00Z`. Later syncs continue from where the previous sync stopped. Keep the default to sync every event Sentry still has.
-8. Optionally, for **Sync start date**, enter the earliest date for the `issues`, `projects`, and `releases` streams, in the same format. The `projects` stream skips projects created before this date. Leave it empty to sync their full history.
-9. Optionally, turn off **Events full payload** to sync summary events without stack traces. When it's on, Sentry returns at most 10 events per page.
-10. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5. With several projects, this also sets how many projects are read at once.
-11. Leave **Discover Event Fields** empty. None of the connector's streams read this setting.
-12. Select **Set up source**.
+6. For **Projects**, enter one or more project slugs. The `events`, `issues`, and `project_detail` streams sync each project you list. Organization-level streams aren't limited to these projects. Setup only checks the first project, so a misspelled slug later in the list shows up as an error on the first sync.
+7. Optionally, for **Events start date**, enter the earliest date to sync events from, in UTC, such as `2026-01-01T00:00:00Z`. Only the first sync of the `events` stream uses it, and later syncs continue from where the previous sync stopped. Other streams always sync their full history. Leave it empty to sync every event Sentry still has.
+8. Optionally, turn off **Events full payload** to sync summary events without stack traces. When it's on, Sentry returns at most 10 events per page.
+9. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5. With several projects, this also sets how many projects are read at once.
+10. Leave **Discover Event Fields** empty. None of the connector's streams read this setting.
+11. Select **Set up source**.
 
 ## Supported sync modes
 
@@ -54,7 +53,7 @@ The `all_projects_detail` stream makes one project-detail request for every proj
 The streams differ in how much filtering Sentry does for you, which changes what an incremental sync returns:
 
 - `events` passes the cursor value to Sentry in the `start` query parameter, so Sentry returns only events created after the previous sync. Unless **Events full payload** is off, the stream also requests full event bodies, including stack traces, so records are large compared to the other streams.
-- With several projects, `events` and `issues` keep a separate cursor for each project.
+- With several projects, `events` and `issues` keep a separate cursor for each project. A project you add to an existing connection doesn't start from the beginning: its first sync starts from the most recent cursor of the projects already synced, so its older events and issues are skipped. To sync its history, refresh the `events` and `issues` streams after you add it, which re-reads every project in those streams, or sync the new project in its own connection.
 - `issues` filters server-side with a `lastSeen:>{cursor}` search query. An issue is synced again every time Sentry sees it again, so a long-lived issue produces a new record in many syncs.
 - `projects` and `releases` use `dateCreated`, and neither endpoint accepts a date filter. The connector reads the list and drops records created before the previous sync's cursor value. Because the cursor is a creation timestamp, later changes to a project or release, such as a status change or a new deploy, don't generate a new record. Sync these streams in full refresh mode if you need their current values.
 
@@ -101,7 +100,7 @@ Sentry marks the project-scoped issues endpoint that the `issues` stream uses as
 
 ### Organization or project not found
 
-If setup or a sync fails with the error `Sentry organization or project is missing or invalid.`, Sentry returned HTTP 404 for a request. Check the following:
+If setup or a sync fails with the error `Sentry organization or project is missing or invalid. Check the organization and every slug in Projects.`, Sentry returned HTTP 404 for a request. A failed sync also lists the request that failed, which shows the organization and project slug Sentry didn't find. Check the following:
 
 - **Organization** and **Projects** contain slugs, not display names. Slugs are lowercase and use hyphens instead of spaces.
 - Each project belongs to the configured organization.
@@ -127,7 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-10-29 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Sync multiple projects (existing single-project settings are migrated automatically), and add the `event_start_date`, `sync_start_date`, and `events_full_payload` options |
+| 1.1.0 | 2026-10-29 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Sync multiple projects (existing single-project settings are migrated automatically), and add the **Events start date** (`start_date`) and **Events full payload** (`events_full_payload`) options |
 | 1.0.16 | 2026-10-20 | [89398](https://github.com/airbytehq/airbyte/pull/89398) | Update dependencies |
 | 1.0.15 | 2026-10-13 | [88408](https://github.com/airbytehq/airbyte/pull/88408) | Type the `sentry:replay_rage_click_issues` project option as boolean in `project_detail` and `all_projects_detail` |
 | 1.0.14 | 2026-10-13 | [88806](https://github.com/airbytehq/airbyte/pull/88806) | Update dependencies |

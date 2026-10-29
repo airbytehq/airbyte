@@ -331,13 +331,13 @@ class TestIssuesStream(TestCase):
         assert len(output.records) == 2, f"Expected one issues page per project, got {len(output.records)}"
 
     @HttpMocker()
-    def test_sync_start_date_sets_lastseen_query(self, http_mocker: HttpMocker):
-        """On the first sync, sync_start_date becomes the `lastSeen:>` filter."""
-        config = ConfigBuilder().with_sync_start_date("2024-01-10T00:00:00Z").build()
+    def test_start_date_does_not_change_lastseen_query(self, http_mocker: HttpMocker):
+        """The start date only applies to events, so the first issues sync still asks for every issue."""
+        config = ConfigBuilder().with_start_date("2024-01-10T00:00:00Z").build()
 
         http_mocker.get(
             SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-            .with_query_params({"query": "lastSeen:>2024-01-10T00:00:00.000000Z"})
+            .with_query_params({"query": "lastSeen:>1900-01-01T00:00:00.000000Z"})
             .build(),
             create_response("issues", has_next=False),
         )

@@ -197,25 +197,10 @@ class TestProjectsStream(TestCase):
         assert len(output.records) >= 1, "Expected records from org-scoped projects endpoint"
 
     @HttpMocker()
-    def test_sync_start_date_filters_older_projects(self, http_mocker: HttpMocker):
-        """Projects created before sync_start_date are not synced on the first sync."""
+    def test_start_date_does_not_filter_projects(self, http_mocker: HttpMocker):
+        """The start date only applies to events, so projects created before it are still synced."""
         # projects_mixed_dates.json: old-project-1 (01-10), old-project-2 (01-12), new-project (01-20)
-        config = ConfigBuilder().with_sync_start_date("2024-01-15T00:00:00Z").build()
-        http_mocker.get(
-            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
-            create_response("projects_mixed_dates", has_next=False),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert [record.record.data["slug"] for record in output.records] == ["new-project"]
-
-    @HttpMocker()
-    def test_event_start_date_does_not_filter_projects(self, http_mocker: HttpMocker):
-        """event_start_date only applies to events, so every project is still synced."""
-        config = ConfigBuilder().with_event_start_date("2024-01-15T00:00:00Z").build()
+        config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z").build()
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
             create_response("projects_mixed_dates", has_next=False),
