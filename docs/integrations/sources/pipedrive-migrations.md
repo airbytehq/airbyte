@@ -5,7 +5,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 5.0.0
 
 :::danger Risk of permanent data loss if you clear
-Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return most deleted records (deleted projects are the exception), so their rows aren't restored. Clear only where step 2 requires it, and back up the affected tables first if you need that history.
+Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return most deleted records (deleted projects are the exception), so their rows aren't restored. Clear only where step 3 requires it, and back up the affected tables first if you need that history.
 :::
 
 Version 5.0.0 gives the remaining date and time fields a date or timestamp type and corrects a few declared shapes to match Pipedrive's API reference. The values Pipedrive returns are unchanged; typed destinations now create these columns with the matching type.
@@ -25,6 +25,8 @@ Version 5.0.0 gives the remaining date and time fields a date or timestamp type 
 
 </details>
 
+5.0.0 also declares fields Pipedrive returns without documenting them. They appear as new columns after the schema refresh and need no action: `description` on the `*_fields` streams, `group_id` and `id_suffix` where they were missing, `tasks.last_updated_by_id` and `marked_as_done_by_id`, `leads.archive_time`, and the untyped `restriction_settings`, `deal_fields.user_restrictions` and `goals.seasonality`.
+
 If you don't sync any of the streams above, you don't need to take any action.
 
 To upgrade:
@@ -32,8 +34,9 @@ To upgrade:
 1. On Postgres or Redshift, drop any view or materialized view that selects a retyped column; the first 5.0.0 sync changes the column type, which a dependent view blocks. Recreate the views after that sync.
 2. Open the connection, go to **Schema** and click **Refresh source schema**.
 3. Clear only where your destination needs it:
-   - **BigQuery, Snowflake, Redshift, Postgres, Databricks, ClickHouse, MSSQL:** no clear. The first sync after the schema refresh converts the existing columns in place. `leads`, `leads_archived`, `deal_fields` and the nested `goals` fields are stored as JSON on these destinations, so their columns don't change.
-   - **S3 Data Lake and GCS Data Lake:** clear every affected stream that isn't in Full refresh | Overwrite mode; without the clear the sync fails with `Schema evolution for column ... is not allowed`. Overwrite streams are retyped by the next sync. If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
+   - **BigQuery, Snowflake, Redshift, Postgres, Databricks, MSSQL:** no clear. The first sync after the schema refresh converts the existing columns in place. `leads`, `leads_archived`, `deal_fields` and the nested `goals` fields are stored as JSON on these destinations, so their columns don't change.
+   - **ClickHouse:** the first sync converts the columns in place, but ClickHouse can't parse the trailing `Z`, so timestamps already stored for `projects`, `tasks`, `mailThreads` and `call_logs` become null. Streams in Full refresh | Overwrite mode get them back on that sync. For those four streams in Full refresh | Append mode, back up the tables first if you need the earlier snapshots, then clear the streams. The other streams convert without loss.
+   - **S3 Data Lake and GCS Data Lake:** clear every affected stream that isn't in Full refresh | Overwrite mode; without the clear the sync fails with `Schema evolution for column ... is not allowed`. Overwrite streams are retyped by the next sync. For streams in Full refresh | Append mode, the clear also deletes every earlier snapshot, which Pipedrive can't re-supply, so back up those tables first if you need that history. Re-syncing `deal_flow` makes one request per deal, so it can take a long time on large accounts. If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
    - **S3 or GCS in Avro or Parquet, MotherDuck, DuckDB:** optional. Without a clear, files written before the upgrade keep the old schema and existing MotherDuck or DuckDB tables keep string columns.
 4. Run a sync.
 
