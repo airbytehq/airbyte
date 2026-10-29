@@ -42,6 +42,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.73 | 2026-10-27 | [90032](https://github.com/airbytehq/airbyte/pull/90032) | Update dependencies |
+| 0.0.72 | 2026-10-20 | [89343](https://github.com/airbytehq/airbyte/pull/89343) | Update dependencies |
 | 0.0.71 | 2026-10-13 | [88739](https://github.com/airbytehq/airbyte/pull/88739) | Update dependencies |
 | 0.0.70 | 2026-10-07 | [88254](https://github.com/airbytehq/airbyte/pull/88254) | Validate `country_ids` during check, surface OpenAQ 422 as a config error and document that numeric country IDs are required |
 | 0.0.69 | 2026-10-06 | [87978](https://github.com/airbytehq/airbyte/pull/87978) | Update dependencies |

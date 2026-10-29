@@ -188,7 +188,7 @@ The following fields are common to all authentication methods:
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`. A pasted `https://` prefix, trailing `/` or `:443` is accepted and removed; on Airbyte Cloud a console URL with a path (for example `https://app.snowflake.com/<org>/<account>`) or credentials fails the connection test with `Enter only the host domain in Host (for example account.snowflakecomputing.com), without a path or credentials.` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
@@ -248,6 +248,28 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 
 To read more, please check the official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#).
 
+### Troubleshooting
+
+- **`check` or discovery is very slow, or lists tables from other schemas (before 2.0.4).** The
+  Snowflake JDBC driver treated `_` and `%` in the **Schema** option as `LIKE` wildcards and then
+  scanned the whole database (`SCHEMA_A` also matched `SCHEMAXA`). Since 2.0.4 the option is an exact
+  name; on older versions add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
+  If you relied on `%` or `_` to select several schemas at once, add
+  `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=true` to **JDBC URL Params** to keep that behavior.
+- **Key pair authentication fails with `JWT token is invalid`.** Snowflake rejected the login, and
+  retrying will not fix it: the private key does not match the RSA public key registered on the
+  user, the **Username** or **Server URL** is wrong, or the clock on the machine running Airbyte is
+  off. Compare the fingerprint shown by `DESCRIBE USER <user>` (`RSA_PUBLIC_KEY_FP`) with your key,
+  or register the public key again with `ALTER USER <user> SET RSA_PUBLIC_KEY='...'`. For the exact
+  cause, take the ID in brackets after the error (`JWT token is invalid. [<id>]`) and have a
+  Snowflake administrator run `SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>');`. See Snowflake's
+  [key pair troubleshooting guide](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting).
+  Older versions reported this error as an expired session token that would reconnect
+  automatically; it is not, and it fails until the key pair configuration is fixed.
+- **Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows (before 2.0.4).** Snowflake sessions
+  default to the `America/Los_Angeles` time zone, which shifted the cursor bound. Fixed in 2.0.4; on
+  older versions add `TIMEZONE=UTC` to **JDBC URL Params** as a workaround.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -259,9 +281,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                       |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.6   | 2026-10-29 | [90173](https://github.com/airbytehq/airbyte/pull/90173)                                                    | Discover now skips a view that references a column dropped from its base table instead of failing; syncs of such a view fail with a configuration error that explains how to fix it. |
+| 2.0.5   | 2026-10-14 | [88501](https://github.com/airbytehq/airbyte/pull/88501)                                                             | Upgrade to Bulk CDK 1.1.16; a pasted `https://` prefix, trailing `/` or `:443` in Host is now accepted, and on Airbyte Cloud a URL with a path or credentials is rejected with an explicit message before the connection is attempted. |
+| 2.0.4   | 2026-10-14 | [87471](https://github.com/airbytehq/airbyte/pull/87471)                                                                                                | TIME columns are no longer emitted as NULL; `TIMESTAMP_NTZ` cursor bounds are bound as NTZ, so a non-UTC session `TIMEZONE` no longer shifts the incremental window (h/t @ZenonRad, [83800](https://github.com/airbytehq/airbyte/pull/83800)); `9999-12-31 23:59:59.999999999` no longer rounds into year 10000; check fails fast on a wrong warehouse, database or schema; the Schema option is an exact name instead of a `LIKE` pattern (`_` or `%` made `check` list the whole database, took minutes on large accounts and leaked other schemas' tables, columns and primary keys; [87000](https://github.com/airbytehq/airbyte/pull/87000), [86998](https://github.com/airbytehq/airbyte/pull/86998)); ~2 s less connection latency per query (driver platform detection off); private key written to a temp file; the `JWT token is invalid` error now also points to the Server URL, the host clock and `SYSTEM$GET_LOGIN_FAILURE_DETAILS` for the exact cause; snowflake-jdbc 4.3.4.                          |
 | 2.0.3   | 2026-10-13 | [87510](https://github.com/airbytehq/airbyte/pull/87510)                                                            | Report invalid key pair (JWT) authentication as a configuration error with actionable guidance instead of a misleading temporary session-expiry error.                        |
 | 2.0.2 | 2026-10-09 | [88432](https://github.com/airbytehq/airbyte/pull/88432) | Upgrade to Bulk CDK 1.1.14. |
-| 2.0.1   | 2026-09-23 | [85081](https://github.com/airbytehq/airbyte/pull/85081) & [86369](https://github.com/airbytehq/airbyte/pull/86369) | Discover no longer fails entirely when a single view or object is invalid or inaccessible; the offending stream is skipped (h/t @jrbarkin).                                   |
+| 2.0.1   | 2026-09-23 | [85081](https://github.com/airbytehq/airbyte/pull/85081) & [86936](https://github.com/airbytehq/airbyte/pull/86936) | Discover no longer fails entirely when a single view or object is invalid or inaccessible; the offending stream is skipped (h/t @jrbarkin).                                   |
 | 2.0.0   | 2026-09-03 | [85331](https://github.com/airbytehq/airbyte/pull/85331)                                                            | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927)                                                            | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                                                            |
 | 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705)                                                            | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                                                    |

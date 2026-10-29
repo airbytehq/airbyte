@@ -42,7 +42,7 @@ This connector supports the following entities and actions. For more details, se
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
 | Adsquads | [List](./REFERENCE.md#adsquads-list), [Get](./REFERENCE.md#adsquads-get), [Context Store Search](./REFERENCE.md#adsquads-context-store-search), [Context Store SQL Query](./REFERENCE.md#adsquads-context-store-sql-query) |
 | Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Context Store Search](./REFERENCE.md#ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-context-store-sql-query) |
-| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Context Store Search](./REFERENCE.md#creatives-context-store-search), [Context Store SQL Query](./REFERENCE.md#creatives-context-store-sql-query) |
+| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Context Store Search](./REFERENCE.md#creatives-context-store-search), [Context Store SQL Query](./REFERENCE.md#creatives-context-store-sql-query), [Semantic Search](./REFERENCE.md#creatives-semantic-search) |
 | Media | [List](./REFERENCE.md#media-list), [Get](./REFERENCE.md#media-get), [Context Store Search](./REFERENCE.md#media-context-store-search), [Context Store SQL Query](./REFERENCE.md#media-context-store-sql-query) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search), [Context Store SQL Query](./REFERENCE.md#segments-context-store-sql-query) |
 
@@ -771,4 +771,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.0.5
+**Connector version:** 1.0.6

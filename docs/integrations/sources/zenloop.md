@@ -81,6 +81,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.47 | 2026-10-27 | [90101](https://github.com/airbytehq/airbyte/pull/90101) | Update dependencies |
+| 0.1.46 | 2026-10-20 | [89457](https://github.com/airbytehq/airbyte/pull/89457) | Update dependencies |
 | 0.1.45 | 2026-10-13 | [79068](https://github.com/airbytehq/airbyte/pull/79068) | Update dependencies |
 | 0.1.44 | 2026-10-07 | [88264](https://github.com/airbytehq/airbyte/pull/88264) | Fix `answers`/`answers_survey_group` crash when `date_from` is empty or in `YYYY-MM-DDTHH:mm:ssZ` format |
 | 0.1.43 | 2025-02-01 | [53113](https://github.com/airbytehq/airbyte/pull/53113) | Update dependencies |

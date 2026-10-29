@@ -12,8 +12,8 @@ The Salesforce connector supports the following entities and actions.
 | Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [Search](#accounts-search), [Context Store Search](#accounts-context-store-search), [Context Store SQL Query](#accounts-context-store-sql-query) |
 | Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Search](#contacts-search), [Context Store Search](#contacts-context-store-search), [Context Store SQL Query](#contacts-context-store-sql-query) |
 | Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Delete](#leads-delete), [Search](#leads-search), [Context Store Search](#leads-context-store-search), [Context Store SQL Query](#leads-context-store-sql-query) |
-| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [Search](#opportunities-search), [Context Store Search](#opportunities-context-store-search), [Context Store SQL Query](#opportunities-context-store-sql-query) |
-| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query) |
+| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [Search](#opportunities-search), [Context Store Search](#opportunities-context-store-search), [Context Store SQL Query](#opportunities-context-store-sql-query), [Semantic Search](#opportunities-semantic-search) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query), [Semantic Search](#tasks-semantic-search) |
 | Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [Search](#events-search) |
 | Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [Search](#campaigns-search) |
 | Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [Search](#cases-search) |
@@ -3132,6 +3132,95 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Opportunities Semantic Search
+
+Search opportunities records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "Description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `opportunities.context_store_search` helper only accepts `query`.
+
+```python
+await salesforce.execute(
+    "opportunities",
+    "context_store_search",
+    {"semantic": {"field": "Description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunities",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "Description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `Description` | 2048 | Text description of the opportunity |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.Id` | `string` | Source record field |
+| `data[].entity.SystemModstamp` | `string` | Source record field |
+| `data[].entity.CreatedDate` | `string` | Source record field |
+| `data[].entity.LastModifiedDate` | `string` | Source record field |
+| `data[].entity.Name` | `string` | Source record field |
+| `data[].entity.StageName` | `string` | Source record field |
+| `data[].entity.AccountId` | `string` | Source record field |
+| `data[].entity.OwnerId` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Tasks
 
 ### Tasks List
@@ -3780,6 +3869,97 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Tasks Semantic Search
+
+Search tasks records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "Description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `tasks.context_store_search` helper only accepts `query`.
+
+```python
+await salesforce.execute(
+    "tasks",
+    "context_store_search",
+    {"semantic": {"field": "Description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "Description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `Description` | 2048 | Text description or notes about the task |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.Id` | `string` | Source record field |
+| `data[].entity.SystemModstamp` | `string` | Source record field |
+| `data[].entity.CreatedDate` | `string` | Source record field |
+| `data[].entity.LastModifiedDate` | `string` | Source record field |
+| `data[].entity.Subject` | `string` | Source record field |
+| `data[].entity.Status` | `string` | Source record field |
+| `data[].entity.AccountId` | `string` | Source record field |
+| `data[].entity.WhatId` | `string` | Source record field |
+| `data[].entity.WhoId` | `string` | Source record field |
+| `data[].entity.OwnerId` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>

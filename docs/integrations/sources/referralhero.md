@@ -34,6 +34,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.62 | 2026-10-27 | [90046](https://github.com/airbytehq/airbyte/pull/90046) | Update dependencies |
+| 0.0.61 | 2026-10-20 | [89384](https://github.com/airbytehq/airbyte/pull/89384) | Update dependencies |
 | 0.0.60 | 2026-10-13 | [88825](https://github.com/airbytehq/airbyte/pull/88825) | Update dependencies |
 | 0.0.59 | 2026-10-08 | [88363](https://github.com/airbytehq/airbyte/pull/88363) | Replace the default Airbyte icon with the ReferralHero logo |
 | 0.0.58 | 2026-10-07 | [88297](https://github.com/airbytehq/airbyte/pull/88297) | Send the API token as an `Authorization: Bearer` header per current ReferralHero docs; fix `lists` pagination (10 per page) and `leaderboard` request params |
