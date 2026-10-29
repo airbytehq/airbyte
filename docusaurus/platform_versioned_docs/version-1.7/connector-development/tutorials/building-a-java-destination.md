@@ -36,7 +36,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 :::info
 
 If you need help with any step of the process, feel free to submit a PR with your progress and any
-questions you have, or ask us on [slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
+questions you have, or ask us on [Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 :::
 

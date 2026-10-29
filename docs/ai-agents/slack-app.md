@@ -157,7 +157,7 @@ Once the Slack connector is installed:
 If you have questions or need help with the Airbyte Agents Slack connector:
 
 - **Documentation**: [Slack connector reference](https://docs.airbyte.com/ai-agents/connectors/slack/)
-- **Community**: [Airbyte community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg)
+- **Community**: [Airbyte Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg)
 - **Support**: [Airbyte support](https://docs.airbyte.com/community/getting-support)
 
 ## Privacy policy

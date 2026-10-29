@@ -12,7 +12,7 @@ If you're running Airbyte Core and have a question the docs couldn't clear up, p
 
 ### Community Slack
 
-**Join our Slack community** [HERE](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg)!
+[**Join our Slack community**](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg)!
 
 Ask your questions first in the #ask-ai channel and if our bot can not assist you, reach out to our community in the #ask-community-for-troubleshooting channel.
 
