@@ -30,6 +30,17 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
 
 /**
+ * Section ids of the stepped setup form, in order. All four are declared with `"check":true`, so a
+ * `check-section` value may name any of them; the
+ * [io.airbyte.integrations.source.postgres.PostgresSourceCheckSectionHandler] checks the first
+ * three, the last one is the full check.
+ */
+const val SECTION_CONNECTION = "connection"
+const val SECTION_CREDENTIALS = "credentials"
+const val SECTION_SYNC_METHOD = "sync_method"
+const val SECTION_REVIEW = "review"
+
+/**
  * The object which is mapped to the Postgres source configuration JSON.
  *
  * Use [PostgresSourceConfiguration] instead wherever possible. This object also allows injecting
@@ -37,9 +48,35 @@ import jakarta.inject.Singleton
  * `MicronautPropertiesFriendly.*`.
  */
 @JsonSchemaTitle("Postgres Source Spec")
+// Stepped setup form ("Stepped Connector Forms" mini-spec): `groups` is the existing keyword and
+// `sections` the new one, each section listing the groups it shows, in form order. Properties opt
+// into a group with `"group":"<id>"` in their own @JsonSchemaInject. A section with `"check":true`
+// can be checked on its own: a CHECK whose config carries a top-level `check-section` key naming it
+// validates the configuration up to that section only; see PostgresSourceCheckSectionHandler. Every
+// Postgres section is checkable. The last section completes the configuration, so a CHECK for it is
+// the full check.
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"security","title":"Security"},{"id":"advanced","title":"Advanced"},{"id":"performance","title":"Performance"}]}""",
+        """{"groups":[
+  {"id":"db"},
+  {"id":"security","title":"Network & security"},
+  {"id":"auth"},
+  {"id":"sync","title":"Sync method"},
+  {"id":"advanced","title":"Advanced"}
+],"sections":[
+  {"id":"$SECTION_CONNECTION","title":"Connection","order":0,
+   "description":"Where your Postgres database lives.",
+   "groups":["db","security"],"check":true},
+  {"id":"$SECTION_CREDENTIALS","title":"Credentials","order":1,
+   "description":"The Postgres user Airbyte will read your data with.",
+   "groups":["auth"],"check":true},
+  {"id":"$SECTION_SYNC_METHOD","title":"Sync method","order":2,
+   "description":"How Airbyte reads changes from your database.",
+   "groups":["sync"],"check":true},
+  {"id":"$SECTION_REVIEW","title":"Review & set up","order":3,
+   "description":"Name your source and check the optional settings.",
+   "groups":["advanced"],"check":true}
+]}""",
 )
 @JsonPropertyOrder(
     value =
@@ -201,20 +238,20 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":12,"display_type":"radio","group":"advanced"}""")
+    @JsonSchemaInject(json = """{"order":12,"display_type":"radio","group":"sync"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replication_method.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"advanced"}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
@@ -222,7 +259,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
@@ -379,11 +416,11 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = XminReplicationMethodConfigurationSpecification::class,
         name = "Xmin",
     ),
+    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = StandardReplicationMethodConfigurationSpecification::class,
         name = "Standard",
