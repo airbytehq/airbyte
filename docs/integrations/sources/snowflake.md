@@ -327,12 +327,13 @@ When **Check Table and Column Access Privileges** is enabled, the connector runs
 - The object doesn't exist or the role isn't authorized to read it.
 - A view fails to expand, for example because its definition references a [session variable](https://docs.snowflake.com/en/sql-reference/session-variables) that isn't set in the connector's session.
 - A view's declared column list no longer matches the number of columns its query produces.
+- A view references a column that was dropped or renamed in its base table, so every query on the view fails with Snowflake error `904` (`invalid identifier`). Starting with version 2.0.6, the connector skips these views instead of failing discovery.
 
 If only some columns of a table or view are readable, the connector keeps the table or view and drops the columns the role can't read.
 
 If a table or view you expect is missing, confirm that you can run `SELECT * FROM <database>.<schema>.<object> LIMIT 0` as the Airbyte role, then fix the object's definition or grants in Snowflake and refresh the source schema.
 
-When **Check Table and Column Access Privileges** is disabled, the connector doesn't probe each object, so invalid views still appear in the schema. If you select one of those views, the sync fails with a configuration error saying the view could not be queried. Deselect the view or fix its definition in Snowflake.
+When **Check Table and Column Access Privileges** is disabled, the connector doesn't probe each object, so invalid views still appear in the schema. If you select one of those views, the sync fails with a configuration error. Deselect the view or fix its definition in Snowflake, then refresh the source schema. Starting with version 2.0.6, a view that references a dropped or renamed column fails with `A selected table or view references a column that no longer exists.` Recreate the view with `CREATE OR REPLACE VIEW` so that it only references existing columns.
 
 ### Discovery is slow or includes tables from other schemas (before 2.0.4)
 
