@@ -92,6 +92,36 @@ def test_check_connection_validates_settings(config, valid):
     assert (error is None) is valid
 
 
+@pytest.mark.parametrize(
+    "config",
+    [
+        {},
+        {"sourceType": "faker", "count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+        {"count": 5000, "seed": 42, "parallelism": 4},
+        {"records_per_slice": 1000, "parallelism": 4},
+    ],
+)
+def test_check_connection_accepts_omitted_settings(config: dict[str, object]) -> None:
+    original_config = dict(config)
+
+    assert SourceFaker().check_connection(logger, config) == (True, None)
+    assert config == original_config
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, "10", None, True, False])
+@pytest.mark.parametrize("include_other_settings", [True, False])
+def test_check_connection_rejects_explicit_invalid_settings(key: str, value: object, include_other_settings: bool) -> None:
+    config: dict[str, object] = {"count": 10, "records_per_slice": 5, "parallelism": 2} if include_other_settings else {}
+    config[key] = value
+
+    assert SourceFaker().check_connection(logger, config) == (
+        False,
+        f"`{key}` must be a number greater than or equal to 1, got {value!r}",
+    )
+
+
 def test_read_small_random_data():
     source = SourceFaker()
     config = {"count": 10, "parallelism": 1}
