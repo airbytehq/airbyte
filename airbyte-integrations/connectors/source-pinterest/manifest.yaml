@@ -593,8 +593,7 @@ definitions:
               value,
               conversion_report_time,
             ]
-          value: "{{ components_values['conversion_report_time'] }}"
-          condition: "{{ components_values.get('conversion_report_time') is not none }}"
+          value: "{{ components_values.get('conversion_report_time') or 'TIME_OF_AD_ACTION' }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
