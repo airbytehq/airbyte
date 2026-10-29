@@ -9,6 +9,11 @@
   },
   "redirects": [
     {
+      "source": "/platform/using-airbyte/getting-started/academy",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 308
+    },
+    {
       "source": "/ai-agents/interfaces/ui/automations",
       "destination": "/ai-agents/interfaces/ui",
       "statusCode": 308
