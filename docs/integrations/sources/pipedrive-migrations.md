@@ -2,6 +2,44 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Pipedrive Migration Guide
 
+## Upgrading to 5.0.0
+
+:::danger Risk of permanent data loss
+Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return most deleted records (deleted projects are the exception), so their rows aren't restored. Back up the affected tables before you clear them if you need that history.
+:::
+
+Version 5.0.0 gives the remaining date and time fields a date or timestamp type and corrects a few declared shapes to match Pipedrive's API reference. The values Pipedrive returns are unchanged; typed destinations now create these columns with the matching type.
+
+<details>
+<summary>Retyped fields</summary>
+
+- From string to timestamp with time zone (Pipedrive returns RFC 3339 values ending in `Z`):
+  - `projects`: `add_time`, `update_time`, `status_change_time`, `archive_time`
+  - `tasks`: `add_time`, `update_time`, `marked_as_done_time`
+  - `mailThreads`: `add_time`, `update_time`, `first_message_timestamp`, `last_message_timestamp`, `last_message_sent_timestamp`, `last_message_received_timestamp`
+  - `call_logs`: `start_time`, `end_time`
+- From string to timestamp without time zone (Pipedrive returns `YYYY-MM-DD HH:MM:SS`): `legacy_teams.add_time`, `deal_flow.log_time`, `filters.last_used_time`
+- From string to date: `projects` `start_date` and `end_date`; `tasks` `due_date` and `start_date`; `deal_installments.billing_date`; `goals` `duration.start` and `duration.end`
+- From number to integer: `goals` `owner_id`, `assignee.id`, and the `type.params.pipeline_id` and `type.params.activity_type_id` lists
+- Array items and object properties now declared: `leads.label_ids` and `leads_archived.label_ids` (strings), `mailThreads.drafts_parties` (objects), `deal_fields.show_in_pipelines` (`show_in_all` and `pipeline_ids`)
+
+</details>
+
+If you don't sync any of the streams above, you don't need to take any action.
+
+To upgrade:
+
+1. Open the connection, go to **Schema** and click **Refresh source schema**.
+   If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
+2. Clear the affected streams you sync. A clear is required on destinations that can't change a column's type in place, such as S3 Data Lake and GCS Data Lake, and for streams in Incremental or Full refresh | Append mode (`deal_flow`, `leads`), where it is the only way to rewrite rows synced before the upgrade. Streams in Full refresh | Overwrite mode are rebuilt on every sync, so on other destinations you can skip clearing them.
+3. Run a sync.
+
+If you skip the clear, rows synced before the upgrade keep the old column type until the destination rebuilds the table, and a destination that can't change the type fails the sync with a schema evolution error.
+
+### Update downstream consumers
+
+Update casts and comparisons on the retyped columns: they now hold timestamps, dates or integers instead of strings or decimals. Columns typed as timestamps without time zone (`legacy_teams.add_time`, `deal_flow.log_time`, `filters.last_used_time`) carry Pipedrive's UTC wall-clock time.
+
 ## Upgrading to 4.0.0
 
 :::danger Risk of permanent data loss

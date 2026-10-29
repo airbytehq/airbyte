@@ -29,10 +29,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time`, and
    `deal_flow.old_value`/`new_value` (they take the type of whichever field changed), stay untyped.
-   Adding or changing a `format` is a breaking change, so the date-like fields listed in AGENTS.md
-   wait for the next major release. Declared JSON types follow Pipedrive's OpenAPI; the differences
-   kept on purpose (whole-value `integer` flags and epoch milliseconds, five `goals` ids declared
-   `number`, two arrays without `items`, `deal_fields.show_in_pipelines`) and the three fields whose
+   Adding or changing a `format` is a breaking change; 5.0.0 typed the last date-like fields.
+   Declared JSON types follow Pipedrive's OpenAPI; the differences kept on purpose (whole-value
+   `integer` flags, epoch milliseconds and `mailThreads.version`, `goals.expected_outcome.target`
+   kept `number` for currency amounts) and the three fields whose
    values really vary in kind (`deal_fields.mandatory_flag`, `deal_flow.additional_data`,
    `options[].id`) are listed with their reasons there. A type change is a breaking change. Details
    in AGENTS.md section 3.
