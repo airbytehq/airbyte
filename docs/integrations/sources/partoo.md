@@ -79,6 +79,6 @@ Partoo allows 300 API requests per minute per organization. The connector stays 
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2026-10-29 | [TBD](https://github.com/airbytehq/airbyte/pulls)        | Initial release |
+| 0.1.0   | 2026-10-29 | [90178](https://github.com/airbytehq/airbyte/pull/90178) | Initial release |
 
 </details>
