@@ -242,7 +242,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%dT%H:%M:%SZ") }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -332,7 +332,7 @@ definitions:
           field_name: end
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%dT%H:%M:%SZ") }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -478,7 +478,7 @@ definitions:
           field_name: received_before
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%dT%H:%M:%SZ") }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -573,7 +573,7 @@ definitions:
           field_name: latest_message_before
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%dT%H:%M:%SZ") }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -609,7 +609,6 @@ spec:
       - api_key
       - api_server
       - start_date
-      - end_date
     properties:
       api_key:
         type: string
@@ -632,6 +631,9 @@ spec:
       end_date:
         type: string
         title: End date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records after this date
+          are not replicated. Leave empty to keep syncing new records up to the current time.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 3
