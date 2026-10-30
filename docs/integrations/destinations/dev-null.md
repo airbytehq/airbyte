@@ -51,8 +51,10 @@ log line includes the stream, the record index, and the record's fields:
 Logging Destination(stream=public.users, recordIndex=0, logEntry=1/100): {...}
 ```
 
-Each stream is logged independently, and the destination never logs more than **1,000 entries per
-stream**, whichever logging type you choose.
+Each stream is logged independently. The log-entry counters are kept per internal batch: they reset
+each time the destination flushes a batch (every 100,000 records, 50 MB, or 5 minutes without new
+records), so over a long sync more than **N** entries can appear. The hard cap is 1,000 entries per
+batch, whichever logging type you choose.
 
 | Logging type | Behavior | Options |
 | :--- | :--- | :--- |
@@ -69,7 +71,8 @@ and observe how the source and the platform behave under back-pressure.
 ### Failing
 
 Failing mode discards records until it has received the configured number of messages
-(`num_messages`), then throws an exception, which fails the sync. Use it to test failure
+(`num_messages`) within one internal batch, then throws an exception, which fails the sync. Keep
+`num_messages` well below 100,000 (the batch size) so the failure is actually triggered. Use it to test failure
 handling, retries, and alerting.
 
 ## Sync modes
@@ -93,7 +96,7 @@ output as part of the stream identifier.
 ## Limitations
 
 - No data is persisted. There is nothing to inspect after a sync other than the logs.
-- Logging mode caps output at 1,000 entries per stream and may expose source data in logs.
+- Logging mode caps output at 1,000 entries per batch and may expose source data in logs.
 - On Airbyte Cloud only Silent mode is offered.
 
 ## Changelog
