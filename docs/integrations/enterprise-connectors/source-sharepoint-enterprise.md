@@ -323,6 +323,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.3.3 | 2026-10-30 | [476](https://github.com/airbytehq/airbyte-enterprise/pull/476) | Handle Microsoft Graph `sharedWithMe` deprecation: skip shared items under `ALL` and raise a config error for `SHARED_ITEMS` on Graph 4xx responses |
+| 0.3.2 | 2026-03-30 | [392](https://github.com/airbytehq/airbyte-enterprise/pull/392) | Support `start_date` format without microseconds |
+| 0.3.1 | 2026-02-11 | [381](https://github.com/airbytehq/airbyte-enterprise/pull/381) | Bump CDK to 7.9.3 to fix permissions stream primary key |
 | 0.3.0 | 2025-05-21 | [161](https://github.com/airbytehq/airbyte-enterprise/pull/161) | Add permissions sync support |
 | 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
