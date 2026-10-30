@@ -1,0 +1,415 @@
+const fs = require("fs");
+const https = require("https");
+const path = require("path");
+const yaml = require("js-yaml");
+const { validateOpenAPISpec } = require("./openapi-validator");
+const {
+  SPEC_CACHE_PATH,
+  PUBLIC_API_SPEC_URL,
+  PUBLIC_API_APPLICATIONS_SPEC_URL,
+} = require("./constants");
+const { toSafeLogString } = require("../log-safe");
+
+const shouldSlimSpec = process.env.PUBLIC_API_SLIM !== "false";
+const shouldFailOnError = process.env.PUBLIC_API_STRICT === "true";
+const OPENAPI_METHODS = [
+  "get",
+  "put",
+  "post",
+  "delete",
+  "options",
+  "head",
+  "patch",
+  "trace",
+];
+const PREFERRED_TAG_ORDER = [
+  "Applications",
+  "Sources",
+  "Destinations",
+  "Connections",
+  "Jobs",
+  "Streams",
+  "Workspaces",
+  "Organizations",
+  "Users",
+  "Permissions",
+  "Tags",
+  "Source Definitions",
+  "Destination Definitions",
+  "Declarative Source Definitions",
+  "Health",
+];
+const TAG_ALIASES = {
+  SourceDefinitions: "Source Definitions",
+  DestinationDefinitions: "Destination Definitions",
+  DeclarativeSourceDefinitions: "Declarative Source Definitions",
+};
+
+function humanizeMachineTag(tag) {
+  return tag
+    .replace(/^public_?/i, "")
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((word) => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+function normalizeOperationTags(spec) {
+  const observedTags = new Set();
+
+  for (const pathItem of Object.values(spec.paths || {})) {
+    for (const method of OPENAPI_METHODS) {
+      const operation = pathItem?.[method];
+      if (!operation || !Array.isArray(operation.tags)) {
+        continue;
+      }
+
+      const machineTags = operation.tags.filter(
+        (tag) => typeof tag === "string" && /^public($|_)/.test(tag),
+      );
+      operation.tags = operation.tags
+        .filter((tag) => !(typeof tag === "string" && /^public($|_)/.test(tag)))
+        .map((tag) => TAG_ALIASES[tag] || tag);
+
+      if (operation.tags.length === 0 && machineTags.length > 0) {
+        const fallbackTag =
+          machineTags.find((tag) => tag !== "public") || machineTags[0];
+        operation.tags = [humanizeMachineTag(fallbackTag) || "Public"];
+      }
+
+      operation.tags.forEach((tag) => observedTags.add(tag));
+    }
+  }
+
+  const orderedTags = [
+    ...PREFERRED_TAG_ORDER.filter((tag) => observedTags.has(tag)),
+    ...[...observedTags].filter((tag) => !PREFERRED_TAG_ORDER.includes(tag)),
+  ];
+  spec.tags = orderedTags.map((name) => ({ name }));
+  return spec;
+}
+
+function fetchSpec(url, description) {
+  return new Promise((resolve, reject) => {
+    console.log(`Fetching ${description}...`);
+
+    https
+      .get(url, (response) => {
+        response.on("error", reject);
+
+        if (response.statusCode !== 200) {
+          response.resume();
+          reject(
+            new Error(`Failed to fetch ${description}: ${response.statusCode}`),
+          );
+          return;
+        }
+
+        let data = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+        response.on("end", () => {
+          try {
+            resolve(yaml.load(data));
+          } catch (error) {
+            reject(
+              new Error(`Failed to parse ${description}: ${error.message}`),
+            );
+          }
+        });
+      })
+      .on("error", (error) => {
+        reject(
+          new Error(`Network error fetching ${description}: ${error.message}`),
+        );
+      });
+  });
+}
+
+function loadCachedSpec() {
+  if (!fs.existsSync(SPEC_CACHE_PATH)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(SPEC_CACHE_PATH, "utf8"));
+  } catch (error) {
+    console.warn(
+      `Could not load cached public API spec: ${toSafeLogString(error.message)}`,
+    );
+    return null;
+  }
+}
+
+function resolveJsonPointer(document, reference) {
+  if (!reference.startsWith("#/")) {
+    return null;
+  }
+
+  return reference
+    .slice(2)
+    .split("/")
+    .map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"))
+    .reduce((value, part) => value?.[part], document);
+}
+
+function getSchemaName(reference) {
+  const schemaMatch = reference.match(/^#\/components\/schemas\/(.+)$/);
+  return schemaMatch
+    ? decodeURIComponent(schemaMatch[1].replace(/~1/g, "/").replace(/~0/g, "~"))
+    : null;
+}
+
+function collectSchemaReferences(value, references) {
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSchemaReferences(item, references));
+    return;
+  }
+
+  if (typeof value.$ref === "string" && getSchemaName(value.$ref)) {
+    references.add(value.$ref);
+  }
+
+  Object.values(value).forEach((child) =>
+    collectSchemaReferences(child, references),
+  );
+}
+
+function mergeApplicationSpec(spec, applicationsSpec) {
+  for (const [pathName, pathItem] of Object.entries(
+    applicationsSpec.paths || {},
+  )) {
+    if (Object.hasOwn(spec.paths, pathName)) {
+      throw new Error(
+        `Applications spec path collides with public API path: ${pathName}`,
+      );
+    }
+    spec.paths[pathName] = pathItem;
+  }
+
+  const applicationSchemas = applicationsSpec.components?.schemas || {};
+  spec.components ||= {};
+  spec.components.schemas ||= {};
+
+  const pendingReferences = new Set();
+  collectSchemaReferences(applicationsSpec.paths, pendingReferences);
+  const visitedSchemas = new Set();
+
+  while (pendingReferences.size > 0) {
+    const [reference] = pendingReferences;
+    pendingReferences.delete(reference);
+
+    const schemaName = getSchemaName(reference);
+    if (!schemaName || visitedSchemas.has(schemaName)) {
+      continue;
+    }
+    visitedSchemas.add(schemaName);
+
+    const schema =
+      spec.components.schemas[schemaName] || applicationSchemas[schemaName];
+    if (!schema) {
+      throw new Error(
+        `Applications spec references missing schema: ${schemaName}`,
+      );
+    }
+
+    if (!spec.components.schemas[schemaName]) {
+      spec.components.schemas[schemaName] = schema;
+    }
+
+    collectSchemaReferences(schema, pendingReferences);
+  }
+
+  return spec;
+}
+
+function pruneUnreachableSchemas(spec) {
+  const schemas = spec.components?.schemas;
+  if (!schemas) {
+    return 0;
+  }
+
+  const reachableSchemas = new Set();
+  const visitedReferences = new Set();
+
+  function visit(value) {
+    if (!value || typeof value !== "object") {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+
+    if (typeof value.$ref === "string" && !visitedReferences.has(value.$ref)) {
+      visitedReferences.add(value.$ref);
+      const schemaMatch = value.$ref.match(/^#\/components\/schemas\/(.+)$/);
+      if (schemaMatch) {
+        reachableSchemas.add(
+          decodeURIComponent(
+            schemaMatch[1].replace(/~1/g, "/").replace(/~0/g, "~"),
+          ),
+        );
+      }
+      visit(resolveJsonPointer(spec, value.$ref));
+    }
+
+    Object.entries(value).forEach(([key, child]) => {
+      if (key !== "$ref") {
+        visit(child);
+      }
+    });
+  }
+
+  visit(spec.paths);
+
+  const originalSchemaCount = Object.keys(schemas).length;
+  spec.components.schemas = Object.fromEntries(
+    Object.entries(schemas).filter(([name]) => reachableSchemas.has(name)),
+  );
+
+  return originalSchemaCount - Object.keys(spec.components.schemas).length;
+}
+
+function isConnectorConfigurationUnion(name, schema) {
+  if (!Array.isArray(schema?.oneOf) || schema.oneOf.length < 20) {
+    return false;
+  }
+
+  if (/^(Source|Destination).*Configuration/i.test(name)) {
+    return true;
+  }
+
+  const references = schema.oneOf
+    .map((variant) => variant?.$ref)
+    .filter((reference) => typeof reference === "string");
+  const connectorReferences = references.filter((reference) =>
+    /#\/components\/schemas\/(?:source|destination)-/i.test(reference),
+  );
+
+  return (
+    references.length === schema.oneOf.length &&
+    connectorReferences.length / references.length >= 0.8
+  );
+}
+
+function replaceConnectorConfigurationUnions(spec) {
+  const schemas = spec.components?.schemas;
+  if (!schemas) {
+    return [];
+  }
+
+  const replacedSchemas = [];
+  for (const [name, schema] of Object.entries(schemas)) {
+    if (!isConnectorConfigurationUnion(name, schema)) {
+      continue;
+    }
+
+    const connectorType = /^Source/i.test(name)
+      ? "source"
+      : /^Destination/i.test(name)
+        ? "destination"
+        : "source or destination";
+    const typeKey =
+      connectorType === "source"
+        ? "sourceType"
+        : connectorType === "destination"
+          ? "destinationType"
+          : null;
+    const connectorTypeGuidance = typeKey
+      ? ` When creating a ${connectorType}, identify the connector with \`definitionId\` or \`configuration.${typeKey}\`.`
+      : "";
+    schemas[name] = {
+      type: "object",
+      description: `Connector-specific settings. The fields depend on which ${connectorType} connector you're configuring, so the request sample shows placeholders instead of real fields.\n\nTo fill it in, choose your connector in the lookup below, then add each of its fields to \`configuration\`, using the **Property name** column as the key.${connectorTypeGuidance} For setup guidance, see the [connector documentation](/integrations).`,
+      example: {
+        ...(typeKey
+          ? {
+              [typeKey]: "<connector type, for example postgres>",
+            }
+          : {}),
+        "<property name>": "<value from the configuration lookup>",
+      },
+    };
+    replacedSchemas.push(name);
+  }
+
+  return replacedSchemas;
+}
+
+function processSpec(spec) {
+  if (!shouldSlimSpec) {
+    console.log("PUBLIC_API_SLIM=false; keeping the full public API spec");
+    return spec;
+  }
+
+  const replacedSchemas = replaceConnectorConfigurationUnions(spec);
+  const prunedSchemaCount = pruneUnreachableSchemas(spec);
+  console.log(
+    `Slimmed public API spec: replaced ${replacedSchemas.length} connector ` +
+      `configuration unions and pruned ${prunedSchemaCount} unreachable schemas`,
+  );
+  return spec;
+}
+
+function writeSpec(spec) {
+  const directory = path.dirname(SPEC_CACHE_PATH);
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(SPEC_CACHE_PATH, `${JSON.stringify(spec, null, 2)}\n`);
+}
+
+async function main() {
+  let spec;
+  try {
+    const [mainSpec, applicationsSpec] = await Promise.all([
+      fetchSpec(PUBLIC_API_SPEC_URL, "public API spec"),
+      fetchSpec(PUBLIC_API_APPLICATIONS_SPEC_URL, "Applications API spec"),
+    ]);
+    spec = mergeApplicationSpec(mainSpec, applicationsSpec);
+    spec = normalizeOperationTags(spec);
+    spec.info.title = "Airbyte API";
+    spec.info.description = [
+      "Use the Airbyte API to manage sources, destinations, connections, jobs, and workspaces programmatically.",
+      "",
+      "- **Airbyte Cloud base URL:** `https://api.airbyte.com/v1`",
+      "- **Self-managed base URL:** `<YOUR_AIRBYTE_URL>/api/public/v1`",
+      "",
+      "Every request needs an access token. To get one, see [Get an access token](/platform/using-airbyte/configuring-api-access). For a walkthrough of your first request, see [API documentation](/developers/api-documentation).",
+    ].join("\n");
+    spec = await validateOpenAPISpec(spec);
+    spec = processSpec(spec);
+    await validateOpenAPISpec(spec);
+    writeSpec(spec);
+    console.log(`Public API spec saved to ${SPEC_CACHE_PATH}`);
+  } catch (error) {
+    console.error(
+      `Error fetching/processing latest public API spec: ${toSafeLogString(error.message)}`,
+    );
+    if (shouldFailOnError) {
+      throw error;
+    }
+
+    spec = loadCachedSpec();
+    if (!spec) {
+      throw new Error("No cached public API spec is available", {
+        cause: error,
+      });
+    }
+    console.log("Using the committed cached public API spec");
+    writeSpec(spec);
+  }
+}
+
+main().catch((error) => {
+  console.error(
+    `Public API spec preparation failed: ${toSafeLogString(error)}`,
+  );
+  process.exitCode = 1;
+});

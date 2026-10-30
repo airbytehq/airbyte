@@ -1,0 +1,28 @@
+.lookup {
+  margin: 12px 0 8px;
+}
+
+.toggle {
+  margin: 0;
+}
+
+.chevron {
+  width: 1em;
+  height: 1em;
+  margin-left: 0.4rem;
+  transition: transform 150ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.panel {
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-surface-color);
+}

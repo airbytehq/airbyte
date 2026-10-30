@@ -30,7 +30,12 @@
   --ifm-table-head-background: var(--color-blue-30);
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
-  
+
+  --openapi-code-green: #49cc90;
+  --openapi-code-red: #f93e3e;
+  --openapi-code-blue: #61affe;
+  --openapi-code-orange: #fca130;
+
   --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
@@ -414,3 +419,51 @@ li.theme-doc-sidebar-item-link.menu__list-item .menu__link {
   justify-content: start;
 }
 
+h1.openapi__heading {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem !important;
+}
+
+li.api-method > .menu__link {
+  display: flex;
+  align-items: flex-start;
+}
+
+li.api-method > .menu__link::before {
+  flex: 0 0 3.25rem;
+  margin: 0.15rem 0.5rem 0 0;
+  padding: 0.05rem 0;
+  border-radius: 4px;
+  color: #fff;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+li.api-method.get > .menu__link::before {
+  content: "get";
+  background: var(--ifm-color-primary);
+}
+
+li.api-method.post > .menu__link::before {
+  content: "post";
+  background: #12805c;
+}
+
+li.api-method.put > .menu__link::before {
+  content: "put";
+  background: #1d6fb8;
+}
+
+li.api-method.patch > .menu__link::before {
+  content: "patch";
+  background: #b45f06;
+}
+
+li.api-method.delete > .menu__link::before {
+  content: "del";
+  background: #c62828;
+}
