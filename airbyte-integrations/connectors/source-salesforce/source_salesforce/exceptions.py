@@ -6,6 +6,7 @@
 import logging
 
 
+# Maps Salesforce token endpoint error codes and descriptions to user-actionable messages.
 # Lives here (not in rate_limiting) so both api.py and rate_limiting.py can use it without a
 # module-level import cycle.
 AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
