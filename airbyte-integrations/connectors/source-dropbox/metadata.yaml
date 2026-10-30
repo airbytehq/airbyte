@@ -1,0 +1,57 @@
+metadataSpecVersion: "1.0"
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.dropboxapi.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7eecb7bd-8ad1-4703-9ba5-0f1d39bfba93
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dropbox
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dropbox
+  externalDocumentationUrls:
+    - title: Dropbox API reference
+      url: https://www.dropbox.com/developers/documentation/http/documentation
+      type: api_reference
+    - title: Dropbox OAuth guide
+      url: https://docs.dropboxapi.com/dropbox-api/docs/oauth
+      type: authentication_guide
+    - title: Dropbox error handling and rate limits
+      url: https://docs.dropboxapi.com/dropbox-api/docs/error-handling
+      type: rate_limits
+    - title: Dropbox Status
+      url: https://status.dropbox.com/
+      type: status_page
+  githubIssueLabel: source-dropbox
+  icon: icon.svg
+  license: MIT
+  name: Dropbox
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2026-09-30
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dropbox
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-DROPBOX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
