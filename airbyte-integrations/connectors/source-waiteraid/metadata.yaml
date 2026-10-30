@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 03a53b13-794a-4d6b-8544-3b36ed8f3ce4
-  dockerImageTag: 0.2.24
+  dockerImageTag: 0.2.25-rc.1
   dockerRepository: airbyte/source-waiteraid
   githubIssueLabel: source-waiteraid
   icon: waiteraid.svg
@@ -18,6 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
   tags:
     - cdk:low-code
