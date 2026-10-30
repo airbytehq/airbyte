@@ -1,0 +1,12 @@
+{
+  "host": "hana.example.com",
+  "port": 30015,
+  "username": "AIRBYTE_READER",
+  "password": "********",
+  "schemas": ["SAPHANADB"],
+  "table_name_patterns": ["ACDOCA", "CSKS", "CSKT", "KNA1", "MAKT", "MARA"],
+  "fetch_size": 50000,
+  "max_retries": 20,
+  "retry_wait_seconds": 60,
+  "strip_nul_characters": true
+}
