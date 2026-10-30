@@ -64,8 +64,8 @@ class GcsV2Checker<T : OutputStream>(
 
     /**
      * GCS is accessed through its S3-compatible XML API, so SDK errors arrive in S3 terminology
-     * (`AccessDenied`, `SignatureDoesNotMatch`, `NoSuchBucket`). Translate the common ones into
-     * GCS / HMAC-key guidance.
+     * (`AccessDenied`, `SignatureDoesNotMatch`, `NoSuchBucket`). Translate the common ones into GCS
+     * / HMAC-key guidance.
      */
     private fun describeFailure(config: GcsV2Configuration<T>, e: Exception): String {
         val bucket = config.gcsClientConfiguration.gcsBucketName
