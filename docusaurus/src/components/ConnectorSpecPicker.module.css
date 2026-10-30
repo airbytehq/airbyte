@@ -105,6 +105,12 @@
   margin-top: 24px;
 }
 
+.spec :global(h3) {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 1.125rem;
+}
+
 .specHeading {
   display: flex;
   gap: 10px;

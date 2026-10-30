@@ -306,12 +306,6 @@ const config: Config = {
         logoClass: "go",
         variant: "Native",
       },
-      {
-        language: "java",
-        highlight: "java",
-        logoClass: "java",
-        variant: "Unirest",
-      },
     ],
     mermaid: {
       theme: {
