@@ -305,6 +305,10 @@ Two smaller changes in the same release:
 - `pull_requests` now fills `base.repo_id` with the id of the base repository. Earlier versions always emitted `null` there because of a bug in the record transformation; `head.repo_id` is unchanged.
 - `pull_requests` always lists a repository newest-first. Earlier versions listed it oldest-first on the very first sync of a connection, which let a failed first sync resume part-way through a repository; a failed attempt now restarts the repository, as it already did on every later sync.
 
+#### `review_comments` page size
+
+Since version 2.8.2, `review_comments` requests 100 comments per page instead of 10. On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one returns more data and takes longer, so sync speed for this stream may change compared with earlier versions. The other large streams still use 10 per page.
+
 #### Permissions and scopes
 
 If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
