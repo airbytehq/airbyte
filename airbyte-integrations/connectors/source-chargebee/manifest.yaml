@@ -87,10 +87,10 @@ definitions:
     attached_item:
       type: DeclarativeStream
       $comment: >-
-        As of 2/8/24 this stream should be full refresh only as there is an
-        issue with state being appended rather than replaced, causing
-        duplicates. See GH Issue:
-        https://github.com/airbytehq/airbyte/issues/33854
+        No updated_at filter is sent when the slice start is epoch (first sync
+        or full refresh), so full refresh scope is unchanged. The parent item
+        stream is read without incremental_dependency because there is no
+        guarantee an item's updated_at changes when its attached items change.
       name: attached_item
       primary_key:
         - id
@@ -100,6 +100,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /items/{{ stream_slice.item_id }}/attached_items
           http_method: GET
+          request_parameters:
+            updated_at[between]: "{% if stream_slice['start_time'] | int > 0 %}'[{{ stream_slice['start_time'] }}, {{ stream_slice['end_time'] }}]'{% endif %}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -145,7 +147,21 @@ definitions:
               partition_field: item_id
               stream:
                 $ref: "#/definitions/streams/item"
-              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "0"
+          datetime_format: "%s"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        global_substream_cursor: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
@@ -2120,6 +2136,7 @@ metadata:
         - transformations
       attached_item:
         - transformations
+        - incrementalSync
       customer:
         - transformations
       coupon:
