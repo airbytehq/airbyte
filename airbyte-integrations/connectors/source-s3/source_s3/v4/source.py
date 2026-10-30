@@ -3,13 +3,15 @@
 #
 from __future__ import annotations
 
+import logging
 import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 import orjson
+from pydantic.v1.error_wrappers import ValidationError
 
 from airbyte_cdk import (
     AirbyteEntrypoint,
@@ -24,6 +26,7 @@ from airbyte_cdk.models import (
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteCatalogSerializer,
+    FailureType,
     TraceType,
     Type,
 )
@@ -40,10 +43,12 @@ from airbyte_cdk.sources.file_based.stream.abstract_file_based_stream import (
 from airbyte_cdk.sources.file_based.stream.cursor.abstract_file_based_cursor import (
     AbstractFileBasedCursor,
 )
+from airbyte_cdk.sources.utils.check_section import CHECK_SECTION_KEY
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
-from source_s3.v4.config import Config
+from source_s3.v4.config import SECTION_BUCKET, SECTION_FILES, Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
@@ -61,6 +66,47 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
+
+    def check_section_connection(self, logger: logging.Logger, section: str, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        Section checks for the stepped setup form, see the `sections` declared by `Config` and the CDK's
+        `airbyte_cdk.sources.utils.check_section`. Each check validates the configuration collected up to its section:
+        - `bucket`: the bucket exists and the credentials, endpoint and region let Airbyte list it. Nothing about
+          streams is involved.
+        - `files`: the streams complete the connector's part of the configuration, so this is the full check: every
+          stream lists its files and parses one of them.
+        - `review` is the last section, so the CDK runs the full check for it.
+        """
+        if section == SECTION_BUCKET:
+            return self._check_bucket_section(logger, config)
+        if section == SECTION_FILES:
+            logger.info(f"Section '{section}' completes the connector configuration, running the full config check.")
+            return self.check_connection(logger, config)
+        raise AirbyteTracedException(
+            message=f"Section '{section}' has no section check.",
+            failure_type=FailureType.config_error,
+        )
+
+    def _check_bucket_section(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        for field in ("bucket", "credentials"):
+            if not config.get(field):
+                raise AirbyteTracedException(
+                    message=f"The '{SECTION_BUCKET}' section check requires the '{field}' field.",
+                    failure_type=FailureType.config_error,
+                )
+        try:
+            # The streams belong to a later section; the parsed config needs the list to exist, not to be filled in.
+            parsed_config = self._get_parsed_config({**config, "streams": []})
+        except ValidationError as exc:
+            raise AirbyteTracedException(
+                message=f"Invalid configuration for the '{SECTION_BUCKET}' section: {exc}",
+                internal_message=str(exc),
+                failure_type=FailureType.config_error,
+                exception=exc,
+            )
+        self.stream_reader.config = parsed_config
+        self.stream_reader.check_bucket_access(logger)  # type: ignore[attr-defined]  # the reader is a SourceS3StreamReader
+        return True, None
 
     def _make_default_stream(
         self,
@@ -143,7 +189,8 @@ class SourceS3(FileBasedSource):
 
     @staticmethod
     def _is_v4_config(config: Mapping[str, Any]) -> bool:
-        return "streams" in config
+        # A section check carries the fields collected so far only, which may not include the streams yet.
+        return "streams" in config or CHECK_SECTION_KEY in config
 
     @staticmethod
     def _clean_required_fields(v3_field: Dict[str, Any]) -> None:
