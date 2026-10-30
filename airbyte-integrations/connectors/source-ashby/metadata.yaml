@@ -6,7 +6,7 @@ data:
     hosts:
       - api.ashbyhq.com
   maxSecondsBetweenMessages: 3600
-  dockerImageTag: 2.1.2
+  dockerImageTag: 2.1.3
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -37,7 +37,7 @@ data:
       - job_postings
       - users
       - interview_schedules
-  supportLevel: community
+  supportLevel: certified
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests

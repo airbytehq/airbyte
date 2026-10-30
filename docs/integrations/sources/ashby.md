@@ -55,7 +55,7 @@ On existing connections, refresh the source schema after upgrading to make newly
 
 Starting in version 2.1.0, all incremental streams except `applications` and `application_history` use Ashby's [sync tokens](https://developers.ashbyhq.com/docs/pagination-and-incremental-sync). The first incremental sync reads all available records, subject to the start date where it applies. The connector saves a token after it reads the last page, then uses that token on subsequent syncs to request only new or modified records. Airbyte manages the tokens automatically; you don't need to enter one in the source configuration.
 
-If Ashby rejects a stored token, the stream fails and keeps its state. For `sync_token_expired` or `sync_token_invalid`, refresh the affected stream in the connection to clear its state and re-read it in full. Starting in version 2.1.2, `candidates` is the exception: it clears the rejected token and re-reads the stream in full automatically.
+If Ashby rejects a stored token, the stream fails and keeps its state. For `sync_token_expired` or `sync_token_invalid`, refresh the affected stream in the connection to clear its state and re-read it in full. Starting in version 2.1.3, `candidates` is the exception: it clears the rejected token and re-reads the stream in full automatically.
 
 :::warning
 Ashby limits a sync-token incremental sync to 100 pages, about 10,000 records changed since the stream's last sync. A larger change set, for example after a bulk data migration, fails the stream with `incremental_sync_too_large`, and syncing again with the same state fails the same way. To recover, either switch the stream to Full Refresh, or refresh the stream and then sync the connection more often, at least daily. Ashby's sync tokens also expire after 14 days; sync incremental streams at least weekly. The `candidates` stream re-reads automatically if Ashby rejects its token.
@@ -170,7 +170,8 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 2.1.2 | 2026-10-29 | [89056](https://github.com/airbytehq/airbyte/pull/89056) | Re-read candidates from the beginning without a sync token when Ashby rejects its stored token. |
+| 2.1.3 | 2026-10-30 | [89056](https://github.com/airbytehq/airbyte/pull/89056) | Re-read candidates from the beginning without a sync token when Ashby rejects its stored token. |
+| 2.1.2 | 2026-10-30 | [90220](https://github.com/airbytehq/airbyte/pull/90220) | Promote to certified |
 | 2.1.1 | 2026-10-29 | [90197](https://github.com/airbytehq/airbyte/pull/90197) | Show a date picker for the start date field. |
 | 2.1.0 | 2026-10-29 | [89675](https://github.com/airbytehq/airbyte/pull/89675) | Added incremental sync using Ashby sync tokens for the 20 streams whose endpoints support them. |
 | 2.0.1 | 2026-10-27 | [89792](https://github.com/airbytehq/airbyte/pull/89792) | Update dependencies |
