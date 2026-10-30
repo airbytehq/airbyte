@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - storage.googleapis.com
   ab_internal:
     ql: 300
     sl: 100
@@ -31,7 +34,7 @@ data:
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
   # v0.4.x -> 1.0.0: CDK swap (old Java CDK -> Bulk Load CDK) + spec/layout revision is a major bump,
   # mirroring how destination-s3 shipped its 1.0.0.
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/destination-gcs
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   githubIssueLabel: destination-gcs
