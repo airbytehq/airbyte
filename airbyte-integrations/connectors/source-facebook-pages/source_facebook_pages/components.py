@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from dataclasses import InitVar, dataclass
 from http import HTTPStatus
 from typing import Any, Mapping, MutableMapping, Optional, Union
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
 @dataclass
@@ -102,3 +104,39 @@ class CustomFieldTransformation(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
         return self._date_time_to_rfc3339(record)
+
+
+@dataclass
+class MetaUsageBackoffStrategy(BackoffStrategy):
+    """
+    When Meta throttles a request it reports how long until access returns in the
+    X-Business-Use-Case-Usage header (`estimated_time_to_regain_access`, in minutes).
+    Wait that long instead of guessing with exponential backoff; return None when the
+    header is absent so the next strategy in the list decides.
+    https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    # ponytail: cap at 30 minutes; Meta can estimate hours and a sync should fail fast past that.
+    max_wait_seconds: int = 1800
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        pass
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response):
+            return None
+        try:
+            usage = json.loads(response_or_exception.headers.get("X-Business-Use-Case-Usage", ""))
+        except ValueError:
+            return None
+        minutes = max(
+            (entry.get("estimated_time_to_regain_access", 0) for entries in usage.values() for entry in entries),
+            default=0,
+        )
+        return min(minutes * 60, self.max_wait_seconds) if minutes > 0 else None
