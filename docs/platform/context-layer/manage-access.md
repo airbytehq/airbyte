@@ -60,6 +60,12 @@ You must be an organization admin.
 
 Agents lose access to every source and destination in the organization. Airbyte keeps your source and destination selections and restores them if you turn the context layer back on.
 
+## Turn on search
+
+An organization administrator can also turn on **Semantic search** in **Context layer** settings and accept the new terms of service. Then, workspace members with edit permission can choose which connections feed the search index on the **Semantic search** page. Both connectors in a connection must be agent connectors.
+
+Search indexes data synced after you enable it. To include data already in your destination, start a backfill. For setup, backfill costs, and deletion behavior, see [Search your data](search.md).
+
 ## Connect your agent
 
 After you give agents access, [connect the Airbyte MCP to your agent](../airbyte-mcp/install.md). Your agent can then read from the sources and destinations you chose.

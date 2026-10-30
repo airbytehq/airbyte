@@ -8,10 +8,22 @@ products: cloud
 The context layer is available to all Airbyte Cloud organizations. Self-managed deployments of Airbyte aren't supported.
 :::
 
-The context layer is how AI agents access and reason about your organization's data through the [Airbyte MCP](../airbyte-mcp/readme.md). It combines two ways to get data:
+The context layer is how AI agents access and reason about your organization's data through the [Airbyte MCP](../airbyte-mcp/readme.md). It combines three ways to get data:
 
 - **Replicated data**: the data Airbyte syncs into your warehouse. It's complete, historical, and joined across all your sources.
 - **Direct reads**: live data your agent reads from a source or destination at the moment it needs it, without a sync.
+- **Search**: relevant records your agent finds by keyword, meaning, or both in an index Airbyte builds from your synced data. See [Search your data](search.md).
+
+![Context layer overview: a connection replicates data from a source through source and destination connectors to a destination. An AI agent uses the Airbyte MCP for read-only direct reads through the connectors and queries an Airbyte-hosted search index fed by syncs or an optional destination backfill.](/img/context-layer-overview.svg)
+
+## Choose how to access data
+
+| | Replicated data | Direct reads | Search |
+| :--- | :--- | :--- | :--- |
+| Freshness | As of your latest sync. | As of the API request or destination query. | As of your latest indexed sync or backfill. |
+| Needs a connection | Yes. | No. | Yes, with search enabled. |
+| Good for | Historical analysis and joins in your destination. | Current records, known IDs, and SQL queries. | Finding relevant records by keyword or meaning. |
+| Tool | Your destination's query tools, or `execute_external_sql_query` for supported destinations. | `execute_external_api_query` or `execute_external_sql_query`. | `execute_external_search_query`. |
 
 ## What are direct reads?
 
@@ -22,7 +34,7 @@ A direct read is a request your agent makes to a source or destination through t
 
 Direct reads use the credentials you already configured for that source or destination in Airbyte. You don't need to create a connection, and your agent never sees the credentials.
 
-Direct reads are read-only. Your agent can list and get records, but it can't create, update, or delete them.
+Direct reads are read-only. Your agent can list, get, and search records when the connector supports those actions, but it can't create, update, or delete them. A connector's API search is different from [context layer search](search.md), which queries an index of synced data.
 
 ## Why organization admins control the context layer
 
@@ -43,13 +55,15 @@ After you turn on the context layer and give agents access to a source or destin
 2. Your agent reads the connector's skill with `get_agent_skill_docs` to learn which entities and actions it supports.
 3. Your agent reads data with `execute_external_api_query` for a source, or `execute_external_sql_query` for a destination.
 
+If you [turn on search](search.md#turn-on-search), your agent can also find indexed records with `execute_external_search_query`.
+
 You don't need to name these tools. Ask your agent a question, like "What are the five most recent Salesforce opportunities?" and it picks the tools for you. For details, see [Airbyte MCP tools](../airbyte-mcp/tools.md#direct-reads).
 
 ## Supported connectors {#supported-connectors}
 
 ### Sources
 
-Direct reads are available for sources that are an [agent connector](/platform/move-data/sources-destinations-connectors#connector-capabilities). Agent connectors support the `list` and `get` actions on their entities. Direct reads don't support other actions that an agent connector documents.
+Direct reads are available for sources that are an [agent connector](/platform/move-data/sources-destinations-connectors#connector-capabilities). Depending on the connector, direct reads support `list`, `get`, and `search` actions. Check the connector's skill for its supported read actions.
 
 When a source doesn't support direct reads, the **Context layer** page in Airbyte shows that it isn't supported yet.
 
@@ -64,11 +78,11 @@ Agents query these destinations with read-only SQL. Only `SELECT` statements and
 
 ## Usage limits
 
-The context layer is free to use. Each organization can make up to 100,000 direct reads per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from, and SQL queries use compute in your destination, which your destination provider may charge for.
+The context layer is free to use. Each organization can make up to 100,000 direct reads and searches combined per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from, and SQL queries and search backfills use compute in your destination, which your destination provider may charge for.
 
 ## Limitations
 
 - The context layer is only available for Airbyte Cloud.
-- Direct reads are read-only. Agents can't write to sources or destinations through the context layer.
+- Direct reads and searches are read-only. Agents can't write to sources or destinations through the context layer.
 - Direct reads are only available for [supported connectors](#supported-connectors).
 - Direct reads don't work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).

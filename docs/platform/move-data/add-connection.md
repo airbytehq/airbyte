@@ -11,6 +11,8 @@ import CaptureHarFile from '../_partials/_capture-har-file.md';
 
 After you add a [source](../using-airbyte/getting-started/add-a-source) and a [destination](../using-airbyte/getting-started/add-a-destination), add a new connection to start syncing data from your source to your destination.
 
+In Airbyte Cloud, a connection can also feed the [context layer search index](../context-layer/search.md). Connectors offer data replication, agent access for direct reads, or both; search operates on data synced by a connection. Both the source and destination must be agent connectors. After an organization administrator enables **Semantic search**, new eligible connections have it on by default. You can change it during connection setup or in connection settings with workspace edit permission.
+
 ## ELT and data activation destinations are different
 
 You configure all connections in a similar way. However, the exact process is different for [data activation](elt-data-activation) destinations. This page explains how to set up both.
