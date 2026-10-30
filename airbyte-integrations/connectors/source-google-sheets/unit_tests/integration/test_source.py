@@ -1154,9 +1154,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
         assert output.records == expected_records, "Emitted records should match expected records with overridden stream name"
 
         assert len(output.state_messages) == 1, "Expected 1 state message"
-        assert output.state_messages[0].state.stream.stream_descriptor.name == overridden_stream_name, (
-            "State message should use overridden stream name"
-        )
-        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True), (
-            "State should indicate no cursor for full refresh"
-        )
+        assert (
+            output.state_messages[0].state.stream.stream_descriptor.name == overridden_stream_name
+        ), "State message should use overridden stream name"
+        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(
+            __ab_no_cursor_state_message=True
+        ), "State should indicate no cursor for full refresh"
