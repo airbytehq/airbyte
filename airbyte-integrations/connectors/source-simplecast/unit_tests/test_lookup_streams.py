@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import json
 from unittest import TestCase
 
@@ -12,15 +14,9 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 _CONFIG = {"api_token": "test_token"}
 _CATEGORIES_REQUEST = HttpRequest("https://api.simplecast.com/categories")
 _DISTRIBUTION_CHANNELS_REQUEST = HttpRequest("https://api.simplecast.com/distribution_channels")
-_PODCAST_FIRST_PAGE_REQUEST = HttpRequest(
-    "https://api.simplecast.com/podcasts/", query_params={"offset": "0"}
-)
-_PODCAST_SECOND_PAGE_REQUEST = HttpRequest(
-    "https://api.simplecast.com/podcasts/", query_params={"offset": "1"}
-)
-_ANALYTICS_REQUEST = HttpRequest(
-    "https://api.simplecast.com/analytics", query_params={"podcast": "p1"}
-)
+_PODCAST_FIRST_PAGE_REQUEST = HttpRequest("https://api.simplecast.com/podcasts/", query_params={"offset": "0"})
+_PODCAST_SECOND_PAGE_REQUEST = HttpRequest("https://api.simplecast.com/podcasts/", query_params={"offset": "1"})
+_ANALYTICS_REQUEST = HttpRequest("https://api.simplecast.com/analytics", query_params={"podcast": "p1"})
 _TIMEZONES_REQUEST = HttpRequest("https://api.simplecast.com/timezones")
 
 
