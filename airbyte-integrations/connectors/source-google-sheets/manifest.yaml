@@ -52,7 +52,7 @@ dynamic_streams:
             name: ""
           http_method: GET
           path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+            {{ config["spreadsheet_id"] }}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
             type: DefaultErrorHandler
             backoff_strategies:
@@ -86,7 +86,7 @@ dynamic_streams:
               sheet_id: ""
             http_method: GET
             path: >-
-              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
+              {{ config["spreadsheet_id"] }}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
             error_handler:
               type: CompositeErrorHandler
               error_handlers:
@@ -177,7 +177,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=false&alt=json
+            {{ config["spreadsheet_id"] }}?includeGridData=false&alt=json
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -231,12 +231,14 @@ definitions:
         description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
         http_method: GET
         path: >-
-          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
+          {{ config["spreadsheet_id"] }}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
             - type: CustomErrorHandler
               class_name: source_declarative_manifest.components.GridDataErrorHandler
+              response_filters:
+                $ref: "#/definitions/response_filters/response_error_filters"
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
             - type: DefaultErrorHandler
@@ -310,21 +312,35 @@ definitions:
     forbidden:
       type: HttpResponseFilter
       action: FAIL
+      failure_type: config_error
       http_codes:
         - 403
       error_message: >-
-        The authenticated Google Sheets user does not have permissions to view the
-        spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
-        to the Spreadsheet and reauthenticate. If the issue persists, contact support.
-        The caller does not have right permissions.
+        Spreadsheet access is denied. Share the spreadsheet with the service account's client_email or the authorized Google user, then retry.
     not_found:
       type: HttpResponseFilter
       action: FAIL
+      failure_type: config_error
       http_codes:
         - 404
       error_message: >-
-        The requested Google Sheets spreadsheet with id {{config["spreadsheet_id"]}} does not exist.
-        Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support
+        Spreadsheet was not found or is inaccessible. Check the Spreadsheet Link and share the sheet with the service account's client_email or the authorized Google user.
+    api_disabled:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      error_message_contains: has not been used
+      predicate: >-
+        {{ response.get('error', {}).get('code') == 403 and ('SERVICE_DISABLED' in response.get('error', {}) | string or 'accessNotConfigured' in response.get('error', {}) | string or 'has not been used' in response.get('error', {}).get('message', '') or 'API has been disabled' in response.get('error', {}).get('message', '')) }}
+      error_message: >-
+        A required Google API is disabled in the credential's Google Cloud project. Enable the Google Sheets API and Google Drive API in that project, then retry.
+    unauthorized:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [401]
+      error_message: >-
+        Google authentication failed. Re-authenticate the source or replace the service-account JSON key, then retry.
     rate_limit:
       type: HttpResponseFilter
       action: RATE_LIMITED
@@ -334,14 +350,24 @@ definitions:
         Rate limit has been
         reached. Please try later or request a higher quota for your account.
     single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/api_disabled"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/deduplicate_headers"
       - $ref: "#/definitions/response_filters/rate_limit"
     check_operation_single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/api_disabled"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/fail_duplicate_headers"
       - $ref: "#/definitions/response_filters/rate_limit"
     response_error_filters:
+      - $ref: "#/definitions/response_filters/api_disabled"
+      - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/server_error"
       - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
@@ -362,7 +388,8 @@ definitions:
     additional_jwt_payload:
       scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
   oauth_authenticator:
-    type: OAuthAuthenticator
+    type: CustomAuthenticator
+    class_name: source_declarative_manifest.components.GoogleSheetsOAuthAuthenticator
     refresh_request_body: {}
     token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
     grant_type: refresh_token
@@ -370,7 +397,8 @@ definitions:
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
   jwt_profile_assertion_oauth_authenticator:
-    type: OAuthAuthenticator
+    type: CustomAuthenticator
+    class_name: source_declarative_manifest.components.GoogleSheetsOAuthAuthenticator
     token_refresh_endpoint: https://oauth2.googleapis.com/token
     refresh_request_headers:
       Content-Type: application/x-www-form-urlencoded
@@ -421,6 +449,11 @@ schemas:
           - "null"
 
 spec:
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.ValidateGoogleSheetsConfig
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: Google Sheets Source Spec
@@ -459,7 +492,7 @@ spec:
         type: string
         title: Spreadsheet Link
         description: >-
-          Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
+          Enter a spreadsheet ID or its https://docs.google.com/spreadsheets/d/ URL. To copy the link, click 'Share' in the spreadsheet, then 'Copy link'.
         examples:
           - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
         order: 1

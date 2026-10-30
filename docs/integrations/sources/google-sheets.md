@@ -290,6 +290,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 ### Troubleshooting
 
+- **Invalid Spreadsheet Link:** Enter a bare spreadsheet ID or a full `https://docs.google.com/spreadsheets/d/<id>/...` URL. Airbyte extracts the ID from supported URLs; links to other Google files or websites are not accepted.
+- **Spreadsheet not found or access denied:** Check that the spreadsheet exists and the link is correct. Share the spreadsheet with the service account's `client_email` from its JSON key, or with the Google user authorized for the source.
+- **Google API disabled:** In the Google Cloud project associated with your credentials, enable both the Google Sheets API and Google Drive API. Allow a few minutes for the change to take effect, then retry.
+- **Authentication failed:** Re-authenticate the source if OAuth authorization has expired or been revoked. For service accounts, supply the complete JSON key downloaded from Google Cloud; create a new key if the existing key is invalid or revoked.
 - If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
 - Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
 - Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
@@ -308,7 +312,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| ------------ | ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| :------ | :--- | :----------- | :------ |
+| 0.12.46 | 2026-10-30 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
 | 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
 | 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |

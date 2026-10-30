@@ -9,13 +9,16 @@ import logging
 import re
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.parse import urlsplit
 
 import dpath
 import requests
 import unidecode
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -23,9 +26,61 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 
 logger = logging.getLogger("airbyte")
+
+
+class ValidateGoogleSheetsConfig:
+    def transform(self, config: MutableMapping[str, Any]) -> None:
+        if "spreadsheet_id" not in config:
+            return
+        value = config["spreadsheet_id"]
+        spreadsheet_id = value.strip() if isinstance(value, str) else ""
+        if "://" in spreadsheet_id:
+            try:
+                url = urlsplit(spreadsheet_id)
+                match = re.fullmatch(r"/spreadsheets/d/([\w-]+)(?:/.*)?", url.path, flags=re.ASCII)
+                if url.scheme != "https" or url.netloc != "docs.google.com" or not match:
+                    raise ValueError()
+                spreadsheet_id = match.group(1)
+            except ValueError:
+                spreadsheet_id = ""
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", spreadsheet_id):
+            message = "Spreadsheet Link is invalid. Enter a spreadsheet ID or a https://docs.google.com/spreadsheets/d/<id>/ URL."
+            raise AirbyteTracedException(
+                message=message, internal_message="Invalid Spreadsheet Link format.", failure_type=FailureType.config_error
+            )
+        config["spreadsheet_id"] = spreadsheet_id
+        credentials = config.get("credentials", {})
+        if credentials.get("auth_type") == "Service":
+            try:
+                account = json.loads(credentials.get("service_account_info", ""))
+                if not isinstance(account, dict) or not all(
+                    isinstance(account.get(key), str) and account[key] for key in ("private_key", "client_email", "token_uri")
+                ):
+                    raise ValueError()
+                load_pem_private_key(account["private_key"].encode(), password=None)
+            except (ValueError, TypeError):
+                message = "Service account credentials are invalid. Upload the complete service-account JSON key downloaded from Google Cloud, or create a new key."
+                raise AirbyteTracedException(
+                    message=message, internal_message="Invalid service-account JSON or private key.", failure_type=FailureType.config_error
+                )
+
+
+class GoogleSheetsOAuthAuthenticator(DeclarativeOauth2Authenticator):
+    def refresh_access_token(self) -> Tuple[str, AirbyteDateTime]:
+        try:
+            return super().refresh_access_token()
+        except requests.HTTPError as error:
+            if error.response is not None and error.response.status_code in (400, 401, 403):
+                message = "Google authentication failed. Re-authenticate the source for expired or revoked OAuth credentials, or replace the service-account JSON key."
+                raise AirbyteTracedException(
+                    message=message, internal_message="Google rejected the token request.", failure_type=FailureType.config_error
+                ) from error
+            raise
 
 
 def sheet_column_label(col_index: int) -> str:
