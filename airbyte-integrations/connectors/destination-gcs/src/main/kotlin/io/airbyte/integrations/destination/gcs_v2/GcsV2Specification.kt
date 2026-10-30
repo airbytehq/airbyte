@@ -33,8 +33,8 @@ import jakarta.inject.Singleton
  * declares `gcs_path_format` and `file_name_pattern` for customizable output paths.
  *
  * Both path fields are nullable for backward compatibility with v0.4.x configs; when null or blank
- * (for example a cleared optional field in the UI), [toObjectStoragePathConfiguration]
- * falls back to [DEFAULT_PATH_FORMAT] / [DEFAULT_FILE_FORMAT].
+ * (for example a cleared optional field in the UI), [toObjectStoragePathConfiguration] falls back
+ * to [DEFAULT_PATH_FORMAT] / [DEFAULT_FILE_FORMAT].
  */
 @Singleton
 @JsonSchemaTitle("GCS V2 Destination Spec")
@@ -88,7 +88,9 @@ class GcsV2Specification :
     @get:JsonProperty("file_name_pattern")
     val fileNamePattern: String? = DEFAULT_FILE_FORMAT
 
-    /** Converts spec path fields to [ObjectStoragePathConfiguration], defaulting null/blank fields. */
+    /**
+     * Converts spec path fields to [ObjectStoragePathConfiguration], defaulting null/blank fields.
+     */
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = path,
