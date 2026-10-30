@@ -37,7 +37,7 @@ https://mcp.airbyte.com/mcp?read-only=true
 ```
 
 - `read-only` works like the `X-MCP-Readonly-Mode` header and accepts `true`, `false`, `1`, or `0`, in any case. If you set both, the header takes precedence.
-- If the value isn't one of these, or the name is misspelled, like `readonly` or `read_only`, the Airbyte MCP rejects the request with an error. A typo can't silently leave read-only mode off.
+- The Airbyte MCP rejects the request with an error if the value isn't one of these, or if the name is a common misspelling, like `readonly` or `read_only`. An empty value, like `?read-only=`, is ignored and leaves read-only mode off.
 - The Airbyte MCP ignores other URL parameters. All other settings on this page are only available as headers.
 
 ## Tool restrictions
