@@ -15,6 +15,11 @@ from airbyte_cdk.models import Type
 from .conftest import get_source
 
 
+# The section-aware CHECK lives in the CDK branch of airbytehq/airbyte-python-cdk#1255; until a release ships it, these
+# tests skip (they pass against that branch).
+pytest.importorskip("airbyte_cdk.sources.utils.check_section", reason="the installed airbyte-cdk has no section-aware CHECK")
+
+
 ACCOUNTS_URL = "https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500"
 
 ACCOUNT_SECTION_CONFIG = {
