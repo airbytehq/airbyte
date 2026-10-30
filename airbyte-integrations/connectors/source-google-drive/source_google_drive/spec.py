@@ -46,7 +46,12 @@ class RemotePermissions(BaseModel):
 
 
 class DeliverPermissions(DeliverPermissionsBase):
-    domain: Optional[str] = Field(title="Domain", description="The Google domain of the identities.", airbyte_hidden=False, order=1)
+    domain: Optional[str] = Field(
+        title="Domain",
+        description="If you are syncing identities from a different Google Workspace domain than your authenticated user, enter that domain. Find it in an identity's email address; for example, enter `example.com` for `user@example.com`.",
+        airbyte_hidden=False,
+        order=1,
+    )
 
 
 class OAuthCredentials(BaseModel):
@@ -57,16 +62,16 @@ class OAuthCredentials(BaseModel):
     auth_type: Literal["Client"] = Field("Client", const=True)
     client_id: str = Field(
         title="Client ID",
-        description="Client ID for the Google Drive API",
+        description="The client ID for the Google OAuth app. For Airbyte Open Source, follow Google's OAuth instructions in the connector setup guide to create an OAuth client and obtain its client ID.",
         airbyte_secret=True,
     )
     client_secret: str = Field(
-        title="Client Secret",
-        description="Client Secret for the Google Drive API",
+        title="Client secret",
+        description="The client secret for the Google OAuth app. For Airbyte Open Source, follow Google's OAuth instructions in the connector setup guide to create an OAuth client and obtain its client secret.",
         airbyte_secret=True,
     )
     refresh_token: str = Field(
-        title="Refresh Token",
+        title="Refresh token",
         description="Refresh Token for the Google Drive API",
         airbyte_secret=True,
     )
@@ -79,7 +84,7 @@ class ServiceAccountCredentials(BaseModel):
 
     auth_type: Literal["Service"] = Field("Service", const=True)
     service_account_info: str = Field(
-        title="Service Account Information",
+        title="Service account information",
         description='The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.',
         airbyte_secret=True,
     )
@@ -90,6 +95,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         title = "Google Drive Source Spec"
 
     folder_url: str = Field(
+        title="Folder URL",
         description="URL for the folder you want to sync. Using individual streams and glob patterns, it's possible to only sync a subset of all files located in the folder.",
         examples=["https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"],
         order=0,
@@ -98,7 +104,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     )
 
     delivery_method: DeliverRecords | DeliverRawFiles | DeliverPermissions = Field(
-        title="Delivery Method",
+        title="Delivery method",
         discriminator="delivery_type",
         type="object",
         order=1,
@@ -109,7 +115,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     exclude_trashed_files: bool = Field(
         default=False,
-        title="Exclude Trashed Files",
+        title="Exclude trashed files",
         description="When enabled, files in the Google Drive trash (including files inside trashed folders) are not synced. Files that were already synced before being trashed are not removed from the destination; run a refresh to remove them.",
         order=2,
         group="advanced",
