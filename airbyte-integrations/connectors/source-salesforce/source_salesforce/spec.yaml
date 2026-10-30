@@ -8,6 +8,33 @@ connectionSpecification:
     - client_secret
     - refresh_token
   additionalProperties: true
+  # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the
+  # groups it shows, in form order. Properties opt into a group with `group`. A section with `check: true` is checked
+  # when the user completes it: the platform sends a CHECK whose config carries a top-level `check-section` key, and
+  # the connector validates the configuration up to that section only (see the CDK's
+  # airbyte_cdk.sources.utils.check_section and SourceSalesforce.check_section_connection). The review section has no
+  # check of its own: the full check the platform runs before creating the source covers it.
+  groups:
+    - id: account
+    - id: filters
+      title: Advanced
+    - id: advanced
+      title: Advanced
+  sections:
+    - id: account
+      title: Connect account
+      order: 0
+      description: Choose the environment and sign in to Salesforce.
+      groups:
+        - account
+        - filters
+      check: true
+    - id: review
+      title: Review & set up
+      order: 1
+      description: Name your source and check the optional settings.
+      groups:
+        - advanced
   properties:
     is_sandbox:
       title: Sandbox
@@ -16,7 +43,8 @@ connectionSpecification:
         href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
       type: boolean
       default: false
-      order: 1
+      order: 0
+      group: account
     auth_type:
       type: string
       const: Client
@@ -25,14 +53,16 @@ connectionSpecification:
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
       type: string
-      order: 2
+      order: 1
+      group: account
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
       type: string
       airbyte_secret: true
-      order: 3
+      order: 2
+      group: account
     refresh_token:
       title: Refresh Token
       description: >-
@@ -40,7 +70,8 @@ connectionSpecification:
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
       type: string
       airbyte_secret: true
-      order: 4
+      order: 3
+      group: account
     start_date:
       title: Start Date
       description: >-
@@ -53,7 +84,8 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 4
+      group: filters
     end_date:
       title: End Date
       description: >-
@@ -66,19 +98,22 @@ connectionSpecification:
         - "2021-07-26"
         - "2021-07-26T00:00:00Z"
       format: date-time
-      order: 6
+      order: 5
+      group: filters
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 7
+      order: 8
+      group: advanced
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 8
+      order: 9
+      group: advanced
       examples:
         - PT12H
         - P7D
@@ -96,7 +131,8 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 9
+      order: 10
+      group: advanced
       examples:
         - PT10M
         - PT30M
@@ -110,10 +146,12 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 11
+      order: 7
+      group: filters
     streams_criteria:
       type: array
-      order: 10
+      order: 6
+      group: filters
       items:
         type: object
         required:
