@@ -95,6 +95,8 @@ function fetchSpec(url, description) {
 
     https
       .get(url, (response) => {
+        response.on("error", reject);
+
         if (response.statusCode !== 200) {
           response.resume();
           reject(

@@ -41,6 +41,34 @@ const CONNECTOR_TYPES = [
   { value: "destination", label: "Destinations" },
 ];
 
+const normalizeUntypedObjectSchemas = (spec) => {
+  const normalizedSpec = JSON.parse(JSON.stringify(spec));
+  const normalize = (schema) => {
+    if (!schema || typeof schema !== "object") {
+      return;
+    }
+    if (Array.isArray(schema)) {
+      schema.forEach(normalize);
+      return;
+    }
+    if (schema.properties) {
+      schema.type ||= "object";
+      Object.values(schema.properties).forEach(normalize);
+    }
+    if (schema.items) {
+      normalize(schema.items);
+    }
+    ["oneOf", "anyOf", "allOf"].forEach((composition) => {
+      if (Array.isArray(schema[composition])) {
+        schema[composition].forEach(normalize);
+      }
+    });
+  };
+
+  normalize(normalizedSpec);
+  return normalizedSpec;
+};
+
 export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
   const specsBaseUrl = useBaseUrl("/connector-specs/");
   const [index, setIndex] = useState(null);
@@ -104,6 +132,11 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
       active = false;
     };
   }, [selected, specsBaseUrl]);
+
+  const normalizedSpec = useMemo(
+    () => (spec ? normalizeUntypedObjectSchemas(spec) : null),
+    [spec],
+  );
 
   const matches = useMemo(() => {
     if (!index) {
@@ -230,7 +263,9 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
             </p>
           )}
           {!spec && !specError && <p>Loading configuration fields...</p>}
-          {spec && <SpecSchema specJSON={JSON.stringify(spec)} />}
+          {normalizedSpec && (
+            <SpecSchema specJSON={JSON.stringify(normalizedSpec)} />
+          )}
         </div>
       )}
     </div>
