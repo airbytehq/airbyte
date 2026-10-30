@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import java.math.BigDecimal
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -106,8 +107,30 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
                 registration.register(SchemaBuilder.string().optional(), this::convertSqlVariant)
             }
             else -> {
-                // For unhandled types, just return as string
-                logger.debug("Unhandled SQL Server type: {}", typeName)
+                // User-defined alias types (e.g. CREATE TYPE x FROM datetime) report the alias
+                // as typeName, so resolve temporal aliases via their JDBC type instead.
+                val jdbcType = field.jdbcType()
+                val temporalConverter: ((Any?) -> Any?)? =
+                    when (jdbcType) {
+                        Types.TIMESTAMP -> this::convertDateTime
+                        Types.DATE -> this::convertDate
+                        Types.TIME -> this::convertTime
+                        else -> null
+                    }
+
+                if (temporalConverter != null) {
+                    registration.register(SchemaBuilder.string().optional()) { value ->
+                        temporalConverter(value)
+                    }
+                    logger.info(
+                        "Resolved user-defined type {} for column {} via JDBC type {}",
+                        field.typeName(),
+                        field.name(),
+                        jdbcType,
+                    )
+                } else {
+                    logger.debug("Unhandled SQL Server type: {}", typeName)
+                }
             }
         }
     }
