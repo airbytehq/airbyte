@@ -14703,6 +14703,8 @@ spec:
     required:
     - credentials
     - domain
+    - lookback_window_minutes
+    - num_workers
     additionalProperties: true
     properties:
       credentials:
