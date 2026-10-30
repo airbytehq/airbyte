@@ -136,11 +136,14 @@ class RedshiftCheckerTest {
         config: RedshiftConfiguration,
         ds: DataSource,
     ): RedshiftChecker {
+        val s3Connect = S3Connect(config)
+        val credentialsProvider = s3Connect.createCredentialsProvider()
         val client =
             RedshiftAirbyteClient(
                 ds,
                 RedshiftSqlGenerator(config),
-                S3Connect(config).createS3Client(),
+                s3Connect.createS3Client(credentialsProvider),
+                credentialsProvider,
             )
         return RedshiftChecker(client, config)
     }

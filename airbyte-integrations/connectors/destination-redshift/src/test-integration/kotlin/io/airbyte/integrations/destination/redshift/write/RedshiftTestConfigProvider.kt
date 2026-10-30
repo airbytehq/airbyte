@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.redshift.connect.RedshiftConnect
 import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
 import java.nio.file.Files
 import java.nio.file.Path
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 
@@ -54,6 +55,11 @@ object RedshiftTestConfigProvider {
     fun airbyteClientFrom(spec: ConfigurationSpecification): RedshiftAirbyteClient {
         val config = configFrom(spec)
         val dataSource = RedshiftConnect(config).createDataSource()
-        return RedshiftAirbyteClient(dataSource, sqlGenerator(config), noOpS3Client)
+        return RedshiftAirbyteClient(
+            dataSource,
+            sqlGenerator(config),
+            noOpS3Client,
+            DefaultCredentialsProvider.create(),
+        )
     }
 }
