@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     AirbyteTraceMessage,
     FailureType,
     Level,
+    Status,
     StreamDescriptor,
     SyncMode,
     TraceType,
@@ -56,6 +57,41 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         output = self._check(self._config, expecting_exception=False)
         expected_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Check succeeded"))
         assert output.logs[-1] == expected_message
+
+    @HttpMocker()
+    def test_given_spreadsheet_section_when_check_section_then_declared_check_runs_and_succeeds(self, http_mocker: HttpMocker) -> None:
+        """A section check of the stepped setup form reads the first sheet with the fields collected so far."""
+        TestSourceCheck.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta")
+        TestSourceCheck.get_sheet_first_row(http_mocker, "check_succeeded_range")
+        config = {"check-section": "spreadsheet", "spreadsheet_id": _SPREADSHEET_ID, "credentials": oauth_credentials}
+
+        output = self._check(config, expecting_exception=False)
+
+        assert output.connection_status_messages[-1].connectionStatus.status == Status.SUCCEEDED
+        assert output.is_in_logs("Checking configuration section 'spreadsheet'")
+
+    def test_given_spreadsheet_section_without_the_link_when_check_section_then_config_error(self) -> None:
+        config = {"check-section": "spreadsheet", "credentials": oauth_credentials}
+
+        output = self._check(config, expecting_exception=False)
+
+        status = output.connection_status_messages[-1].connectionStatus
+        assert status.status == Status.FAILED
+        assert status.message == "Config validation error: 'spreadsheet_id' is a required property"
+
+    def test_given_review_section_when_check_section_then_rejected_as_it_has_no_check(self) -> None:
+        output = self._check({**self._config, "check-section": "review"}, expecting_exception=False)
+
+        status = output.connection_status_messages[-1].connectionStatus
+        assert status.status == Status.FAILED
+        assert status.message == "Section 'review' has no check: the connector specification does not declare \"check\": true for it."
+
+    def test_given_unknown_section_when_check_section_then_config_error_names_the_sections(self) -> None:
+        output = self._check({**self._config, "check-section": "nope"}, expecting_exception=False)
+
+        status = output.connection_status_messages[-1].connectionStatus
+        assert status.status == Status.FAILED
+        assert status.message == "Unknown check-section 'nope'; the connector specification declares: spreadsheet, review."
 
     @HttpMocker()
     def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
@@ -1118,9 +1154,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
         assert output.records == expected_records, "Emitted records should match expected records with overridden stream name"
 
         assert len(output.state_messages) == 1, "Expected 1 state message"
-        assert (
-            output.state_messages[0].state.stream.stream_descriptor.name == overridden_stream_name
-        ), "State message should use overridden stream name"
-        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(
-            __ab_no_cursor_state_message=True
-        ), "State should indicate no cursor for full refresh"
+        assert output.state_messages[0].state.stream.stream_descriptor.name == overridden_stream_name, (
+            "State message should use overridden stream name"
+        )
+        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True), (
+            "State should indicate no cursor for full refresh"
+        )
