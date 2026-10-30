@@ -242,55 +242,73 @@ definitions:
     # multiplication as None, and a falsy test would read check's deliberate 0 as absent and hand
     # it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`, so a user on
     # the spec's minimum of 1 minute would otherwise get a 60s cap equal to the `min_wait: 60`
-    # floor below, and every headerless 5xx would fail instead of retrying.
-    - type: WaitTimeFromHeader
-      header: "Retry-After"
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-    - type: WaitUntilTimeFromHeader
-      header: "X-RateLimit-Reset"
-      min_wait: 60
-      # The cap is compared against the computed wait, not the raw reset timestamp, and it is
-      # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor below
-      # is refused.
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-      # The 60s floor the legacy Python backoff strategy enforced, so a reset
-      # timestamp already in the past, or seconds away, doesn't turn into a tight retry
-      # loop against a quota that hasn't actually refilled.
-      #
-      # It does NOT land on exactly the same responses legacy floored. Measured:
-      #
-      #                                     here    legacy
-      #   403 + Retry-After: 30              30s      60s    <- floor missing
-      #   403 + X-RateLimit-Reset now+10     60s      60s
-      #   403 + reset already past           60s      60s
-      #   500 / timeout, no such headers     60s     expo    <- floor leaking
-      #
-      # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
-      # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
-      # `min_wait` outright when its header is *absent* rather than treating it as a floor
-      # on a computed wait, and backoff_strategies are shared by every retryable response
-      # on the requesters that inherit these handlers.
-      #
-      # Accepted deliberately, after measuring the alternatives:
-      #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
-      #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
-      #     strategies into one list -- its own docstring says the list "is not used to map
-      #     different strategies to different error conditions" -- and HttpClient takes the
-      #     first truthy one regardless of which branch matched. Byte-identical backoffs.
-      #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
-      #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
-      #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
-      #     refilled. That is what the floor exists to prevent.
-      #
-      # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
-      # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
-      # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
-      # With the header present but stale, max(negative, min_wait) already yields 60s, so
-      # the floor survives exactly where it belongs. Four other connectors combine these
-      # two strategies and would move the same way.
-      #
-      # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
-      # max_retries (5), on every stream that inherits these handlers.
+    # floor below, and a rate-limited response without a reset header (e.g. a 429 or a secondary-
+    # limit 403 with no headers) would fail instead of retrying. Headerless 5xx responses do not
+    # use these strategies.
+    #
+    # Only responses the connector identifies as rate limited use GitHub's header waits.
+    # Other failures use the CDK's exponential backoff, matching legacy behavior. GitHub
+    # includes X-RateLimit-Reset on 500s; waiting for that reset spent the 600s max_time
+    # retry budget in one sleep (airbytehq/oncall#13837).
+    #
+    - type: CustomBackoffStrategy
+      class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+        - type: WaitUntilTimeFromHeader
+          header: "X-RateLimit-Reset"
+          min_wait: 60
+          # The cap is compared against the computed wait, not the raw reset timestamp, and it is
+          # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor
+          # below is refused.
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+          # The 60s floor the legacy Python backoff strategy enforced, so a reset
+          # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+          # loop against a quota that hasn't actually refilled.
+          #
+          # It does NOT land on exactly the same responses legacy floored. Measured:
+          #
+          #                                     here    legacy
+          #   403 + Retry-After: 30              30s      60s    <- floor missing
+          #   403 + X-RateLimit-Reset now+10     60s      60s
+          #   403 + reset already past           60s      60s
+          #   500 + X-RateLimit-Reset now+3000   expo     expo    <- fixed by RateLimitedResponseBackoffStrategy
+          #   500 / timeout, no such headers     expo     expo    <- fixed by RateLimitedResponseBackoffStrategy
+          #
+          # Two CDK strategies with mismatched options caused the leak: WaitTimeFromHeader has no
+          # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+          # `min_wait` outright when its header is *absent* rather than treating it as a floor
+          # on a computed wait, and backoff_strategies are shared by every retryable response
+          # on the requesters that inherit these handlers. This connector contains both effects
+          # with RateLimitedResponseBackoffStrategy, which gates both strategies on a rate-limit
+          # response: headerless ordinary retries no longer inherit `min_wait`, and reset headers
+          # on 5xx responses are ignored (airbytehq/oncall#13837). The Retry-After floor remains
+          # missing.
+          #
+          # Accepted deliberately, after measuring the alternatives:
+          #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+          #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+          #     strategies into one list -- its own docstring says the list "is not used to map
+          #     different strategies to different error conditions" -- and HttpClient takes the
+          #     first truthy one regardless of which branch matched. The component gate is needed
+          #     to keep the waits from applying to ordinary retryable responses.
+          #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+          #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+          #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+          #     refilled. That is what the floor exists to prevent.
+          #
+          # The connector component contains the leak for this connector. A CDK fix would still
+          # be right for other connectors: WaitUntilTimeFromHeader should return None when its
+          # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+          # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+          # With the header present but stale, max(negative, min_wait) already yields 60s, so
+          # the floor survives exactly where it belongs. Four other connectors combine these
+          # two strategies and would move the same way.
+          #
+          # Headerless 5xx responses and timeouts without a rate-limit signal use the CDK default
+          # exponential backoff (1/2/4/8/16s), as legacy did.
       # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
       # authenticator's counters against every response (the `*_header` fields on the
       # quota pools above), so a primary rate limit — which GitHub reports as
@@ -365,7 +383,7 @@ definitions:
   # repository ("Issues are disabled for this repo.", "Projects are disabled for this repo."),
   # and the legacy Python handler skipped exactly those (`is_gone_with_feature_disabled`).
   # 410 is absent from the CDK default mapping, so without this filter such a response would be
-  # retried five times behind the 60s backoff floor and then fail the stream.
+  # retried five times with exponential backoff and then fail the stream.
   #
   # This has to be a predicate rather than `http_codes: [410] + error_message_contains`:
   # HttpResponseFilter ORs its conditions, so combining them would skip *every* 410. The predicate
@@ -15889,10 +15907,15 @@ definitions:
     max_retries: 5
     # No `WaitUntilTimeFromHeader` here: it answers its `min_wait` whenever the reset header is
     # absent, which would turn every 202 into a 60-second wait instead of the 90 below.
+    # The Retry-After wait is wrapped in `RateLimitedResponseBackoffStrategy` like the shared list;
+    # every `Retry-After` response counts as rate limited, so behavior is unchanged.
     backoff_strategies:
-      - type: WaitTimeFromHeader
-        header: "Retry-After"
-        max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: "Retry-After"
+            max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 90
     response_filters:
@@ -20587,9 +20610,8 @@ streams:
 # `config_overrides.max_waiting_time: 1` is the interactive check's fail-fast budget:
 # it makes the authenticator raise "Rate limit is exceeded for all provided tokens."
 # on an exhausted quota instead of sleeping up to the default 120 minutes. 1 rather
-# than 0 because the backoff caps resolve to `max_waiting_time * 60 + 1` and the
-# `WaitUntilTimeFromHeader` floor is 60s — a 1s cap would fail the first transient
-# error (500, 429 without headers) with the rate-limit message; 61s retries a blip.
+# than 0 because the backoff caps resolve to `max_waiting_time * 60 + 1`; headerless
+# transient 500s use exponential backoff and do not consult that rate-limit cap.
 check:
   type: CheckStream
   stream_names: [branches]
