@@ -170,6 +170,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 2.1.2 | 2026-10-30 | [90220](https://github.com/airbytehq/airbyte/pull/90220) | Promote to certified |
 | 2.1.1 | 2026-10-29 | [90197](https://github.com/airbytehq/airbyte/pull/90197) | Show a date picker for the start date field. |
 | 2.1.0 | 2026-10-29 | [89675](https://github.com/airbytehq/airbyte/pull/89675) | Added incremental sync using Ashby sync tokens for the 20 streams whose endpoints support them. |
 | 2.0.1 | 2026-10-27 | [89792](https://github.com/airbytehq/airbyte/pull/89792) | Update dependencies |
