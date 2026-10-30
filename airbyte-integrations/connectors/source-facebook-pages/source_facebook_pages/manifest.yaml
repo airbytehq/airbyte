@@ -8,10 +8,17 @@ definitions:
     extractor:
       field_path: ["data"]
   requester:
-    url_base: "https://graph.facebook.com/v24.0"
+    # Streams set a static `endpoint` suffix in $parameters. Parameters are not re-interpolated,
+    # so the Page ID has to live here rather than in each endpoint. The comment stream overrides
+    # `url` because it reads from a post id instead.
+    url: "https://graph.facebook.com/v26.0/{{ config['page_id'] }}{{ parameters['endpoint'] }}"
     http_method: "GET"
     error_handler:
       type: DefaultErrorHandler
+      # Returns None when Meta sends no regain-access estimate, so the CDK's usual backoff applies.
+      backoff_strategies:
+        - type: CustomBackoffStrategy
+          class_name: source_facebook_pages.components.MetaUsageBackoffStrategy
       response_filters:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
@@ -35,15 +42,18 @@ definitions:
         # Meta rejects the whole Insights request when any single requested metric is
         # invalid. This is permanent, so it must not fall through to the blanket 400 filter
         # below, which would otherwise hide the API's own message.
+        # A rejected metric is always fixable in the source settings now that metric lists are
+        # configurable, so it is a config_error rather than a system_error.
         - action: FAIL
           error_message_contains: must be a valid insights metric
-          failure_type: system_error
+          failure_type: config_error
           error_message: >-
-            Facebook rejected one or more of the Insights metrics this connector requested, so the
-            entire request failed. This usually means Meta deprecated a metric that the connector
-            still asks for. Upgrade to the latest connector version; if you are already on the
-            latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
-            returned: {{ response.get('error', {}).get('message', '') }}
+            Facebook rejected one or more of the requested Insights metrics, so the entire request
+            failed. If you set a custom list in the Insights Metrics settings, check it for misspelled
+            or deprecated metrics. If you are using the connector defaults, Meta has deprecated one of
+            them: set a custom list that leaves it out, upgrade to the latest connector version, and
+            report it at https://github.com/airbytehq/airbyte/issues. Facebook returned:
+            {{ response.get('error', {}).get('message', '') }}
         # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
         # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
         # Codes: https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -296,7 +306,7 @@ definitions:
     $parameters:
       name: "page"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}"
+      endpoint: ""
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -312,7 +322,7 @@ definitions:
     $parameters:
       name: "post"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/feed"
+      endpoint: "/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -321,13 +331,36 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           fields: "#/definitions/post_query_properties"
+          # Sent only when there is something to filter on (saved state or a start_date). A full
+          # refresh, and a first incremental sync without start_date, read the whole feed as before.
+          # ponytail: the epoch sentinel is the cursor's default start below; compare on it rather
+          # than on stream_state, which concurrent cursors do not expose to interpolation.
+          since: "{{ stream_interval['start_time'] if stream_interval['start_time'] != '1970-01-01T00:00:00+0000' else '' }}"
+    # Opt-in: the stream stays full refresh unless the connection selects Incremental.
+    # Facebook filters /feed with a Unix-timestamp `since`, applied to created_time, so posts
+    # edited after they were first synced are not re-read in incremental mode.
+    # https://developers.facebook.com/docs/graph-api/results/
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_time
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   post_insights_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "post_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/feed"
+      endpoint: "/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -340,8 +373,8 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           fields: |
-            {{ 
-              'insights.metric(%s)' % ','.join([
+            {{
+              'insights.metric(%s)' % ','.join(config.get('post_insights_metrics') or [
               'post_media_view',
               'post_total_media_view_unique',
               'post_clicks',
@@ -355,15 +388,16 @@ definitions:
     $parameters:
       name: "page_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/insights"
+      endpoint: "/insights"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
+          period: "{{ config.get('page_insights_period', '') }}"
           metric: |
             {{
-              ','.join([
+              ','.join(config.get('page_insights_metrics') or [
               'page_total_actions',
               'page_post_engagements',
               'page_fan_adds_by_paid_non_paid_unique',
@@ -371,11 +405,144 @@ definitions:
               'page_total_media_view_unique',
               ])
             }}
+
+  # Reads each Page video's lifetime insights through field expansion, like post_insights.
+  # https://developers.facebook.com/docs/graph-api/reference/video/video_insights/
+  video_insights_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "video_insights"
+      primary_key: "id"
+      endpoint: "/videos"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: ["data", "*", "video_insights", "data", "*"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{
+              'video_insights.metric(%s)' % ','.join(config.get('video_insights_metrics') or [
+              'total_video_views',
+              'total_video_complete_views',
+              'total_video_avg_time_watched',
+              'total_video_view_total_time',
+              'total_video_reactions_by_type_total',
+              ])
+            }}
+
+  # Reels are listed on their own Page edge and have their own metric set.
+  # https://developers.facebook.com/docs/video-api/guides/reels-publishing/
+  reel_insights_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "reel_insights"
+      primary_key: "id"
+      endpoint: "/video_reels"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: ["data", "*", "video_insights", "data", "*"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{
+              'video_insights.metric(%s)' % ','.join(config.get('reel_insights_metrics') or [
+              'blue_reels_play_count',
+              'fb_reels_total_plays',
+              'fb_reels_replay_count',
+              'post_video_avg_time_watched',
+              'post_video_view_time',
+              'post_video_likes_by_reaction_type',
+              'post_video_social_actions',
+              ])
+            }}
+  # Parent for the comment stream: post ids only, so the per-post comment requests are not
+  # preceded by a full ~60-field post read. Not exposed in `streams`.
+  post_id_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "post"
+      primary_key: "id"
+      endpoint: "/feed"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: "id"
+
+  # One request per post, so a Page with many posts uses many calls; filter=stream returns
+  # replies as well as top-level comments. https://developers.facebook.com/docs/graph-api/reference/post/comments/
+  comment_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "comment"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/post_id_stream"
+            parent_key: id
+            partition_field: post_id
+      requester:
+        $ref: "#/definitions/requester"
+        url: "https://graph.facebook.com/v26.0/{{ stream_partition['post_id'] }}/comments"
+        request_parameters:
+          filter: stream
+          fields: "id,message,created_time,from,like_count,comment_count,parent{id},is_hidden,is_private,can_comment,user_likes,permalink_url,attachment"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
+      - type: AddFields
+        fields:
+          - path: ["post_id"]
+            value: "{{ stream_partition['post_id'] }}"
+            # Post ids look like 1_10, which Python would otherwise read as the integer 110.
+            value_type: string
+
+  # Recommendation nodes have no id of their own, so this stream has no primary key.
+  # https://developers.facebook.com/docs/graph-api/reference/page/ratings/
+  rating_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "rating"
+      endpoint: "/ratings"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/facebook_post_paginator"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: "created_time,has_rating,has_review,rating,recommendation_type,review_text,reviewer"
+
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
   - "#/definitions/post_insights_stream"
   - "#/definitions/page_insights_stream"
+  - "#/definitions/video_insights_stream"
+  - "#/definitions/reel_insights_stream"
+  - "#/definitions/comment_stream"
+  - "#/definitions/rating_stream"
 
 check:
   stream_names:

@@ -27,6 +27,14 @@ acceptance_tests:
             bypass_reason: "Data is not permanent"
           - name: post_insights
             bypass_reason: "Data is not permanent"
+          - name: video_insights
+            bypass_reason: "Data is not permanent"
+          - name: reel_insights
+            bypass_reason: "Data is not permanent"
+          - name: comment
+            bypass_reason: "Data is not permanent"
+          - name: rating
+            bypass_reason: "Data is not permanent"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
