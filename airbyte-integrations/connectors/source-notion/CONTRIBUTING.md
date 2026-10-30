@@ -1,21 +1,23 @@
-# source-notion: Unique Behaviors
+# Contributing to source-notion
 
-## 1. Recursive Block Retrieval Up to 30 Levels Deep
-
-The `BlocksRetriever` performs depth-first recursive fetching of Notion blocks. When a block has `has_children: true`, the retriever immediately makes a new API call to fetch that block's children before continuing to the next sibling. This recursion continues up to a maximum depth of 30 levels.
-
-A single page with deeply nested content (e.g., toggles inside toggles inside columns) can trigger dozens of additional API calls as the retriever walks the entire block tree. Each level of nesting adds another round of paginated API requests for that block's children.
-
-**Why this matters:** What looks like a single blocks stream read can fan out into a large number of API calls proportional to the depth and breadth of the block hierarchy. A page with 5 levels of nested blocks and 10 children per level could trigger hundreds of requests from a single parent page slice. The 30-level depth limit exists to prevent infinite recursion but is otherwise not enforced by Notion's API.
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Notion API supports `filter` with `last_edited_time` for databases and pages. The connector uses Python custom components referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for record transformation, property flattening, and custom retriever)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 5 streams analyzed. All 5 use incremental sync via Notion's `filter.timestamp`/`last_edited_time` params. The connector is fully incremental.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams
 
-### Future incremental stream candidates
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| pages | last_edited_time | `filter.timestamp` = `last_edited_time` | Notion Search API with `last_edited_time` filter |
+| databases | last_edited_time | `filter.timestamp` = `last_edited_time` | Notion Search API with `last_edited_time` filter |
+| blocks | last_edited_time | Semi-incremental (client-side filtering) | Blocks retrieved per page; filtered client-side |
+| comments | last_edited_time | Semi-incremental (client-side filtering) | Comments retrieved per block/page |
+| users | (semi-incremental) | No server-side filter | Small dataset; fetches all and filters client-side |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+No full-refresh-only streams. All streams support at least semi-incremental sync.
