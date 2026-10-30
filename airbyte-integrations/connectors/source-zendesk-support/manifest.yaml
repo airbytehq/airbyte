@@ -1625,6 +1625,9 @@ spec:
     required:
       - subdomain
       - credentials
+      - num_workers
+      - page_size
+      - ticket_search_lookback_days
     additionalProperties: true
     properties:
       start_date:
