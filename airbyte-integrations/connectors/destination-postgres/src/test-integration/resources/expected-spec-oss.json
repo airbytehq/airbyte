@@ -344,7 +344,7 @@
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "database", "schema", "username" ],
+    "required" : [ "host", "port", "database", "schema", "username", "cdc_deletion_mode" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"

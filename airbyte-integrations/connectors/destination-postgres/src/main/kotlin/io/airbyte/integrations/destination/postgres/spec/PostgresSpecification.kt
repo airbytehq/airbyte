@@ -127,7 +127,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonPropertyDescription(
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
-    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete", required = true)
     @get:JsonSchemaInject(
         json = """{"group": "sync_behavior", "order": 8, "always_show": true}""",
     )
@@ -283,7 +283,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonPropertyDescription(
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
-    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete", required = true)
     @get:JsonSchemaInject(
         json = """{"group": "sync_behavior", "order": 8, "always_show": true}""",
     )
