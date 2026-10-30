@@ -112,13 +112,23 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 1fr);
 }
 
 .spec :global(h3 + div > *) {
   min-width: 0;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+.spec :global(h3 + div > * > *) {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.spec :global([class*="tag_"]) {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .spec :global(h3) {
