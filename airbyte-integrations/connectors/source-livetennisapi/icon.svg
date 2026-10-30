@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Live Tennis API">
+  <defs>
+    <linearGradient id="lt-t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13241b"/><stop offset="1" stop-color="#0a120e"/></linearGradient>
+    <radialGradient id="lt-b" cx="0.36" cy="0.30" r="0.85"><stop offset="0" stop-color="#7bf2a6"/><stop offset="0.55" stop-color="#3ee07a"/><stop offset="1" stop-color="#189a52"/></radialGradient>
+  </defs>
+  <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="url(#lt-t)" stroke="#22402f" stroke-width="1"/>
+  <circle cx="24" cy="24" r="13" fill="url(#lt-b)"/>
+  <path d="M14.8 15.2 C 20.4 19.5, 20.4 28.5, 14.8 32.8" fill="none" stroke="#0c3a22" stroke-width="1.7" stroke-linecap="round" opacity="0.9"/>
+  <path d="M33.2 15.2 C 27.6 19.5, 27.6 28.5, 33.2 32.8" fill="none" stroke="#0c3a22" stroke-width="1.7" stroke-linecap="round" opacity="0.9"/>
+  <ellipse cx="20" cy="18.5" rx="4.4" ry="2.6" fill="#ffffff" opacity="0.16"/>
+</svg>
