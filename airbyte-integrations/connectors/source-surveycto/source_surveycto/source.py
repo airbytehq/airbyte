@@ -22,8 +22,7 @@ class SurveyStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, **kwargs):
-        super().__init__()
-
+        # Set before HttpStream.__init__, which reads `self.name` (derived from `form_id`).
         self.config = config
         self.schema = schema
         self.server_name = config["server_name"]
@@ -32,6 +31,8 @@ class SurveyStream(HttpStream, ABC):
         # base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
+
+        super().__init__()
 
     @property
     def url_base(self) -> str:
@@ -60,7 +61,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        self._cursor_value = value.get(self.cursor_field)
 
     @property
     def name(self) -> str:
