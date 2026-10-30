@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[ApplicationsSearchData]
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[CandidatesSearchData]
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[DepartmentsSearchData]
@@ -71,7 +72,6 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[OfficesSearchData]
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[SourcesSearchData]
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

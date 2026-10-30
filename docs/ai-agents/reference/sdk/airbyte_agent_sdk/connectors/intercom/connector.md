@@ -85,7 +85,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against companies records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -251,7 +251,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against contacts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -403,7 +403,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against conversations records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -954,7 +954,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.intercom.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against teams records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

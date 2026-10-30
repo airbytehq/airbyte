@@ -49,7 +49,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against clients records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -123,7 +123,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against company records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -184,7 +184,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against contacts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -255,7 +255,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against estimate_item_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -332,7 +332,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against estimates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -406,7 +406,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against expense_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -485,7 +485,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against expenses records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -860,7 +860,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invoice_item_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -939,7 +939,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invoices records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1017,7 +1017,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against projects records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1089,7 +1089,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against roles records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1164,7 +1164,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against task_assignments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1228,7 +1228,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tasks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1307,7 +1307,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against time_entries records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1382,7 +1382,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against time_projects records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1447,7 +1447,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against time_tasks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1515,7 +1515,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against user_assignments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1587,7 +1587,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

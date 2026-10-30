@@ -462,6 +462,9 @@ Classes
 
     ### Class variables
 
+    `body_html: str | None`
+    :   HTML body of the issue (the opening message)
+
     `created_at: str | None`
     :   Timestamp when the issue was created, in ISO 8601 format
 

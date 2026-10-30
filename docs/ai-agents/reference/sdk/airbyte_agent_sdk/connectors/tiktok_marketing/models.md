@@ -2669,6 +2669,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsReportsDailySearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsDailySearchData]
@@ -2683,7 +2684,6 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsImagesSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsVideosSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]
-    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

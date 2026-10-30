@@ -359,6 +359,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.salesforce.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[LeadsSearchData]
@@ -366,7 +367,6 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunityStagesSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

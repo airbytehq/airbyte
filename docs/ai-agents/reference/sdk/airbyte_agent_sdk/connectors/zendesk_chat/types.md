@@ -676,6 +676,9 @@ Classes
     `duration: Any`
     :   Chat duration in seconds
 
+    `history: Any`
+    :   Chat history events including message text in msg
+
     `id: Any`
     :   Unique chat identifier
 
@@ -848,6 +851,9 @@ Classes
     `duration: list[int]`
     :   Chat duration in seconds
 
+    `history: list[list[typing.Any]]`
+    :   Chat history events including message text in msg
+
     `id: list[str]`
     :   Unique chat identifier
 
@@ -1006,6 +1012,9 @@ Classes
     `duration: int | None`
     :   Chat duration in seconds
 
+    `history: list[typing.Any] | None`
+    :   Chat history events including message text in msg
+
     `id: str`
     :   Unique chat identifier
 
@@ -1061,6 +1070,9 @@ Classes
     `duration: Literal['asc', 'desc']`
     :   Chat duration in seconds
 
+    `history: Literal['asc', 'desc']`
+    :   Chat history events including message text in msg
+
     `id: Literal['asc', 'desc']`
     :   Unique chat identifier
 
@@ -1112,6 +1124,9 @@ Classes
 
     `duration: str`
     :   Chat duration in seconds
+
+    `history: str`
+    :   Chat history events including message text in msg
 
     `id: str`
     :   Unique chat identifier

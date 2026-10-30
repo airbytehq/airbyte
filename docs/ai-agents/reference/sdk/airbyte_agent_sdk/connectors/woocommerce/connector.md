@@ -69,7 +69,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against coupons records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -160,7 +160,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against customers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -238,7 +238,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against order_notes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -348,7 +348,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against orders records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -435,7 +435,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against payment_gateways records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -504,7 +504,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against product_attributes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -581,7 +581,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against product_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -666,7 +666,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against product_reviews records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -744,7 +744,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against product_tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -857,7 +857,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against product_variations records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1000,7 +1000,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against products records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1094,7 +1094,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against refunds records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1167,7 +1167,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against shipping_methods records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1233,7 +1233,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against shipping_zones records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1298,7 +1298,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tax_classes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1365,7 +1365,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tax_rates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

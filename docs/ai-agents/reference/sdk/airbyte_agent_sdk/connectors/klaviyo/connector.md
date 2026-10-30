@@ -48,7 +48,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -121,7 +121,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against email_templates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -195,7 +195,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against events records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -260,7 +260,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against flows records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -636,7 +636,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against lists records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -710,7 +710,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against metrics records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -785,7 +785,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against profiles records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

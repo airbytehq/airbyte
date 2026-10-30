@@ -1736,6 +1736,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdAccountsSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdCreativesSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdSetsSearchData]
@@ -1745,7 +1746,6 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[CustomConversionsSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[ImagesSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[VideosSearchData]
-    * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -62,11 +62,11 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.amazon_seller_partner.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[ListFinancialEventGroupsSearchData]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[ListFinancialEventsSearchData]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[OrderItemsSearchData]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[OrdersSearchData]
-    * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

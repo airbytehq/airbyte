@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.github.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[BranchesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[CommentsSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[CommitsSearchData]
@@ -86,7 +87,6 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerRepositoriesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerSearchData]
-    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

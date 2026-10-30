@@ -7454,6 +7454,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.linkedin_ads.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[AccountUsersSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[AdCampaignAnalyticsSearchData]
@@ -7473,7 +7474,6 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[CreativesSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[LeadFormResponsesSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[LeadFormsSearchData]
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

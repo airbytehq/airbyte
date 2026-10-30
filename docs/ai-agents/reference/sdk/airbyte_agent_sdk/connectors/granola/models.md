@@ -62,8 +62,8 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.granola.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.granola.models.AirbyteSearchResult[NotesSearchData]
-    * airbyte_agent_sdk.connectors.granola.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

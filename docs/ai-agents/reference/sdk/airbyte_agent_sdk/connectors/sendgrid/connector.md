@@ -46,7 +46,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against blocks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -108,7 +108,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against bounces records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -173,7 +173,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -250,7 +250,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against contacts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -315,7 +315,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against global_suppressions records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -376,7 +376,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invalid_emails records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -438,7 +438,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against lists records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -515,7 +515,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against segments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -885,7 +885,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against singlesend_stats records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -950,7 +950,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against singlesends records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1041,7 +1041,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against suppression_group_members records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1104,7 +1104,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against suppression_groups records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1172,7 +1172,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against templates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

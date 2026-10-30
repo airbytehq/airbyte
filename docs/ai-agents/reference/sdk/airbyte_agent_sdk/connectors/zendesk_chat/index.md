@@ -323,6 +323,9 @@ Classes
     `duration: int | None`
     :   Chat duration in seconds
 
+    `history: list[typing.Any] | None`
+    :   Chat history events including message text in msg
+
     `id: str`
     :   Unique chat identifier
 

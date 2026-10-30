@@ -356,7 +356,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.granola.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.granola.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against notes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

@@ -50,7 +50,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -144,7 +144,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_groups records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -233,7 +233,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -305,7 +305,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against audiences records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -381,7 +381,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against board_pins records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -442,7 +442,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against board_sections records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -512,7 +512,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against boards records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -598,7 +598,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -672,7 +672,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against catalogs_feeds records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -739,7 +739,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against catalogs_product_groups records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -802,7 +802,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against catalogs records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -869,7 +869,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against conversion_tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -938,7 +938,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against customer_lists records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1005,7 +1005,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against keywords records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

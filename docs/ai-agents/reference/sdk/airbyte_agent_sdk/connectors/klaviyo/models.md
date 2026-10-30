@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.klaviyo.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[EmailTemplatesSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[EventsSearchData]
@@ -69,7 +70,6 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[ListsSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[MetricsSearchData]
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[ProfilesSearchData]
-    * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

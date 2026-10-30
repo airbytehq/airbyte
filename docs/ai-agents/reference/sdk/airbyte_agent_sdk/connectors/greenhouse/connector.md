@@ -66,7 +66,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against applications records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -200,7 +200,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against candidates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -266,7 +266,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against departments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -666,7 +666,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against job_posts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -742,7 +742,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against jobs records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -815,7 +815,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against offers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -883,7 +883,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against offices records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -947,7 +947,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against sources records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1024,7 +1024,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
