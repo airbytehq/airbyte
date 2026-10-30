@@ -18,13 +18,18 @@ import yaml
 from freezegun import freeze_time
 
 from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     Status,
+    StreamDescriptor,
     SyncMode,
     TraceType,
     Type,
@@ -80,7 +85,48 @@ STREAM_ENTITY = {
     "vendors": "Vendor",
 }
 
+REFERENCE_STREAMS = {
+    "accounts": "Account",
+    "classes": "Class",
+    "departments": "Department",
+    "employees": "Employee",
+    "payment_methods": "PaymentMethod",
+    "tax_agencies": "TaxAgency",
+    "tax_codes": "TaxCode",
+    "tax_rates": "TaxRate",
+    "terms": "Term",
+}
+
 FULL_REFRESH_STREAMS = {"company_info", "preferences"}
+
+ACTIVE_LESS_STREAMS = {
+    "attachables",
+    "bill_payments",
+    "bills",
+    "credit_card_payments",
+    "credit_memos",
+    "deposits",
+    "estimates",
+    "exchange_rates",
+    "invoices",
+    "journal_entries",
+    "payments",
+    "purchase_orders",
+    "purchases",
+    "refund_receipts",
+    "reimburse_charges",
+    "sales_receipts",
+    "tax_agencies",
+    "time_activities",
+    "transfers",
+    "vendor_credits",
+}
+
+WINDOWED_STREAMS = {
+    stream_name: entity
+    for stream_name, entity in STREAM_ENTITY.items()
+    if stream_name not in REFERENCE_STREAMS and stream_name not in FULL_REFRESH_STREAMS
+}
 
 
 def _credentials_config(auth_type: str = "client_credentials", sandbox: bool = True) -> dict:
@@ -99,8 +145,11 @@ def _credentials_config(auth_type: str = "client_credentials", sandbox: bool = T
     }
 
 
-def _catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    if stream_name in FULL_REFRESH_STREAMS:
+def _catalog(stream_name: str, sync_mode: SyncMode | None = None) -> ConfiguredAirbyteCatalog:
+    if sync_mode is None:
+        sync_mode = SyncMode.full_refresh if stream_name in FULL_REFRESH_STREAMS else SyncMode.incremental
+
+    if sync_mode == SyncMode.full_refresh:
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
@@ -135,13 +184,29 @@ def manifest() -> dict:
     return yaml.safe_load(MANIFEST_PATH.read_text())
 
 
-def _source(config: dict, manifest: dict) -> ConcurrentDeclarativeSource:
+def _source(
+    config: dict,
+    manifest: dict,
+    state: list[AirbyteStateMessage] | None = None,
+) -> ConcurrentDeclarativeSource:
     return ConcurrentDeclarativeSource(
         source_config=manifest,
         config=config,
         catalog=None,
-        state=None,
+        state=state,
     )
+
+
+def _state(stream_name: str, cursor: str) -> list[AirbyteStateMessage]:
+    return [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name=stream_name),
+                stream_state=AirbyteStateBlob(airbyte_cursor=cursor),
+            ),
+        )
+    ]
 
 
 def _mock_intuit(http_mocker: HttpMocker, entity: str, query_url: str = QUERY_URL) -> None:
@@ -261,11 +326,23 @@ def _frozen_config(**overrides) -> dict:
 
 
 def _incremental_query(entity: str, start_position: int, max_results: int = 1000) -> str:
+    return _query(entity, WINDOW_START, WINDOW_END, start_position, max_results)
+
+
+def _query(
+    entity: str,
+    lower: str,
+    upper: str,
+    start_position: int = 1,
+    max_results: int = 1000,
+    include_active: bool = True,
+) -> str:
+    active_filter = "AND Active IN (true, false) " if include_active else ""
     return (
         f"SELECT * FROM {entity} "
-        f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
-        f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
-        "AND Active IN (true, false) "
+        f"WHERE Metadata.LastUpdatedTime > '{lower}' "
+        f"AND Metadata.LastUpdatedTime <= '{upper}' "
+        f"{active_filter}"
         "ORDER BY Metadata.LastUpdatedTime ASC "
         f"STARTPOSITION {start_position} MAXRESULTS {max_results}"
     )
@@ -286,6 +363,360 @@ def _page(entity: str, first_id: int, count: int) -> HttpResponse:
         body=json.dumps({"QueryResponse": {entity: records}, "time": "2026-03-15T12:00:00.000-08:00"}),
         status_code=200,
     )
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", REFERENCE_STREAMS.items())
+def test_reference_streams_read_the_whole_range_in_one_window(stream_name: str, entity: str, manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                entity,
+                "2020-01-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+                include_active=stream_name != "tax_agencies",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page(entity, 1, 3))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog(stream_name),
+            state=None,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
+def test_reference_stream_incremental_read_starts_from_state(manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="accounts"),
+                stream_state=AirbyteStateBlob(airbyte_cursor="2025-06-01T00:00:00+00:00"),
+            ),
+        )
+    ]
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Account",
+                "2025-06-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 2))
+
+        output = read(
+            _source(config, manifest, state=state),
+            config=config,
+            catalog=_catalog("accounts"),
+            state=state,
+        )
+
+        final_state = output.most_recent_state.stream_state
+        final_state_data = vars(final_state)
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert set(final_state_data) == {"airbyte_cursor"}
+    assert final_state_data["airbyte_cursor"] == "2026-03-14T02:00:00-0800"
+    assert output.errors == []
+    assert len(output.records) == 2
+
+
+@freeze_time(FROZEN_NOW)
+def test_transaction_streams_keep_30_day_windows(manifest):
+    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+    windows = [
+        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
+        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
+        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+    ]
+    requests = [
+        HttpRequest(
+            QUERY_URL,
+            query_params={"query": _query("Invoice", lower, upper, include_active=False)},
+        )
+        for lower, upper in windows
+    ]
+
+    with HttpMocker() as http_mocker:
+        for position, request in enumerate(requests, start=1):
+            http_mocker.get(request, _page("Invoice", position, 1))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog("invoices"),
+            state=None,
+        )
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", WINDOWED_STREAMS.items())
+def test_delegated_streams_without_state_keep_30_day_windows(stream_name: str, entity: str, manifest):
+    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+    windows = [
+        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
+        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
+        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+    ]
+    requests = [
+        HttpRequest(
+            QUERY_URL,
+            query_params={
+                "query": _query(
+                    entity,
+                    lower,
+                    upper,
+                    include_active=stream_name not in ACTIVE_LESS_STREAMS,
+                )
+            },
+        )
+        for lower, upper in windows
+    ]
+
+    with HttpMocker() as http_mocker:
+        for position, request in enumerate(requests, start=1):
+            http_mocker.get(request, _page(entity, position, 1))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog(stream_name),
+            state=None,
+        )
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", WINDOWED_STREAMS.items())
+def test_delegated_streams_with_state_use_one_window(stream_name: str, entity: str, manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    state = _state(stream_name, "2025-06-01T00:00:00+00:00")
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                entity,
+                "2025-06-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+                include_active=stream_name not in ACTIVE_LESS_STREAMS,
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page(entity, 1, 1))
+
+        output = read(
+            _source(config, manifest, state=state),
+            config=config,
+            catalog=_catalog(stream_name),
+            state=state,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 1
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", [("accounts", "Account"), ("invoices", "Invoice")])
+@pytest.mark.parametrize(
+    "cursor,expected_cursor,start_date",
+    [
+        ("2025-01-01T00:00:00+00:00", "2025-01-01T00:00:00+0000", "2020-01-01T00:00:00Z"),
+        ("2025-06-01T00:00:00+00:00", "2025-06-01T00:00:00+0000", "2025-06-01T00:00:00Z"),
+    ],
+)
+def test_empty_incremental_reads_keep_the_input_cursor(
+    stream_name: str, entity: str, cursor: str, expected_cursor: str, start_date: str, manifest
+):
+    config = _frozen_config(start_date=start_date)
+    state = _state(stream_name, cursor)
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                entity,
+                cursor,
+                "2026-03-15T12:00:00+00:00",
+                include_active=stream_name not in ACTIVE_LESS_STREAMS,
+            )
+        },
+    )
+    empty_page = HttpResponse(body=json.dumps({"QueryResponse": {}}), status_code=200)
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, empty_page)
+
+        output = read(
+            _source(config, manifest, state=state),
+            config=config,
+            catalog=_catalog(stream_name),
+            state=state,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert output.records == []
+    actual_cursor = output.most_recent_state.stream_state.airbyte_cursor
+    assert actual_cursor == expected_cursor
+
+
+@freeze_time(FROZEN_NOW)
+def test_reference_stream_full_refresh_uses_one_window(manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Account",
+                "2020-01-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 1))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog("accounts", SyncMode.full_refresh),
+            state=None,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 1
+
+
+@freeze_time(FROZEN_NOW)
+def test_delegated_stream_full_refresh_keeps_30_day_windows(manifest):
+    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+    windows = [
+        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
+        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
+        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+    ]
+    requests = [
+        HttpRequest(
+            QUERY_URL,
+            query_params={"query": _query("Invoice", lower, upper, include_active=False)},
+        )
+        for lower, upper in windows
+    ]
+
+    with HttpMocker() as http_mocker:
+        for position, request in enumerate(requests, start=1):
+            http_mocker.get(request, _page("Invoice", position, 1))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog("invoices", SyncMode.full_refresh),
+            state=None,
+        )
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@pytest.mark.parametrize(
+    "previous_cursor,expected_cursor",
+    [("2025-06-01T00:00:00+00:00", "2025-06-01T00:00:00+0000")],
+)
+@freeze_time(FROZEN_NOW)
+def test_delegated_stream_reports_page_two_failure_without_advancing_state(manifest, previous_cursor: str, expected_cursor: str):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z", max_results=2)
+    state = _state("invoices", previous_cursor)
+    first = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Invoice",
+                previous_cursor,
+                "2026-03-15T12:00:00+00:00",
+                max_results=2,
+                include_active=False,
+            )
+        },
+    )
+    second = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Invoice",
+                previous_cursor,
+                "2026-03-15T12:00:00+00:00",
+                start_position=3,
+                max_results=2,
+                include_active=False,
+            )
+        },
+    )
+    error = HttpResponse(
+        body=json.dumps({"Fault": {"Error": [{"Message": "Forbidden", "code": "5010"}]}}),
+        status_code=403,
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(first, _page("Invoice", 1, 2))
+        http_mocker.get(second, error)
+
+        output = read(
+            _source(config, manifest, state=state),
+            config=config,
+            catalog=_catalog("invoices"),
+            state=state,
+            expecting_exception=True,
+        )
+
+        http_mocker.assert_number_of_calls(first, 1)
+        http_mocker.assert_number_of_calls(second, 1)
+
+    assert [record.record.data["Id"] for record in output.records] == ["1", "2"]
+    assert output.errors
+    assert output.errors[0].trace.error.failure_type == FailureType.config_error
+    emitted_cursors = [message.state.stream.stream_state.airbyte_cursor for message in output.state_messages]
+    assert emitted_cursors
+    assert all(cursor == expected_cursor for cursor in emitted_cursors)
 
 
 @freeze_time(FROZEN_NOW)
