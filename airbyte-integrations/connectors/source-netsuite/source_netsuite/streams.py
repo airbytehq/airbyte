@@ -47,6 +47,8 @@ class NetsuiteStream(HttpStream, ABC):
         self.schemas = {}  # store subschemas to reduce API calls
         self._records_attempted = 0
         self._user_error_skipped = 0
+        self._schema_session = requests.Session()
+        self._schema_session.auth = auth
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -88,7 +90,7 @@ class NetsuiteStream(HttpStream, ABC):
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
-            resp = self._session.get(url=self.url_base + ref, headers=SCHEMA_HEADERS)
+            resp = self._schema_session.get(url=self.url_base + ref, headers=SCHEMA_HEADERS)
             # some schemas, like transaction, do not exist because they refer to multiple
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
@@ -149,9 +151,12 @@ class NetsuiteStream(HttpStream, ABC):
 
     def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         url = record["links"][0]["href"]
-        args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
-        prep_req = self._session.prepare_request(requests.Request(**args))
-        response = self._send_request(prep_req, request_kwargs)
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url=url,
+            request_kwargs=request_kwargs,
+            params={"expandSubResources": True},
+        )
         self._records_attempted += 1
         if response.status_code == requests.codes.ok:
             yield response.json()
@@ -198,8 +203,13 @@ class NetsuiteStream(HttpStream, ABC):
                     self.logger.error(f"Stream `{self.name}`: {error_code} error occurred, full error message: {detail_message}")
                     return False
                 else:
-                    return super().should_retry(response)
-        return super().should_retry(response)
+                    return self._default_should_retry(response)
+        return self._default_should_retry(response)
+
+    @staticmethod
+    def _default_should_retry(response: requests.Response) -> bool:
+        # Matches the default HttpStream.should_retry behavior in CDK 1.8.
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def _track_skipped_record(self, response: requests.Response) -> None:
         try:
@@ -226,8 +236,7 @@ class NetsuiteStream(HttpStream, ABC):
         if total > 0 and (skipped / total) > 0.5:
             raise AirbyteTracedException(
                 message=(
-                    f"Stream `{self.name}` has incomplete data: {skipped} of {total} records "
-                    f"inaccessible due to NetSuite workflow locks."
+                    f"Stream `{self.name}` has incomplete data: {skipped} of {total} records inaccessible due to NetSuite workflow locks."
                 ),
                 internal_message=(
                     f"More than 50% of records ({skipped}/{total}) returned HTTP 400 USER_ERROR "
