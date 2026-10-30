@@ -1,6 +1,23 @@
 # Airbyte Cloud release notes
 
+## October 29, 2026
+
+Connections
+
+- Your connection's schema table now labels the **Primary key** and **Cursor** columns and includes tooltips explaining how each is used, making it easier to configure your streams.
+- You can now load available dbt Cloud jobs without an error when your workspace already has saved dbt Cloud credentials.
+
+Platform
+
+- On Pro and Enterprise Flex plans, when you compare your organization's Data Worker usage with the previous period, the chart's date labels now stay within your selected current period, even when the previous period is longer.
+
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
+
+## October 28, 2026
+
+Platform
+
+- The **Billing** and **Plan** pages in your organization settings now fill the width of large windows, like the other organization settings pages. Previously, they stopped at a fixed width and left empty space on the right.
 
 ## October 27, 2026
 
