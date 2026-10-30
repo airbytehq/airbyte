@@ -36,7 +36,7 @@ internal class DebeziumRecordPublisherTest {
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getTableIncludelist(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -59,7 +59,7 @@ internal class DebeziumRecordPublisherTest {
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getTableIncludelist(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -92,7 +92,7 @@ internal class DebeziumRecordPublisherTest {
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getColumnIncludeList(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -194,7 +194,7 @@ internal class DebeziumRecordPublisherTest {
             "^" +
                 RelationalDbDebeziumPropertiesManager.getColumnIncludeList(
                     catalog,
-                    getCdcStreamListFromCatalog(catalog)
+                    getCdcStreamListFromCatalog(catalog),
                 ) +
                 "$"
         val pattern = Pattern.compile(anchored)

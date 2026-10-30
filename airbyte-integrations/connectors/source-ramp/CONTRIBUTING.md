@@ -20,12 +20,13 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    asks for them. Removing one of those parameters silently loses rows.
 4. **Deletions are replicated as a flag field on the primary stream** -- Archived, terminated and
    deactivated records keep syncing with their final state; there are no separate deleted-record streams.
-   Terminated cards and deleted reimbursements are the known gaps.
+   Terminated cards and deleted reimbursements are the known gaps, and so are deleted vendors when
+   `vendors` syncs incrementally.
 5. **`cards` reads a legacy endpoint that Ramp no longer documents** -- It still works but never returns
    terminated cards, and moving to the documented card endpoints would be a breaking change.
-6. **Only three streams are incremental, and `transactions` relies on an undocumented filter** --
-   `transactions` and `reimbursements` sync by update time and `receipts` by creation time; everything else
-   is full refresh because Ramp offers no update-time filter.
+6. **Four streams are incremental, and `transactions` relies on an undocumented filter** --
+   `transactions`, `reimbursements` and `vendors` sync by update time and `receipts` by creation time;
+   everything else is full refresh because Ramp offers no update-time filter for those endpoints.
 7. **`business_balance` has no primary key** -- Ramp returns a single balance snapshot with no identifier,
    so this stream is the connector's one deliberate keyless exception.
 8. **`vendor_contacts` skips vendors that return 404** -- A vendor deleted mid-sync is skipped instead of

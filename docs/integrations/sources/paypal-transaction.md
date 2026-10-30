@@ -268,6 +268,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.58 | 2026-10-27 | [89998](https://github.com/airbytehq/airbyte/pull/89998) | Update dependencies |
+| 2.6.57 | 2026-10-20 | [89356](https://github.com/airbytehq/airbyte/pull/89356) | Update dependencies |
+| 2.6.56 | 2026-10-14 | [85249](https://github.com/airbytehq/airbyte/pull/85249) | Wait 100 seconds before each retry of a failed `transactions` request, such as on HTTP 429 or 5xx, as the other streams already do |
 | 2.6.55 | 2026-10-13 | [88730](https://github.com/airbytehq/airbyte/pull/88730) | Update dependencies |
 | 2.6.54 | 2026-10-06 | [87974](https://github.com/airbytehq/airbyte/pull/87974) | Update dependencies |
 | 2.6.53 | 2026-09-29 | [87441](https://github.com/airbytehq/airbyte/pull/87441) | Keep the `list_disputes` start date inside PayPal's 180-day window to fix `INVALID_DATE_RANGE` 400 errors on first syncs |

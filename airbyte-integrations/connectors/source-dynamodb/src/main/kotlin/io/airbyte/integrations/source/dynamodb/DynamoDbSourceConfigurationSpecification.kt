@@ -206,7 +206,7 @@ class AccessKeyCredentialsSpecification : CredentialsSpecification {
     "Authenticate with an access key that may assume an IAM role (sts:AssumeRole), then read DynamoDB with the role's temporary credentials. Use this for cross-account access.",
 )
 @JsonPropertyOrder(
-    value = ["access_key_id", "secret_access_key", "session_token", "role_arn", "external_id"]
+    value = ["access_key_id", "secret_access_key", "session_token", "role_arn", "external_id"],
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class AssumeRoleCredentialsSpecification : CredentialsSpecification {

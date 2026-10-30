@@ -27,22 +27,22 @@ class SnowflakeSamplingQueryTest {
                 select =
                     SelectColumns(
                         EmittedField("id", IntFieldType),
-                        EmittedField("name", StringFieldType)
+                        EmittedField("name", StringFieldType),
                     ),
                 from =
                     FromSample(
                         name = "users",
                         namespace = "public",
                         sampleRateInvPow2 = 8,
-                        sampleSize = 1024
-                    )
+                        sampleSize = 1024,
+                    ),
             )
 
         val query = queryGenerator.generate(querySpec)
         val expectedSql =
             """
             SELECT "id", "name" FROM (SELECT * FROM (SELECT * FROM "public"."users" SAMPLE (0.39062500)  ORDER BY RANDOM()) LIMIT 1024)
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -62,7 +62,7 @@ class SnowflakeSamplingQueryTest {
                     SelectColumns(
                         EmittedField("id", IntFieldType),
                         EmittedField("name", StringFieldType),
-                        cursorField
+                        cursorField,
                     ),
                 from =
                     FromSample(
@@ -70,15 +70,15 @@ class SnowflakeSamplingQueryTest {
                         namespace = "sales",
                         sampleRateInvPow2 = 16,
                         sampleSize = 1024,
-                        where = whereClause
-                    )
+                        where = whereClause,
+                    ),
             )
 
         val query = queryGenerator.generate(querySpec)
         val expectedSql =
             """
             SELECT "id", "name", "updated_at" FROM (SELECT * FROM (SELECT * FROM "sales"."orders" SAMPLE (0.0015258789062500) WHERE "updated_at" > ? ORDER BY RANDOM()) LIMIT 1024)
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -98,8 +98,8 @@ class SnowflakeSamplingQueryTest {
                 And(
                     Greater(idField, Jsons.numberNode(1000)),
                     Equal(statusField, Jsons.textNode("active")),
-                    GreaterOrEqual(dateField, LocalDateCodec.encode(LocalDate.parse("2025-01-01")))
-                )
+                    GreaterOrEqual(dateField, LocalDateCodec.encode(LocalDate.parse("2025-01-01"))),
+                ),
             )
 
         val querySpec =
@@ -111,15 +111,15 @@ class SnowflakeSamplingQueryTest {
                         namespace = "public",
                         sampleRateInvPow2 = 8,
                         sampleSize = 512,
-                        where = whereClause
-                    )
+                        where = whereClause,
+                    ),
             )
 
         val query = queryGenerator.generate(querySpec)
         val expectedSql =
             """
             SELECT "id", "status", "created_date" FROM (SELECT * FROM (SELECT * FROM "public"."users" SAMPLE (0.39062500) WHERE ("id" > ?) AND ("status" = ?) AND ("created_date" >= ?) ORDER BY RANDOM()) LIMIT 512)
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -141,8 +141,8 @@ class SnowflakeSamplingQueryTest {
             Where(
                 And(
                     Greater(cursorField, LocalDateCodec.encode(lowerBound)),
-                    LesserOrEqual(cursorField, LocalDateCodec.encode(upperBound))
-                )
+                    LesserOrEqual(cursorField, LocalDateCodec.encode(upperBound)),
+                ),
             )
 
         val querySpec =
@@ -154,10 +154,10 @@ class SnowflakeSamplingQueryTest {
                         namespace = "POLARIS",
                         sampleRateInvPow2 = 16,
                         sampleSize = 1024,
-                        where = whereClause
+                        where = whereClause,
                     ),
                 where = whereClause,
-                orderBy = OrderBy(uuidField)
+                orderBy = OrderBy(uuidField),
             )
 
         val query = queryGenerator.generate(querySpec)
@@ -166,7 +166,7 @@ class SnowflakeSamplingQueryTest {
         val expectedSql =
             """
             SELECT "airdate", "uuid" FROM (SELECT * FROM (SELECT * FROM "POLARIS"."VW_POLARIS_ADMO_AIRINGS" SAMPLE (0.0015258789062500) WHERE ("airdate" > ?) AND ("airdate" <= ?) ORDER BY RANDOM()) LIMIT 1024) WHERE ("airdate" > ?) AND ("airdate" <= ?) ORDER BY "uuid"
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -188,8 +188,8 @@ class SnowflakeSamplingQueryTest {
                         namespace = "test_schema",
                         sampleRateInvPow2 = 0, // 2^0 = 1, means no sampling
                         sampleSize = 1024,
-                        where = whereClause
-                    )
+                        where = whereClause,
+                    ),
             )
 
         val query = queryGenerator.generate(querySpec)
@@ -198,7 +198,7 @@ class SnowflakeSamplingQueryTest {
         val expectedSql =
             """
             SELECT "id" FROM (SELECT * FROM (SELECT * FROM "test_schema"."test_table" WHERE "id" > ? ORDER BY RANDOM()) LIMIT 1024)
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -220,15 +220,15 @@ class SnowflakeSamplingQueryTest {
                         namespace = null,
                         sampleRateInvPow2 = 4,
                         sampleSize = 256,
-                        where = whereClause
-                    )
+                        where = whereClause,
+                    ),
             )
 
         val query = queryGenerator.generate(querySpec)
         val expectedSql =
             """
             SELECT "id" FROM (SELECT * FROM (SELECT * FROM "users" SAMPLE (6.2500) WHERE "status" = ? ORDER BY RANDOM()) LIMIT 256)
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -243,19 +243,19 @@ class SnowflakeSamplingQueryTest {
                 select =
                     SelectColumns(
                         EmittedField("id", IntFieldType),
-                        EmittedField("name", StringFieldType)
+                        EmittedField("name", StringFieldType),
                     ),
                 from = From(name = "users", namespace = "public"),
                 where = Where(Greater(EmittedField("id", IntFieldType), Jsons.numberNode(100))),
                 orderBy = OrderBy(EmittedField("id", IntFieldType)),
-                limit = Limit(10)
+                limit = Limit(10),
             )
 
         val query = queryGenerator.generate(querySpec)
         val expectedSql =
             """
             SELECT "id", "name" FROM "public"."users" WHERE "id" > ? ORDER BY "id" LIMIT ?
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
@@ -272,7 +272,7 @@ class SnowflakeSamplingQueryTest {
                 select =
                     SelectColumns(
                         EmittedField("id", IntFieldType),
-                        EmittedField("name", StringFieldType)
+                        EmittedField("name", StringFieldType),
                     ),
                 from =
                     FromSample(
@@ -280,10 +280,10 @@ class SnowflakeSamplingQueryTest {
                         namespace = "test",
                         sampleRateInvPow2 = 16,
                         sampleSize = 1024,
-                        where = NoWhere
+                        where = NoWhere,
                     ),
                 where = NoWhere,
-                orderBy = OrderBy(EmittedField("id", IntFieldType))
+                orderBy = OrderBy(EmittedField("id", IntFieldType)),
             )
 
         val query = queryGenerator.generate(querySpec)
@@ -292,14 +292,14 @@ class SnowflakeSamplingQueryTest {
         val expectedSql =
             """
             SELECT "id", "name" FROM (SELECT * FROM (SELECT * FROM "test"."users" SAMPLE (0.0015258789062500)  ORDER BY RANDOM()) LIMIT 1024) ORDER BY "id"
-        """
+            """
                 .trimIndent()
                 .replace("\n", " ")
 
         assertEquals(expectedSql, query.sql)
         assertEquals(
             listOf(EmittedField("id", IntFieldType), EmittedField("name", StringFieldType)),
-            query.columns
+            query.columns,
         )
     }
 }

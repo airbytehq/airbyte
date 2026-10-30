@@ -14,10 +14,6 @@ import jinja2
 import pytest
 import yaml
 
-from airbyte_cdk.sources.declarative.concurrent_declarative_source import (
-    ConcurrentDeclarativeSource,
-)
-
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
@@ -131,131 +127,6 @@ def test_every_authenticator_classifies_refresh_token_rejection(manifest):
         assert authenticator["refresh_token_error_values"] == ["invalid_grant", "invalid_client"]
 
 
-def _migrated(manifest, config):
-    """Run the manifest's spec.config_normalization_rules against a config dict."""
-    source = ConcurrentDeclarativeSource(source_config=manifest, config=config, catalog=None, state=None)
-    return source._migrate_and_transform_config(None, dict(config))
-
-
-def test_nested_legacy_config_is_flattened(manifest):
-    """A pre-4.0.0 `credentials` object is lifted to root keys and removed."""
-    nested = {
-        "sandbox": True,
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {
-            "client_id": "cid",
-            "client_secret": "cs",
-            "refresh_token": "rt",
-            "realm_id": "123",
-            "access_token": "at",
-            "token_expiry_date": "2024-01-01T01:00:00Z",
-        },
-    }
-    migrated = _migrated(manifest, nested)
-    for key in ("client_id", "client_secret", "refresh_token", "realm_id", "access_token", "token_expiry_date"):
-        assert migrated[key] == nested["credentials"][key]
-    assert "credentials" not in migrated
-    assert migrated["sandbox"] is True
-
-
-def test_nested_config_missing_optional_fields(manifest):
-    """Absent `access_token`/`token_expiry_date` are skipped rather than written as empty values."""
-    nested = {
-        "sandbox": True,
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {
-            "client_id": "cid",
-            "client_secret": "cs",
-            "refresh_token": "rt",
-            "realm_id": "123",
-        },
-    }
-    migrated = _migrated(manifest, nested)
-    assert migrated["client_id"] == "cid"
-    assert "access_token" not in migrated
-    assert "token_expiry_date" not in migrated
-    assert "credentials" not in migrated
-
-
-def test_flat_config_only_gains_auth_type(manifest):
-    """A 4.0.0-era flat config predates the `auth_type` discriminator; nothing else about it changes."""
-    flat = {
-        "client_id": "cid",
-        "client_secret": "cs",
-        "refresh_token": "rt",
-        "realm_id": "123",
-        "start_date": "2024-01-01T00:00:00Z",
-        "sandbox": True,
-    }
-    assert _migrated(manifest, flat) == {**flat, "auth_type": "oauth2.0"}
-
-
-def test_migration_sets_auth_type_when_absent(manifest):
-    """`auth_type` is the spec's discriminator; a pre-4.0.0 config carries none."""
-    nested = {
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {"client_id": "cid", "client_secret": "cs", "refresh_token": "rt", "realm_id": "123"},
-    }
-    assert _migrated(manifest, nested)["auth_type"] == "oauth2.0"
-
-
-def test_migration_keeps_an_existing_auth_type(manifest):
-    flat = {
-        "client_id": "cid",
-        "client_secret": "cs",
-        "refresh_token": "rt",
-        "realm_id": "123",
-        "start_date": "2024-01-01T00:00:00Z",
-        "auth_type": "oauth2.0",
-    }
-    assert _migrated(manifest, flat) == flat
-
-
-def test_hybrid_config_keeps_root_values(manifest):
-    """A half-migrated config must not be overwritten by the stale nested copy."""
-    hybrid = {
-        "client_id": "root-cid",
-        "refresh_token": "root-rt",
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {
-            "client_id": "stale-cid",
-            "client_secret": "nested-cs",
-            "refresh_token": "stale-rt",
-            "realm_id": "123",
-        },
-    }
-    migrated = _migrated(manifest, hybrid)
-    assert migrated["client_id"] == "root-cid"
-    assert migrated["refresh_token"] == "root-rt"
-    assert migrated["client_secret"] == "nested-cs"
-    assert migrated["realm_id"] == "123"
-    assert "credentials" not in migrated
-
-
-def test_null_credentials_is_dropped_without_writing_empty_fields(manifest):
-    config = {
-        "client_id": "cid",
-        "client_secret": "cs",
-        "refresh_token": "rt",
-        "realm_id": "123",
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": None,
-    }
-    migrated = _migrated(manifest, config)
-    assert migrated["client_id"] == "cid"
-    assert migrated.get("access_token") in (None, "")
-    assert "access_token" not in migrated
-
-
-def test_realm_id_stays_a_string_when_stored_as_a_number(manifest):
-    """`realm_id` is declared `type: string`; an int would fail spec validation after migration."""
-    nested = {
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {"client_id": "cid", "client_secret": "cs", "refresh_token": "rt", "realm_id": 4620816365288779920},
-    }
-    assert _migrated(manifest, nested)["realm_id"] == "4620816365288779920"
-
-
 def test_advanced_auth_is_legacy_oauth_flow(manifest):
     """Cloud OAuth runs through the platform's built-in QuickbooksOAuthFlow, not declarative OAuth."""
     spec = manifest["spec"]
@@ -265,10 +136,10 @@ def test_advanced_auth_is_legacy_oauth_flow(manifest):
     output_props = advanced_auth["oauth_config_specification"]["complete_oauth_output_specification"]["properties"]
     paths = {k: v["path_in_connector_config"] for k, v in output_props.items()}
     assert paths == {
-        "access_token": ["access_token"],
-        "refresh_token": ["refresh_token"],
-        "token_expiry_date": ["token_expiry_date"],
-        "realm_id": ["realm_id"],
+        "access_token": ["credentials", "access_token"],
+        "refresh_token": ["credentials", "refresh_token"],
+        "token_expiry_date": ["credentials", "token_expiry_date"],
+        "realm_id": ["credentials", "realm_id"],
     }
     # realmId arrives on the consent redirect, which oauth_connector_input_specification
     # cannot capture — it must never be declared here.

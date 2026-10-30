@@ -52,7 +52,7 @@ class DirectLoadTableAppendStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = false
+                replace = false,
             )
         } else {
             schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -204,7 +204,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
             isWritingToTemporaryTable = true
             streamStateStore.put(
                 stream.mappedDescriptor,
-                DirectLoadTableExecutionConfig(tempTableName)
+                DirectLoadTableExecutionConfig(tempTableName),
             )
         } else {
             if (initialStatus.realTable == null) {
@@ -256,7 +256,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
         }
         streamStateStore.put(
             stream.mappedDescriptor,
-            DirectLoadTableExecutionConfig(targetTableName)
+            DirectLoadTableExecutionConfig(targetTableName),
         )
     }
 
@@ -285,7 +285,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
  * 1. May upsert directly to the real table if appropriate
  * 2. May create a real table and upsert into it
  * 3. May use a temp-temp table approach to ensure proper deduplication before overwriting the real
- * table
+ *    table
  *
  * This strategy ensures optimal performance while maintaining data integrity across various
  * scenarios, including interrupted syncs and schema changes.
@@ -403,7 +403,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             stream,
             columnNameMapping,
             sourceTableName = tempTableName,
-            targetTableName = realTableName
+            targetTableName = realTableName,
         )
 
         // Clean up temporary table

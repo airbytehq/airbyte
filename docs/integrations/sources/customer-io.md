@@ -192,10 +192,6 @@ How the connector treats Customer.io HTTP errors:
 - **Records missing from incremental streams**: streams that support incremental sync skip records last updated before the Start Date, `activities` skips activities dated more than **Activities Lookback Window (Days)** before the newest activity already synced, and the actions of a new automation or broadcast start from the newest update time saved for the stream (see [Incremental sync and Start Date](#incremental-sync-and-start-date)). For `activities`, raise **Activities Lookback Window (Days)**. For the other streams, move the Start Date earlier or leave it blank, then clear the stream; the clear also removes the rows of records deleted in Customer.io and, in Append modes, earlier versions of each record. Do not clear `activities`: Customer.io guarantees only the last 30 days, so the clear permanently removes older activity from the destination.
 - **Repeated rows**: in Incremental | Append mode, records updated in the hour before the saved cursor arrive again on every sync, and `messages` and `activities` repeat their lookback windows. Use Incremental | Append + Deduped.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -203,7 +199,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
-| 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Re-read 7 days of `activities` per sync instead of 1 hour, add worker and activity lookback options, declare five fields seen in production, cast digit-string `campaigns.webhook_id` values, and update to source-declarative-manifest 7.35.0 |
+| 1.1.4 | 2026-10-27 | [89851](https://github.com/airbytehq/airbyte/pull/89851) | Update dependencies |
+| 1.1.3 | 2026-10-20 | [89499](https://github.com/airbytehq/airbyte/pull/89499) | Mark the connector as certified |
+| 1.1.2 | 2026-10-20 | [89495](https://github.com/airbytehq/airbyte/pull/89495) | Add the Customer.io OpenAPI spec to the documentation URLs |
+| 1.1.1 | 2026-10-20 | [89163](https://github.com/airbytehq/airbyte/pull/89163) | Update dependencies |
+| 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Add worker and activity lookback options (7-day default) and declare fields seen in production |
 | 1.0.0 | 2026-10-09 | [88159](https://github.com/airbytehq/airbyte/pull/88159) | Declare `from_id`, `reply_to_id` and `sent_at` as integers and the item types of four ID and tag arrays |
 | 0.8.0 | 2026-10-08 | [88158](https://github.com/airbytehq/airbyte/pull/88158) | Add message, activity, people, segment membership and ESP suppression streams |
 | 0.7.0 | 2026-10-08 | [88135](https://github.com/airbytehq/airbyte/pull/88135) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
@@ -227,41 +227,41 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.2 | 2026-06-02 | [78639](https://github.com/airbytehq/airbyte/pull/78639) | Update dependencies |
 | 0.4.1 | 2026-05-08 | [77895](https://github.com/airbytehq/airbyte/pull/77895) | Upgrade the base image to source-declarative-manifest 7.18.1 |
 | 0.4.0 | 2026-05-08 | [77819](https://github.com/airbytehq/airbyte/pull/77819) | Add pagination, incremental sync, and EU region support |
-| 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
-| 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
-| 0.3.17  | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies                         |
-| 0.3.16  | 2025-04-19 | [57766](https://github.com/airbytehq/airbyte/pull/57766) | Update dependencies                         |
-| 0.3.15  | 2025-04-05 | [57225](https://github.com/airbytehq/airbyte/pull/57225) | Update dependencies                         |
-| 0.3.14  | 2025-03-29 | [56546](https://github.com/airbytehq/airbyte/pull/56546) | Update dependencies                         |
-| 0.3.13  | 2025-03-22 | [55918](https://github.com/airbytehq/airbyte/pull/55918) | Update dependencies                         |
-| 0.3.12  | 2025-03-08 | [55311](https://github.com/airbytehq/airbyte/pull/55311) | Update dependencies                         |
-| 0.3.11  | 2025-03-01 | [54942](https://github.com/airbytehq/airbyte/pull/54942) | Update dependencies                         |
-| 0.3.10  | 2025-02-22 | [54374](https://github.com/airbytehq/airbyte/pull/54374) | Update dependencies                         |
-| 0.3.9   | 2025-02-15 | [51670](https://github.com/airbytehq/airbyte/pull/51670) | Update dependencies                         |
-| 0.3.8   | 2025-01-11 | [51062](https://github.com/airbytehq/airbyte/pull/51062) | Update dependencies                         |
-| 0.3.7   | 2025-01-04 | [50582](https://github.com/airbytehq/airbyte/pull/50582) | Update dependencies                         |
-| 0.3.6   | 2024-12-21 | [49999](https://github.com/airbytehq/airbyte/pull/49999) | Update dependencies                         |
-| 0.3.5   | 2024-12-14 | [49490](https://github.com/airbytehq/airbyte/pull/49490) | Update dependencies                         |
-| 0.3.4   | 2024-12-12 | [48923](https://github.com/airbytehq/airbyte/pull/48923) | Update dependencies                         |
-| 0.3.3   | 2024-11-04 | [48225](https://github.com/airbytehq/airbyte/pull/48225) | Update dependencies                         |
-| 0.3.2   | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies                         |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version    |
-| 0.3.0   | 2024-08-15 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format  |
-| 0.2.15  | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies                         |
-| 0.2.14  | 2024-08-10 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies                         |
-| 0.2.13  | 2024-08-03 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies                         |
-| 0.2.12  | 2024-07-27 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies                         |
-| 0.2.11  | 2024-07-20 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies                         |
-| 0.2.10  | 2024-07-13 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies                         |
-| 0.2.9   | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies                         |
-| 0.2.8   | 2024-07-09 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies                         |
-| 0.2.7   | 2024-07-06 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies                         |
-| 0.2.6   | 2024-06-29 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies                         |
+| 0.3.19 | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo |
+| 0.3.18 | 2025-05-11 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies |
+| 0.3.17 | 2025-05-04 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies |
+| 0.3.16 | 2025-04-19 | [57766](https://github.com/airbytehq/airbyte/pull/57766) | Update dependencies |
+| 0.3.15 | 2025-04-05 | [57225](https://github.com/airbytehq/airbyte/pull/57225) | Update dependencies |
+| 0.3.14 | 2025-03-29 | [56546](https://github.com/airbytehq/airbyte/pull/56546) | Update dependencies |
+| 0.3.13 | 2025-03-22 | [55918](https://github.com/airbytehq/airbyte/pull/55918) | Update dependencies |
+| 0.3.12 | 2025-03-08 | [55311](https://github.com/airbytehq/airbyte/pull/55311) | Update dependencies |
+| 0.3.11 | 2025-03-01 | [54942](https://github.com/airbytehq/airbyte/pull/54942) | Update dependencies |
+| 0.3.10 | 2025-02-22 | [54374](https://github.com/airbytehq/airbyte/pull/54374) | Update dependencies |
+| 0.3.9 | 2025-02-18 | [51670](https://github.com/airbytehq/airbyte/pull/51670) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51062](https://github.com/airbytehq/airbyte/pull/51062) | Update dependencies |
+| 0.3.7 | 2025-01-04 | [50582](https://github.com/airbytehq/airbyte/pull/50582) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [49999](https://github.com/airbytehq/airbyte/pull/49999) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49490](https://github.com/airbytehq/airbyte/pull/49490) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [48923](https://github.com/airbytehq/airbyte/pull/48923) | Update dependencies |
+| 0.3.3 | 2024-11-05 | [48225](https://github.com/airbytehq/airbyte/pull/48225) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies |
+| 0.3.1 | 2024-08-17 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-16 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format |
+| 0.2.15 | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies |
+| 0.2.14 | 2024-08-11 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies |
+| 0.2.13 | 2024-08-04 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies |
+| 0.2.12 | 2024-07-28 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies |
+| 0.2.11 | 2024-07-21 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies |
+| 0.2.10 | 2024-07-14 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies |
+| 0.2.9 | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies |
+| 0.2.8 | 2024-07-10 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies |
+| 0.2.7 | 2024-07-07 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies |
+| 0.2.6 | 2024-06-30 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies |
 | 0.2.5 | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make the connector compatible with Connector Builder |
-| 0.2.4   | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies                         |
-| 0.2.3   | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies                         |
-| 0.2.2   | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1     |
-| 0.2.1   | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
+| 0.2.4 | 2024-06-26 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies |
+| 0.2.3 | 2024-06-23 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies |
+| 0.2.2 | 2024-06-05 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
 | 0.2.0 | 2023-08-29 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code |
 | 0.1.23 | 2021-11-09 | 126 | Add Customer.io source |
 
