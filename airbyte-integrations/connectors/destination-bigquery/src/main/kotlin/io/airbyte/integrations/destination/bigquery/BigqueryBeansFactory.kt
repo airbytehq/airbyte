@@ -230,6 +230,7 @@ class BigqueryBeansFactory {
             bigquery.options
                 .toBuilder()
                 .setProjectId(config.jobProjectId)
+                .setHeaderProvider(BigQueryUtils.headerProvider)
                 .setRetrySettings(BigQueryRetryPolicy.retrySettings)
                 .setResultRetryAlgorithm(BigQueryRetryPolicy.resultRetryAlgorithm)
                 .build()

@@ -105,7 +105,8 @@ class BigQueryDatabaseHandler(
                 ),
             )
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
+        // After a retried insert hits 409 Already Exists, the SDK returns the job without status.
+        while (job.status?.state != JobStatus.State.DONE) {
             Thread.sleep(1000L)
             job = job.reload()
         }

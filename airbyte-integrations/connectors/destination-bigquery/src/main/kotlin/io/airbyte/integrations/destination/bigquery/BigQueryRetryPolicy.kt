@@ -14,6 +14,12 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.time.Duration
 
+/**
+ * Retries HTTP 500/502/503/504 on every BigQuery RPC, including writes (`jobs.insert`,
+ * `jobs.query`, write-channel open and upload). Keep this when bumping google-cloud-bigquery:
+ * `BigQueryRetryHelper.maybeWrapForHttpRetry` (2.68.0+) only retries these on read calls, and only
+ * with the default result retry algorithm.
+ */
 object BigQueryRetryPolicy {
     val RETRYABLE_HTTP_STATUS_CODES = setOf(500, 502, 503, 504)
 

@@ -15,7 +15,9 @@ import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.http.HttpTransportOptions
+import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -112,6 +114,62 @@ class BigqueryClientRetryTest {
         assertTrue(transport.requests.all { it.url.contains("other-project") })
     }
 
+    @Test
+    fun `execute waits on the existing job when a retried jobs insert gets 409`() {
+        val now = System.currentTimeMillis()
+        val transport =
+            ScriptedHttpTransport(
+                listOf(
+                    backendErrorResponse(503),
+                    response(
+                        409,
+                        """{"error":{"code":409,"errors":[{"domain":"global","message":"Already Exists: Job test-project:US.some-job","reason":"duplicate"}],"message":"Already Exists: Job test-project:US.some-job","status":"ALREADY_EXISTS"}}""",
+                    ),
+                    response(
+                        200,
+                        """{"jobReference":{"projectId":"test-project","jobId":"some-job","location":"US"},"configuration":{"query":{"query":"SELECT 1"}},"statistics":{"creationTime":"$now"}}""",
+                    ),
+                    response(
+                        200,
+                        """{"jobReference":{"projectId":"test-project","jobId":"some-job","location":"US"},"configuration":{"query":{"query":"SELECT 1"}},"statistics":{"creationTime":"$now","startTime":"$now","endTime":"$now","query":{}},"status":{"state":"DONE"}}""",
+                    ),
+                ),
+            )
+        val bigquery = bigqueryClient(transport)
+        val handler = BigQueryDatabaseHandler(bigquery, bigquery, "US", "test-project")
+
+        handler.execute(Sql.of("SELECT 1"))
+
+        val posts = transport.requests.filter { it.method == "POST" }
+        assertEquals(2, posts.size)
+        val jobIds = posts.map { JOB_ID_REGEX.find(it.body)?.groupValues?.get(1) }
+        assertNotNull(jobIds[0])
+        assertEquals(jobIds[0], jobIds[1])
+        assertEquals(4, transport.requests.size)
+    }
+
+    @Test
+    fun `job project client sends the Airbyte user agent`() {
+        val transport =
+            ScriptedHttpTransport(listOf(response(200, jobJson("other-project", TEST_JOB_ID))))
+        val mainClient = bigqueryClient(transport)
+        val config: BigqueryConfiguration = mockk {
+            every { projectId } returns "test-project"
+            every { jobProjectId } returns "other-project"
+        }
+        val jobProjectClient =
+            BigqueryBeansFactory().getJobProjectBigqueryClient(config, mainClient)
+
+        jobProjectClient.getJob(TEST_JOB_ID)
+
+        val userAgent =
+            transport.requests.single().headers.entries.firstOrNull {
+                it.key.equals("user-agent", ignoreCase = true)
+            }
+        assertNotNull(userAgent)
+        assertTrue(userAgent!!.value.any { it.contains("airbyte", ignoreCase = true) })
+    }
+
     private fun bigqueryClient(transport: ScriptedHttpTransport): BigQuery =
         bigqueryOptionsBuilder("test-project", NoCredentials.getInstance())
             .setTransportOptions(
@@ -133,7 +191,12 @@ class BigqueryClientRetryTest {
 
     private data class ScriptedResponse(val statusCode: Int, val body: String)
 
-    private data class RecordedRequest(val method: String, val url: String, val body: String)
+    private data class RecordedRequest(
+        val method: String,
+        val url: String,
+        val body: String,
+        val headers: Map<String, List<String>>,
+    )
 
     private class ScriptedHttpTransport(private val responses: List<ScriptedResponse>) :
         MockHttpTransport() {
@@ -144,7 +207,8 @@ class BigqueryClientRetryTest {
             val response = responses[nextResponseIndex++]
             return object : MockLowLevelHttpRequest(url) {
                 override fun execute(): MockLowLevelHttpResponse {
-                    requests += RecordedRequest(method, url, contentAsString.orEmpty())
+                    requests +=
+                        RecordedRequest(method, url, contentAsString.orEmpty(), headers)
                     return MockLowLevelHttpResponse()
                         .setStatusCode(response.statusCode)
                         .setContentType("application/json")
@@ -156,5 +220,6 @@ class BigqueryClientRetryTest {
 
     private companion object {
         const val TEST_JOB_ID = "test-job-id"
+        val JOB_ID_REGEX = Regex(""""jobId"\s*:\s*"([^"]+)"""")
     }
 }
