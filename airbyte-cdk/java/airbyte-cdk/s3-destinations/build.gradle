@@ -62,5 +62,4 @@ dependencies {
     testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations'))
 
-    testImplementation 'org.mockito:mockito-inline:5.2.0'
 }

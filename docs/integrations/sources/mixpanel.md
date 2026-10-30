@@ -22,7 +22,7 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 3. On the Set up the source page, select **Mixpanel** from the **Source type** dropdown.
 4. Enter a name for the Mixpanel connector.
 5. For **Authentication**, select **Service Account** from the dropdown and enter your service account **Username** and **Secret**.
-6. For **Project ID**, enter your [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
+6. In the same **Service Account** section, for **Project ID**, enter your [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id). This field is required for Service Account authentication.
 7. For **Attribution Window**, enter the number of days for the attribution window. The default is 5 days.
 8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project. The default is `US/Pacific`.
 9. For **Select Properties By Default**, leave enabled to capture new properties on events and Engage records automatically. Disable to ignore new properties.
@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.2 | 2026-10-19 | [89045](https://github.com/airbytehq/airbyte/pull/89045) | Fix crash when the Mixpanel API responds with a `Retry-After` header during rate limiting |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

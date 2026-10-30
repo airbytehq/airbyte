@@ -1,4 +1,4 @@
 {
-  "app_api_key": "Invalid",
-  "start_date": "2099-08-01T00:00:00Z"
+  "app_api_key": "invalid-app-api-key",
+  "start_date": "2023-01-01T00:00:00Z"
 }

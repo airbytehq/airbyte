@@ -83,6 +83,32 @@ class TestSourceFacebookMarketing:
         assert ok
         assert not error_msg
 
+    def test_check_connection_disables_rate_limit_pauses(self, api, config, logger_mock, fb_marketing):
+        """The platform fails a check that has not finished within 9 minutes, so the check must not wait out rate limits."""
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert ok and not error_msg
+        assert api.return_value.api.pause_on_rate_limit is False
+
+    def test_check_connection_rate_limited_account_fails_fast(self, requests_mock, mocker, config, logger_mock, fb_marketing):
+        """End to end through the real API: a blocked ad account surfaces the connector's rate-limit message
+        after the backoff ladder alone (5 calls), without any rate-limit pause."""
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+            status_code=400,
+            json={"error": {"code": 17, "error_subcode": 2446079, "message": "Ad Account Has Too Many API Calls", "is_transient": False}},
+            headers={"x-ad-account-usage": '{"acc_id_util_pct": 100, "reset_time_duration": 600}'},
+        )
+        sleep_mock = mocker.patch("source_facebook_marketing.api.sleep")
+
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert ok is False
+        assert error_msg.startswith("The maximum number of requests on the Facebook API has been reached")
+        sleep_mock.assert_not_called()
+        assert len([r for r in requests_mock.request_history if "/act_123/" in r.url]) == 5
+
     def test_check_connection_future_date_range(self, api, config, logger_mock, fb_marketing):
         config["start_date"] = "2219-10-10T00:00:00"
         config["end_date"] = "2219-10-11T00:00:00"
@@ -142,6 +168,43 @@ class TestSourceFacebookMarketing:
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
+
+    @pytest.mark.parametrize(
+        "breakdowns",
+        [
+            pytest.param(["publisher_platform", "device_platform", "age", "gender", "country"], id="configured-order"),
+            pytest.param(["country", "gender", "age", "device_platform", "publisher_platform"], id="reverse-order"),
+        ],
+    )
+    def test_get_custom_insights_streams_preserves_breakdowns_order(self, api, config, fb_marketing, breakdowns):
+        config["custom_insights"] = [
+            {
+                "name": "ordered",
+                "fields": ["ad_id", "account_id", "spend"],
+                "breakdowns": [*breakdowns, breakdowns[0]],
+                "action_breakdowns": ["action_type", "action_destination", "action_type"],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        stream = streams[0]
+
+        assert stream.breakdowns == breakdowns
+        assert stream.action_breakdowns == ["action_type", "action_destination"]
+        assert stream.primary_key == ["date_start", "account_id", "ad_id", *breakdowns]
+        assert stream.fields() == ["ad_id", "account_id", "spend"]
+
+    def test_get_custom_insights_streams_preserves_fields_order(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "ordered_fields",
+                "fields": ["ad_id", "account_id", "spend", "ad_id"],
+                "breakdowns": [],
+                "action_breakdowns": [],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert streams[0].fields() == ["ad_id", "account_id", "spend"]
 
     def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
         config["custom_insights"] = [
