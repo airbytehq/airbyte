@@ -78,6 +78,10 @@ Every stream schema includes `id` and `Modified_Time`, even for modules that don
 
 Connector versions earlier than 0.1.4 can't parse UTC timestamps that end in `Z`, and fail the sync with `Invalid isoformat string`. Upgrade to 0.1.4 or later if your start date or saved cursor value uses that format.
 
+#### Converted leads
+
+By default, Zoho CRM leaves converted leads out of the Leads stream. Turn on **Include Converted Leads** to also sync them. This only affects the Leads stream.
+
 ## List of Supported Environments for Zoho CRM
 
 ### Production
@@ -150,6 +154,7 @@ There are two ways to authenticate, depending on where you run Airbyte. In both 
 | Environment             | Yes      | `Production`, `Developer`, or `Sandbox`                                                    |
 | Start Date              | No       | See [Start date](#start-date)                                                              |
 | Max Concurrent Requests | No       | Overrides edition detection. See [Performance considerations](#performance-considerations) |
+| Include Converted Leads | No       | Also syncs converted leads in the Leads stream. Off by default. |
 
 ### Airbyte Cloud: sign in with Zoho
 
@@ -190,6 +195,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.0 | 2026-10-27 | [90133](https://github.com/airbytehq/airbyte/pull/90133) | Add optional `Include Converted Leads` setting to also sync converted leads |
 | 0.3.6 | 2026-10-27 | [90099](https://github.com/airbytehq/airbyte/pull/90099) | Update dependencies |
 | 0.3.5 | 2026-10-20 | [89462](https://github.com/airbytehq/airbyte/pull/89462) | Update dependencies |
 | 0.3.4 | 2026-10-13 | [88877](https://github.com/airbytehq/airbyte/pull/88877) | Update dependencies |

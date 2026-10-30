@@ -126,6 +126,15 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         last_modified = last_modified_dt.isoformat("T", "seconds")
         return {"If-Modified-Since": last_modified}
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        query = dict(super().request_params(stream_state, stream_slice, next_page_token))
+        wants_converted = bool(self._config.get("include_converted_leads"))
+        if wants_converted and getattr(self.module, "api_name", None) == "Leads":
+            query["converted"] = "both"
+        return query
+
 
 class ZohoStreamFactory:
     def __init__(self, config: Mapping[str, Any]):
