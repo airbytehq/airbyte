@@ -1,9 +1,3 @@
-const sectionHeader = (title) => ({
-  type: "html",
-  value: title,
-  className: "navbar__category",
-});
-
 const contributeToAirbyte = {
   type: "category",
   label: "Contribute to Airbyte",
@@ -35,28 +29,6 @@ const licenses = {
   ],
 };
 
-const mcpServers = {
-  type: "category",
-  label: "MCP servers",
-  link: {
-    type: "doc",
-    id: "mcp-servers/readme",
-  },
-  items: [
-    {
-      type: "link",
-      label: "Airbyte MCP",
-      href: "/platform/airbyte-mcp",
-    },
-    {
-      type: "link",
-      label: "Agent MCP",
-      href: "/ai-agents/interfaces/mcp/",
-    },
-    "mcp-servers/airbyte-knowledge-mcp",
-  ],
-};
-
 module.exports = {
   community: [
     {
@@ -69,7 +41,6 @@ module.exports = {
       },
       items: [
         "getting-support",
-        mcpServers,
         contributeToAirbyte,
         "code-of-conduct",
         licenses,
