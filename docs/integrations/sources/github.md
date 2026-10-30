@@ -130,6 +130,7 @@ This connector outputs the following incremental streams:
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Notes
@@ -296,7 +297,7 @@ If you use OAuth authentication method, the OAuth2.0 application requests the ne
 
 For classic personal access tokens and OAuth tokens, use the `repo` scope to access private repositories. Fine-grained tokens need read permissions for the endpoints used by each selected stream; for example, workflow streams need **Actions: Read**. The token's user must also have access to the repository. Depending on which streams you select, additional requirements apply:
 
-- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. See [GitHub access permissions](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 - To sync the Stargazers stream, the authenticated user or app must be an admin or collaborator on each repository. GitHub doesn't return stargazers to anyone else, even for public repositories. See [Stargazers stream requires admin or collaborator access](#stargazers-stream-requires-admin-or-collaborator-access).
