@@ -1,23 +1,99 @@
 # LinkedIn Pages
 
-## Sync overview
+This page contains the setup guide and reference information for the LinkedIn Pages source connector.
 
-The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
+The connector syncs follower, share, and profile data for a single LinkedIn Page (organization) using the [LinkedIn Community Management API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/community-management-overview?view=li-lms-2026-10). It sends requests with the `Linkedin-Version: 202610` header. LinkedIn supports each Marketing API version for at least one year, so the connector must be updated periodically to stay on a supported version.
 
-Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
+## Prerequisites
 
-### Output schema
+- A LinkedIn member account with the **ADMINISTRATOR** role on the LinkedIn Page you want to sync. The API returns `403 Forbidden` for organizations the authenticated member doesn't administer.
+- A LinkedIn developer app that has been approved for the **Community Management API** product.
+- The `rw_organization_admin` OAuth scope. Every stream this connector syncs requires this scope.
+- The numeric ID of your LinkedIn Page (organization).
 
-This Source is capable of syncing the following data as streams:
+## Setup guide
 
-* [Organization Lookup](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organizations)
-* [Follower Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http)
-* [Share Statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http)
-* [Total Follower Count](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2024-03&tabs=http#retrieve-organization-follower-count)
-* [Follower Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-follower-statistics)
-* [Share Statistics Time Bound (Incremental)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2024-03&tabs=http#retrieve-time-bound-share-statistics)
+### Step 1: Create a LinkedIn developer app
 
-### Data type mapping
+1. Sign in to LinkedIn as a member who is an administrator of the Page you want to sync.
+2. Go to [LinkedIn Developers](https://www.linkedin.com/developers/apps) and click **Create app**. Provide:
+   - **App name**: for example, `airbyte-source`.
+   - **LinkedIn Page**: search for and select your company's LinkedIn Page.
+   - **Privacy policy URL**: a link to your company's privacy policy.
+   - **App logo**: your company's logo.
+3. Review and agree to the legal terms, then create the app.
+4. On the **Settings** tab, click **Verify** and send the generated verification URL to an administrator of your LinkedIn Page so they can verify the app.
+5. On the **Auth** tab, copy the **Client ID** and **Client Secret**. You need these if you use OAuth 2.0 authentication.
+
+### Step 2: Request Community Management API access
+
+1. On the **Products** tab of your app, request access to the **Community Management API**.
+2. Complete the access request form. LinkedIn first grants the Development tier, which has limited API call volume. To get full access, apply for the Standard tier. For details, see [Community Management API access](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/community-management-overview?view=li-lms-2026-10).
+
+:::note
+If your app already has the Advertising API product, LinkedIn requires you to apply for Community Management API Development tier access from a new app linked to the same LinkedIn Page. After LinkedIn approves the Standard tier, you can request it on your existing app. For details, see the FAQ on the [Community Management API overview](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/community-management-overview?view=li-lms-2026-10).
+:::
+
+### Step 3: Generate a token
+
+1. Go to the LinkedIn Developers [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**.
+2. Select the app you created and select the `rw_organization_admin` scope.
+3. Click **Request access token**. Save the **Access token**, and the **Refresh token** if one is shown.
+
+Access tokens are valid for 60 days. Refresh tokens are valid for 365 days from when they were first issued, and using a refresh token to get a new access token doesn't extend that lifetime. When a token expires, the connector receives a `401` response and you need to generate a new token. For more information, see [Refresh tokens with OAuth 2.0](https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens).
+
+### Step 4: Find your organization ID
+
+The connector needs the numeric organization ID that LinkedIn uses in organization URNs (`urn:li:organization:{id}`), such as `123456789`. This isn't the same as your Page's vanity name. As a Page administrator, you can find the ID in the URL of your Page's admin view, for example `linkedin.com/company/123456789/admin`. You can also look up the ID with the [Organization Lookup API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2026-10).
+
+### Step 5: Set up the connector in Airbyte
+
+1. In Airbyte, create a new source and select **LinkedIn Pages**.
+2. For **Authentication**, choose one of the following:
+   - **OAuth2.0**: Enter the **Client ID**, **Client secret**, and **Refresh token**. The connector uses the refresh token to request new access tokens, so it keeps working until the refresh token expires after 365 days.
+   - **Access token**: Enter the **Access token**. The connector stops working when the token expires after 60 days.
+3. For **Organization ID**, enter the ID from Step 4.
+4. (Optional) For **Start Date**, enter the date in `YYYY-MM-DDTHH:MM:SSZ` format from which to sync the time-bound streams. See [Time-bound streams](#time-bound-streams) for how the connector applies this value.
+5. (Optional) For **Time Granularity Type**, choose `DAY` or `MONTH`. This controls the granularity of the time-bound streams. The default is `DAY`.
+6. (Optional) For **Number of concurrent workers**, enter a value from 1 to 10. The default is 3. LinkedIn enforces a daily quota per application, so increase this value only if your quota allows it.
+7. Click **Set up source**.
+
+## Supported sync modes
+
+| Feature                                   | Supported? | Notes                                   |
+| :---------------------------------------- | :--------- | :-------------------------------------- |
+| Full Refresh Overwrite Sync               | Yes        |                                         |
+| Full Refresh Append Sync                  | Yes        |                                         |
+| Incremental - Append Sync                 | Yes        | Time-bound streams only                 |
+| Incremental - Append + Deduplication Sync | No         | Streams don't define a primary key      |
+| Namespaces                                | No         |                                         |
+
+## Supported streams
+
+| Stream | API endpoint | Incremental |
+| :----- | :----------- | :---------- |
+| `organization_lookup` | [Organization lookup](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2026-10) (`/organizations/{id}`) | No |
+| `follower_statistics` | [Lifetime follower statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2026-10) (`/organizationalEntityFollowerStatistics`) | No |
+| `share_statistics` | [Lifetime share statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2026-10) (`/organizationalEntityShareStatistics`) | No |
+| `total_follower_count` | [Organization follower count](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-lookup-api?view=li-lms-2026-10) (`/networkSizes`) | No |
+| `follower_statistics_time_bound` | [Time-bound follower statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/follower-statistics?view=li-lms-2026-10) (`/organizationalEntityFollowerStatistics`) | Yes |
+| `share_statistics_time_bound` | [Time-bound share statistics](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/share-statistics?view=li-lms-2026-10) (`/organizationalEntityShareStatistics`) | Yes |
+
+`follower_statistics` returns lifetime follower counts segmented by demographic facets such as function, seniority, industry, and location. LinkedIn limits each facet to the top 100 results. Share statistics include organic activity only. Sponsored activity isn't counted.
+
+### Time-bound streams
+
+The `follower_statistics_time_bound` and `share_statistics_time_bound` streams return statistics for each day or month, depending on **Time Granularity Type**. They use `timeRangeEnd`, in epoch milliseconds, as the incremental cursor.
+
+LinkedIn only returns time-bound statistics from 12 months before the request date up to 2 days before the request date (UTC). The connector keeps every request inside this window:
+
+- The sync starts at midnight UTC on the later of **Start Date** and 365 days before the current date. The connector only uses the date part of **Start Date**. If **Start Date** is older than 365 days, the connector ignores it and starts 365 days ago.
+- With `DAY` granularity, the sync ends at midnight UTC 2 days before the current date, so it only requests whole days. If you run another sync on the same day, the connector requests no new data and keeps its state.
+- With `MONTH` granularity, the sync ends on the first day of the month that contains the date 2 days before the current date, so it only requests complete months. Each month's statistics become available 2 days after the month ends. The first sync can still return a partial first month if the start of the window falls in the middle of a month.
+
+Time-bound follower statistics are aggregated counts. LinkedIn doesn't segment them by demographic facet.
+
+## Data type mapping
 
 | Integration Type | Airbyte Type | Notes                      |
 | :--------------- | :----------- | :------------------------- |
@@ -27,94 +103,34 @@ This Source is capable of syncing the following data as streams:
 | `boolean`        | `boolean`    | True/False                 |
 | `string`         | `string`     |                            |
 
-### Features
+## Limitations and troubleshooting
 
-| Feature                                   | Supported?\(Yes/No\) | Notes |
-| :---------------------------------------- |:---------------------| :---- |
-| Full Refresh Overwrite Sync               | Yes                  |       |
-| Full Refresh Append Sync                  | No                   |       |
-| Incremental - Append Sync                 | Yes                  |       |
-| Incremental - Append + Deduplication Sync | No                   |       |
-| Namespaces                                | No                   |       |
+### Rate limits
 
-### Performance considerations
+LinkedIn limits the number of API calls each application and member can make in a 24-hour period. These limits reset at midnight UTC. LinkedIn doesn't publish the limits; to see them, go to [LinkedIn Developers](https://www.linkedin.com/developers/apps), select your app, and open the **Analytics** tab. For more information, see [LinkedIn rate limits](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits).
 
-There are official Rate Limits for LinkedIn Pages API Usage, [more information here](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?toc=%2Flinkedin%2Fmarketing%2Ftoc.json&bc=%2Flinkedin%2Fbreadcrumb%2Ftoc.json&view=li-lms-2024-03). Rate limited requests will receive a 429 response. Rate limits specify the maximum number of API calls that can be made in a 24 hour period. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases you will receive the next error message:
+If LinkedIn returns a `429 Too Many Requests` response, the connector waits for the time in the `Retry-After` header, or uses exponential backoff if the header is missing, and retries the request up to 5 times. The connector retries `500`, `502`, `503`, and `504` responses the same way. If the request still fails, the sync fails. Daily quotas only reset at midnight UTC, so if you reach your daily quota, run the sync again after the reset.
 
-```text
-"Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
-```
+### Authentication, permission, and API version errors
 
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. If the maximum of available API requests capacity is reached, you will have the following message:
+The connection test reads your organization with a single request to `/organizations/{id}`, so a wrong token, scope, role, or **Organization ID** fails the test before any sync runs. It doesn't list the organizations the member administers.
 
-```text
-"Max try rate limit exceeded..."
-```
+During the connection test and during syncs, the connector stops immediately, without retrying, when LinkedIn returns one of these responses. For `401`, `403`, and `404` responses, the error message describes the problem in its own words and doesn't include LinkedIn's raw response.
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics. 
+| Response | Error message | Cause | What to do |
+| :------- | :------------ | :---- | :--------- |
+| `401 Unauthorized` | LinkedIn access token is invalid, expired or revoked. | The access token or refresh token expired or was revoked. | Generate a new token and re-authenticate the source. |
+| `403 Forbidden` | LinkedIn organization access is denied. | The token is missing a required scope, or the member who authorized it doesn't have the **ADMINISTRATOR** role on the organization. | If LinkedIn names the missing scope, the error message repeats it. Otherwise, it suggests `r_organization_social` and `rw_organization_admin`. Every stream requires `rw_organization_admin`. Confirm the member's role on the Page, then generate a new token with the required scope and re-authenticate the source. |
+| `404 Not Found` | LinkedIn organization `{id}` was not found or is inaccessible. | The **Organization ID** is wrong, the Page is deactivated, the member doesn't have the **ADMINISTRATOR** role, or your app doesn't have Community Management API access. | Check the **Organization ID**, confirm the Page is active and the member is an administrator, and confirm that your app has Community Management API access. |
+| `426 Upgrade Required` | LinkedIn no longer accepts the API version this connector version sends. | LinkedIn retired the API version that this connector version sends. | Upgrade the source to the latest connector version. |
 
-## Getting started
+### Invalid time intervals
 
-The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Organization Lookup API`, `Follower Statistics`, `Share Statistics`, `Total Follower Count`, `Follower Statistics Time Bound`, `Share Statistics Time Bound` require these permissions:
-* `r_organization_social`: Retrieve your organization's posts, comments, reactions, and other engagement data.
-* `rw_organization_admin`: Manage your organization's pages and retrieve reporting data.
-
-The API user account should be assigned the `ADMIN` role.
-
-### Authentication
-
-There are 2 authentication methods: Access Token or OAuth2.0.
-OAuth2.0 is recommended since it will continue streaming data for 12 months instead of 2 months with an access token.
-
-##### Create the `Refresh_Token` or `Access_Token`:
-The source LinkedIn Pages can use either the `client_id`, `client_secret` and `refresh_token` for OAuth2.0 authentication or simply use an `access_token` in the UI connector's settings to make API requests. Access tokens expire after `2 months from creation date (60 days)` and require a user to manually authenticate again. Refresh tokens expire after `12 months from creation date (365 days)`. If you receive a `401 invalid token response`, the error logs will state that your token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?toc=%2Flinkedin%2Fmarketing%2Ftoc.json&bc=%2Flinkedin%2Fbreadcrumb%2Ftoc.json&view=li-lms-2024-03&tabs=HTTPS1).
-
-1. **Log in to LinkedIn as the API user**
-
-2. **Create an App** [here](https://www.linkedin.com/developers/apps):
-
-   - `App Name`: airbyte-source
-   - `Company`: search and find your LinkedIn Company Page
-   - `Privacy policy URL`: link to company privacy policy
-   - `Business email`: developer/admin email address
-   - `App logo`: Airbyte's \(or Company's\) logo
-   - Review/agree to legal terms and create app
-   - Review the **Auth** tab:
-     - **Save your `client_id` and `client_secret`** \(for later steps\)
-     - Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.com`
-
-3. **Verify App**:
-
-   - In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
-   - Generate and provide the verify URL to your Company's LinkedIn Admin to verify the app.
-
-4. **Request API Access**:
-
-   * Navigate to the **Products** tab
-   * Select the [Advertising API](https://learn.microsoft.com/en-us/linkedin/marketing/overview?view=li-lms-2024-03#advertising-api) and agree to the legal terms
-   * After a few minutes, refresh the page to see a link to `View access form` in place of the **Select** button
-   * Fill out the access form and access should be granted **within 72 hours** (usually quicker)
-
-5. **Create A Refresh Token** (or Access Token):
-   * Navigate to the LinkedIn Developers' [OAuth Token Tools](https://www.linkedin.com/developers/tools/oauth) and click **Create token**
-   * Select your newly created app and check the boxes for the following scopes:
-     * `r_organization_social`
-     * `rw_organization_admin`
-   * Click **Request access token** and once generated, **save your Refresh token**
-
-6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 2 and 5 to autorize the LinkedIn Pages connector within the Airbyte UI.
-   - As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
+If a time-bound stream fails with a message that LinkedIn rejected the statistics time window (`400`), the connector requested a time range that LinkedIn doesn't accept. The connector limits every request to the window LinkedIn serves, so this error doesn't come from your configuration. Upgrade the source to the latest version, and if the error continues, report it to Airbyte.
 
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
-## Troubleshooting
-
-- **Invalid or expired access token (401):** Re-authenticate the source to obtain a valid LinkedIn access token.
-- **Organization access denied (403):** Re-authenticate with the scope named in the error. If LinkedIn does not name a scope, authorize `r_organization_social` and `rw_organization_admin`, and ensure the authorized member has the `ADMINISTRATOR` role on the configured organization.
-- **Organization not found or inaccessible (404):** Verify the Organization ID, that the page is active, the member's admin role, and the app's API access. The connection check requests this single organization by ID; it does not list the member's organizations.
 
 ## Changelog
 
@@ -125,8 +141,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | :------ | :--- | :----------- | :------ |
 | 1.2.1 | 2026-10-30 | [90259](https://github.com/airbytehq/airbyte/pull/90259) | Explain missing LinkedIn scopes and organization access failures in connection checks without echoing raw API errors |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
-| 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
-| 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
+| 1.1.27 | 2026-10-21 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
+| 1.1.26 | 2026-10-19 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
 | 1.1.24 | 2025-05-10 | [59786](https://github.com/airbytehq/airbyte/pull/59786) | Update dependencies |
 | 1.1.23 | 2025-05-03 | [58801](https://github.com/airbytehq/airbyte/pull/58801) | Update dependencies |
