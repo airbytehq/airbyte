@@ -248,8 +248,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6.3.0 | 2026-10-30 | [90238](https://github.com/airbytehq/airbyte/pull/90238) | Declare the sections of the stepped setup form (Connect account, Review & set up) in the spec; the CDK's section-aware CHECK runs the declared check for the first section |
 | 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
 | 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
 | 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream failing on Message Ads (Sponsored InMail) creatives and on creatives with a null `content.reference` |
