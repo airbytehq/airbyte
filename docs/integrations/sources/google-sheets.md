@@ -313,7 +313,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.12.46 | 2026-10-30 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
+| 0.12.46 | 2026-10-30 | [90255](https://github.com/airbytehq/airbyte/pull/90255) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
 | 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
 | 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |
