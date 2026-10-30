@@ -14777,7 +14777,7 @@ spec:
                 title: Client ID
                 description: >-
                   Use the Client ID from your custom Atlassian OAuth 2.0 (3LO) app.
-                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/">OAuth 2.0 documentation</a>
+                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/#direct-the-user-to-the-authorization-url-to-get-an-authorization-code">OAuth 2.0 documentation</a>
                   to create the app, then see the <a href="https://docs.airbyte.com/integrations/sources/jira#step-1-set-up-jira">Jira setup guide</a>
                   to configure it.
                 airbyte_secret: true
@@ -14787,7 +14787,7 @@ spec:
                 title: Client secret
                 description: >-
                   Use the client secret from your custom Atlassian OAuth 2.0 (3LO) app.
-                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/">OAuth 2.0 documentation</a>
+                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/#exchange-authorization-code-for-access-token">OAuth 2.0 documentation</a>
                   to create the app, then see the <a href="https://docs.airbyte.com/integrations/sources/jira#step-1-set-up-jira">Jira setup guide</a>
                   to configure it.
                 airbyte_secret: true
