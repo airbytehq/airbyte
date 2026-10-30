@@ -48,7 +48,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post8.dev39371221940@sha256:cd404547b5590b2babace1c7a1f841ad238e752573c7dc085b937e393d2d9291
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.41.0.post23.dev41071372882@sha256:64829a50a68280e80515666918e1d5cebbc9f78d9bff2a49579ef934a4a14874
   externalDocumentationUrls:
     - title: API documentation
       url: https://developers.ashbyhq.com/
