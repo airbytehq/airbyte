@@ -1025,7 +1025,7 @@
               "type": "boolean"
             },
             "required": false,
-            "description": "Rather than return *** for secret properties include the secret coordinate information"
+            "description": "Rather than return *** for secret properties include the secret coordinate information. Coordinates are opaque pointers, not secret values, and resolving one requires access to the secret storage that holds it. They are not stable: a coordinate changes when the secret is rewritten."
           }
         ]
       },
@@ -1372,7 +1372,7 @@
               "type": "boolean"
             },
             "required": false,
-            "description": "Rather than return *** for secret properties include the secret coordinate information"
+            "description": "Rather than return *** for secret properties include the secret coordinate information. Coordinates are opaque pointers, not secret values, and resolving one requires access to the secret storage that holds it. They are not stable: a coordinate changes when the secret is rewritten."
           }
         ]
       },
@@ -2791,6 +2791,240 @@
         "x-speakeasy-alias": "updateTag",
         "x-speakeasy-group": "Tags"
       }
+    },
+    "/applications": {
+      "get": {
+        "tags": ["Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationReadList"
+                },
+                "examples": {
+                  "Application List Response Example": {
+                    "value": {
+                      "applications": [
+                        {
+                          "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                          "name": "test application",
+                          "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                          "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                          "createdAt": 1717969830000
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "description": "List all Applications a User has permission to view."
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "listApplications",
+        "summary": "List Applications",
+        "x-speakeasy-alias": "listApplications",
+        "x-speakeasy-group": "Applications"
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationCreate"
+              },
+              "examples": {
+                "Application Creation Request Example": {
+                  "value": {
+                    "name": "test application"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationRead"
+                },
+                "examples": {
+                  "Application Creation Response Example": {
+                    "value": {
+                      "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                      "name": "test application",
+                      "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                      "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                      "createdAt": 1717969830000
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Creates a new Application."
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createApplication",
+        "summary": "Create an Application",
+        "x-speakeasy-alias": "createApplication",
+        "x-speakeasy-group": "Applications"
+      }
+    },
+    "/applications/{applicationId}": {
+      "get": {
+        "tags": ["Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationRead"
+                },
+                "examples": {
+                  "Application Get Response Example": {
+                    "value": {
+                      "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                      "name": "test application",
+                      "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                      "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                      "createdAt": 1717969830000
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get an Application by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getApplication",
+        "x-speakeasy-alias": "getApplication",
+        "x-speakeasy-group": "Applications",
+        "summary": "Get an Application detail"
+      },
+      "delete": {
+        "tags": ["Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationRead"
+                },
+                "examples": {
+                  "Application Delete Response Example": {
+                    "value": {
+                      "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                      "name": "test application",
+                      "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                      "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                      "createdAt": 1717969830000
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Delete an Application."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteApplication",
+        "x-speakeasy-alias": "deleteApplication",
+        "x-speakeasy-group": "Applications",
+        "summary": "Deletes an Application"
+      },
+      "parameters": [
+        {
+          "name": "applicationId",
+          "schema": {
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/applications/token": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationTokenRequestWithGrant"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationTokenRequestWithGrant"
+              },
+              "examples": {
+                "Application Token Request Example": {
+                  "value": {
+                    "clientId": "0da998a2-0d7b-49c7-bb6e-9f7eb9cc68a0",
+                    "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg=="
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicAccessTokenResponse"
+                },
+                "examples": {
+                  "Application Creation Response Example": {
+                    "value": {
+                      "access_token": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg=="
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Creates an Access Token."
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createAccessToken",
+        "summary": "Get an Access Token",
+        "x-speakeasy-alias": "createAccessToken",
+        "x-speakeasy-group": "Applications",
+        "security": []
+      }
     }
   },
   "components": {
@@ -3274,6 +3508,85 @@
         "$ref": "#/components/schemas/OAuthConfiguration",
         "x-speakeasy-component": true
       },
+      "ApplicationCreate": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ApplicationReadList": {
+        "required": ["applications"],
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRead"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ApplicationRead": {
+        "required": ["id", "name", "clientId", "clientSecret", "createdAt"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ApplicationTokenRequestWithGrant": {
+        "required": ["client_id", "client_secret", "grant_type"],
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          },
+          "grant-type": {
+            "enum": ["client_credentials"]
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "PublicAccessTokenResponse": {
+        "required": ["access_token", "token_type", "expires_in"],
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "enum": ["Bearer"]
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "x-speakeasy-component": true
+      },
       "JobResponse": {
         "title": "Root Type for JobResponse",
         "description": "Provides details of a single job.",
@@ -3714,6 +4027,10 @@
           },
           "cronExpression": {
             "type": "string"
+          },
+          "cronTimeZone": {
+            "type": "string",
+            "description": "Supported timezone ID or fixed offset for the cron schedule; defaults to UTC and cannot start with Etc."
           }
         },
         "x-speakeasy-component": true
@@ -5953,6 +6270,9 @@
     }
   ],
   "tags": [
+    {
+      "name": "Applications"
+    },
     {
       "name": "Sources"
     },

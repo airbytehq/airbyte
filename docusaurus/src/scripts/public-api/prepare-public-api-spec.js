@@ -2,10 +2,12 @@ const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const yaml = require("js-yaml");
+const { validateOpenAPISpec } = require("./openapi-validator");
 const {
-  validateOpenAPISpec,
-} = require("../agent-engine-api/openapi-validator");
-const { SPEC_CACHE_PATH, PUBLIC_API_SPEC_URL } = require("./constants");
+  SPEC_CACHE_PATH,
+  PUBLIC_API_SPEC_URL,
+  PUBLIC_API_APPLICATIONS_SPEC_URL,
+} = require("./constants");
 const { toSafeLogString } = require("../log-safe");
 
 const shouldSlimSpec = process.env.PUBLIC_API_SLIM !== "false";
@@ -21,6 +23,7 @@ const OPENAPI_METHODS = [
   "trace",
 ];
 const PREFERRED_TAG_ORDER = [
+  "Applications",
   "Sources",
   "Destinations",
   "Connections",
@@ -86,15 +89,17 @@ function normalizeOperationTags(spec) {
   return spec;
 }
 
-function fetchPublicApiSpec() {
+function fetchSpec(url, description) {
   return new Promise((resolve, reject) => {
-    console.log("Fetching public API spec...");
+    console.log(`Fetching ${description}...`);
 
     https
-      .get(PUBLIC_API_SPEC_URL, (response) => {
+      .get(url, (response) => {
         if (response.statusCode !== 200) {
           response.resume();
-          reject(new Error(`Failed to fetch spec: ${response.statusCode}`));
+          reject(
+            new Error(`Failed to fetch ${description}: ${response.statusCode}`),
+          );
           return;
         }
 
@@ -107,12 +112,16 @@ function fetchPublicApiSpec() {
           try {
             resolve(yaml.load(data));
           } catch (error) {
-            reject(new Error(`Failed to parse spec data: ${error.message}`));
+            reject(
+              new Error(`Failed to parse ${description}: ${error.message}`),
+            );
           }
         });
       })
       .on("error", (error) => {
-        reject(new Error(`Network error: ${error.message}`));
+        reject(
+          new Error(`Network error fetching ${description}: ${error.message}`),
+        );
       });
   });
 }
@@ -142,6 +151,80 @@ function resolveJsonPointer(document, reference) {
     .split("/")
     .map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"))
     .reduce((value, part) => value?.[part], document);
+}
+
+function getSchemaName(reference) {
+  const schemaMatch = reference.match(/^#\/components\/schemas\/(.+)$/);
+  return schemaMatch
+    ? decodeURIComponent(schemaMatch[1].replace(/~1/g, "/").replace(/~0/g, "~"))
+    : null;
+}
+
+function collectSchemaReferences(value, references) {
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSchemaReferences(item, references));
+    return;
+  }
+
+  if (typeof value.$ref === "string" && getSchemaName(value.$ref)) {
+    references.add(value.$ref);
+  }
+
+  Object.values(value).forEach((child) =>
+    collectSchemaReferences(child, references),
+  );
+}
+
+function mergeApplicationSpec(spec, applicationsSpec) {
+  for (const [pathName, pathItem] of Object.entries(
+    applicationsSpec.paths || {},
+  )) {
+    if (Object.hasOwn(spec.paths, pathName)) {
+      throw new Error(
+        `Applications spec path collides with public API path: ${pathName}`,
+      );
+    }
+    spec.paths[pathName] = pathItem;
+  }
+
+  const applicationSchemas = applicationsSpec.components?.schemas || {};
+  spec.components ||= {};
+  spec.components.schemas ||= {};
+
+  const pendingReferences = new Set();
+  collectSchemaReferences(applicationsSpec.paths, pendingReferences);
+  const visitedSchemas = new Set();
+
+  while (pendingReferences.size > 0) {
+    const [reference] = pendingReferences;
+    pendingReferences.delete(reference);
+
+    const schemaName = getSchemaName(reference);
+    if (!schemaName || visitedSchemas.has(schemaName)) {
+      continue;
+    }
+    visitedSchemas.add(schemaName);
+
+    const schema =
+      spec.components.schemas[schemaName] || applicationSchemas[schemaName];
+    if (!schema) {
+      throw new Error(
+        `Applications spec references missing schema: ${schemaName}`,
+      );
+    }
+
+    if (!spec.components.schemas[schemaName]) {
+      spec.components.schemas[schemaName] = schema;
+    }
+
+    collectSchemaReferences(schema, pendingReferences);
+  }
+
+  return spec;
 }
 
 function pruneUnreachableSchemas(spec) {
@@ -269,7 +352,11 @@ function writeSpec(spec) {
 async function main() {
   let spec;
   try {
-    spec = await fetchPublicApiSpec();
+    const [mainSpec, applicationsSpec] = await Promise.all([
+      fetchSpec(PUBLIC_API_SPEC_URL, "public API spec"),
+      fetchSpec(PUBLIC_API_APPLICATIONS_SPEC_URL, "Applications API spec"),
+    ]);
+    spec = mergeApplicationSpec(mainSpec, applicationsSpec);
     spec = normalizeOperationTags(spec);
     spec = await validateOpenAPISpec(spec);
     spec = processSpec(spec);
