@@ -97,7 +97,8 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
+        if value and value.get(self.cursor_field):
+            self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
 
     @property
     def sync_mode(self):
@@ -208,12 +209,12 @@ class Form(IncrementalStream):
     primary_key = "id"
 
     def __init__(self, start_date, app_id, name, xmlns, schema, **kwargs):
-        super().__init__(**kwargs)
-        self.app_id = app_id
-        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         self.streamname = name
+        self.app_id = app_id
         self.xmlns = xmlns
         self.schema = schema
+        super().__init__(**kwargs)
+        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
 
     @property
     def name(self):
