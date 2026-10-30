@@ -506,6 +506,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.13.1 | 2026-10-22 | [73315](https://github.com/airbytehq/airbyte/pull/73315) | Migrate OAuth token requests from the deprecated `/oauth/v1/token` endpoint to HubSpot's date-based `/oauth/2026-03/token` endpoint ahead of the 2027-02-16 sunset |
 | 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
 | 6.12.2 | 2026-10-20 | [89246](https://github.com/airbytehq/airbyte/pull/89246) | Update dependencies |
 | 6.12.1 | 2026-10-13 | [87204](https://github.com/airbytehq/airbyte/pull/87204) | Update dependencies |
