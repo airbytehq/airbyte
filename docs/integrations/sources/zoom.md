@@ -4,7 +4,7 @@
 
 The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
 
-Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. The `report_user_meetings` stream also supports Incremental syncs. The `report_daily` stream performs a Full Refresh on each sync and re-reads the last six months of daily reports.
+Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. `meetings`, `report_meetings`, `report_meeting_participants`, `webinars`, and `report_user_meetings` support Incremental syncs. `report_webinars`, `report_webinar_participants`, and `report_daily` perform a Full Refresh on each sync. `report_daily` re-reads the last six months of daily reports.
 
 ### Output schema
 
@@ -38,23 +38,23 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Required scopes and plans
 
-`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
+`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. Starting with source-zoom 2.0.0, every connection syncing `report_meetings` or `report_meeting_participants` must add the granular `report:read:user:admin` scope or the classic `report:read:admin` scope to its Zoom app before upgrading; the scopes already configured on existing apps are not sufficient. Without one of these scopes, syncs fail after the upgrade because the connection check does not test for it. The meeting report streams can return rows for eligible meeting sessions, including separate rows for sessions of recurring meetings. Zoom's past-meetings report omits sessions with fewer than two unique participants, so those sessions produce no report rows. Zoom retains report data for roughly six months. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
 
-If you set up your Zoom app before version 1.5.0, add the scopes for any of these four streams you want to sync. With OAuth2.0, then re-authenticate the source in Airbyte so the new token includes the added scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection. Streams you already sync don't need new scopes.
+Zoom apps set up before version 1.5.0 may be missing report scopes for `report_user_meetings` or `report_daily`. Add the required scopes before syncing; OAuth connections must re-authenticate so the new token includes them. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection.
 
 ### Features
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes (`report_user_meetings`) |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+| Feature                       | Supported?                                                                                   |
+| :---------------------------- | :------------------------------------------------------------------------------------------- |
+| Full Refresh Sync             | Yes                                                                                          |
+| Incremental Sync              | Yes (meetings, report_meetings, report_meeting_participants, webinars, report_user_meetings) |
+| Replicate Incremental Deletes | Coming soon                                                                                  |
+| SSL connection                | Yes                                                                                          |
+| Namespaces                    | No                                                                                           |
 
 ### Performance considerations
 
-Most of the endpoints this connector access is restricted by standard Zoom [requests limitation](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limit-changes), with a few exceptions. For more info, please check zoom API documentation. We’ve added appropriate retries if we hit the rate-limiting threshold.
+The report endpoints used by `report_meetings`, `report_meeting_participants`, `report_user_meetings`, and related streams are in Zoom's [Heavy rate-limit category](https://developers.zoom.us/docs/api/rate-limits/), with a daily cap shared by all apps on your Zoom account. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited report request per past meeting session in the roughly six-month retention window, so use Incremental for these streams. On 429, the connector waits for Zoom's `Retry-After` header; if the wait is 10 minutes or more, the stream stops instead of waiting for hours. If the header is missing, the connector uses exponential backoff.
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -83,13 +83,15 @@ Existing Server-to-Server OAuth configurations are migrated automatically. If yo
 
 #### Start Date
 
-**Start Date** (optional, `start_date`): UTC date-time from which to replicate the `report_user_meetings` and `report_daily` streams (`report_daily` starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves.
+**Start Date** (optional, `start_date`): UTC date-time filter for `meetings` and `webinars`. These streams include only records created on or after this date, including in Full Refresh; leave it empty to sync everything Zoom still serves. `report_user_meetings`, `report_daily`, `report_meetings`, and `report_meeting_participants` start from this date and are limited to Zoom's roughly six months of report retention; `report_daily` starts at the beginning of that month. `report_webinars` and `report_webinar_participants` are not filtered by `start_date`.
+
+Incremental `meetings` and `webinars` syncs use `created_at` with a 30-day lookback. Edits to meetings or webinars created before that window—including reschedules, settings, and occurrences—are not re-read by incremental syncs. Run a Full Refresh or reset to pick them up. With Incremental | Append + Deduped, those rows remain as last synced.
 
 #### Scopes
 
-`user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
+`user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:user:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
 
-`report:read:user:admin`, `report:read:daily_usage:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
+`report:read:daily_usage:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
 
 Apps that use Zoom's classic scopes need `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
 
@@ -104,6 +106,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.0.0 | 2026-10-23 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |

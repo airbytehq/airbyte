@@ -15,6 +15,7 @@ airbyte-cdk = "^7"
 pytest = "^8"
 requests-mock = "^1"
 freezegun = "^1.5"
+rfc3339-validator = "^0.1.4"
 
 [tool.pytest.ini_options]
 filterwarnings = [

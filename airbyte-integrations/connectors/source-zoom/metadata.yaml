@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 1.5.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-zoom
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom
@@ -34,6 +34,52 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges:
+      2.0.0:
+        message: >
+          Every connection syncing `report_meetings` or `report_meeting_participants` must add
+          `report:read:user:admin` (granular) or `report:read:admin` (classic) to its Zoom app
+          before upgrading. OAuth connections must then re-authenticate. Without one of these
+          scopes, syncs fail after the upgrade because the connection check does not test for this
+          scope. The users, meetings,
+          meeting_registrants, meeting_polls, meeting_registration_questions, webinars,
+          webinar_panelists, webinar_registrants, webinar_absentees, webinar_polls,
+          webinar_poll_results, webinar_registration_questions, webinar_qna_results,
+          webinar_tracking_sources, report_meetings, report_meeting_participants, report_webinars,
+          and report_webinar_participants streams have breaking key or schema changes. Timestamp
+          columns now use date-time types, webinar_id is an integer, and the meeting report
+          streams use session-level reports. Zoom's past-meetings report omits sessions with
+          fewer than two participants, so those sessions no longer produce report rows.
+          Refresh the source schema. For Full Refresh | Overwrite streams, the next sync rebuilds
+          the data. For Full Refresh | Append streams, back up first; retaining records leaves
+          old rows with their previous types, while clearing permanently deletes history beyond
+          Zoom's retention (roughly six months for reports and one year for meetings). Switch
+          report_meetings and report_meeting_participants to Incremental after upgrading: in
+          Full Refresh they request one Heavy-rate-limited report per meeting session for the last
+          six months. See the [Zoom 2.0.0 migration
+          guide](https://docs.airbyte.com/integrations/sources/zoom-migrations#upgrading-to-200).
+        upgradeDeadline: "2026-11-23"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - users
+              - meetings
+              - meeting_registrants
+              - meeting_polls
+              - meeting_registration_questions
+              - webinars
+              - webinar_panelists
+              - webinar_registrants
+              - webinar_absentees
+              - webinar_polls
+              - webinar_poll_results
+              - webinar_registration_questions
+              - webinar_qna_results
+              - webinar_tracking_sources
+              - report_meetings
+              - report_meeting_participants
+              - report_webinars
+              - report_webinar_participants
       1.1.0:
         message:
           Zoom has deprecated JWT authentication in favor of OAuth. To successfully
@@ -61,11 +107,6 @@ data:
       testSecrets:
         - name: SECRET_SOURCE-ZOOM__CREDS
           fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-ZOOM-OAUTH__CREDS
-          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
