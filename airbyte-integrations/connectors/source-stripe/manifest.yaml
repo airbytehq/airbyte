@@ -1956,6 +1956,11 @@ spec:
     required:
       - client_secret
       - account_id
+      - api_retention_streams
+      - lookback_window_days
+      - num_workers
+      - slice_range
+      - start_date
     properties:
       account_id:
         type: string
