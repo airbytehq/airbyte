@@ -4,7 +4,7 @@
 
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode
 
@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, Err
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 # replace `pivot` with `_pivot`, to allow redshift normalization,
@@ -164,6 +165,23 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
             transform_campaign_statistics_pivots=self.transform_campaign_statistics_pivots,
         ):
             yield self._date_time_to_rfc3339(record)
+
+
+@dataclass
+class LinkedInAdsAccountsExtractor(LinkedInAdsRecordExtractor):
+    _has_accounts: bool = field(default=False, init=False)
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        body = response.json()
+        if body.get("elements"):
+            self._has_accounts = True
+        elif body.get("elements") == [] and not self._has_accounts and not body.get("metadata", {}).get("nextPageToken"):
+            message = (
+                "The authorized LinkedIn member has no access to any ad account. "
+                "Grant the member ad account access in Campaign Manager or re-authenticate as a member with access."
+            )
+            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+        yield from super().extract_records(response)
 
 
 @dataclass
