@@ -174,9 +174,9 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
 
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)
-        assert output.errors[0].trace.error.message == expected_message, (
-            f"Expected message: {expected_message}, Actual message: {output.errors[0].trace.error.message}"
-        )
+        assert (
+            output.errors[0].trace.error.message == expected_message
+        ), f"Expected message: {expected_message}, Actual message: {output.errors[0].trace.error.message}"
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
