@@ -123,7 +123,7 @@ Airbyte emails your billing email 7 days and 3 days before your billing period e
 
 Billing alerts email you when your usage or upcoming invoice crosses a limit you set. Airbyte highly recommends setting up billing alerts so you aren't surprised by your invoice.
 
-Billing alerts are available to organizations on the Standard and Plus plans that have a payment method on file. You need the **Organization Admin** role to manage them. Pro and Enterprise Flex organizations don't have billing alerts.
+Billing alerts are available to organizations on the Standard and Plus plans that have a payment method on file. You need the [organization admin](../../access-management/rbac.md) role to manage them. Pro and Enterprise Flex organizations don't have billing alerts.
 
 You can set up either or both of these alerts:
 
