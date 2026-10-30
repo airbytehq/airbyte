@@ -281,63 +281,6 @@ const config: Config = {
     colorMode: {
       disableSwitch: false,
     },
-    languageTabs: [
-      {
-        language: "curl",
-        highlight: "bash",
-        logoClass: "curl",
-        variant: "cURL",
-      },
-      {
-        language: "python",
-        highlight: "python",
-        logoClass: "python",
-        variant: "Requests",
-        variants: ["Requests", "HTTP.Client"],
-      },
-      {
-        language: "nodejs",
-        highlight: "javascript",
-        logoClass: "nodejs",
-        variant: "Axios",
-      },
-      {
-        language: "go",
-        highlight: "golang",
-        logoClass: "go",
-        variant: "Native",
-      },
-      {
-        language: "java",
-        highlight: "java",
-        logoClass: "java",
-      },
-      {
-        language: "ruby",
-        highlight: "ruby",
-        logoClass: "ruby",
-      },
-      {
-        language: "php",
-        highlight: "php",
-        logoClass: "php",
-      },
-      {
-        language: "csharp",
-        highlight: "csharp",
-        logoClass: "csharp",
-      },
-      {
-        language: "powershell",
-        highlight: "powershell",
-        logoClass: "powershell",
-      },
-      {
-        language: "rust",
-        highlight: "rust",
-        logoClass: "rust",
-      },
-    ],
     mermaid: {
       theme: {
         light: "default",
