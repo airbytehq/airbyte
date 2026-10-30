@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Salesforce
 
 ## Prerequisites
 
-- A [Salesforce Account](https://login.salesforce.com/) with Enterprise edition **or** Professional edition with API access purchased as an add-on
+- A [Salesforce Account](https://login.salesforce.com/) with API access: Enterprise, Unlimited, Performance, or Developer edition, **or** Professional edition with API access purchased as an add-on
 
 You may also need the following. This article explains how to get them.
 
@@ -53,11 +53,12 @@ Using Permission Sets, you should grant this user read access to the data you wa
    3. Select “Edit” and check the "Read" permission and clear all other permissions (Create, Edit, Delete, etc.)
    4. Click `Save`
    5. Continue to add read permissions for any objects you want Airbyte to have access to.
-6. To grant access to uninstalled connected apps, you need to enable additional permission.
+6. Grant the system permissions the connector needs to call the Salesforce API.
    1. Click "System Permissions"
    2. Select “Edit”
-   3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
-   4. Click `Save`
+   3. Check the "API Enabled" permission. The Minimum Access - Salesforce profile doesn't include it, and without it the connection test fails with an API access error.
+   4. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   5. Click `Save`
 
 ##### Step 3: Assign the permission set to the new user
 
@@ -203,17 +204,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ### Connection test login failures
 
-- **Expired or revoked authentication / `invalid_grant`**: Re-authenticate the source.
-  Check **Sandbox** (`is_sandbox`): sandbox organizations authenticate through
-  `test.salesforce.com`, while production organizations use `login.salesforce.com`.
-- **Invalid Connected App credentials / `invalid_client_id` or `invalid_client`**:
-  Check the OAuth client ID and client secret in the source settings against the Connected App.
-- **API access disabled / `API_DISABLED_FOR_ORG`**: Use a Salesforce edition that
-  supports API access and grant the authenticated user the **API Enabled** permission.
-- **IP restrictions / `LOGIN_MUST_USE_SECURITY_TOKEN`**: Allowlist the Airbyte
-  deployment's outbound IP addresses or update the Connected App **IP Relaxation**
-  policy according to your organization's security requirements. For Airbyte Cloud,
-  use the addresses linked in [IP allow list](#ip-allow-list).
+Starting in version 2.10.4, the connector reports common Salesforce login and API access failures as configuration errors with a message that says what to fix, instead of the raw Salesforce response. The following table lists each message, the Salesforce errors that produce it, and how to resolve it.
+
+| Error message starts with | Salesforce error | Resolution |
+| :------------------------ | :--------------- | :--------- |
+| `Salesforce authentication is expired or revoked.` | `invalid_grant`, including `expired access/refresh token` and `authentication failure` | Re-authenticate the source. Also check the **Sandbox** setting: sandbox orgs authenticate through `test.salesforce.com` and production orgs through `login.salesforce.com`. |
+| `Salesforce Connected App credentials are invalid.` | `invalid_client_id` or `invalid_client` | Check that the **Client ID** and **Client Secret** in the source settings match the consumer key and secret of your connected app. This applies when you supply your own OAuth credentials, as in Airbyte Open Source. |
+| `Salesforce API access is disabled.` | `API_DISABLED_FOR_ORG`, or `API is not enabled for this Organization` | Use a Salesforce edition that includes API access (see [Prerequisites](#prerequisites)) and grant the authenticated user the **API Enabled** permission. This error can also occur after a successful login, when the connector first lists the org's objects. |
+| `Salesforce login is blocked by IP restrictions.` | `LOGIN_MUST_USE_SECURITY_TOKEN`, or an `invalid_grant` error whose description mentions a restricted IP | Add the IP addresses that Airbyte connects from to the user's profile **Login IP Ranges** or the org's trusted IP ranges, or change the connected app's **IP Relaxation** policy, according to your organization's security requirements. For Airbyte Cloud, use the addresses linked in [IP allow list](#ip-allow-list). |
+| `Salesforce login failed.` | Any other login error | Re-authenticate the source, and check the connected app credentials and the **Sandbox** setting. Salesforce's **Login History** page in Setup shows the reason for each failed login attempt. |
 
 <details>
 <summary>
