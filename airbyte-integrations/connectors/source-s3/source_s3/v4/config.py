@@ -99,7 +99,7 @@ class Config(AbstractFileBasedSpec):
     def normalize_bucket(cls, value: str) -> str:
         message = "S3 bucket must contain only a bucket name. Move any path into the stream glob or path prefix."
         bucket = value.strip() if isinstance(value, str) else ""
-        virtual_host = r"(.+)\.s3(?:[.-](?:dualstack\.)?[a-z0-9-]+)?\.amazonaws\.com"
+        virtual_host = r"([a-z0-9][a-z0-9._-]*)\.s3(?:[.-](?:dualstack\.)?[a-z0-9-]+)?\.amazonaws\.com"
         if re.fullmatch(virtual_host, bucket):
             bucket = f"https://{bucket}"
         if "://" in bucket:
