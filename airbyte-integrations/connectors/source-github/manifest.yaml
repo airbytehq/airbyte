@@ -25,13 +25,13 @@ definitions:
 
   # `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` — the per-page size of the four REST streams
   # the legacy code marked `large_stream = True`: `pull_requests`, `comments`, `issues` and
-  # `review_comments`. Every other REST stream sends `constants.DEFAULT_PAGE_SIZE` (100).
+  # `review_comments`. The latter now overrides it with 100; see `review_comments_stream`.
   #
   # The value is written out rather than read from `page_size_for_large_streams`, which was
   # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
-  # produced for a config without that key is 10, so 10 is what this reproduces. A config that
-  # still carries the key through the API or Terraform no longer steers these streams — see
-  # `graphql_large_stream_page_size` for the same note on the GraphQL side.
+  # produced for a config without that key is 10, so 10 is what this reproduces for the other
+  # three streams. A config that still carries the key through the API or Terraform no longer
+  # steers these streams — see `graphql_large_stream_page_size` for the GraphQL side.
   #
   # Whether 10 is the right number is a separate question with evidence on both sides: it costs
   # roughly 10x the requests and several times the wall clock of `per_page=100`, and it was
@@ -7486,6 +7486,11 @@ definitions:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
+        # GitHub's `pulls/comments` listing times out (HTTP 500 after ~8s) on very large
+        # repositories at small page sizes when no `page` is given; `per_page=100` answered in
+        # ~1–1.6s. This stream is the exception to `large_stream_page_size`.
+        request_parameters:
+          per_page: "100"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
         path: "repos/{{ stream_partition.repository }}/pulls/comments"
         # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`

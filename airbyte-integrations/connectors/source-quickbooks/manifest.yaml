@@ -147,12 +147,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -1353,12 +1351,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -2612,12 +2608,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -3060,12 +3054,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -4964,12 +4956,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7396,12 +7386,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7535,12 +7523,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7722,12 +7708,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7920,12 +7904,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -9028,12 +9010,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -10234,12 +10214,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -11492,12 +11470,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -11940,12 +11916,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -13844,12 +13818,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16275,12 +16247,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16414,12 +16384,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16601,12 +16569,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16799,12 +16765,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
