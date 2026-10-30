@@ -26,11 +26,8 @@ CONFIG = {
 }
 
 
-def query(start, end, page=None):
-    params = {"date_from": epoch(start), "date_to": epoch(end), "limit": "100", "page_size": "100"}
-    if page is not None:
-        params["page"] = str(page)
-    return params
+def query(start, end, page=1):
+    return {"date_from": epoch(start), "date_to": epoch(end), "limit": "100", "page": str(page)}
 
 
 def mock_page(requests_mock, params, records, status_code=200):
@@ -62,7 +59,7 @@ def read_activity(state=None, expecting_exception=False):
 @freeze_time("2026-09-03T12:00:00Z")
 def test_activity_reads_daily_slices_and_iso_cursors(requests_mock):
     first = query("2026-09-01T00:00:00Z", "2026-09-01T23:59:59Z")
-    next_page = query("2026-09-01T00:00:00Z", "2026-09-01T23:59:59Z", page=1)
+    next_page = query("2026-09-01T00:00:00Z", "2026-09-01T23:59:59Z", page=2)
     second = query("2026-09-02T00:00:00Z", "2026-09-02T23:59:59Z")
     third = query("2026-09-03T00:00:00Z", "2026-09-03T12:00:00Z")
     first_records = [{"id": str(i), "created_at": "2026-09-01T09:30:00.000000Z"} for i in range(100)]
@@ -81,6 +78,14 @@ def test_activity_reads_daily_slices_and_iso_cursors(requests_mock):
     )
     assert output.most_recent_state.stream_state.__dict__ == {"created_at": epoch("2026-09-03T09:30:00Z")}
     assert_requests(requests_mock, [first, next_page, second, third])
+    for params in [first, second, third]:
+        assert (
+            sum(
+                request.qs["date_from"] == [params["date_from"]] and request.qs["page"] == ["1"]
+                for request in requests_mock.request_history
+            )
+            == 1
+        )
 
 
 @freeze_time("2026-09-03T12:00:00Z")

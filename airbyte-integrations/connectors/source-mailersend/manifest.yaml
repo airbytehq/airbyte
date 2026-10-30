@@ -34,13 +34,11 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at

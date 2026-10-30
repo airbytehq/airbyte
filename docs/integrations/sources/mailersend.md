@@ -38,7 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.27 | 2026-10-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `activity` stream returning no records by sending the required `date_to` parameter and parsing ISO 8601 `created_at` cursor values |
+| 0.2.27 | 2026-10-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `activity` stream returning no records by sending the required `date_to` parameter and parsing ISO 8601 `created_at` cursor values; remove the duplicate page-1 request and unsupported `page_size` parameter |
 | 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88279) | Fix `activity` stream: send required `date_to` parameter, use `limit` instead of unsupported `page_size`, parse `created_at` cursor format, stop re-fetching page 1 |
 | 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
