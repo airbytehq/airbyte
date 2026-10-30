@@ -136,6 +136,10 @@ class ConnectionCheckTest:
             raise Exception(f"Couldn't get `shop_id`. Actual `response`: {response}.")
 
 
+# The section of spec.json which declares `"check": true`; see `SourceShopify.check_section_connection`.
+SECTION_ACCOUNT = "account"
+
+
 class SourceShopify(AbstractSource):
     @property
     def continue_sync_on_stream_failure(self) -> bool:
@@ -199,6 +203,24 @@ class SourceShopify(AbstractSource):
             return False, error.message
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
+
+    def check_section_connection(self, logger: logging.Logger, section: str, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        """
+        Section check for the stepped setup form, see the `sections` declared in spec.json and the CDK's
+        `airbyte_cdk.sources.utils.check_section`. `config` only holds the fields collected up to `section`.
+
+        - `account`: the store, the credentials and the data filters (start date, extra fields). The store and the
+          credentials are all the full check validates (it reads the shop), so this is the full check, with the review
+          section's bulk job tuning fields at their defaults.
+        - `review` is the last section, so the CDK runs the full check for it.
+        """
+        if section == SECTION_ACCOUNT:
+            logger.info(f"Section '{section}' holds every field the connector validates, running the full config check.")
+            return self.check_connection(logger, config)
+        raise AirbyteTracedException(
+            message=f"Section '{section}' has no section check.",
+            failure_type=FailureType.config_error,
+        )
 
     def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
         """
