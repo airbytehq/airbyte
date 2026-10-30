@@ -23,7 +23,8 @@ class GcsV2SpecificationTest {
               "format": {"format_type": "JSONL"}
               $pathFields
             }
-            """.trimIndent(),
+            """
+                .trimIndent(),
             GcsV2Specification::class.java,
         )
 
@@ -47,7 +48,7 @@ class GcsV2SpecificationTest {
     fun `custom path fields are preserved`() {
         val config =
             parse(
-                    """, "gcs_path_format": "${'$'}{STREAM_NAME}/dt=${'$'}{YEAR}-${'$'}{MONTH}-${'$'}{DAY}/", "file_name_pattern": "{date}_{part_number}{format_extension}" """
+                    """, "gcs_path_format": "${'$'}{STREAM_NAME}/dt=${'$'}{YEAR}-${'$'}{MONTH}-${'$'}{DAY}/", "file_name_pattern": "{date}_{part_number}{format_extension}" """,
                 )
                 .toObjectStoragePathConfiguration()
         assertEquals("\${STREAM_NAME}/dt=\${YEAR}-\${MONTH}-\${DAY}/", config.pathPattern)
