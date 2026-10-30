@@ -4,13 +4,16 @@
 
 import json
 from datetime import timedelta
+from http.client import RemoteDisconnected
 
 import pytest
+import requests
 import source_facebook_marketing
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -500,3 +503,61 @@ class TestMyFacebookAdsApi:
         account = api.get_account(account_id)
         assert isinstance(account, AdAccount)
         assert account.get_id() == "act_test"
+
+
+class TestBackoffPolicyTransientNetworkErrors:
+    """The facebook_business SDK session bypasses the CDK HttpClient, so transport-level `requests`
+    exceptions must be retried by @backoff_policy itself."""
+
+    @pytest.fixture
+    def fb_api(self):
+        return source_facebook_marketing.api.MyFacebookAdsApi.init(access_token="foo", crash_log=False)
+
+    @pytest.fixture(autouse=True)
+    def no_backoff_sleep(self, mocker):
+        return mocker.patch("time.sleep")
+
+    @staticmethod
+    def _success_response(mocker):
+        response = mocker.Mock()
+        response.headers.return_value = {}
+        return response
+
+    @pytest.mark.parametrize(
+        "network_error",
+        [
+            requests.exceptions.ConnectionError(
+                ("Connection aborted.", RemoteDisconnected("Remote end closed connection without response"))
+            ),
+            requests.exceptions.ChunkedEncodingError("Connection broken: IncompleteRead(0 bytes read, 512 more expected)"),
+            requests.exceptions.ReadTimeout("Read timed out."),
+        ],
+        ids=["remote_disconnected", "chunked_encoding", "read_timeout"],
+    )
+    def test_call_retries_network_error_then_succeeds(self, mocker, fb_api, network_error):
+        success_response = self._success_response(mocker)
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=[network_error, network_error, success_response])
+        params = {"limit": 100}
+
+        response = fb_api.call(method="GET", path=("act_123", "insights"), params=params)
+
+        assert response is success_response
+        assert mock_super_call.call_count == 3
+        # page-size reduction only applies to FacebookRequestError, so the limit stays untouched
+        assert params["limit"] == 100
+        assert fb_api.request_record_limit_is_reduced is False
+
+    def test_call_raises_transient_error_when_network_retries_exhausted(self, mocker, fb_api):
+        network_error = requests.exceptions.ConnectionError(
+            ("Connection aborted.", RemoteDisconnected("Remote end closed connection without response"))
+        )
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=network_error)
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            fb_api.call(method="GET", path=("act_123", "insights"), params={"limit": 100})
+
+        assert mock_super_call.call_count == 5
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert exc_info.value.message == "Network connection to the Facebook Marketing API was interrupted."
+        assert "ConnectionError persisted after 5 attempts" in exc_info.value.internal_message
+        assert "Remote end closed connection without response" in exc_info.value.internal_message

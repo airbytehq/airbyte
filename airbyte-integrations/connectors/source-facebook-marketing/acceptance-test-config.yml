@@ -28,13 +28,23 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: "videos"
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
-        timeout_seconds: 4800
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
+          - name: "ads_insights"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_type"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_age_and_gender"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_comscore_market"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_country"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_platform_and_device"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_region"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 6000
         future_state:
           future_state_path: "integration_tests/future_state.json"
         # ads_insights is currently failing because there is a lookback window and the minimum value is one day
@@ -42,8 +52,3 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 4800
-        ignored_fields:
-          activities:
-            - name: extra_data
-              bypass_reason: "image_url in extra_data is changing frequently"

@@ -13,7 +13,7 @@ object AirbyteMessageUtils {
     fun createRecordMessage(
         tableName: String?,
         record: JsonNode?,
-        timeExtracted: Instant
+        timeExtracted: Instant,
     ): AirbyteMessage {
         return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -21,7 +21,7 @@ object AirbyteMessageUtils {
                 AirbyteRecordMessage()
                     .withData(record)
                     .withStream(tableName)
-                    .withEmittedAt(timeExtracted.epochSecond)
+                    .withEmittedAt(timeExtracted.epochSecond),
             )
     }
 
@@ -47,7 +47,7 @@ object AirbyteMessageUtils {
         return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
-                AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData))
+                AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)),
             )
     }
 
@@ -73,7 +73,7 @@ object AirbyteMessageUtils {
         val streamStates: MutableList<AirbyteStreamState> = ArrayList()
         for (streamName in streamNames) {
             streamStates.add(
-                createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData))
+                createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)),
             )
         }
         return AirbyteMessage()
@@ -81,7 +81,7 @@ object AirbyteMessageUtils {
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(AirbyteGlobalState().withStreamStates(streamStates))
+                    .withGlobal(AirbyteGlobalState().withStreamStates(streamStates)),
             )
     }
 
@@ -93,14 +93,14 @@ object AirbyteMessageUtils {
         name: String?,
         namespace: String?,
         byteEst: Long,
-        rowEst: Long
+        rowEst: Long,
     ): AirbyteMessage {
         return createEstimateMessage(
             AirbyteEstimateTraceMessage.Type.STREAM,
             name,
             namespace,
             byteEst,
-            rowEst
+            rowEst,
         )
     }
 
@@ -110,7 +110,7 @@ object AirbyteMessageUtils {
             null,
             null,
             byteEst,
-            rowEst
+            rowEst,
         )
     }
 
@@ -119,7 +119,7 @@ object AirbyteMessageUtils {
         name: String?,
         namespace: String?,
         byteEst: Long,
-        rowEst: Long
+        rowEst: Long,
     ): AirbyteMessage {
         val est =
             AirbyteEstimateTraceMessage()
@@ -137,7 +137,7 @@ object AirbyteMessageUtils {
         return AirbyteMessage()
             .withType(AirbyteMessage.Type.TRACE)
             .withTrace(
-                AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE).withEstimate(est)
+                AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE).withEstimate(est),
             )
     }
 
@@ -151,7 +151,7 @@ object AirbyteMessageUtils {
     fun createErrorTraceMessage(
         message: String?,
         emittedAt: Double?,
-        failureType: AirbyteErrorTraceMessage.FailureType? = null
+        failureType: AirbyteErrorTraceMessage.FailureType? = null,
     ): AirbyteTraceMessage {
         val msg =
             AirbyteTraceMessage()
@@ -173,7 +173,7 @@ object AirbyteMessageUtils {
                 AirbyteControlMessage()
                     .withEmittedAt(emittedAt)
                     .withType(AirbyteControlMessage.Type.CONNECTOR_CONFIG)
-                    .withConnectorConfig(AirbyteControlConnectorConfigMessage().withConfig(config))
+                    .withConnectorConfig(AirbyteControlConnectorConfigMessage().withConfig(config)),
             )
     }
 }

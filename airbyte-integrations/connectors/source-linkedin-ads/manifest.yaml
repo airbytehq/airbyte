@@ -609,14 +609,11 @@ definitions:
                   - 404
                 action: IGNORE
                 error_message: "Skipping a creative's post that is deleted or not readable by the authenticated user; the videos it references will not be synced."
-              # A creative's `content.reference` can also be an urn:li:adInMailContent
-              # (Message Ads), which is not a post URN - the Posts API rejects it with
-              # 400 INVALID_URN_TYPE - and an explicitly null reference would produce a
-              # request for `posts/None`, also rejected as a malformed URN. Skip both:
-              # neither can reference a video. The predicate only matches 400s whose
-              # message points at the URN, so genuine request errors still fail loudly.
               - type: HttpResponseFilter
-                predicate: "{{ response.get('status') == 400 and 'URN' in ((response.get('message') or '') | upper) }}"
+                predicate: >-
+                  {{ response.get('status') == 400
+                  and ('URN' in ((response.get('message') or '') | upper)
+                  or 'URN:LI:ADINMAILCONTENT:' in ((response.get('errorDetails') or {}) | string | upper)) }}
                 action: IGNORE
                 error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video."
             backoff_strategies:
@@ -641,6 +638,13 @@ definitions:
               partition_field: post_urn
               stream:
                 $ref: "#/definitions/streams/creatives"
+                retriever:
+                  $ref: "#/definitions/streams/creatives/retriever"
+                  record_selector:
+                    $ref: "#/definitions/streams/creatives/retriever/record_selector"
+                    record_filter:
+                      type: RecordFilter
+                      condition: "{{ ((record.get('content') or {}).get('reference') or '') != '' }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:

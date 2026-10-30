@@ -234,22 +234,44 @@ def test_applications_refreshes_token_on_401(requests_mock, get_source):
     assert [record.record.data["id"] for record in output.records] == [1]
 
 
+@pytest.mark.parametrize(
+    "config, expected_remedy",
+    [
+        pytest.param(
+            CONFIG,
+            "the OAuth token lacks the required Harvest scope or the authorizing user is not a Site Admin. "
+            "Re-authenticate this source as a Greenhouse Site Admin.",
+            id="oauth",
+        ),
+        pytest.param(
+            CLIENT_CREDENTIALS_CONFIG,
+            "the custom integration credential lacks the required Harvest scope, or the Site Admin user ID is not a "
+            "Site Admin. Grant the scope to the credential in Greenhouse under Configure > Dev Center > "
+            "API Credential Management, or clear or correct the Site Admin user ID.",
+            id="client_credentials",
+        ),
+    ],
+)
 @pytest.mark.parametrize("stream_name", ["offices", "users"])
-def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source, stream_name):
-    _register_token(requests_mock)
+def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source, stream_name, config, expected_remedy):
+    _register_token(requests_mock, client_credentials=config["credentials"]["auth_type"] == "ClientCredentials")
     requests_mock.get(
         f"https://harvest.greenhouse.io/v3/{stream_name}",
         status_code=403,
         json={"message": "Forbidden"},
     )
 
-    source = get_source(CONFIG)
+    source = get_source(config)
     sync_mode = SyncMode.incremental if stream_name == "users" else SyncMode.full_refresh
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
+    output = read(source, config=config, catalog=catalog, expecting_exception=True)
 
     assert output.errors
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
+    assert any(
+        trace.trace.error.message == f"Greenhouse denied access to a Harvest API endpoint (HTTP 403): {expected_remedy}"
+        for trace in output.errors
+    )
 
 
 def test_custom_field_options_stream_is_unfiltered_by_key_and_paginated(requests_mock, get_source):
@@ -703,6 +725,15 @@ DOCUMENTED_V3_EXAMPLES = {
         "updated_at": "2024-01-01T00:00:00.000Z",
         "job_id": 1,
     },
+    "job_notes": {
+        "id": 1,
+        "user_id": 1,
+        "body": "This is a sample note for the hiring plan.",
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "visibility": "admin_only_visible",
+        "job_id": 1,
+    },
     "job_owners": {
         "id": 1,
         "user_id": 1,
@@ -813,6 +844,16 @@ DOCUMENTED_V3_EXAMPLES = {
         "candidate_id": 1,
         "filename": "Oldest Attachments",
         "url": "https://example.com/signed-resource",
+    },
+    "candidate_attribute_types": {
+        "id": 1,
+        "name": "Skills",
+        "active": True,
+        "is_draft": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 0,
+        "job_id": 1,
     },
     "candidate_educations": {
         "id": 1,
@@ -943,6 +984,53 @@ DOCUMENTED_V3_EXAMPLES = {
         "candidate_id": 1,
         "type": "NOTE",
         "application_id": None,
+    },
+    "scorecard_question_answers": {
+        "id": 1,
+        "scorecard_id": 1,
+        "scorecard_question_id": 1,
+        "answer": "This is my answer",
+        "answer_with_tags": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "boolean_value": None,
+        "value": "This is my answer",
+    },
+    "scorecard_question_options": {
+        "id": 1,
+        "scorecard_question_id": 1,
+        "name": "Option",
+        "active": True,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 5,
+    },
+    "scorecard_question_answer_options": {
+        "id": 1,
+        "scorecard_question_option_id": 1,
+        "scorecard_question_answer_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+    },
+    "job_candidate_attributes": {
+        "id": 1,
+        "name": "JavaScript",
+        "active": True,
+        "candidate_attribute_type_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 2,
+        "job_id": 1,
+    },
+    "job_post_locations": {
+        "id": 1,
+        "plain_text_location": "New York, NY",
+        "office_id": None,
+        "created_at": "1998-12-15T12:30:30.000Z",
+        "updated_at": "1998-12-15T12:30:30.000Z",
+        "job_post_id": 1,
+        "custom_location_id": None,
+        "type": "free_text",
     },
 }
 
@@ -1339,6 +1427,7 @@ PARITY_STREAM_ENDPOINTS = {
     "approver_groups": "https://harvest.greenhouse.io/v3/approver_groups",
     "approvers": "https://harvest.greenhouse.io/v3/approvers",
     "job_hiring_managers": "https://harvest.greenhouse.io/v3/job_hiring_managers",
+    "job_notes": "https://harvest.greenhouse.io/v3/job_notes",
     "job_owners": "https://harvest.greenhouse.io/v3/job_owners",
     "prospect_pool_stages": "https://harvest.greenhouse.io/v3/prospect_pool_stages",
     "user_emails": "https://harvest.greenhouse.io/v3/user_emails",
@@ -1351,11 +1440,17 @@ PARITY_STREAM_ENDPOINTS = {
     "application_stages": "https://harvest.greenhouse.io/v3/application_stages",
     "applied_candidate_tags": "https://harvest.greenhouse.io/v3/applied_candidate_tags",
     "attachments": "https://harvest.greenhouse.io/v3/attachments",
+    "candidate_attribute_types": "https://harvest.greenhouse.io/v3/candidate_attribute_types",
     "candidate_educations": "https://harvest.greenhouse.io/v3/candidate_educations",
     "candidate_employments": "https://harvest.greenhouse.io/v3/candidate_employments",
     "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
     "referrers": "https://harvest.greenhouse.io/v3/referrers",
     "rejection_details": "https://harvest.greenhouse.io/v3/rejection_details",
+    "scorecard_question_answers": "https://harvest.greenhouse.io/v3/scorecard_question_answers",
+    "scorecard_question_options": "https://harvest.greenhouse.io/v3/scorecard_question_options",
+    "scorecard_question_answer_options": "https://harvest.greenhouse.io/v3/scorecard_question_answer_options",
+    "job_post_locations": "https://harvest.greenhouse.io/v3/job_post_locations",
+    "job_candidate_attributes": "https://harvest.greenhouse.io/v3/job_candidate_attributes",
 }
 
 
@@ -1397,3 +1492,40 @@ def test_parity_streams_paginate_and_filter_on_the_first_page_only(requests_mock
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
     assert len(requests) == 2
+
+
+def test_scorecard_question_answers_value_is_always_a_string(requests_mock, get_source, connector_path):
+    """Pin the `value` conversion for every answer_type.
+
+    Greenhouse returns `value` as a string, boolean, option id or array of option ids depending on the
+    question's answer_type. Destinations need one column type, so the stream JSON-encodes everything
+    that isn't already a string and leaves strings and nulls untouched.
+    """
+    url = PARITY_STREAM_ENDPOINTS["scorecard_question_answers"]
+    base = DOCUMENTED_V3_EXAMPLES["scorecard_question_answers"]
+    cases = [
+        ("Some text", "Some text"),
+        ("'quoted'", "'quoted'"),
+        (True, "true"),
+        (False, "false"),
+        (26384457003, "26384457003"),
+        ([26384455003, 26384458003], "[26384455003, 26384458003]"),
+        ([], "[]"),
+        (None, None),
+    ]
+    records = [{**base, "id": index + 1, "value": value} for index, (value, _) in enumerate(cases)]
+    _register_token(requests_mock)
+    requests_mock.get(url, json=records)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("scorecard_question_answers", SyncMode.full_refresh).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    # The CDK drops null-valued keys from emitted records, so a blank text answer arrives without `value`.
+    assert [record.record.data.get("value") for record in output.records] == [expected for _, expected in cases]
+    with open(connector_path / "manifest.yaml") as manifest_file:
+        schema = yaml.safe_load(manifest_file)["schemas"]["scorecard_question_answers"]
+    for record in output.records:
+        validate(record.record.data, schema)

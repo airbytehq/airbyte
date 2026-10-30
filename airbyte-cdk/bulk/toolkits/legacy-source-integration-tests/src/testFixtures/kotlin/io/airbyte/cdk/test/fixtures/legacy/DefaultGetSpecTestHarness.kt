@@ -13,7 +13,7 @@ class DefaultGetSpecTestHarness
 @JvmOverloads
 constructor(
     private val integrationLauncher: IntegrationLauncher,
-    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory(),
 ) : GetSpecTestHarness {
     private lateinit var process: Process
 
@@ -37,7 +37,7 @@ constructor(
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
                     ConnectorJobOutput.OutputType.SPEC,
-                    messagesByType
+                    messagesByType,
                 )
             failureReason.ifPresent { jobOutput.failureReason = it }
 
@@ -51,7 +51,7 @@ constructor(
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Integration failed to output a spec struct and did not output a failure reason",
-                    process
+                    process,
                 )
             }
 
@@ -59,7 +59,7 @@ constructor(
         } catch (e: Exception) {
             throw TestHarnessException(
                 String.format("Error while getting spec from image %s", inputType.dockerImage),
-                e
+                e,
             )
         }
     }

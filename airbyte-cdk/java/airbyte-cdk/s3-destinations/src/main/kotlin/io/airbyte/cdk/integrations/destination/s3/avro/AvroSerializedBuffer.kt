@@ -63,7 +63,7 @@ class AvroSerializedBuffer(
     override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
         if (this.useV2FieldNames) {
             dataFileWriter!!.append(
-                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, syncId, record)
+                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, syncId, record),
             )
         } else {
             dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
@@ -76,7 +76,7 @@ class AvroSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
@@ -85,7 +85,7 @@ class AvroSerializedBuffer(
                     AirbyteRecordMessage::class.java,
                 )
                 .withEmittedAt(emittedAt),
-            generationId
+            generationId,
         )
     }
 
@@ -105,7 +105,7 @@ class AvroSerializedBuffer(
         fun createFunction(
             config: UploadAvroFormatConfig,
             createStorageFunction: Callable<BufferStorage>,
-            useV2FeatureSet: Boolean = false
+            useV2FeatureSet: Boolean = false,
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
@@ -125,7 +125,7 @@ class AvroSerializedBuffer(
                         ?.stream
                         ?.jsonSchema
                         ?: throw RuntimeException(
-                            "No such stream ${stream.namespace}.${stream.name}"
+                            "No such stream ${stream.namespace}.${stream.name}",
                         )
                 val mergedSchema = JsonSchemaUnionMerger().mapSchema(jsonSchema as ObjectNode)
                 val preprocessedJsonSchema =
@@ -140,7 +140,7 @@ class AvroSerializedBuffer(
                             stream.namespace,
                             useV2FieldNames = useV2FeatureSet,
                             addStringToLogicalTypes = !useV2FeatureSet,
-                            appendExtraProps = !useV2FeatureSet
+                            appendExtraProps = !useV2FeatureSet,
                         )
 
                 // Build record processor

@@ -52,7 +52,7 @@ class AirbyteValueProtobufDecoder {
                 val instant =
                     Instant.ofEpochSecond(
                         offsetDateTimeMsg.epochSecond,
-                        offsetDateTimeMsg.nano.toLong()
+                        offsetDateTimeMsg.nano.toLong(),
                     )
                 val offset = ZoneOffset.ofTotalSeconds(offsetDateTimeMsg.offsetSeconds)
                 OffsetDateTime.ofInstant(instant, offset)
