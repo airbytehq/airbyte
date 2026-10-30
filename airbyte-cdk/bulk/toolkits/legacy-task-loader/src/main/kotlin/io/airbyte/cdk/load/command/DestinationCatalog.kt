@@ -28,12 +28,14 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
     private val log = KotlinLogging.logger {}
 
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
-        streams.associateBy { it.mappedDescriptor }
+        streams.associateBy {
+            it.mappedDescriptor
+        }
 
     init {
         if (streams.isEmpty()) {
             throw IllegalArgumentException(
-                "Catalog must have at least one stream: check that files are in the correct location."
+                "Catalog must have at least one stream: check that files are in the correct location.",
             )
         }
 
@@ -41,7 +43,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
             streams.groupingBy { it.mappedDescriptor }.eachCount().filter { it.value > 1 }.keys
         if (duplicateStreamDescriptors.isNotEmpty()) {
             throw ConfigErrorException(
-                "Some streams appeared multiple times: ${duplicateStreamDescriptors.map { it.toPrettyString() }}"
+                "Some streams appeared multiple times: ${duplicateStreamDescriptors.map { it.toPrettyString() }}",
             )
         }
         throwIfInvalidDedupConfig()
@@ -73,7 +75,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                         val firstPkElement = pk.first()
                         if (!stream.schema.asColumns().containsKey(firstPkElement)) {
                             throw ConfigErrorException(
-                                "For stream ${stream.mappedDescriptor.toPrettyString()}: A primary key column does not exist in the schema: $firstPkElement"
+                                "For stream ${stream.mappedDescriptor.toPrettyString()}: A primary key column does not exist in the schema: $firstPkElement",
                             )
                         }
                     }
@@ -82,7 +84,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                     val firstCursorElement = stream.importType.cursor.first()
                     if (!stream.schema.asColumns().containsKey(firstCursorElement)) {
                         throw ConfigErrorException(
-                            "For stream ${stream.mappedDescriptor.toPrettyString()}: The cursor does not exist in the schema: $firstCursorElement"
+                            "For stream ${stream.mappedDescriptor.toPrettyString()}: The cursor does not exist in the schema: $firstCursorElement",
                         )
                     }
                 }
@@ -103,7 +105,7 @@ class DefaultDestinationCatalogFactory {
         streamFactory: DestinationStreamFactory,
         @Value("\${${Operation.PROPERTY}}") operation: String,
         @Named("checkNamespace") checkNamespace: String?,
-        namespaceMapper: NamespaceMapper
+        namespaceMapper: NamespaceMapper,
     ): DestinationCatalog {
         if (operation == "check") {
             // generate a string like "20240523"
@@ -119,14 +121,14 @@ class DefaultDestinationCatalogFactory {
                         importType = Append,
                         schema =
                             ObjectType(
-                                linkedMapOf("test" to FieldType(IntegerType, nullable = true))
+                                linkedMapOf("test" to FieldType(IntegerType, nullable = true)),
                             ),
                         generationId = 1,
                         minimumGenerationId = 0,
                         syncId = 1,
-                        namespaceMapper = namespaceMapper
-                    )
-                )
+                        namespaceMapper = namespaceMapper,
+                    ),
+                ),
             )
         } else {
             return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })

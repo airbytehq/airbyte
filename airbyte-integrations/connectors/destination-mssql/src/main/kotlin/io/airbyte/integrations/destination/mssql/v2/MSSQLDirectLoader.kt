@@ -23,7 +23,7 @@ class MSSQLDirectLoader(
     stateStore: StreamStateStore<MSSQLStreamState>,
     private val streamDescriptor: DestinationStream.Descriptor,
     private val batch: Int,
-    private val parent: MSSQLDirectLoaderFactory
+    private val parent: MSSQLDirectLoaderFactory,
 ) : DirectLoader {
     private val log = KotlinLogging.logger {}
     private val recordCommitBatchSize = config.batchEveryNRecords
@@ -111,9 +111,10 @@ class MSSQLDirectLoaderFactory(
     override val maxNumOpenLoaders: Int = config.maxNumOpenLoaders
 
     private var batch: Int = 0
+
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): MSSQLDirectLoader {
         log.info { "Creating query builder for batch $batch of stream $streamDescriptor" }
 

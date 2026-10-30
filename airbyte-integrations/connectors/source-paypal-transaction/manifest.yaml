@@ -44,6 +44,9 @@ definitions:
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 100
               - type: DefaultErrorHandler
                 description: >-
                   PayPal rejects a transaction search whose result set exceeds 10,000

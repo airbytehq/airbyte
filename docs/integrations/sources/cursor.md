@@ -23,6 +23,8 @@ Sync Cursor Teams usage, per-seat spend, and per-event cost data from the Cursor
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2026-10-27 | [89852](https://github.com/airbytehq/airbyte/pull/89852) | Update dependencies |
+| 0.0.3 | 2026-10-20 | [89181](https://github.com/airbytehq/airbyte/pull/89181) | Update dependencies |
 | 0.0.2 | 2026-10-13 | [88573](https://github.com/airbytehq/airbyte/pull/88573) | Update dependencies |
 | 0.0.1 | 2026-07-23 | | Initial release by [@dhlotter](https://github.com/dhlotter) via Connector Builder |
 

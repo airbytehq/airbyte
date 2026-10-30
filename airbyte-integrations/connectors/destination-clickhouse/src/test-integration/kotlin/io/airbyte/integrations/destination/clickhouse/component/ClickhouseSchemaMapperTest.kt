@@ -34,8 +34,8 @@ class ClickhouseSchemaMapperTest(
         super.`funky chars in table name`(
             TableName(
                 "namespace_test___________________________________",
-                "table_test___________________________________"
-            )
+                "table_test___________________________________",
+            ),
         )
     }
 
@@ -82,7 +82,7 @@ class ClickhouseSchemaMapperTest(
     @Test
     fun `column types support all airbyte types`() {
         super.`column types support all airbyte types`(
-            ClickhouseTableSchemaEvolutionTest.allTypesSchema.columns
+            ClickhouseTableSchemaEvolutionTest.allTypesSchema.columns,
         )
     }
 

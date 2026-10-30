@@ -45,6 +45,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.76 | 2026-10-27 | [90024](https://github.com/airbytehq/airbyte/pull/90024) | Update dependencies |
+| 0.0.75 | 2026-10-20 | [89358](https://github.com/airbytehq/airbyte/pull/89358) | Update dependencies |
 | 0.0.74 | 2026-10-13 | [88756](https://github.com/airbytehq/airbyte/pull/88756) | Update dependencies |
 | 0.0.73 | 2026-10-07 | [88213](https://github.com/airbytehq/airbyte/pull/88213) | Fix pagination: use documented `offset`/`limit` paging for list streams instead of a no-op `links.next` cursor, so streams return more than the first 10 records |
 | 0.0.72 | 2026-10-06 | [87960](https://github.com/airbytehq/airbyte/pull/87960) | Update dependencies |

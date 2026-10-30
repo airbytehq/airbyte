@@ -139,9 +139,9 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 | S3 Bucket Region                                                                                                             | The region of the S3 staging bucket. Place in the same region as your Redshift cluster to reduce costs. Example: `us-east-1`                                                                                                                                   |
 | [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket.                                                                                                                                                                   |
 | S3 Secret Access Key                                                                                                         | The corresponding AWS Secret Access Key for the Access Key ID.                                                                                                                                                                                                 |
-| S3 Bucket Path (Optional)                                                                                                    | The directory under the S3 bucket where staging data will be written. If not provided, defaults to the root directory. Example: `data_sync/redshift`                                                                                                           |
-| S3 Filename Pattern (Optional)                                                                                               | The pattern for S3 staging file names. Supported placeholders: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Do not use empty spaces or unsupported placeholders. |
-| Purge Staging Data (Optional)                                                                                                | Whether to delete the staging files from S3 after completing the sync. Default: `true`. Set to `false` to retain files for debugging or auditing.                                                                                                              |
+| S3 Bucket Path (Optional)                                                                                                    | The directory under the S3 bucket where staging data will be written. If not provided, defaults to the root directory. The connector writes staging files to `<bucket path>/<schema>/<table>/`. Example: `data_sync/redshift` |
+| S3 Filename Pattern (Optional)                                                                                               | The pattern for S3 staging file names. Supported placeholders: `{date}` (UTC date as `yyyy_MM_dd`), `{date:<format>}` (UTC date in a custom Java `SimpleDateFormat` pattern, for example `{date:yyyy_MM}`), `{timestamp}` and `{timestamp:millis}` (epoch milliseconds), `{timestamp:micro}` (epoch microseconds), `{part_number}`, `{sync_id}`, and `{format_extension}` (`.csv.gz`). Unsupported placeholders are left in the file name as-is. Spaces are replaced with underscores, and `.csv.gz` is appended if the resolved name doesn't already end with it. If not provided, file names use a timestamp and a random suffix. |
+| Purge Staging Files and Tables (Optional)                                                                                    | Whether to delete the staging files from S3 after completing the sync. Default: `true`. Set to `false` to retain files for debugging or auditing.                                                                                                              |
 
 #### Advanced fields
 
@@ -149,7 +149,7 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 |:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
 | [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
-| Drop CASCADE (Optional)                                                                                                                       | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
+| Drop tables and columns with CASCADE (Optional)                                                                                               | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
 
 ## Output schema
 
@@ -222,9 +222,19 @@ the change in the `_airbyte_meta` column.
 
 ### Schema evolution
 
-This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new
-columns to destination tables. The connector requires `CREATE` and `ALTER TABLE` privileges on destination schemas and
-tables to support this feature.
+This connector supports automatic schema evolution. When the source schema changes, the connector updates destination
+tables as follows:
+
+- **New columns**: The connector adds them to the destination table.
+- **Changed column types**: The connector adds a temporary column with the new type, casts existing data into it, drops
+  the original column, and renames the temporary column. If a non-null value can't be cast to the new type, the
+  connector sets it to NULL and records a `DESTINATION_TYPECAST_ERROR` change in `_airbyte_meta`.
+- **Removed columns**: The connector keeps them in the destination table. It doesn't drop columns that no longer exist
+  in the source.
+
+The connector requires `CREATE` and `ALTER TABLE` privileges on destination schemas and tables to support this feature.
+If a view or other database object depends on a column or table the connector needs to drop, the sync fails. To resolve
+this, drop the dependent objects before the sync and recreate them afterward, or enable the **Drop tables and columns with CASCADE** option.
 
 ## Supported sync modes
 
@@ -287,11 +297,13 @@ This is by design for performance reasons.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.10  | 2026-09-01 | [85284](https://github.com/airbytehq/airbyte/pull/85284)   | Use `svv_all_schemas` instead of `information_schema.schemata` for schema existence check to support users with USAGE/CREATE-only grants.                                                                         |
+| 4.0.12 | 2026-10-15 | [87619](https://github.com/airbytehq/airbyte/pull/87619) | Upgrade to Bulk CDK 1.1.1. |
+| 4.0.11  | 2026-10-15 | [88985](https://github.com/airbytehq/airbyte/pull/88985)   | Suppress a SpotBugs false positive (`NP_NONNULL_PARAM_VIOLATION`) on the suspend `createNamespace` so the connector lint passes; no functional change.                                                            |
+| 4.0.10  | 2026-09-03 | [85284](https://github.com/airbytehq/airbyte/pull/85284)   | Use `svv_all_schemas` instead of `information_schema.schemata` for schema existence check to support users with USAGE/CREATE-only grants.                                                                         |
 | 4.0.9   | 2026-09-01 | [85046](https://github.com/airbytehq/airbyte/pull/85046)   | fix: preserve empty strings on load instead of converting them to NULL; replace EMPTYASNULL with NULL AS sentinel for VARCHAR columns                                                                            |
 | 4.0.8 | 2026-09-01 | [84991](https://github.com/airbytehq/airbyte/pull/84991) | Upgrade to Bulk CDK 1.0.25. |
 | 4.0.7   | 2026-08-18 | [84459](https://github.com/airbytehq/airbyte/pull/84459)   | Skip CREATE SCHEMA when the configured schema already exists so check/sync work with schema-only grants                                                                                                          |
-| 4.0.6   | 2026-08-06 | [82274](https://github.com/airbytehq/airbyte/pull/82274)   | Set ColumnDropBehavior.RETAIN: stop dropping columns during schema evolution                                                                                                                                     |
+| 4.0.6   | 2026-08-07 | [82274](https://github.com/airbytehq/airbyte/pull/82274)   | Set ColumnDropBehavior.RETAIN: stop dropping columns during schema evolution                                                                                                                                     |
 | 4.0.5   | 2026-08-04 | [83700](https://github.com/airbytehq/airbyte/pull/83700)   | Ignore NULL primary key records during dedup insert for performance; revert NULL-safe PK matching to plain equijoin                                                                                              |
 | 4.0.4   | 2026-07-29 | [83245](https://github.com/airbytehq/airbyte/pull/83245)   | fix: use NULL-safe primary key matching in upsert to prevent silent mismatches when PK columns contain NULL values                                                                                               |
 | 4.0.3   | 2026-07-14 | [81552](https://github.com/airbytehq/airbyte/pull/81552)   | fix: narrow SQLException handling to only treat table-not-found as missing                                                                                                                                       |

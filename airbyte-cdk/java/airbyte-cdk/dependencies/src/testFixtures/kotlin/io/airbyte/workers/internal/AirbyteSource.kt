@@ -18,8 +18,10 @@ interface AirbyteSource : AutoCloseable {
      *
      * @param sourceConfig
      * - contains the arguments that must be passed to the read method of the Source.
+     *
      * @param jobRoot
      * - directory where the job can write data.
+     *
      * @throws Exception
      * - throws if there is any failure in startup.
      */
@@ -46,7 +48,7 @@ interface AirbyteSource : AutoCloseable {
      * Attempts to read an AirbyteMessage from the Source.
      *
      * @return returns an AirbyteMessage is the Source emits one. Otherwise, empty. This method
-     * BLOCKS on waiting for the Source to emit data to STDOUT.
+     *   BLOCKS on waiting for the Source to emit data to STDOUT.
      */
     fun attemptRead(): Optional<AirbyteMessage>
 
