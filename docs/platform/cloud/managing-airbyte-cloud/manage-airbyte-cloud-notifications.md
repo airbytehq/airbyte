@@ -29,7 +29,7 @@ You configure notifications for each workspace separately. Once you do, Airbyte 
 | **Queued syncs**                        | &#10003; | &#10003;     | A sync from any of your connections is queued due to capacity limits. Off by default. See [Manage and monitor data workers](./manage-data-workers.md).      |
 
 :::tip Billing alerts
-Billing alerts aren't part of workspace notifications. You set them up for your whole organization on the Billing page. See [Billing notifications](./manage-credits.md#billing-notifications).
+Billing alerts aren't part of workspace notifications. They're only available in Airbyte Cloud, for organizations on the Standard and Plus plans. They aren't available on the Pro or Enterprise Flex plans, or in self-managed Airbyte. You set them up for your whole organization on the Billing page. See [Billing notifications](./manage-credits.md#billing-notifications).
 :::
 
 :::note
