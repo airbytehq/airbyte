@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.zendesk_support.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticleAttachmentsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticlesSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[AutomationsSearchData]
@@ -83,7 +84,6 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TriggersSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.woocommerce.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[CouponsSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[CustomersSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[OrderNotesSearchData]
@@ -78,7 +79,6 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[ShippingZonesSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[TaxClassesSearchData]
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[TaxRatesSearchData]
-    * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

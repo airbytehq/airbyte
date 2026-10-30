@@ -50,7 +50,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -213,7 +213,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against contacts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -313,7 +313,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against custom_fields records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -474,6 +474,7 @@ Classes
         Available filter fields (IssuesSearchFilter):
         - id: Unique identifier for the issue
         - title: Title of the issue
+        - body_html: HTML body of the issue (the opening message)
         - state: Current state of the issue (e.g. new, in_progress, closed)
         - source: Channel the issue originated from (e.g. email, slack)
         - type_: Type classification of the issue
@@ -499,7 +500,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against issues records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1020,7 +1021,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1152,7 +1153,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against teams records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1244,7 +1245,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ticket_forms records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1304,7 +1305,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against user_roles records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1366,7 +1367,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

@@ -62,12 +62,12 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.confluence.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[AuditSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[BlogPostsSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[GroupsSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[SpacesSearchData]
-    * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

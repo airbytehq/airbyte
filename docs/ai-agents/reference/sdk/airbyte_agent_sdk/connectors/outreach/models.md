@@ -1328,6 +1328,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.outreach.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[CallDispositionsSearchData]
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[CallPurposesSearchData]
@@ -1345,7 +1346,6 @@ Classes
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[TemplatesSearchData]
     * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.outreach.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

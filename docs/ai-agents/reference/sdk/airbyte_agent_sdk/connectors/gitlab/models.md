@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.gitlab.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[BranchesSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[CommitsSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[GroupMembersSearchData]
@@ -76,7 +77,6 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[ReleasesSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

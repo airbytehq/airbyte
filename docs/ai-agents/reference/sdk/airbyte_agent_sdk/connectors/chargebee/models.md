@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[CouponSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[CreditNoteSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[CustomerSearchData]
@@ -73,7 +74,6 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[PaymentSourceSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[SubscriptionSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[TransactionSearchData]
-    * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -902,6 +902,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[AccountOverviewSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[AddressesSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[AgentsActivitySearchData]
@@ -913,7 +914,6 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[GreetingsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[IvrsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[PhoneNumbersSearchData]
-    * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

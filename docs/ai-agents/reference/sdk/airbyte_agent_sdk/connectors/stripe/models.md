@@ -62,12 +62,12 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[ChargesSearchData]
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[CustomersSearchData]
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[InvoicesSearchData]
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[RefundsSearchData]
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[SubscriptionsSearchData]
-    * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

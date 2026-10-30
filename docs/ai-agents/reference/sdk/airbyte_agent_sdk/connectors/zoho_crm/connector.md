@@ -59,7 +59,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -147,7 +147,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against calls records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -232,7 +232,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -321,7 +321,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against contacts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -405,7 +405,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against deals records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -488,7 +488,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against events records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -576,7 +576,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invoices records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -670,7 +670,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against leads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -748,7 +748,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against notes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -835,7 +835,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against products records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -920,7 +920,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against quotes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1003,7 +1003,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tasks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

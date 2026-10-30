@@ -365,6 +365,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.pylon.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]
@@ -374,7 +375,6 @@ Classes
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UserRolesSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2204,6 +2204,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `body_html: str | None`
+    :   HTML body of the issue (the opening message)
 
     `created_at: str | None`
     :   Timestamp when the issue was created, in ISO 8601 format
