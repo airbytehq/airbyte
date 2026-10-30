@@ -285,3 +285,22 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+@pytest.mark.parametrize(
+    "products_count,records_per_slice",
+    [(50, 20), (10, 3), (7, 100), (1, 5)],
+)
+def test_read_products_count_not_divisible_by_records_per_slice(products_count, records_per_slice):
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    iterator = source.read(logger, config, catalog, {})
+
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
