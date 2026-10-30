@@ -717,40 +717,30 @@ jobs:
           }
 
           read_metadata_version() {
-            local ref="$1"
-            local path="$2"
-            local response=""
-            local request_status=0
-            local status_code=""
-
-            response="$(gh api --include "repos/airbytehq/airbyte/contents/${path}?ref=${ref}" -H "Accept: application/vnd.github.raw" 2>&1)" || request_status=$?
-            status_code="$(printf '%s\n' "$response" | sed -n '1s#^HTTP/[0-9.]*[[:space:]]\([0-9][0-9][0-9]\).*#\1#p')"
-            [[ "$status_code" != "404" ]] || return 44
-            [[ "$request_status" -eq 0 ]] || {
-              printf '%s\n' "$response" >&2
-              return "$request_status"
-            }
-            printf '%s\n' "$response" | sed '1,/^\r\?$/d' | yq -r '.data.dockerImageTag'
+            local connector="$1" ref="$2" err_file status=0 version
+            err_file="$(mktemp)"
+            version="$(airbyte-ops gh connector get-version "$connector" --ref "$ref" --gh-token "$GH_TOKEN" 2>"$err_file")" || status=$?
+            if [[ "$status" -ne 0 ]]; then
+              if grep -q "Metadata file not found" "$err_file"; then return 44; fi
+              cat "$err_file" >&2
+              return "$status"
+            fi
+            printf '%s\n' "$version"
           }
 
           filtered_connectors=()
           while IFS= read -r connector; do
             [[ -n "$connector" ]] || continue
-            metadata_path="airbyte-integrations/connectors/$connector/metadata.yaml"
 
             evaluated_status=0
-            evaluated_version="$(read_metadata_version "$EVALUATED_SHA" "$metadata_path")" || evaluated_status=$?
+            evaluated_version="$(read_metadata_version "$connector" "$EVALUATED_SHA")" || evaluated_status=$?
             [[ "$evaluated_status" -eq 0 ]] || {
               echo "::error::Could not read evaluated metadata for $connector at $EVALUATED_SHA."
               exit 1
             }
-            [[ -n "$evaluated_version" && "$evaluated_version" != "null" ]] || {
-              echo "::error::No dockerImageTag found in evaluated metadata for $connector."
-              exit 1
-            }
 
             base_status=0
-            base_version="$(read_metadata_version "$merge_base_sha" "$metadata_path")" || base_status=$?
+            base_version="$(read_metadata_version "$connector" "$merge_base_sha")" || base_status=$?
             [[ "$base_status" -ne 44 ]] || {
               echo "No metadata at the merge base for $connector; treating it as a version bump."
               filtered_connectors+=("$connector")
@@ -758,10 +748,6 @@ jobs:
             }
             [[ "$base_status" -eq 0 ]] || {
               echo "::error::Could not read merge-base metadata for $connector at $merge_base_sha."
-              exit 1
-            }
-            [[ -n "$base_version" && "$base_version" != "null" ]] || {
-              echo "::error::No dockerImageTag found in merge-base metadata for $connector."
               exit 1
             }
 
