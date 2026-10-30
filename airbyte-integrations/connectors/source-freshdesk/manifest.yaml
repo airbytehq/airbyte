@@ -1111,6 +1111,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sla_policies"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('id') is not none and record.get('id') != '' }}"
+          fields:
+            - path: ["id"]
+              value: "{{ record['id'] | int(default=record['id']) if record.get('id') is not none else none }}"
     solution_articles:
       type: DeclarativeStream
       name: solution_articles
