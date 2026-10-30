@@ -7,11 +7,11 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 4.2.3
+  dockerImageTag: 4.3.1
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -37,7 +37,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
@@ -185,7 +185,7 @@ data:
       url: https://shopify.dev/changelog
       type: api_release_history
     - title: Shopify API changelog
-      url: https://shopify.dev/docs/api/release-notes
+      url: https://shopify.dev/changelog/release-notes
       type: api_release_history
     - title: Shopify authentication
       url: https://shopify.dev/docs/apps/auth
@@ -193,11 +193,8 @@ data:
     - title: Shopify GraphQL Admin API
       url: https://shopify.dev/docs/api/admin-graphql
       type: api_reference
-    - title: REST to GraphQL migration guide
-      url: https://shopify.dev/docs/apps/build/graphql/migrate
-      type: api_deprecations
     - title: Shopify rate limits
-      url: https://shopify.dev/docs/api/usage/rate-limits
+      url: https://shopify.dev/docs/api/usage/limits
       type: rate_limits
     - title: Shopify API versioning and deprecation policy
       url: https://shopify.dev/docs/api/usage/versioning

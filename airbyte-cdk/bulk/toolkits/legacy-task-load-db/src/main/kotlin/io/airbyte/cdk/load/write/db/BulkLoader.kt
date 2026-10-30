@@ -38,7 +38,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
  * [io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterStep])
  *
  * TODO: provide a method that allows the user to check for an available connection and defer work
- * if it is not available.
+ *   if it is not available.
  */
 interface BulkLoader<T> : AutoCloseable {
     suspend fun load(remoteObject: T)

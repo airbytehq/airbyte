@@ -52,19 +52,18 @@ class DlqPipelineFactory(
                         dlqLoader = dlqLoader,
                     ),
                     *getFinalDlqPipelineSteps().toTypedArray(),
-                )
+                ),
             ) {}
 
-    private fun getFinalDlqPipelineSteps(): List<LoadPipelineStep> =
-        dlqPipelineSteps.ifEmpty {
-            listOf(
-                DlqNoopPipelineStep(
-                    numWorkers = objectLoader.numPartWorkers,
-                    taskFactory = pipelineStepTaskFactory,
-                    dlqInputQueue = dlqInputQueue,
-                )
-            )
-        }
+    private fun getFinalDlqPipelineSteps(): List<LoadPipelineStep> = dlqPipelineSteps.ifEmpty {
+        listOf(
+            DlqNoopPipelineStep(
+                numWorkers = objectLoader.numPartWorkers,
+                taskFactory = pipelineStepTaskFactory,
+                dlqInputQueue = dlqInputQueue,
+            ),
+        )
+    }
 }
 
 /** A Micronaut Factory to help initialize the component required for a DeadLetterQueuePipeline */
@@ -92,7 +91,7 @@ class DlqPipelineFactoryFactory {
     @Named("dlqInputQueue")
     @Singleton
     fun dlqInputQueue(
-        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
         ResourceReservingPartitionedQueue(
             reservationManager = globalMemoryManager,
@@ -163,17 +162,17 @@ class DlqPipelineFactoryFactory {
     fun objectStorageConfig(destinationConfig: DestinationConfiguration): ObjectStorageConfig =
         (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
             ?: throw IllegalArgumentException(
-                "Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
+                "Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider",
             )
 
     /** Singleton to extract the different object storage related config providers for S3 */
     @Singleton
     fun s3ObjectStorageConfig(
-        destinationConfig: DestinationConfiguration
+        destinationConfig: DestinationConfiguration,
     ): S3ObjectStorageConfig<*> =
         (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
             as? S3ObjectStorageConfig<*>
             ?: throw IllegalArgumentException(
-                "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
+                "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider",
             )
 }

@@ -43,18 +43,21 @@ install-cdk-cli.cmd = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 install-ops-cli.help = "Install the Airbyte Ops CLI for fetching connector secrets from GSM"
 install-ops-cli.cmd = "uv tool install --upgrade airbyte-internal-ops"
 
-test-all = "gradle check"
+test-all = "${POE_GIT_ROOT}/gradlew check"
 test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
-format-check = "gradle check -x test"
+format-check = "${POE_GIT_ROOT}/gradlew check -x test"
 lint-check = "echo 'No lint check step for this connector.'"
 
-test-unit-tests = "gradle test"
+test-unit-tests = "${POE_GIT_ROOT}/gradlew test"
 test-integration-tests.shell = '''
 set -eu # Ensure we return non-zero exit code upon failure
 
+# Shell tasks do not get ${POE_GIT_ROOT} substituted (cmd tasks do), so resolve the repo root here.
+repo_root="$(git rev-parse --show-toplevel)"
+
 if [ -d src/test-integration ]; then
   echo "Found 'src/test-integration' directory, running integration tests..."
-  gradle integrationTestJava
+  "${repo_root}/gradlew" integrationTestJava
 else
   echo "No integration tests defined; skipping integration tests."
 fi
@@ -66,8 +69,10 @@ shell = '''
 set -eu # Ensure we return non-zero exit code upon failure
 
 connector_name=$(basename "$PWD")
-echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
-${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args} --configure-on-demand
+# ${POE_ROOT} is the connector directory; the wrapper lives at the repo root.
+repo_root="$(git rev-parse --show-toplevel)"
+echo "Running: ${repo_root}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
+"${repo_root}/gradlew" :airbyte-integrations:connectors:${connector_name}:${task_and_args} --configure-on-demand
 '''
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }

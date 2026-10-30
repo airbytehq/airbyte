@@ -15,15 +15,26 @@ airbyteBulkConnector {
 
 dependencies {
     implementation 'com.azure:azure-identity:1.17.0'
-    // version specified by the debezium bom dependency in the cdc toolkit
-    implementation 'io.debezium:debezium-connector-postgres'
-    // Use Postgres JDBC driver version specified by Debezium
+    // Keep in step with the Debezium version of the Bulk CDK extract-cdc toolkit. Since extract
+    // 1.2.1 the CDK no longer imports the Debezium BOM, so the connector artifact has its own pin.
+    implementation 'io.debezium:debezium-connector-postgres:3.4.3.Final'
+    // The PostgreSQL JDBC driver version comes transitively from debezium-connector-postgres.
     implementation 'org.postgresql:postgresql'
 
-    testImplementation("io.mockk:mockk:1.14.7")
+    testImplementation("io.mockk:mockk:1.14.11")
 
-    testFixturesImplementation 'org.testcontainers:postgresql:1.21.4'
-    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
+    // PostgresTestDatabase extends TestDatabase and exposes PostgreSQLContainer, so both are part
+    // of the testFixtures API: consumers (src/test) compile against them. KGP >= 2.0.10 stops
+    // leaking testFixturesImplementation into the test classpath (KT-68278).
+    testFixturesApi 'org.testcontainers:postgresql:1.21.4'
+    // Published at the same version as the toolkits above (legacy-source-integration-tests is released
+    // with core-extract). A project() reference while cdkVersion is a published version makes Gradle
+    // substitute the local CDK projects as soon as their version outranks the pin, and then
+    // kspTestFixturesKotlin consumes their build outputs without a task dependency
+    // (Gradle "implicit_dependency" validation error in whole-repo builds).
+    testFixturesApi testFixtures(cdkVersion == 'local'
+        ? project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests')
+        : "io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-source-integration-tests:$cdkVersion")
 }
 
 configurations {

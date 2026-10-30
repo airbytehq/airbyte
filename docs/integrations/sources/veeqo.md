@@ -34,6 +34,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-27 | [90092](https://github.com/airbytehq/airbyte/pull/90092) | Update dependencies |
+| 0.0.68 | 2026-10-20 | [89467](https://github.com/airbytehq/airbyte/pull/89467) | Update dependencies |
 | 0.0.67 | 2026-10-13 | [88888](https://github.com/airbytehq/airbyte/pull/88888) | Update dependencies |
 | 0.0.66 | 2026-10-07 | [88208](https://github.com/airbytehq/airbyte/pull/88208) | Fix infinite pagination loop on `tags` and `returns` streams (Veeqo does not paginate these endpoints) |
 | 0.0.65 | 2026-10-06 | [88041](https://github.com/airbytehq/airbyte/pull/88041) | Update dependencies |

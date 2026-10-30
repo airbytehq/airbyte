@@ -51,7 +51,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
@@ -70,8 +70,8 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             recordData.set<JsonNode>(
                 PostgresSourceCdcMetaFields.CDC_LSN.id,
                 (PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>).encode(
-                    lsn
-                )
+                    lsn,
+                ),
             )
         }
     }
@@ -81,18 +81,18 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         recordData[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 timestamp,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
                 // Legacy Airbyte type is Number but values are all Long. Here we convert.
                 0.toBigDecimal(),
-                PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
+                PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
         if (globalStateValue == null) {
             return
@@ -104,13 +104,13 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             FieldValueEncoder(
                 // Legacy Airbyte type is Number but values are all Long. Here we convert.
                 position.lsn?.asLong()?.toBigDecimal(),
-                PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
+                PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
     }
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream {
         val postgresConfig = config as PostgresSourceConfiguration
         val isCdc = config.isCdc()

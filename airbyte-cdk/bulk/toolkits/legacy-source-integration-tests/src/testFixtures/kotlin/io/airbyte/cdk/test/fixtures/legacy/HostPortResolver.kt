@@ -24,7 +24,7 @@ object HostPortResolver {
     private fun getIpAddress(container: GenericContainer<*>): String {
         // Weird double bang here. If I remove the Object.requireNotNull, there's a type error...
         return Objects.requireNonNull(
-            container.containerInfo.networkSettings.networks.entries.first().value.ipAddress
+            container.containerInfo.networkSettings.networks.entries.first().value.ipAddress,
         )!!
     }
 }

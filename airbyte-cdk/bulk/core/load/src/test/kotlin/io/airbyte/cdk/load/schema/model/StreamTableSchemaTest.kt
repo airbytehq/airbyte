@@ -76,8 +76,8 @@ class StreamTableSchemaTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(listOf("id"), listOf("user_id", "org_id")),
-                        cursor = emptyList()
-                    )
+                        cursor = emptyList(),
+                    ),
             )
 
         val result = streamTableSchema.getPrimaryKey()
@@ -91,7 +91,7 @@ class StreamTableSchemaTest {
             ColumnSchema(
                 inputSchema = mapOf("id" to FieldType(IntegerType, false)),
                 inputToFinalColumnNames = mapOf("id" to "id_final"),
-                finalSchema = mapOf("id_final" to ColumnType("INTEGER", false))
+                finalSchema = mapOf("id_final" to ColumnType("INTEGER", false)),
             )
 
         val streamTableSchema =
@@ -120,8 +120,8 @@ class StreamTableSchemaTest {
                 finalSchema =
                     mapOf(
                         "mapped_name" to ColumnType("STRING", false),
-                        "another_mapped" to ColumnType("INTEGER", false)
-                    )
+                        "another_mapped" to ColumnType("INTEGER", false),
+                    ),
             )
 
         val streamTableSchema =
@@ -141,14 +141,14 @@ class StreamTableSchemaTest {
             ColumnSchema(
                 inputSchema = emptyMap(),
                 inputToFinalColumnNames = emptyMap(),
-                finalSchema = emptyMap()
+                finalSchema = emptyMap(),
             )
 
         val streamTableSchema =
             StreamTableSchema(
                 tableNames = Fixtures.defaultTableNames,
                 columnSchema = columnSchema,
-                importType = Dedupe(primaryKey = emptyList(), cursor = emptyList())
+                importType = Dedupe(primaryKey = emptyList(), cursor = emptyList()),
             )
 
         assertEquals(emptyList<String>(), streamTableSchema.getCursor())
@@ -171,13 +171,13 @@ class StreamTableSchemaTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(listOf("tenant_id", "region_code", "product_id")),
-                        cursor = listOf("tenant_id")
-                    )
+                        cursor = listOf("tenant_id"),
+                    ),
             )
 
         assertEquals(
             listOf(listOf("TENANT_ID", "REGION_CODE", "PRODUCT_ID")),
-            streamTableSchema.getPrimaryKey()
+            streamTableSchema.getPrimaryKey(),
         )
         assertEquals(listOf("TENANT_ID"), streamTableSchema.getCursor())
     }

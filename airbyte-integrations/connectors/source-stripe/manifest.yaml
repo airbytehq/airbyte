@@ -35,6 +35,9 @@ definitions:
     authenticator:
       $ref: "#/definitions/bearer_authenticator"
     http_method: GET
+    use_tcp_keepalive: true
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 80
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
@@ -1726,13 +1729,58 @@ definitions:
           type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
-            path: customers/{{ stream_partition.customer_id }}/bank_accounts
+            path: customers
+            request_parameters:
+              expand[]: '{{["data.sources"]}}'
+            # this stream must not IGNORE HTTP 400, because an ignored 400 on a customers request would silently drop a whole created-date slice (400s here only come from malformed requests)
+            error_handler:
+              type: CompositeErrorHandler
+              error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                    - type: HttpResponseFilter
+                      action: IGNORE
+                      http_codes:
+                        - 403
+                      error_message: >-
+                        {{ response['error']['message'] }}
+                - type: DefaultErrorHandler
+                  response_filters:
+                    - type: HttpResponseFilter
+                      action: IGNORE
+                      http_codes:
+                        - 404
+                      error_message: >-
+                        Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+                        child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                        you may safely ignore this warning.
           record_selector:
             type: RecordSelector
             extractor:
               type: DpathExtractor
               field_path:
                 - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - sources
+                  - data
+                truncation_indicator_path:
+                  - sources
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: customers/{{ stream_slice['parent_record']['id'] }}/bank_accounts
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
             transform_before_filtering: true
@@ -1740,43 +1788,20 @@ definitions:
           paginator:
             $ref: "#/definitions/base_paginator"
           partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: customer_id
-                extra_fields:
-                  - ["id"]
-                lazy_read_pointer: ["sources"]
-                stream:
-                  type: StateDelegatingStream
-                  api_retention_period: "{{ 'P30D' if 'customers' in config.get('api_retention_streams', []) else '' }}"
-                  $parameters:
-                    name: customers
-                  full_refresh_stream:
-                    $ref: "#/definitions/entity_stream"
-                    retriever:
-                      $ref: "#/definitions/base_retriever"
-                      requester:
-                        $ref: "#/definitions/base_requester"
-                        request_parameters:
-                          expand[]: '{{["data.sources"]}}'
-                      $parameters:
-                        path: customers
-                  incremental_stream:
-                    $ref: "#/definitions/events_based_stream"
-                    retriever:
-                      $ref: "#/definitions/events_objects_retriever"
-                      $parameters:
-                        request_parameters:
-                          types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+            # A single static partition makes the cursor a ConcurrentPerPartitionCursor in global mode:
+            # date slices still run in parallel, but no STATE is emitted until the walk completes,
+            # so a killed attempt restarts instead of switching to the events path.
+            type: ListPartitionRouter
+            cursor_field: bank_accounts_walk
+            values:
+              - all
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/bank_accounts"
         incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
-          cursor_field: updated
+          $ref: "#/definitions/entity_with_slice_cursor"
+          step: P30D
           global_substream_cursor: true
         transformations:
           - type: AddFields
