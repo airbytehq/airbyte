@@ -6,11 +6,15 @@
 # The intake agent holds write credentials, so it never reads a community item live. For each item,
 # `.github/scripts/intake_snapshot.uv` fetches it once, screens the community-written text with
 # TypeSafe's Jev classifier, and writes a prompt holding exactly the screened text. Only items that
-# pass start a session, one session per item. A flagged item, or any screening failure, gets a
-# link-only oncall ticket with `skip-triage` instead and is never shown to an agent.
+# pass start a session, one session per item, and get the `ai-intake-started` label so the sweep
+# doesn't start another. A flagged item gets a link-only oncall ticket with `skip-triage` instead
+# and is never shown to an agent. If GitHub or Jev keeps failing, the job fails and holds nothing;
+# the next sweep tries again.
 #
 # Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
-# INTAKE_DRY_RUN repo variable is "false". No PR code is checked out or run.
+# INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
+# a dry sweep would start sessions on the same items every hour. Dry-run by dispatch instead.
+# No PR code is checked out or run.
 
 name: AI Intake Command
 
@@ -107,7 +111,10 @@ jobs:
             exit 1
           fi
 
-          if [[ "$EVENT_NAME" == "schedule" ]]; then
+          if [[ "$EVENT_NAME" == "schedule" && "$dry_run" == "true" ]]; then
+            echo "::notice::Sweep skipped: it only runs live (INTAKE_DRY_RUN=false). Use /ai-intake or a dispatch for dry runs."
+            numbers="[]"
+          elif [[ "$EVENT_NAME" == "schedule" ]]; then
             numbers=$(.github/scripts/intake_snapshot.uv select --since "$SWEEP_SINCE" --limit "$SWEEP_LIMIT")
           else
             number="$INPUT_NUMBER"
@@ -186,6 +193,11 @@ jobs:
           result=$(.github/scripts/intake_snapshot.uv build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE")
           # The result carries scores and a reason, never the item's text.
           echo "$result" | jq .
+          error=$(jq -r '.error // empty' <<<"$result")
+          if [[ -n "$error" ]]; then
+            echo "::error::Could not screen #$NUMBER: $error. Nothing was held; the next sweep tries again."
+            exit 1
+          fi
           {
             echo "flagged=$(jq -r .flagged <<<"$result")"
             echo "reason=$(jq -r .reason <<<"$result")"
@@ -224,9 +236,8 @@ jobs:
           else
             gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
           fi
-          if gh label list --repo "$GITHUB_REPOSITORY" --search "intake/pending-human" --json name --jq '.[].name' | grep -qx "intake/pending-human"; then
-            gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
-          fi
+          # Fails if the label is missing, rather than holding the item again every hour.
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
 
       # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
       # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
@@ -243,3 +254,10 @@ jobs:
           tags: |
             oss-intake
             airbyte-item-${{ matrix.number }}
+
+      - name: Mark the item as started
+        if: steps.screen.outputs.flagged == 'false' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started

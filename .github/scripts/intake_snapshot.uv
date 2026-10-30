@@ -8,14 +8,15 @@
 The intake agent holds write credentials, so it never reads a community item live. This script
 fetches the item once, screens the community-written text with TypeSafe's Jev classifier, and
 writes a prompt holding exactly the text that was screened. Text edited after the screen never
-reaches the agent. Every failure (fetch or API error, unexpected answer, item too large) counts as
-flagged. This is a filter, not a security boundary.
+reaches the agent. A high score, or an item too large or too slow to screen, counts as flagged. A
+GitHub or Jev call that keeps failing is an error: nothing is held and no prompt is written, so the
+next sweep tries again. This is a filter, not a security boundary.
 
 Usage:
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
-      Prints a JSON list of open community items with no intake/* label, oldest first.
+      Prints a JSON list of open community items with no intake/* or ai-intake-started label, oldest first.
   intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH
-      Prints {"url", "flagged", "reason", "scores"} and, only when not flagged, writes the prompt.
+      Prints {"url", "flagged", "error", "reason", "scores"} and, only when neither flagged nor error, writes the prompt.
 
 Needs `gh` authenticated (GH_TOKEN), GITHUB_REPOSITORY, and TYPESAFE_API_KEY for `build`.
 The snapshot's shape is defined in the `connector-contribution-intake` skill (airbytehq/ai-skills).
@@ -25,17 +26,25 @@ import argparse
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
+import time
+import urllib.error
 import urllib.request
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "airbytehq/airbyte")
 JEV_MODEL = "jev-1.13.0"
 JEV_URL = "https://api.typesafe.ai/v1/systemone"
 FLAG_AT = 0.5
-CHUNK_CHARS = 60_000  # about 15k tokens; Jev allows 32k per question
+# Sized in UTF-8 bytes, not characters: Jev allows 32k tokens per question, and CJK or emoji text
+# takes about a token per character, so 60k characters could be twice that.
+CHUNK_BYTES = 28_000
 CHUNK_OVERLAP = 2_000  # so text cut at a chunk edge is still seen whole in one chunk
-MAX_CHUNKS = 12
+MAX_CHUNKS = 30
+ATTEMPTS = 3
+RETRY_SECONDS = 5
+BUILD_SECONDS = 14 * 60  # stays under the intake job's 20-minute timeout
 MAX_COMMITS = 250  # the commits endpoint returns no more than this
 MAX_DIFF_CHARS = 300_000
 MAX_LINKED = 5
@@ -49,6 +58,9 @@ INTAKE_STATES = [
     "needs-changes",
     "accepted-for-review",
 ]
+# Added by the workflow when a session starts, so the sweep doesn't start another. Not `intake/*`:
+# the board sync skips items with more than one intake label.
+STARTED_LABEL = "ai-intake-started"
 TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 RESULT_MARKER = "<!-- contribution_intake_result:"
 
@@ -76,11 +88,21 @@ class Flagged(Exception):
     pass
 
 
+class ScreenError(Exception):
+    pass
+
+
 def gh(*args: str) -> str:
-    result = subprocess.run(["gh", "api", *args], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise Flagged(f"could not fetch {args[0]}")
-    return result.stdout
+    for attempt in range(ATTEMPTS):
+        if attempt:
+            time.sleep(RETRY_SECONDS * 2**attempt)
+        result = subprocess.run(["gh", "api", *args], capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout
+        # A 4xx other than a rate limit won't change on retry.
+        if re.search(r"HTTP 4(?!29)\d\d", result.stderr):
+            break
+    raise ScreenError(f"could not fetch {args[0]}")
 
 
 def gh_pages(path: str, limit_pages: int = 10) -> list:
@@ -105,21 +127,28 @@ def login(entry: dict) -> str:
 def has_write_access(user: str) -> bool:
     try:
         permission = json.loads(gh(f"repos/{REPO}/collaborators/{user}/permission")).get("permission")
-    except Flagged:
+    except ScreenError:
         return False
     return permission in {"admin", "maintain", "write"}
 
 
 def select(since: str, limit: int) -> list[int]:
-    labels = " ".join(f'-label:"intake/{state}"' for state in INTAKE_STATES)
+    labels = " ".join(f'-label:"{label}"' for label in [*(f"intake/{state}" for state in INTAKE_STATES), STARTED_LABEL])
     query = f"repo:{REPO} is:open created:>={since} {labels}"
-    found = json.loads(gh("-X", "GET", "search/issues", "-f", f"q={query}", "-f", "sort=created", "-f", "order=asc", "-f", "per_page=100"))
     numbers = []
-    for item in found.get("items", []):
-        if is_trusted(item) or has_write_access(login(item)):
-            continue
-        numbers.append(item["number"])
-        if len(numbers) == limit:
+    for page in range(1, 11):
+        found = json.loads(gh("-X", "GET", "search/issues", "-f", f"q={query}", "-f", "sort=created", "-f", "order=asc", "-f", "per_page=100", "-f", f"page={page}"))
+        items = found.get("items", [])
+        for item in items:
+            # Also catches intake/* states the playbook adds later and INTAKE_STATES doesn't list yet.
+            if any(label["name"].startswith("intake/") for label in item.get("labels", [])):
+                continue
+            if is_trusted(item) or has_write_access(login(item)):
+                continue
+            numbers.append(item["number"])
+            if len(numbers) == limit:
+                return numbers
+        if len(items) < 100:
             break
     return numbers
 
@@ -199,7 +228,9 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
             "diff": diff[:MAX_DIFF_CHARS],
             "diff_truncated": len(diff) > MAX_DIFF_CHARS,
         }
-        sections.append(f"Branch: {head.get('ref') or ''}")
+        sections.append(f"Branch: {head.get('ref') or ''}\nFork: {snap['pr']['head_repo'] or ''}")
+        paths = sorted({*snap["pr"]["changed_files"], *(c.get("path") or "" for c in review_comments)})
+        sections.append("Files:\n" + "\n".join(paths))
         sections += [c["message"] for c in snap["pr"]["commits"]]
         sections += [r.get("body") or "" for r in reviews if not is_trusted(r)]
         sections += [c.get("body") or "" for c in review_comments if not is_trusted(c)]
@@ -209,53 +240,69 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
 
 
 def chunk(sections: list[str]) -> list[str]:
-    text = "\n\n-----\n\n".join(s for s in sections if s.strip())
-    step = CHUNK_CHARS - CHUNK_OVERLAP
-    chunks = [text[i : i + CHUNK_CHARS] for i in range(0, max(len(text) - CHUNK_OVERLAP, 1), step)]
+    data = "\n\n-----\n\n".join(s for s in sections if s.strip()).encode()
+    step = CHUNK_BYTES - CHUNK_OVERLAP
+    # A character cut at a chunk edge is dropped there and seen whole in the overlap.
+    chunks = [data[i : i + CHUNK_BYTES].decode(errors="ignore") for i in range(0, max(len(data) - CHUNK_OVERLAP, 1), step)]
     if len(chunks) > MAX_CHUNKS:
-        raise Flagged(f"too large to screen ({len(text)} characters)")
+        raise Flagged(f"too large to screen ({len(data)} bytes)")
     return chunks
 
 
-def ask_jev(text: str, key: str) -> dict[str, float]:
+def ask_jev(text: str, key: str, deadline: float) -> dict[str, float]:
     request = urllib.request.Request(
         JEV_URL,
         data=json.dumps({"model": JEV_MODEL, "state": {"text": text}, "questions": QUESTIONS}).encode(),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = json.load(response)
-    except Exception:
-        raise Flagged("Jev request failed")
+    for attempt in range(ATTEMPTS):
+        if attempt:
+            time.sleep(RETRY_SECONDS * 2**attempt)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise Flagged("too slow to screen")
+        try:
+            with urllib.request.urlopen(request, timeout=min(30, remaining)) as response:
+                body = json.load(response)
+            break
+        except urllib.error.HTTPError as e:
+            if 400 <= e.code < 500 and e.code != 429:
+                raise Flagged(f"Jev rejected the text (HTTP {e.code})")
+        except Exception:
+            pass
+    else:
+        raise ScreenError("Jev request failed")
     if body.get("model") != JEV_MODEL:
-        raise Flagged("Jev answered with an unexpected model")
+        raise ScreenError("Jev answered with an unexpected model")
     scores = {}
     for question in QUESTIONS:
         p = (body.get("answers") or {}).get(question, {}).get("noul")
         if type(p) not in (int, float) or not 0 <= p <= 1:
-            raise Flagged(f"Jev returned no answer for {question}")
+            raise ScreenError(f"Jev returned no answer for {question}")
         scores[question] = float(p)
     return scores
 
 
-def screen(sections: list[str], key: str) -> dict:
+def screen(sections: list[str], key: str, deadline: float) -> dict:
     worst = dict.fromkeys(QUESTIONS, 0.0)
     for text in chunk(sections):
-        for question, p in ask_jev(text, key).items():
+        for question, p in ask_jev(text, key, deadline).items():
             worst[question] = max(worst[question], p)
     hits = [f"{q} scored {p:.2f}" for q, p in worst.items() if p >= FLAG_AT]
-    return {"flagged": bool(hits), "reason": "; ".join(hits), "scores": worst}
+    return {"flagged": bool(hits), "error": None, "reason": "; ".join(hits), "scores": worst}
 
 
-def screened_snapshot(number: int, key: str) -> tuple[dict, dict]:
+def screened_snapshot(number: int, key: str, deadline: float) -> tuple[dict, dict]:
+    stub = {"url": f"https://github.com/{REPO}/issues/{number}"}
     try:
         snap, sections = snapshot(number)
-        result = screen(sections, key)
+        result = screen(sections, key, deadline)
     except Flagged as e:
-        return {"url": f"https://github.com/{REPO}/issues/{number}"}, {"flagged": True, "reason": str(e), "scores": {}}
+        return stub, {"flagged": True, "error": None, "reason": str(e), "scores": {}}
+    except ScreenError as e:
+        return stub, {"flagged": False, "error": str(e), "reason": "", "scores": {}}
     except Exception as e:
-        return {"url": f"https://github.com/{REPO}/issues/{number}"}, {"flagged": True, "reason": f"screen failed: {type(e).__name__}", "scores": {}}
+        return stub, {"flagged": True, "error": None, "reason": f"screen failed: {type(e).__name__}", "scores": {}}
     return snap, result
 
 
@@ -263,15 +310,17 @@ def build(number: int, dry_run: bool, prompt_file: str) -> dict:
     key = os.environ.get("TYPESAFE_API_KEY", "")
     if not key:
         sys.exit("TYPESAFE_API_KEY is not set")
-    snap, result = screened_snapshot(number, key)
+    deadline = time.monotonic() + BUILD_SECONDS
+    snap, result = screened_snapshot(number, key, deadline)
     summary = {"url": snap["url"], **result}
-    if result["flagged"]:
+    if result["flagged"] or result["error"]:
         return summary
     linked = []
     for n in snap["linked"][:MAX_LINKED]:
-        linked_snap, linked_result = screened_snapshot(n, key)
+        linked_snap, linked_result = screened_snapshot(n, key, deadline)
         linked_snap.pop("linked", None)
-        linked.append({"url": linked_snap["url"], "held": True} if linked_result["flagged"] else linked_snap)
+        held = linked_result["flagged"] or linked_result["error"]
+        linked.append({"url": linked_snap["url"], "held": True} if held else linked_snap)
     linked += [{"url": f"https://github.com/{REPO}/issues/{n}", "held": True} for n in snap["linked"][MAX_LINKED:]]
     snap["linked"] = linked
     summary["linked_held"] = [entry["url"] for entry in linked if entry.get("held")]
