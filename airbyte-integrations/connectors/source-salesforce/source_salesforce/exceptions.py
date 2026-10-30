@@ -6,11 +6,13 @@
 import logging
 
 
-# Maps the error_description returned by the Salesforce token endpoint to a user-actionable message.
 # Lives here (not in rate_limiting) so both api.py and rate_limiting.py can use it without a
 # module-level import cycle.
 AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+    "expired access/refresh token": "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com.",
+    "invalid_client": "Salesforce Connected App credentials are invalid. Check the OAuth client ID and client secret in the source settings.",
+    "API_DISABLED_FOR_ORG": 'Salesforce API access is disabled. Use an API-supported edition and grant the authenticated user the "API Enabled" permission.',
+    "ip_restricted": "Salesforce login is blocked by IP restrictions. Allowlist Airbyte IPs or update the Connected App IP Relaxation policy.",
 }
 
 

@@ -199,6 +199,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Limitations & Troubleshooting
 
+### Connection test login failures
+
+- **Expired or revoked authentication / `invalid_grant`**: Re-authenticate the source.
+  Check **Sandbox** (`is_sandbox`): sandbox organizations authenticate through
+  `test.salesforce.com`, while production organizations use `login.salesforce.com`.
+- **Invalid Connected App credentials / `invalid_client_id` or `invalid_client`**:
+  Check the OAuth client ID and client secret in the source settings against the Connected App.
+- **API access disabled / `API_DISABLED_FOR_ORG`**: Use a Salesforce edition that
+  supports API access and grant the authenticated user the **API Enabled** permission.
+- **IP restrictions / `LOGIN_MUST_USE_SECURITY_TOKEN`**: Allowlist the Airbyte
+  deployment's outbound IP addresses or update the Connected App **IP Relaxation**
+  policy according to your organization's security requirements. For Airbyte Cloud,
+  use the addresses linked in [IP allow list](#ip-allow-list).
+
 <details>
 <summary>
 Expand to see details about Salesforce connector limitations and troubleshooting.
@@ -328,6 +342,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.4 | 2026-10-30 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
 | 2.10.1 | 2026-10-20 | [89399](https://github.com/airbytehq/airbyte/pull/89399) | Update dependencies |
