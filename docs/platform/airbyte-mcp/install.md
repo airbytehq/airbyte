@@ -14,7 +14,7 @@ https://mcp.airbyte.com/mcp
 
 ## Read-only mode
 
-To limit your agent's Airbyte access to only read-only tools, use this URL instead:
+To limit your agent's Airbyte access to read-only, use this URL instead:
 
 ```text
 https://mcp.airbyte.com/mcp?read-only=true
