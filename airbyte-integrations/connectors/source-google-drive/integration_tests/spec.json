@@ -598,7 +598,9 @@
     "required": [
       "streams",
       "folder_url",
-      "credentials"
+      "credentials",
+      "delivery_method",
+      "exclude_trashed_files"
     ]
   },
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-drive",
