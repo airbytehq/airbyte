@@ -21,7 +21,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
+from source_facebook_marketing.spec import SECTION_ACCOUNT, ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
@@ -136,6 +136,25 @@ class SourceFacebookMarketing(AbstractSource):
             return False, f"Unexpected error: {repr(e)}"
 
         return True, None
+
+    def check_section_connection(self, logger: logging.Logger, section: str, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        Section check for the stepped setup form, see the `sections` declared by `ConnectorConfig` and the CDK's
+        `airbyte_cdk.sources.utils.check_section`. `config` only holds the fields collected up to `section`.
+
+        - `account`: the ad account IDs, the credentials and the data filters (dates, statuses, custom insights). That is
+          everything the connector validates against the API: the access token must reach every ad account and the custom
+          insights must declare valid breakdowns. So this is the full check, with the review section's tuning fields
+          (page size, lookback window, job timeout) at their defaults.
+        - `review` is the last section, so the CDK runs the full check for it.
+        """
+        if section == SECTION_ACCOUNT:
+            logger.info(f"Section '{section}' holds every field the connector validates, running the full config check.")
+            return self.check_connection(logger, config)
+        raise AirbyteTracedException(
+            message=f"Section '{section}' has no section check.",
+            failure_type=FailureType.config_error,
+        )
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
