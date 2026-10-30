@@ -261,11 +261,11 @@ class AirbyteValueProtobufEncoderTest {
         val result = encoder.encode(timestamp, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
         assertEquals(
             timestamp.toLocalDate().toEpochDay(),
-            result.timestampWithoutTimezone.dateDaysSinceEpoch
+            result.timestampWithoutTimezone.dateDaysSinceEpoch,
         )
         assertEquals(
             timestamp.toLocalTime().toNanoOfDay(),
-            result.timestampWithoutTimezone.nanosOfDay
+            result.timestampWithoutTimezone.nanosOfDay,
         )
         assertEquals(AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITHOUT_TIMEZONE, result.valueCase)
     }
@@ -277,11 +277,11 @@ class AirbyteValueProtobufEncoderTest {
         val localDateTime = timestamp.toLocalDateTime()
         assertEquals(
             localDateTime.toLocalDate().toEpochDay(),
-            result.timestampWithoutTimezone.dateDaysSinceEpoch
+            result.timestampWithoutTimezone.dateDaysSinceEpoch,
         )
         assertEquals(
             localDateTime.toLocalTime().toNanoOfDay(),
-            result.timestampWithoutTimezone.nanosOfDay
+            result.timestampWithoutTimezone.nanosOfDay,
         )
     }
 
@@ -432,7 +432,7 @@ class AirbyteValueProtobufEncoderTest {
                 ZoneOffset.ofHours(-12),
                 ZoneOffset.ofHoursMinutes(5, 30),
                 ZoneOffset.ofHoursMinutes(-5, -45),
-                ZoneOffset.ofHoursMinutesSeconds(1, 30, 30)
+                ZoneOffset.ofHoursMinutesSeconds(1, 30, 30),
             )
 
         timezones.forEach { offset ->
@@ -450,7 +450,7 @@ class AirbyteValueProtobufEncoderTest {
                 ZoneOffset.ofHours(5),
                 ZoneOffset.ofHours(-8),
                 ZoneOffset.ofHoursMinutes(9, 30),
-                ZoneOffset.ofHoursMinutes(-3, -30)
+                ZoneOffset.ofHoursMinutes(-3, -30),
             )
 
         timezones.forEach { offset ->
@@ -495,7 +495,7 @@ class AirbyteValueProtobufEncoderTest {
             encoder.encode(preciseTimestamp, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
         assertEquals(
             preciseTimestamp.toLocalTime().toNanoOfDay(),
-            timestampResult.timestampWithoutTimezone.nanosOfDay
+            timestampResult.timestampWithoutTimezone.nanosOfDay,
         )
     }
 }

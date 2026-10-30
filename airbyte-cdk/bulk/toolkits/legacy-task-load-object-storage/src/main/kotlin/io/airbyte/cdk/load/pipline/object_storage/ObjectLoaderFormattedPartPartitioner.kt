@@ -17,7 +17,7 @@ class ObjectLoaderFormattedPartPartitioner<K : WithStream, T> :
 
     override fun getOutputKey(
         inputKey: K,
-        output: ObjectLoaderPartFormatter.FormattedPart
+        output: ObjectLoaderPartFormatter.FormattedPart,
     ): ObjectKey {
         return ObjectKey(inputKey.stream, output.part.key)
     }

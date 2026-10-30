@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -41,8 +42,8 @@ class PostgresSourceMetadataQuerier(
 
     /**
      * Validates that the SSL/SSH configuration is sufficient for Airbyte Cloud. On Cloud, we
-     * require SSL encryption or an SSH tunnel; connections with ssl_mode in [disable, allow,
-     * prefer] and no tunnel are rejected.
+     * require SSL encryption or an SSH tunnel; connections with ssl_mode in
+     * [disable, allow, prefer] and no tunnel are rejected.
      */
     private fun validateSslConfiguration() {
         if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
@@ -71,8 +72,9 @@ class PostgresSourceMetadataQuerier(
             log.info { "Querying server xmin wraparound status" }
             val query =
                 """
-            select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
-        """.trimIndent()
+                select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
+                """
+                    .trimIndent()
             conn.createStatement().use { stmt ->
                 stmt.executeQuery(query).use { rs ->
                     if (rs.next()) {
@@ -97,6 +99,8 @@ class Factory(
     val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier.Factory<PostgresSourceConfiguration> {
     override fun session(config: PostgresSourceConfiguration): MetadataQuerier {
+        // Before the connection opens: with an unreachable host the network error would win.
+        CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val base =
             JdbcMetadataQuerier(

@@ -4,6 +4,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -26,6 +27,10 @@ internal class CatalogParserTest {
     private lateinit var parser: CatalogParser
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic
@@ -77,7 +82,7 @@ internal class CatalogParserTest {
                 originalRawNamespace,
                 originalNamespace + "_abab_" + quotedName,
                 originalNamespace,
-                originalName
+                originalName,
             )
         }
         val catalog =
@@ -101,7 +106,7 @@ internal class CatalogParserTest {
                         "airbyte_internal",
                         "a_abab_foofoo_3fd",
                         "a",
-                        "foofoo"
+                        "foofoo",
                     ),
                     parsedCatalog.streams[1].id,
                 )
@@ -125,15 +130,16 @@ internal class CatalogParserTest {
         val schema =
             Jsons.deserialize(
                 """
-                                              {
-                                                "type": "object",
-                                                "properties": {
-                                                  "foobarfoo": {"type": "string"},
-                                                  "foofoo": {"type": "string"}
-                                                }
-                                              }
-                                              
-                                              """.trimIndent()
+                {
+                  "type": "object",
+                  "properties": {
+                    "foobarfoo": {"type": "string"},
+                    "foofoo": {"type": "string"}
+                  }
+                }
+
+                """
+                    .trimIndent(),
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
@@ -143,7 +149,7 @@ internal class CatalogParserTest {
         assertAll(
             { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("foofoo", columnsList[0].name) },
-            { Assertions.assertEquals("foofoo_1", columnsList[1].name) }
+            { Assertions.assertEquals("foofoo_1", columnsList[1].name) },
         )
     }
 
@@ -163,15 +169,16 @@ internal class CatalogParserTest {
         val schema =
             Jsons.deserialize(
                 """
-                                              {
-                                                "type": "object",
-                                                "properties": {
-                                                  "aVeryLongColumnName": {"type": "string"},
-                                                  "aVeryLongColumnNameWithMoreTextAfterward": {"type": "string"}
-                                                }
-                                              }
-                                              
-                                              """.trimIndent()
+                {
+                  "type": "object",
+                  "properties": {
+                    "aVeryLongColumnName": {"type": "string"},
+                    "aVeryLongColumnNameWithMoreTextAfterward": {"type": "string"}
+                  }
+                }
+
+                """
+                    .trimIndent(),
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
@@ -181,7 +188,7 @@ internal class CatalogParserTest {
         assertAll(
             { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("aVeryLongC", columnsList[0].name) },
-            { Assertions.assertEquals("aV36rd", columnsList[1].name) }
+            { Assertions.assertEquals("aV36rd", columnsList[1].name) },
         )
     }
 
@@ -191,8 +198,8 @@ internal class CatalogParserTest {
             parser.parseCatalog(
                 ConfiguredAirbyteCatalog()
                     .withStreams(
-                        listOf(stream(null, "a", Jsons.deserialize("""{"type": "object"}""")))
-                    )
+                        listOf(stream(null, "a", Jsons.deserialize("""{"type": "object"}"""))),
+                    ),
             )
 
         Assertions.assertEquals("default_namespace", catalog.streams[0].id.originalNamespace)
@@ -205,19 +212,20 @@ internal class CatalogParserTest {
             schema: JsonNode =
                 Jsons.deserialize(
                     """
-                          {
-                            "type": "object",
-                            "properties": {
-                              "name": {"type": "string"}
-                            }
-                          }
-                          
-                          """.trimIndent()
-                )
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {"type": "string"}
+                      }
+                    }
+
+                    """
+                        .trimIndent(),
+                ),
         ): ConfiguredAirbyteStream {
             return ConfiguredAirbyteStream()
                 .withStream(
-                    AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema)
+                    AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema),
                 )
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
