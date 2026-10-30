@@ -1,0 +1,263 @@
+# Starts the `!oss_contribution_intake` Devin playbook (airbytehq/ai-skills) on community issues and PRs.
+#
+# Two triggers: an hourly sweep over open community items with no `intake/*` label (off until the
+# INTAKE_SWEEP_ENABLED repo variable is "true"), and `/ai-intake` from a maintainer on one item.
+#
+# The intake agent holds write credentials, so it never reads a community item live. For each item,
+# `.github/scripts/intake_snapshot.uv` fetches it once, screens the community-written text with
+# TypeSafe's Jev classifier, and writes a prompt holding exactly the screened text. Only items that
+# pass start a session, one session per item, and get the `ai-intake-started` label so the sweep
+# doesn't start another. A flagged item gets a link-only oncall ticket with `skip-triage` instead
+# and is never shown to an agent. If GitHub or Jev keeps failing, the job fails and holds nothing;
+# the next sweep tries again.
+#
+# Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
+# INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
+# a dry sweep would start sessions on the same items every hour. Dry-run by dispatch instead.
+# No PR code is checked out or run.
+
+name: AI Intake Command
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      number:
+        description: "Issue or PR number (manual runs)"
+        required: false
+        type: string
+      dry-run:
+        description: "true: the playbook writes nothing. Empty: the INTAKE_DRY_RUN repo variable decides (default true)."
+        required: false
+        type: string
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      pr:
+        description: "PR number (passed by slash command dispatcher)"
+        type: string
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher, unused: PR code is never checked out)"
+        required: false
+
+run-name: "AI Intake ${{ github.event_name == 'schedule' && 'sweep' || format('#{0}', inputs.number || inputs.pr || 'from comment') }}"
+
+permissions: {}
+
+env:
+  # Items created before this date are not swept; `/ai-intake` works on any item.
+  SWEEP_SINCE: "2026-11-01"
+  SWEEP_LIMIT: "5"
+
+jobs:
+  select:
+    name: Select items
+    if: github.event_name != 'schedule' || vars.INTAKE_SWEEP_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      numbers: ${{ steps.select.outputs.numbers }}
+      dry-run: ${{ steps.select.outputs.dry-run }}
+    steps:
+      - name: Authenticate as Octavia Bot
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: read
+
+      - name: Checkout the intake script from the default branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Resolve items and dry-run
+        id: select
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_NUMBER: ${{ inputs.number || inputs.pr }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          DEFAULT_DRY_RUN: ${{ vars.INTAKE_DRY_RUN != 'false' }}
+        run: |
+          set -euo pipefail
+
+          # Without the key every item would be held; fail once instead of filing a ticket per item.
+          if [[ -z "$TYPESAFE_API_KEY" ]]; then
+            echo "::error::TYPESAFE_API_KEY is not set; intake needs it to screen items."
+            exit 1
+          fi
+
+          dry_run="${INPUT_DRY_RUN:-$DEFAULT_DRY_RUN}"
+          if [[ "$dry_run" != "true" && "$dry_run" != "false" ]]; then
+            echo "::error::dry-run must be true or false, got '$dry_run'."
+            exit 1
+          fi
+
+          if [[ "$EVENT_NAME" == "schedule" && "$dry_run" == "true" ]]; then
+            echo "::notice::Sweep skipped: it only runs live (INTAKE_DRY_RUN=false). Use /ai-intake or a dispatch for dry runs."
+            numbers="[]"
+          elif [[ "$EVENT_NAME" == "schedule" ]]; then
+            numbers=$(.github/scripts/intake_snapshot.uv select --since "$SWEEP_SINCE" --limit "$SWEEP_LIMIT")
+          else
+            number="$INPUT_NUMBER"
+            if [[ -z "$number" && -n "$INPUT_COMMENT_ID" ]]; then
+              number=$(gh api "repos/$GITHUB_REPOSITORY/issues/comments/$INPUT_COMMENT_ID" --jq '.issue_url | split("/") | last')
+            fi
+            if ! [[ "$number" =~ ^[0-9]+$ ]]; then
+              echo "::error::Could not resolve an issue or PR number."
+              exit 1
+            fi
+            numbers="[$number]"
+          fi
+
+          echo "Items: $numbers (dry-run: $dry_run)"
+          echo "numbers=$numbers" >> "$GITHUB_OUTPUT"
+          echo "dry-run=$dry_run" >> "$GITHUB_OUTPUT"
+
+      - name: Post start comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > **AI Intake started** (dry-run: ${{ steps.select.outputs.dry-run }})
+            >
+            > Screening the item before the intake session starts.
+            > [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+  intake:
+    name: Intake #${{ matrix.number }}
+    needs: select
+    if: needs.select.outputs.numbers != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        number: ${{ fromJSON(needs.select.outputs.numbers) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Authenticate as Octavia Bot
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: read
+
+      - name: Checkout the intake script from the default branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Build and screen the snapshot
+        id: screen
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          NUMBER: ${{ matrix.number }}
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+          PROMPT_FILE: ${{ runner.temp }}/intake-prompt.md
+        run: |
+          set -euo pipefail
+          result=$(.github/scripts/intake_snapshot.uv build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE")
+          # The result carries scores and a reason, never the item's text.
+          echo "$result" | jq .
+          error=$(jq -r '.error // empty' <<<"$result")
+          if [[ -n "$error" ]]; then
+            echo "::error::Could not screen #$NUMBER: $error. Nothing was held; the next sweep tries again."
+            exit 1
+          fi
+          {
+            echo "flagged=$(jq -r .flagged <<<"$result")"
+            echo "reason=$(jq -r .reason <<<"$result")"
+            echo "url=$(jq -r .url <<<"$result")"
+          } >> "$GITHUB_OUTPUT"
+
+      # Link only: the oncall ticket never copies community text, and `skip-triage` keeps the oncall
+      # AI triage from reading the item. `intake/pending-human` keeps the sweep from picking it again.
+      - name: Hold the item for a human
+        if: steps.screen.outputs.flagged == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+          ITEM_URL: ${{ steps.screen.outputs.url }}
+          REASON: ${{ steps.screen.outputs.reason }}
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="[OSS Intake] Held for human review: $ITEM_URL"
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "::notice::Dry run: would hold $ITEM_URL ($REASON) in oncall as \"$title\"."
+            exit 0
+          fi
+          body=$(printf '%s\n' \
+            "Community item held before AI intake: $ITEM_URL" \
+            "" \
+            "- Screening result: $REASON" \
+            "- Run: $RUN_URL" \
+            "" \
+            "No AI session was started. Evaluate the item by hand. If it is a false positive, check it holds no instructions aimed at automation, remove \`intake/pending-human\` from it, and run \`/ai-intake\` there.")
+          existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
+            | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --repo airbytehq/oncall --body "$body"
+          else
+            gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
+          fi
+          # Fails if the label is missing, rather than holding the item again every hour.
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
+
+      # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
+      # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
+      - name: Start the intake session
+        if: steps.screen.outputs.flagged == 'false'
+        uses: airbytehq/devin-action@main
+        with:
+          playbook-macro: "!oss_contribution_intake"
+          prompt-file: ${{ runner.temp }}/intake-prompt.md
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          tags: |
+            oss-intake
+            airbyte-item-${{ matrix.number }}
+
+      - name: Mark the item as started
+        if: steps.screen.outputs.flagged == 'false' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started
