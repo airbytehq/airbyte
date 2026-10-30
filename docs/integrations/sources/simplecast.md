@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-30 | [PENDING](https://github.com/airbytehq/airbyte/pull/PENDING) | Fix `categories` and `distribution_channels` streams endlessly re-requesting the same page, which caused duplicate records and syncs that never finished |
 | 0.0.67 | 2026-10-20 | [89404](https://github.com/airbytehq/airbyte/pull/89404) | Update dependencies |
 | 0.0.66 | 2026-10-13 | [88781](https://github.com/airbytehq/airbyte/pull/88781) | Update dependencies |
 | 0.0.65 | 2026-10-07 | [88316](https://github.com/airbytehq/airbyte/pull/88316) | Fix infinite pagination loops on `categories`, `distribution_channels`, `analytics`; paginate `podcasts`, `episodes`, `analytics_episodes` via `pages.next.href` |
