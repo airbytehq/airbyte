@@ -14,10 +14,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
+import yaml
 from freezegun import freeze_time
 from unit_tests.conftest import _YAML_FILE_PATH, get_source
-
-import yaml
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
