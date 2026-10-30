@@ -99,6 +99,9 @@ class Config(AbstractFileBasedSpec):
     def normalize_bucket(cls, value: str) -> str:
         message = "S3 bucket must contain only a bucket name. Move any path into the stream glob or path prefix."
         bucket = value.strip() if isinstance(value, str) else ""
+        virtual_host = r"(.+)\.s3(?:[.-](?:dualstack\.)?[a-z0-9-]+)?\.amazonaws\.com"
+        if re.fullmatch(virtual_host, bucket):
+            bucket = f"https://{bucket}"
         if "://" in bucket:
             try:
                 url = urlsplit(bucket)
@@ -106,8 +109,8 @@ class Config(AbstractFileBasedSpec):
                     raise ValueError()
                 if url.scheme == "s3":
                     bucket = url.netloc
-                elif url.scheme == "https" and url.hostname and url.hostname.endswith(".s3.amazonaws.com"):
-                    bucket = url.hostname[: -len(".s3.amazonaws.com")]
+                elif url.scheme == "https" and url.hostname and (match := re.fullmatch(virtual_host, url.hostname)):
+                    bucket = match.group(1)
                 else:
                     raise ValueError()
             except ValueError:

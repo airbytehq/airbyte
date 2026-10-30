@@ -76,7 +76,18 @@ def test_empty_stream_already_fails_check():
     assert reason
 
 
-@pytest.mark.parametrize("bucket", ["bucket", " s3://bucket/ ", "https://bucket.s3.amazonaws.com"])
+@pytest.mark.parametrize(
+    "bucket",
+    [
+        "bucket",
+        " s3://bucket/ ",
+        "https://bucket.s3.amazonaws.com",
+        "https://bucket.s3.us-east-2.amazonaws.com",
+        "https://bucket.s3-us-west-2.amazonaws.com",
+        "bucket.s3.dualstack.us-east-2.amazonaws.com",
+        "https://bucket.s3.dualstack.us-east-2.amazonaws.com",
+    ],
+)
 def test_normalize_bucket(bucket):
     config = Config(bucket=bucket, credentials={"auth_type": "default_credentials"}, streams=[])
     assert config.bucket == "bucket"
@@ -89,6 +100,9 @@ def test_normalize_bucket(bucket):
         None,
         "s3://bucket/path",
         "https://bucket.s3.amazonaws.com/path",
+        "https://bucket.s3.us-east-2.amazonaws.com/path",
+        "https://bucket.s3-us-west-2.amazonaws.com?token=secret",
+        "https://bucket.s3.dualstack.us-east-2.amazonaws.com.evil.example",
         "https://example.com",
         "s3://user:secret@bucket",
         "bucket/path",
