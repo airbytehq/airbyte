@@ -444,7 +444,7 @@
         }
       },
       "delivery_method": {
-        "title": "Delivery Method",
+        "title": "Delivery method",
         "default": "use_records_transfer",
         "type": "object",
         "order": 7,

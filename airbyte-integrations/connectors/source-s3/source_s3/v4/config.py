@@ -112,7 +112,7 @@ class Config(AbstractFileBasedSpec):
     )
 
     delivery_method: DeliverRecords | DeliverRawFiles = Field(
-        title="Delivery Method",
+        title="Delivery method",
         discriminator="delivery_type",
         type="object",
         order=7,
