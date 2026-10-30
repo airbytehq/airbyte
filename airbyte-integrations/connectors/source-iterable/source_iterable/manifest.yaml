@@ -173,7 +173,20 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+          inject_on_first_request: true
       requester:
         path: campaigns
         type: HttpRequester
