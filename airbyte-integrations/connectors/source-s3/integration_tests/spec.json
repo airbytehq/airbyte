@@ -438,7 +438,8 @@
           },
           "required": [
             "name",
-            "format"
+            "format",
+            "skip_full_check_for_parquet"
           ]
         }
       },
@@ -901,7 +902,8 @@
     "required": [
       "streams",
       "credentials",
-      "bucket"
+      "bucket",
+      "endpoint"
     ]
   },
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",

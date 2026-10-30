@@ -177,6 +177,13 @@ class Config(AbstractFileBasedSpec):
         stream_item_props["format"]["order"] = 1
         stream_item_props["skip_full_check_for_parquet"] = skip_prop
 
+        required = schema.setdefault("required", [])
+        if "endpoint" not in required:
+            required.append("endpoint")
+        stream_required = schema["properties"]["streams"]["items"].setdefault("required", [])
+        if "skip_full_check_for_parquet" not in stream_required:
+            stream_required.append("skip_full_check_for_parquet")
+
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
         dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
