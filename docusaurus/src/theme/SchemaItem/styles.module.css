@@ -3,17 +3,24 @@
 }
 
 .toggle {
-  padding: 6px 14px;
-  border: 1px solid var(--ifm-color-primary);
-  border-radius: var(--ifm-global-radius);
-  background-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary-contrast-background);
-  font-size: inherit;
-  font-weight: 500;
-  cursor: pointer;
+  margin: 0;
 }
 
-.toggle:hover {
-  background-color: var(--ifm-color-primary-dark);
-  border-color: var(--ifm-color-primary-dark);
+.chevron {
+  width: 1em;
+  height: 1em;
+  margin-left: 0.4rem;
+  transition: transform 150ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.panel {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-surface-color);
 }

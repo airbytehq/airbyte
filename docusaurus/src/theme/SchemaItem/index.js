@@ -15,12 +15,31 @@ function ConnectorSpecLookup({ connectorType }) {
     <div className={styles.lookup}>
       <button
         type="button"
-        className={styles.toggle}
+        className={`button button--primary button--sm ${styles.toggle}`}
+        aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
         {open ? "Hide" : "Look up"} {connectorType} configuration fields
+        <svg
+          className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            d="M9 18l6-6-6-6"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
       </button>
-      {open && <ConnectorSpecPicker connectorType={connectorType} compact />}
+      {open && (
+        <div className={styles.panel}>
+          <ConnectorSpecPicker connectorType={connectorType} compact />
+        </div>
+      )}
     </div>
   );
 }

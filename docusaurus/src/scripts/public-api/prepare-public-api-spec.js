@@ -358,6 +358,15 @@ async function main() {
     ]);
     spec = mergeApplicationSpec(mainSpec, applicationsSpec);
     spec = normalizeOperationTags(spec);
+    spec.info.title = "Airbyte API";
+    spec.info.description = [
+      "Use the Airbyte API to manage sources, destinations, connections, jobs, and workspaces programmatically.",
+      "",
+      "- **Airbyte Cloud base URL:** `https://api.airbyte.com/v1`",
+      "- **Self-managed base URL:** `<YOUR_AIRBYTE_URL>/api/public/v1`",
+      "",
+      "Every request needs an access token. To get one, see [Get an access token](/platform/using-airbyte/configuring-api-access). For a walkthrough of your first request, see [API documentation](/developers/api-documentation).",
+    ].join("\n");
     spec = await validateOpenAPISpec(spec);
     spec = processSpec(spec);
     await validateOpenAPISpec(spec);

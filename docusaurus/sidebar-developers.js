@@ -26,7 +26,9 @@ module.exports = {
                 type: "doc",
                 id: "api-reference/airbyte-api",
               },
-              items: loadPublicApiSidebar().items,
+              items: loadPublicApiSidebar().items.filter(
+                (item) => item.id !== "api-reference/airbyte-api",
+              ),
             },
           ],
         },

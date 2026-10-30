@@ -8,12 +8,20 @@
 
 .search {
   flex: 1 1 260px;
-  padding: 7px 10px;
+  height: 36px;
+  padding: 0 12px;
   font-size: inherit;
   color: var(--ifm-font-color-base);
   background-color: var(--ifm-background-color);
   border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: var(--ifm-global-radius);
+}
+
+.search:focus {
+  border-color: var(--ifm-color-primary);
+  outline: 2px solid
+    color-mix(in srgb, var(--ifm-color-primary) 25%, transparent);
+  outline-offset: 0;
 }
 
 .types {
@@ -40,14 +48,15 @@
 .results {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 6px;
-  max-height: 320px;
+  gap: 4px;
+  max-height: 280px;
   overflow-y: auto;
   margin: 0 0 20px;
-  padding: 12px;
+  padding: 8px;
   list-style: none;
-  border: 1px solid var(--ifm-table-border-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-color);
 }
 
 .result {
@@ -55,8 +64,9 @@
   gap: 8px;
   align-items: center;
   width: 100%;
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-size: inherit;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
   color: var(--ifm-font-color-base);
@@ -66,20 +76,18 @@
 }
 
 .result:hover {
-  background-color: var(--ifm-table-stripe-background);
+  background: var(--ifm-color-emphasis-100);
 }
 
-.resultActive {
-  color: var(--ifm-color-primary-contrast-background);
-  background-color: var(--ifm-color-primary);
-}
-
+.resultActive,
 .resultActive:hover {
-  background-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  background: color-mix(in srgb, var(--ifm-color-primary) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--ifm-color-primary);
 }
 
 .resultName {
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .resultIcon {
@@ -94,33 +102,41 @@
 }
 
 .spec {
-  padding-top: 4px;
+  margin-top: 24px;
 }
 
 .specHeading {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .specIcon {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
 .specName {
   margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .specMeta {
-  margin-bottom: 20px;
+  margin: 4px 0 24px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.875rem;
+}
+
+.specMeta code {
+  color: inherit;
 }
 
 .compactName {
   margin: 0;
-  font-size: 1.1em;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 600;
 }

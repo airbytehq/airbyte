@@ -281,6 +281,38 @@ const config: Config = {
     colorMode: {
       disableSwitch: false,
     },
+    languageTabs: [
+      {
+        language: "curl",
+        highlight: "bash",
+        logoClass: "curl",
+        variant: "cURL",
+      },
+      {
+        language: "python",
+        highlight: "python",
+        logoClass: "python",
+        variant: "Requests",
+      },
+      {
+        language: "nodejs",
+        highlight: "javascript",
+        logoClass: "nodejs",
+        variant: "Axios",
+      },
+      {
+        language: "go",
+        highlight: "golang",
+        logoClass: "go",
+        variant: "Native",
+      },
+      {
+        language: "java",
+        highlight: "java",
+        logoClass: "java",
+        variant: "Unirest",
+      },
+    ],
     mermaid: {
       theme: {
         light: "default",

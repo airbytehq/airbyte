@@ -419,3 +419,51 @@ li.theme-doc-sidebar-item-link.menu__list-item .menu__link {
   justify-content: start;
 }
 
+h1.openapi__heading {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem !important;
+}
+
+li.api-method > .menu__link {
+  display: flex;
+  align-items: flex-start;
+}
+
+li.api-method > .menu__link::before {
+  flex: 0 0 3.25rem;
+  margin: 0.15rem 0.5rem 0 0;
+  padding: 0.05rem 0;
+  border-radius: 4px;
+  color: #fff;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+li.api-method.get > .menu__link::before {
+  content: "get";
+  background: var(--ifm-color-primary);
+}
+
+li.api-method.post > .menu__link::before {
+  content: "post";
+  background: #12805c;
+}
+
+li.api-method.put > .menu__link::before {
+  content: "put";
+  background: #1d6fb8;
+}
+
+li.api-method.patch > .menu__link::before {
+  content: "patch";
+  background: #b45f06;
+}
+
+li.api-method.delete > .menu__link::before {
+  content: "del";
+  background: #c62828;
+}
