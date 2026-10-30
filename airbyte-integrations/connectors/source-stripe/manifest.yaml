@@ -1170,6 +1170,19 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Data was not found. Error message: {{ response['error']['message'] }}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1177,7 +1190,66 @@ definitions:
               parent_key: id
               partition_field: customer_id
               stream:
-                $ref: "#/definitions/streams/customers"
+                $ref: "#/definitions/entity_stream"
+                $parameters:
+                  name: customers
+                retriever:
+                  $ref: "#/definitions/base_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          response_filters:
+                            - type: HttpResponseFilter
+                              action: IGNORE
+                              http_codes:
+                                - 404
+                              error_message: >-
+                                Data was not found. Error message: {{ response['error']['message'] }}
+                  $parameters:
+                    path: customers
+                incremental_sync:
+                  $ref: "#/definitions/entity_with_slice_cursor"
+                  step: P7D
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+              incremental_dependency: true
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/events_based_stream"
+                $parameters:
+                  name: cbt_customer_events
+                retriever:
+                  $ref: "#/definitions/events_objects_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: events
+                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          response_filters:
+                            - type: HttpResponseFilter
+                              action: IGNORE
+                              http_codes:
+                                - 404
+                              error_message: >-
+                                Data was not found. Error message: {{ response['error']['message'] }}
+                  $parameters:
+                    request_parameters:
+                      types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
