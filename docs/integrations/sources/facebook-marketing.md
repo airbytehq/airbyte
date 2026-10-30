@@ -531,8 +531,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
-|:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 6.2.0 | 2026-10-30 | [90231](https://github.com/airbytehq/airbyte/pull/90231) | Declare the sections of the stepped setup form (Connect account, Review & set up) in the spec and make CHECK section-aware through the `check-section` config key |
 | 6.1.9 | 2026-10-21 | [89624](https://github.com/airbytehq/airbyte/pull/89624) | Keep the custom insights primary key in the configured breakdowns order so it no longer changes between syncs |
 | 6.1.8 | 2026-10-20 | [74884](https://github.com/airbytehq/airbyte/pull/74884) | Retry dropped connections, truncated responses, and read timeouts from the Facebook API, and report them as transient errors if retries are exhausted |
