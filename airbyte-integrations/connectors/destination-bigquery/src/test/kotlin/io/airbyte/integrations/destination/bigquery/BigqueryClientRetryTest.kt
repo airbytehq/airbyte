@@ -207,8 +207,7 @@ class BigqueryClientRetryTest {
             val response = responses[nextResponseIndex++]
             return object : MockLowLevelHttpRequest(url) {
                 override fun execute(): MockLowLevelHttpResponse {
-                    requests +=
-                        RecordedRequest(method, url, contentAsString.orEmpty(), headers)
+                    requests += RecordedRequest(method, url, contentAsString.orEmpty(), headers)
                     return MockLowLevelHttpResponse()
                         .setStatusCode(response.statusCode)
                         .setContentType("application/json")
