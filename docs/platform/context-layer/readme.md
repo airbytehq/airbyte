@@ -4,8 +4,8 @@ products: cloud
 
 # Context layer
 
-:::info Open beta
-The context layer is in open beta. Features may change. It's available to all Airbyte Cloud organizations. Self-managed deployments of Airbyte aren't supported.
+:::info
+The context layer is available to all Airbyte Cloud organizations. Self-managed deployments of Airbyte aren't supported.
 :::
 
 The context layer is how AI agents access and reason about your organization's data through the [Airbyte MCP](../airbyte-mcp/readme.md). It combines two ways to get data:
@@ -64,10 +64,11 @@ Agents query these destinations with read-only SQL. Only `SELECT` statements and
 
 ## Usage limits
 
-During the beta, the context layer is free to use. Each organization can make up to 100,000 direct reads per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from, and SQL queries use compute in your destination, which your destination provider may charge for.
+The context layer is free to use. Each organization can make up to 100,000 direct reads per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from, and SQL queries use compute in your destination, which your destination provider may charge for.
 
 ## Limitations
 
 - The context layer is only available for Airbyte Cloud.
 - Direct reads are read-only. Agents can't write to sources or destinations through the context layer.
 - Direct reads are only available for [supported connectors](#supported-connectors).
+- Direct reads don't work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).

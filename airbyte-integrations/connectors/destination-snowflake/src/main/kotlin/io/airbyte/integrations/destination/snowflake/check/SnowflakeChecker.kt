@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
@@ -99,6 +100,9 @@ class SnowflakeChecker(
         runBlocking {
             try {
                 snowflakeAirbyteClient.createNamespace(outputSchema)
+                snowflakeAirbyteClient.createNamespace(
+                    escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema),
+                )
                 snowflakeAirbyteClient.createTable(
                     stream = destinationStream,
                     tableName = qualifiedTableName,
