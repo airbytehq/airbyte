@@ -244,14 +244,14 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             try:
                 for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                     if item.st_mode and stat.S_ISDIR(item.st_mode):
-                        dir_path = f"{current_dir}/{item.filename}"
+                        dir_path = f"{current_dir.rstrip('/')}/{item.filename}"
                         # Only traverse directories that could contain matching files
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)
                         else:
                             logger.debug(f"Skipping directory {dir_path} (no globs match)")
                     else:
-                        file_uri = f"{current_dir}/{item.filename}"
+                        file_uri = f"{current_dir.rstrip('/')}/{item.filename}"
                         file_mtime = datetime.fromtimestamp(item.st_mtime)
 
                         file = SFTPBulkUploadableRemoteFile(
@@ -268,7 +268,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         if len(files_batch) >= BATCH_SIZE:
                             yield from self.filter_files_by_globs_and_start_date(
                                 files_batch,
-                                globs,
+                                normalized_globs,
                             )
                             files_batch = []
             except AirbyteTracedException:
@@ -281,7 +281,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         if files_batch:
             yield from self.filter_files_by_globs_and_start_date(
                 files_batch,
-                globs,
+                normalized_globs,
             )
 
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:

@@ -100,3 +100,29 @@ def test_get_matching_files_reraises_airbyte_traced_exception():
         with pytest.raises(AirbyteTracedException) as exc_info:
             list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
         assert "Private key format is not recognized" in exc_info.value.message
+
+
+def test_get_matching_files_root_folder_relative_globs():
+    fake_client = MagicMock()
+    fake_client.from_transport = MagicMock(return_value=fake_client)
+    files_on_server = [
+        [
+            MagicMock(filename="report.csv", st_mode=180, st_mtime=1704067200),
+        ]
+    ]
+    fake_client.listdir_iter = MagicMock(side_effect=files_on_server)
+    with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
+        reader = SourceSFTPBulkStreamReader()
+        config = SourceSFTPBulkSpec(
+            host="localhost",
+            username="username",
+            credentials={"auth_type": "password", "password": "password"},
+            port=123,
+            streams=[],
+            folder_path="/",
+            start_date="2024-01-01T00:00:00.000000Z",
+        )
+        reader.config = config
+        files = list(reader.get_matching_files(globs=["report*"], prefix=None, logger=logger))
+        assert len(files) == 1
+        assert files[0].uri == "/report.csv"
