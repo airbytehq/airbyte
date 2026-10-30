@@ -419,18 +419,47 @@ class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
 
 
-class Transactions(IncrementalShopifySubstream):
+class OrderTransactionsStateMixin:
+    """
+    Offsite / redirect payments (Klarna, Mollie, ...) are completed on the provider's site before Shopify creates the order,
+    so the transaction `created_at` can be older than the stream state when its order shows up for the first time.
+    Such transactions are emitted when their order was created at or after the state value.
+    """
+
+    order_created_at_field = "order_created_at"
+
+    def _is_record_newer_than_state(self, record: Mapping[str, Any], record_value: Any, state_value: Any) -> bool:
+        if super()._is_record_newer_than_state(record, record_value, state_value):
+            return True
+        order_created_at = record.get(self.order_created_at_field)
+        return bool(order_created_at) and order_created_at >= state_value
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            record.pop(self.order_created_at_field, None)
+            yield record
+
+
+class Transactions(OrderTransactionsStateMixin, IncrementalShopifySubstream):
     parent_stream_class = Orders
     slice_key = "order_id"
     data_field = "transactions"
     cursor_field = "created_at"
+    parent_record_slice_fields = {OrderTransactionsStateMixin.order_created_at_field: "created_at"}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
+    def parse_response(self, response: requests.Response, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
+        order_created_at = (stream_slice or {}).get(self.order_created_at_field)
+        for record in super().parse_response(response, stream_slice=stream_slice, **kwargs):
+            if record:
+                record[self.order_created_at_field] = order_created_at
+            yield record
 
-class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
+
+class TransactionsGraphql(OrderTransactionsStateMixin, IncrementalShopifyGraphQlBulkStream):
     bulk_query: Transaction = Transaction
     cursor_field = "created_at"
 

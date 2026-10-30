@@ -266,6 +266,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
+    def _is_record_newer_than_state(self, record: Mapping[str, Any], record_value: Any, state_value: Any) -> bool:
+        return record_value >= state_value
+
     # Parse the `records` with respect to the `stream_state` for the `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
@@ -283,7 +286,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     filter_record_value = record.get(self.filter_field) if self.filter_field else None
                     self.track_checkpoint_cursor(record_value, filter_record_value)
                     if record_value:
-                        if record_value >= state_value:
+                        if self._is_record_newer_than_state(record, record_value, state_value):
                             yield record
                         else:
                             if self.should_checkpoint(index):
@@ -326,6 +329,8 @@ class IncrementalShopifySubstream(IncrementalShopifyStream):
     nested_record_field_name: str = None
     nested_substream = None
     nested_substream_list_field_id = None
+    # maps extra stream slice keys to parent record fields, to make parent values available while reading the substream
+    parent_record_slice_fields: Mapping[str, str] = {}
 
     @cached_property
     def parent_stream(self) -> Union[ShopifyStream, IncrementalShopifyStream]:
@@ -414,7 +419,10 @@ class IncrementalShopifySubstream(IncrementalShopifyStream):
                 # avoid checking `deleted` records for substreams, a.k.a `Metafields` streams,
                 # since `deleted` records are not available, thus we avoid HTTP-400 errors.
                 if self.deleted_cursor_field not in record:
-                    yield {self.slice_key: record[self.nested_record]}
+                    yield {
+                        self.slice_key: record[self.nested_record],
+                        **{slice_field: record.get(parent_field) for slice_field, parent_field in self.parent_record_slice_fields.items()},
+                    }
 
         # output slice from sorted list to avoid filtering older records
         if self.nested_substream:

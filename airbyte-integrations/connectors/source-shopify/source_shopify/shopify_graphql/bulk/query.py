@@ -1942,6 +1942,7 @@ class Transaction(ShopifyBulkQuery):
                     node {
                         __typename
                         id
+                        createdAt
                         currency: currencyCode
                         transactions {
                             id
@@ -2084,6 +2085,7 @@ class Transaction(ShopifyBulkQuery):
     query_nodes: List[Field] = [
         "__typename",
         "id",
+        "createdAt",
         Field(name="currencyCode", alias="currency"),
         Field(name="transactions", fields=transaction_fields),
     ]
@@ -2172,7 +2174,10 @@ class Transaction(ShopifyBulkQuery):
                     # populate parent record keys
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
-                    yield self.process_transaction(transaction)
+                    transaction = self.process_transaction(transaction)
+                    # used for the state comparison of offsite payments, removed before the record is emitted
+                    transaction["order_created_at"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+                    yield transaction
 
 
 class Product(ShopifyBulkQuery):
