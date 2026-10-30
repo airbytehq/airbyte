@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="660" viewBox="0 0 1200 660" font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" role="img" aria-labelledby="title desc">
   <title id="title">Context layer overview</title>
   <desc id="desc">Replication moves data from source through connectors and a connection to a destination. An AI agent uses the Airbyte MCP for read-only direct reads and search. Syncs feed an Airbyte-hosted search index; an optional backfill reads from the destination.</desc>
   <defs>
@@ -12,56 +12,56 @@
       <polygon points="0 0, 8 3, 0 6" fill="#E85D2A" />
     </marker>
   </defs>
-  <rect x="1" y="1" width="1198" height="658" rx="14" fill="#fff" stroke="#DDDFF2" />
-  <rect x="24" y="244" width="1152" height="130" rx="14" fill="#F8F7FF" stroke="#E5E2F5" />
-  <text x="42" y="266" text-anchor="start" font-size="12" font-weight="600" fill="#666680">Replication</text>
-  <path d="M190 324 H250" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
-  <path d="M430 324 H520" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
-  <path d="M680 324 H780" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
-  <path d="M1000 324 H1050" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
-  <path d="M250 298 H190" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
-  <path d="M1000 298 H1050" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
-  <rect x="50" y="280" width="140" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="120.0" y="317" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Source</text>
-  <rect x="250" y="280" width="180" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="340.0" y="317" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Source connector</text>
-  <rect x="520" y="280" width="160" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="600.0" y="317" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Connection</text>
-  <rect x="780" y="280" width="220" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="890" y="317" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Destination connector</text>
-  <rect x="1050" y="280" width="120" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="1110" y="317" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Destination</text>
-  <path d="M270 140 H480" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
-  <path d="M480 154 H340 V280" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
-  <path d="M700 154 H890 V280" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
-  <path d="M600 344 V470" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
-  <rect x="522.0" y="396" width="156.0" height="22" rx="4" fill="#fff" />
-  <text x="600" y="411" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Syncs feed the index</text>
-  <path d="M700 132 H742 Q750 132 750 140 V494 Q750 502 742 502 H710" fill="none" stroke="#fff" stroke-width="5" />
-  <path d="M700 132 H742 Q750 132 750 140 V494 Q750 502 742 502 H710" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
-  <rect x="678.8" y="397" width="142.39999999999998" height="22" rx="4" fill="#fff" />
-  <text x="750" y="412" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Search (read-only)</text>
-  <path d="M1110 344 V552 H660 V534" fill="none" stroke="#E85D2A" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#orange)" />
-  <rect x="863.4" y="538" width="149.2" height="22" rx="4" fill="#fff" />
-  <text x="938" y="553" text-anchor="middle" font-size="12" font-weight="500" fill="#E85D2A">Backfill (optional)</text>
-  <rect x="100" y="108" width="170" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
-  <text x="185.0" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">AI agent</text>
-  <rect x="480" y="108" width="220" height="64" rx="10" fill="#1a1a3e" stroke="#E0E2F5" stroke-width="1" />
-  <text x="590.0" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Airbyte MCP</text>
-  <rect x="284.2" y="198" width="101.6" height="22" rx="4" fill="#fff" />
-  <text x="335" y="213" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Direct reads</text>
-  <rect x="829.2" y="198" width="101.6" height="22" rx="4" fill="#fff" />
-  <text x="890" y="213" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Direct reads</text>
-  <rect x="490" y="470" width="220" height="64" rx="10" fill="#F2F3FF" stroke="#E0E2F5" stroke-width="1" />
-  <text x="600.0" y="497" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Search index</text>
-  <text x="600.0" y="517" text-anchor="middle" font-size="11" font-weight="400" fill="#666680">Hosted by Airbyte</text>
-  <path d="M44 618 H84" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
-  <text x="96" y="622" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Replication</text>
-  <path d="M240 618 H280" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
-  <text x="292" y="622" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Direct reads (live, read-only)</text>
-  <path d="M555 618 H595" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
-  <text x="607" y="622" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Indexing / search</text>
-  <path d="M818 618 H858" fill="none" stroke="#E85D2A" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#orange)" />
-  <text x="870" y="622" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Backfill (optional)</text>
-  <text x="600" y="647" text-anchor="middle" font-size="11" font-weight="400" fill="#666680">Read arrows show requests; results return to the AI agent through the Airbyte MCP.</text>
+  <rect x="1" y="1" width="1198" height="498" rx="14" fill="#fff" stroke="#DDDFF2" />
+  <rect x="24" y="142" width="1152" height="130" rx="14" fill="#F8F7FF" stroke="#E5E2F5" />
+  <text x="42" y="164" text-anchor="start" font-size="12" font-weight="600" fill="#666680">Replication</text>
+  <path d="M190 222 H250" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
+  <path d="M430 222 H520" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
+  <path d="M680 222 H780" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
+  <path d="M1000 222 H1050" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
+  <path d="M250 196 H190" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
+  <path d="M1000 196 H1050" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
+  <rect x="50" y="178" width="140" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="120.0" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Source</text>
+  <rect x="250" y="178" width="180" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="340.0" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Source connector</text>
+  <rect x="520" y="178" width="160" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="600.0" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Connection</text>
+  <rect x="780" y="178" width="220" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="890" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Destination connector</text>
+  <rect x="1050" y="178" width="120" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="1110" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Destination</text>
+  <path d="M270 56 H480" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
+  <path d="M480 70 H340 V178" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
+  <path d="M700 70 H890 V178" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
+  <path d="M600 242 V338" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
+  <rect x="522.0" y="287.13" width="156.0" height="22" rx="4" fill="#fff" />
+  <text x="600" y="297.44" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Syncs feed the index</text>
+  <path d="M700 48 H742 Q750 48 750 56 V362 Q750 370 742 370 H710" fill="none" stroke="#fff" stroke-width="5" />
+  <path d="M700 48 H742 Q750 48 750 56 V362 Q750 370 742 370 H710" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
+  <rect x="678.8" y="287.81" width="142.39999999999998" height="22" rx="4" fill="#fff" />
+  <text x="750" y="298.13" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Search (read-only)</text>
+  <path d="M1110 242 V420 H660 V402" fill="none" stroke="#E85D2A" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#orange)" />
+  <rect x="863.4" y="406" width="149.2" height="22" rx="4" fill="#fff" />
+  <text x="938" y="420.58" text-anchor="middle" font-size="12" font-weight="500" fill="#E85D2A">Backfill (optional)</text>
+  <rect x="100" y="24" width="170" height="64" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" />
+  <text x="185.0" y="61" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">AI agent</text>
+  <rect x="480" y="24" width="220" height="64" rx="10" fill="#1a1a3e" stroke="#E0E2F5" stroke-width="1" />
+  <text x="590.0" y="61" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Airbyte MCP</text>
+  <rect x="284.2" y="107.5" width="101.6" height="22" rx="4" fill="#fff" />
+  <text x="335" y="118.75" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Direct reads</text>
+  <rect x="829.2" y="107.5" width="101.6" height="22" rx="4" fill="#fff" />
+  <text x="890" y="118.75" text-anchor="middle" font-size="12" font-weight="500" fill="#615EFC">Direct reads</text>
+  <rect x="490" y="338" width="220" height="64" rx="10" fill="#F2F3FF" stroke="#E0E2F5" stroke-width="1" />
+  <text x="600.0" y="365" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a2e">Search index</text>
+  <text x="600.0" y="385" text-anchor="middle" font-size="11" font-weight="400" fill="#666680">Hosted by Airbyte</text>
+  <path d="M44 458 H84" fill="none" stroke="#A0A0B8" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#gray)" />
+  <text x="96" y="461.45" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Replication</text>
+  <path d="M240 458 H280" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#purple)" />
+  <text x="292" y="461.45" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Direct reads (live, read-only)</text>
+  <path d="M555 458 H595" fill="none" stroke="#615EFC" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#purple)" />
+  <text x="607" y="461.45" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Indexing / search</text>
+  <path d="M818 458 H858" fill="none" stroke="#E85D2A" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#orange)" />
+  <text x="870" y="461.45" text-anchor="start" font-size="11" font-weight="400" fill="#666680">Backfill (optional)</text>
+  <text x="600" y="483" text-anchor="middle" font-size="11" font-weight="400" fill="#666680">Read arrows show requests; results return to the AI agent through the Airbyte MCP.</text>
 </svg>

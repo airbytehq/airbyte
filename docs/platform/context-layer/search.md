@@ -24,7 +24,7 @@ Search supports three modes:
 
 ## Turn on search
 
-Both the source and destination must be agent connectors. Search uses the streams selected in the connection, not every stream available in the source.
+Agent connectors support agent access for direct reads and search. To index a connection's synced data for search, both the source and destination must be agent connectors. Search uses the streams selected in the connection, not every stream available in the source.
 
 1. As an organization administrator, open **Context layer** and turn on **Semantic search** in the settings.
 2. Review and accept the new terms of service for storing indexed data on Airbyte infrastructure.

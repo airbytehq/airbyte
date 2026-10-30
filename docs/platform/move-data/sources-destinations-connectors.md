@@ -28,15 +28,15 @@ If you don't see the connector you need, you can build one from scratch. Airbyte
 
 ### Connector capabilities
 
-A connector can have one or both of these capabilities:
+A connector can be a data replication connector, an agent connector, or both. For example, HubSpot and Zendesk have both types.
 
-- **Data replication** moves data. The connector extracts data from a source and loads it into a destination during a sync. Everything in the [connector catalog](/integrations/) supports data replication.
+- **Data replication connectors** extract data from sources or load data into destinations during a sync. Everything in the [connector catalog](/integrations/) supports data replication.
 
-- **Agent access** answers questions. The connector calls a third-party system in real time and returns only the records an AI agent asks for. Some connectors, like HubSpot or Zendesk, support [agent access](/ai-agents/connectors/) as well as data replication.
+- **Agent connectors** support agent access and search through the context layer. Agent access provides direct reads from a source or destination. Search queries an index built from a connection's synced data.
 
-Each connector's page shows which capabilities it has under **Connector type**.
+Each connector's page shows its types under **Connector type**.
 
-In Airbyte Cloud, the [context layer](/platform/context-layer) lets a single source or destination you set up use both capabilities. When it's on, a connector you set up for data replication can also answer read-only requests from AI agents through the [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support `list`, `get`, and the connector's own API `search` when available. They don't affect your syncs.
+In Airbyte Cloud, the [context layer](/platform/context-layer) lets you use agent connectors for direct reads and search through the [Airbyte MCP](/platform/airbyte-mcp). When a source or destination supports both connector types, agent access uses the same stored credentials as data replication. Direct reads support `list`, `get`, and the connector's own API `search` when available. They don't affect your syncs.
 
 A connection replicates data from a source to a destination. In Airbyte Cloud, it can also feed the [context layer search index](/platform/context-layer/search) when you enable **Semantic search**. Search operates on a connection's synced data, not on live API calls. Both the source and destination must be agent connectors.
 

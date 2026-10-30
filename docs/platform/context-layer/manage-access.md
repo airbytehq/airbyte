@@ -8,7 +8,7 @@ products: cloud
 The context layer is available to all Airbyte Cloud organizations. Self-managed deployments of Airbyte aren't supported.
 :::
 
-Control which sources and destinations AI agents can read directly through the [Airbyte MCP](../airbyte-mcp/readme.md). First, an organization admin turns on the context layer for the organization. Then, choose which sources and destinations agents can access.
+Agent connectors support agent access for direct reads and search through the context layer. Control which sources and destinations AI agents can read directly through the [Airbyte MCP](../airbyte-mcp/readme.md). First, an organization admin turns on the context layer for the organization. Then, choose which sources and destinations agents can access. [Turn on search](#turn-on-search) separately for your connections.
 
 ## Turn on the context layer for your organization
 

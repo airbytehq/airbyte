@@ -63,7 +63,7 @@ You don't need to name these tools. Ask your agent a question, like "What are th
 
 ### Sources
 
-Direct reads are available for sources that are an [agent connector](/platform/move-data/sources-destinations-connectors#connector-capabilities). Depending on the connector, direct reads support `list`, `get`, and `search` actions. Check the connector's skill for its supported read actions.
+[Agent connectors](/platform/move-data/sources-destinations-connectors#connector-capabilities) support agent access for direct reads and search. Depending on the connector, direct reads support `list`, `get`, and the connector's own API `search` action. Check the connector's skill for its supported read actions. Context layer search indexes a connection's synced data and requires both the source and destination to be agent connectors.
 
 When a source doesn't support direct reads, the **Context layer** page in Airbyte shows that it isn't supported yet.
 
