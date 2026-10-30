@@ -35,7 +35,7 @@ The hierarchy of user needs is security, data integrity, reliability, speed, eas
 
 ## How the connector form renders your spec
 
-- **`required`**: Required fields appear in the main form unless they have a default. Required fields with a default collapse like optional fields. A default of `false`, `""`, `null`, or an empty array doesn't count, and neither does a default on an `airbyte_secret` field. Root-level collapsed fields without `order` go into **Optional fields** at the end of the form. Collapsed fields with `order`, and nested collapsed fields, collapse in place.
+- **`required`**: Required fields appear in the main form unless they have a default. Required fields with a default collapse like optional fields. A default of `false`, `""`, `null`, or an empty array doesn't count, and neither does a default on an `airbyte_secret` field. Root-level collapsed fields without `order` go into the collapsed **Advanced** section at the end of the form. Collapsed fields with `order`, and nested collapsed fields, collapse in place.
 - **`default`**: When the web app creates a new configuration, it fills initial form values from schema defaults. API, Terraform, and PyAirbyte callers do not receive defaults from the web app.
 - **`order`**: Orders fields within their required or optional sections; required fields still precede optional fields.
 - **`group`**: Places root-level fields in a named group. Group titles come from the form's group metadata.
