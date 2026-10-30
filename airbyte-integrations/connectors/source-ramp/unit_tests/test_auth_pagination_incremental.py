@@ -92,11 +92,12 @@ def test_token_request():
     authorization = login.headers["Authorization"]
     assert authorization.startswith("Basic "), f"login must use HTTP Basic auth, got {authorization!r}"
     decoded = base64.b64decode(authorization.removeprefix("Basic ")).decode()
-    assert decoded == f"{CONFIG['client_id']}:{CONFIG['client_secret']}"
+    assert decoded == f"{CONFIG['credentials']['client_id']}:{CONFIG['credentials']['client_secret']}"
 
     form_body = parse_qs(login.text)
     assert form_body["grant_type"] == ["client_credentials"]
     assert form_body["scope"] == [ALL_SCOPES], f"login must request every read scope, got {form_body.get('scope')}"
+    assert set(form_body) == {"grant_type", "scope"}, f"unexpected login form fields {sorted(form_body)}"
 
     data_requests = requests_to(mocker.request_history, TRANSACTIONS_PATH)
     assert len(data_requests) == 1
@@ -206,7 +207,7 @@ def test_start_date_sent_as_updated_after(stream_name, url, path, start_date, ex
     [
         pytest.param(403, "DEVELOPER_7100", "grant the missing read scope", id="missing_scope"),
         pytest.param(404, "DEVELOPER_7002", "no longer accepts this connector's access token", id="revoked_token"),
-        pytest.param(401, "DEVELOPER_7000", "Re-enter the client ID and client secret", id="generic_unauthorized"),
+        pytest.param(401, "DEVELOPER_7000", "re-enter the client ID and client secret", id="generic_unauthorized"),
         pytest.param(403, "DEVELOPER_7999", "transactions:read scope", id="generic_forbidden"),
     ],
 )
