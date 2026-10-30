@@ -40,6 +40,7 @@ _ACCOUNT_ID = ConfigBuilder().build()["account_id"]
 _CLIENT_SECRET = ConfigBuilder().build()["client_secret"]
 _EVENT_OBJECT = NestedPath(["data", "object"])
 _WINDOW_DAYS = 7
+_CBT_EVENT_TYPES = ["customer.created", "customer.updated", "customer.deleted"]
 
 
 def _config(start_date: datetime = _START_DATE) -> ConfigBuilder:
@@ -96,8 +97,15 @@ def _child_request(customer_id: str) -> HttpRequest:
     )
 
 
-def _events_request() -> HttpRequest:
-    return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build()
+def _events_request(created_gte: datetime, created_lte: datetime = _NOW) -> HttpRequest:
+    return (
+        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+        .with_created_gte(created_gte)
+        .with_created_lte(created_lte)
+        .with_limit(100)
+        .with_types(_CBT_EVENT_TYPES)
+        .build()
+    )
 
 
 def _created_windows(start: datetime, end: datetime) -> List[Tuple[datetime, datetime]]:
@@ -177,8 +185,12 @@ def _event_record(customer_id: str, customer_created: datetime, event_created: d
     )
 
 
-def _register_events(http_mocker: HttpMocker, response: Optional[HttpResponseBuilder] = None) -> None:
-    http_mocker.get(_events_request(), (response or _events_response()).build())
+def _register_events(
+    http_mocker: HttpMocker,
+    response: Optional[HttpResponseBuilder] = None,
+    created_gte: datetime = _START_DATE,
+) -> None:
+    http_mocker.get(_events_request(created_gte), (response or _events_response()).build())
 
 
 def _status_response(status_code: int) -> HttpResponse:
@@ -271,7 +283,7 @@ class CustomerBalanceTransactionsTest(TestCase):
         eligible = [("synthetic-2", windows[0][0] + timedelta(hours=1)), ("synthetic-3", windows[-1][0] + timedelta(hours=1))]
         initial_state = _state(_walk_state(mark, _NOW - timedelta(days=1)))
         _register_customer_windows(http_mocker, mark, {0: [eligible[0]], len(windows) - 1: [eligible[1]]})
-        _register_events(http_mocker)
+        _register_events(http_mocker, created_gte=_NOW - timedelta(days=1))
         _register_children(http_mocker, [customer_id for customer_id, _ in eligible])
 
         output = _read(_config(), initial_state)
@@ -304,7 +316,7 @@ class CustomerBalanceTransactionsTest(TestCase):
         later_customer = ("synthetic-later", windows[0][0] + timedelta(days=2))
         initial_state = _state(_walk_state(mark, _START_DATE + timedelta(days=8)))
         _register_customer_windows(http_mocker, mark, {0: [boundary_customer, later_customer]})
-        _register_events(http_mocker)
+        _register_events(http_mocker, created_gte=_START_DATE + timedelta(days=8))
         _register_children(http_mocker, ["synthetic-boundary", "synthetic-later"])
 
         output = _read(_config(), initial_state)
@@ -347,10 +359,12 @@ class CustomerBalanceTransactionsTest(TestCase):
             state_a = _stream_state(attempt_a)
             assert int(state_a["parent_state"]["customers"]["updated"]) < int(oldest[1].timestamp())
             error_state = _resume_state(attempt_a, input_state)
+            events_updated = state_a["parent_state"].get(_EVENT_STREAM, {}).get("updated", int(_START_DATE.timestamp()))
+            events_start = datetime.fromtimestamp(int(events_updated), timezone.utc)
 
         with HttpMocker() as http_mocker:
             _register_customer_windows(http_mocker, _START_DATE, {0: [newest, oldest]})
-            _register_events(http_mocker)
+            _register_events(http_mocker, created_gte=events_start)
             _register_children(http_mocker, ["synthetic-newest", "synthetic-oldest"])
             attempt_b = _read(_config(), error_state)
             assert not attempt_b.errors
@@ -389,7 +403,7 @@ class CustomerBalanceTransactionsTest(TestCase):
                 },
             }
         )
-        http_mocker.get(_events_request(), _status_response(400))
+        http_mocker.get(_events_request(_NOW - timedelta(days=1)), _status_response(400))
 
         output = _read(_config(), state, expecting_exception=True)
 
@@ -408,7 +422,7 @@ class CustomerBalanceTransactionsTest(TestCase):
                 },
             }
         )
-        http_mocker.get(_events_request(), _status_response(403))
+        http_mocker.get(_events_request(_NOW - timedelta(days=1)), _status_response(403))
 
         output = _read(_config(), state, expecting_exception=True)
 
@@ -462,6 +476,7 @@ class CustomerBalanceTransactionsTest(TestCase):
         _register_events(
             http_mocker,
             _events_response().with_record(_event_record("synthetic-old", old_customer_created, _NOW - timedelta(hours=1))),
+            created_gte=mark,
         )
         _register_children(http_mocker, ["synthetic-old"])
 
