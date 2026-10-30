@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 
 ## Prerequisites
 
-- An [Intuit QuickBooks Online account](https://quickbooks.intuit.com/global/). You need [admin permissions](https://help.developer.intuit.com/s/article/Common-Authentication-and-Authorization-OAuth2-0-errors) for the company to authorize an app.
+- An [Intuit QuickBooks Online account](https://quickbooks.intuit.com/global/). You need [administrator permissions](https://help.developer.intuit.com/s/article/Common-Authentication-and-Authorization-OAuth2-0-errors) for the company to authorize an app.
 - **Start Date**: the initial lower bound for incremental streams, as a UTC timestamp in the form `YYYY-MM-DDTHH:MM:SSZ`, such as `2021-03-20T00:00:00Z`. Offsets and fractional seconds aren't accepted. The connector filters on the record's last updated time, not its transaction date. This setting doesn't filter `company_info` or `preferences`.
 
 The connector offers two authentication options:
@@ -21,7 +21,7 @@ The connector offers two authentication options:
 
 ### Step 1: Set up QuickBooks for your own Intuit app
 
-Skip this step if you use **Use the Airbyte OAuth App** on Airbyte Cloud.
+For **Use the Airbyte OAuth App** on Airbyte Cloud, skip this step.
 
 1. Create an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
 2. Create an application
@@ -146,14 +146,14 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | What you see | What it means | What to do |
 | :----------- | :------------ | :--------- |
-| `Refresh token was rejected by the OAuth provider...` or `The QuickBooks OAuth grant is expired or revoked...` | Intuit invalidated the refresh token. The first message comes from Intuit's token endpoint (`invalid_grant`), the second from an API call answered with HTTP 401. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | With **Use the Airbyte OAuth App**, edit the source and click **Authenticate your QuickBooks account** again. With **Use your own Intuit app**, obtain a new refresh token and update the source. |
+| `Refresh token was rejected by the OAuth provider...` or `The QuickBooks OAuth grant is expired or revoked...` | Intuit invalidated the refresh token. The first message comes from Intuit's token endpoint (`invalid_grant`), the second from an API call answered with HTTP 401. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | For **Use the Airbyte OAuth App**, click **Authenticate your QuickBooks account** again in the source settings. For **Use your own Intuit app**, replace the refresh token. |
 | `QuickBooks rejected the app credentials...` (fault code `3200`) | Wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | With **Use your own Intuit app**, re-copy both keys from the matching environment on the app's **Keys & OAuth** tab, and make sure **Sandbox** matches the keys. |
 | `The QuickBooks user has not authorized this app for the configured company.` (fault code `3201`) | The company was never authorized for this app, or authorization was revoked. | Re-run the authorization flow for that company. |
 | `The QuickBooks OAuth grant lacks the accounting scope...` (HTTP 403) | The grant is missing `com.intuit.quickbooks.accounting`. | Re-authorize with the accounting scope selected. |
 | `QuickBooks does not recognize the configured Realm ID.` (HTTP 404) | The **Realm ID** does not exist in the environment being called, for example a sandbox realm used against production. | Correct the **Realm ID**. For a sandbox company, choose **Use your own Intuit app** with your app's development keys and turn on **Sandbox**. |
 | Sync retries then fails with a throttling error | Intuit throttles requests per company (realm). The connector limits its own requests to 10 per second and 500 per minute, but other sources and tools can also consume the company's allowance. | Reduce concurrent syncs against the same company; the connector already retries with exponential backoff. |
 
-Deleted records: The connector includes inactive records (`Active: false`) for `accounts`, `budgets`, `classes`, `customers`, `departments`, `employees`, `items`, `payment_methods`, `tax_codes`, `tax_rates`, `terms`, and `vendors`, using `Active IN (true, false)` in those queries. It doesn't replicate permanent deletions: it doesn't read Intuit's [change data capture endpoint](https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/change-data-capture). Permanently deleted records remain in the destination.
+**Deleted records.** The connector includes inactive records (`Active: false`) for `accounts`, `budgets`, `classes`, `customers`, `departments`, `employees`, `items`, `payment_methods`, `tax_codes`, `tax_rates`, `terms`, and `vendors`, using `Active IN (true, false)` in those queries. It doesn't replicate permanent deletions: it doesn't read Intuit's [change data capture endpoint](https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/change-data-capture). Permanently deleted records remain in the destination.
 
 ## IP allow list
 
