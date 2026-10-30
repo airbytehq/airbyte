@@ -30,9 +30,8 @@ definitions:
   #
   # The value is written out rather than read from `page_size_for_large_streams`, which was
   # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
-  # produced for a config without that key is 10, so 10 is what this reproduces. `review_comments`
-  # is the exception and sends 100; see `review_comments_stream`. A config that still carries the
-  # key through the API or Terraform no longer steers these streams — see
+  # produced for a config without that key is 10, so 10 is what this reproduces. A config that
+  # still carries the key through the API or Terraform no longer steers these streams — see
   # `graphql_large_stream_page_size` for the same note on the GraphQL side.
   #
   # Whether 10 is the right number is a separate question with evidence on both sides: it costs
@@ -7488,9 +7487,9 @@ definitions:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
-        # GitHub's pulls/comments listing exceeds its ~10s limit and returns 500 at per_page=10,
-        # but returns in ~1.5s at the maximum 100. The paginator follows the Link URL, keeping
-        # per_page=100 on every page.
+        # Not `large_stream_page_size`: on very large repositories GitHub's pulls/comments listing
+        # runs past its ~10s limit and returns 500 at per_page=10, but answers in ~1.5s at the
+        # maximum of 100. The paginator follows the Link URL, so every page keeps per_page=100.
         request_parameters:
           per_page: "100"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
