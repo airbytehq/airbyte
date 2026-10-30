@@ -21,14 +21,14 @@ class IAMUserCredentials(BaseModel):
 
     auth_type: Literal["iam_user"] = Field("iam_user", const=True)
     aws_access_key_id: str = Field(
-        title="AWS Access Key ID",
-        description="AWS access key ID for authenticating with a private S3 bucket or S3-compatible endpoint.",
+        title="AWS access key ID",
+        description="Create an access key for an IAM user in the AWS IAM console: select Users, choose the user, open Security credentials, and choose Create access key. Enter the Access key ID shown by AWS. See the S3 connector setup guide for the required policy.",
         airbyte_secret=True,
         order=1,
     )
     aws_secret_access_key: str = Field(
-        title="AWS Secret Access Key",
-        description="AWS secret access key for authenticating with a private S3 bucket or S3-compatible endpoint.",
+        title="AWS secret access key",
+        description="AWS shows the secret access key only once when you create an access key for an IAM user. Choose Create access key from the user's Security credentials tab and copy the secret before closing the wizard. If you no longer have it, create a new access key. See the S3 connector setup guide for instructions.",
         airbyte_secret=True,
         order=2,
     )
@@ -42,7 +42,7 @@ class IAMRoleCredentials(BaseModel):
 
     auth_type: Literal["iam_role"] = Field("iam_role", const=True)
     role_arn: str = Field(
-        title="AWS Role ARN",
+        title="AWS role ARN",
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
         "requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
         order=1,
@@ -64,7 +64,7 @@ class S3FileBasedStreamConfig(FileBasedStreamConfig):
     """S3-specific stream config that adds a flag to skip the full parse check for Parquet files."""
 
     skip_full_check_for_parquet: bool = Field(
-        title="Skip Full Check for Parquet",
+        title="Skip full check for Parquet",
         description=(
             "When enabled, the CHECK operation for Parquet streams will verify file accessibility "
             "but skip the full record-parse step. This avoids out-of-memory errors on large Parquet files."
@@ -105,7 +105,7 @@ class Config(AbstractFileBasedSpec):
     )
 
     region_name: Optional[str] = Field(
-        title="AWS Region",
+        title="AWS region",
         default=None,
         description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
         order=5,
