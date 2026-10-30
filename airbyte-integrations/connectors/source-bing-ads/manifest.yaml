@@ -2608,15 +2608,17 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Azure Blob Storage rejects expired SAS download URLs with 403 AuthenticationFailed.
+  # Those 403s are handed back to the custom download requesters, which re-poll for a fresh URL.
+  # Any other 403 falls through to the default handling (config_error).
   download_requester_error_handler:
     type: CustomErrorHandler
     class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
-        failure_type: transient_error
+        action: IGNORE
         error_message_contains: "Signature not valid in the specified time frame"
-        error_message: "Bing Ads file download URL is expired."
+        error_message: "Bing Ads file download URL is expired; requesting a fresh download URL."
 
   # base retrievers
   basic_async_retriever:
@@ -2729,10 +2731,12 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsBulkDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
       error_handler: "#/definitions/download_requester_error_handler"
+      report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
