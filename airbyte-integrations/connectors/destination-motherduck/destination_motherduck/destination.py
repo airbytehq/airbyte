@@ -82,6 +82,17 @@ def validated_sql_name(sql_name: Any) -> str:
     raise ValueError(f"Invalid SQL name: {sql_name}")
 
 
+def get_custom_user_agent() -> str:
+    """Return how this connector identifies itself to MotherDuck: `airbyte/<version>(<edition>)`.
+
+    Both env vars are set on the connector container by the Airbyte platform, and are absent when
+    the connector runs standalone.
+    """
+    version = os.getenv("AIRBYTE_VERSION")
+    edition = os.getenv("AIRBYTE_EDITION")
+    return "airbyte" + (f"/{version}" if version else "") + (f"({edition})" if edition else "")
+
+
 class UnicodeAwareNormalizer:
     """Normalizer that preserves Unicode characters while following LowerCaseNormalizer behavior for ASCII."""
 
@@ -164,6 +175,7 @@ class DestinationMotherDuck(Destination):
                     db_path=db_path,
                     database=urlparse(db_path).path,
                     api_key=SecretString(motherduck_token),
+                    custom_user_agent=get_custom_user_agent(),
                 ),
                 catalog_provider=catalog_provider,
             )
