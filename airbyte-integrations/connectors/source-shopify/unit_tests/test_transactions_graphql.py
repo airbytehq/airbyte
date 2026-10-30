@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,21 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int,
+    order_created_at: str,
+    transaction_id: int,
+    transaction_created_at: str,
+    order_updated_at: Optional[str] = None,
+    kind: str = "SALE",
+    status: str = "SUCCESS",
+) -> str:
+    order_updated_at_field = f'"order_updated_at":"{order_updated_at}",' if order_updated_at else ""
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}",{order_updated_at_field}"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"{kind}","amount":"57.23","createdAt":"{transaction_created_at}","status":"{status}",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -164,3 +173,71 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+@pytest.mark.parametrize(
+    "order_jsonl, expected_ids",
+    [
+        pytest.param(
+            # the refund and its order predate the saved state, the order was updated after it (refund PENDING -> SUCCESS)
+            _order_jsonl(1, "2026-10-20T08:00:00Z", 1001, "2026-10-21T09:00:00Z", order_updated_at="2026-10-22T15:10:00Z", kind="REFUND"),
+            [1001],
+            id="order_updated_after_state_is_emitted",
+        ),
+        pytest.param(
+            _order_jsonl(1, "2026-10-20T08:00:00Z", 1001, "2026-10-21T09:00:00Z", order_updated_at="2026-10-22T14:59:10Z", kind="REFUND"),
+            [1001],
+            id="order_updated_at_equal_to_state_is_emitted",
+        ),
+        pytest.param(
+            _order_jsonl(1, "2026-10-20T08:00:00Z", 1001, "2026-10-21T09:00:00Z", order_updated_at="2026-10-22T14:00:00Z", kind="REFUND"),
+            [],
+            id="order_updated_before_state_is_dropped",
+        ),
+    ],
+)
+def test_transactions_graphql_emits_transactions_of_orders_updated_after_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    order_jsonl,
+    expected_ids,
+) -> None:
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [order_jsonl],
+        state_value="2026-10-22T14:59:10+00:00",
+    )
+
+    assert [record["id"] for record in test_records] == expected_ids
+    assert all("order_updated_at" not in record for record in test_records)
+
+
+def test_transactions_graphql_refund_status_change_is_captured_incrementally(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state = {"created_at": "2026-10-22T14:16:17+00:00"}
+    pending = _order_jsonl(
+        1, "2026-10-20T08:00:00Z", 1001, "2026-10-22T14:00:00Z", order_updated_at="2026-10-22T14:00:00Z", kind="REFUND", status="PENDING"
+    )
+    newer_sale = _order_jsonl(2, "2026-10-22T14:59:00Z", 1002, "2026-10-22T14:59:10Z", order_updated_at="2026-10-22T14:59:10Z")
+    succeeded = _order_jsonl(
+        1, "2026-10-20T08:00:00Z", 1001, "2026-10-22T14:00:00Z", order_updated_at="2026-10-22T15:10:00Z", kind="REFUND", status="SUCCESS"
+    )
+
+    stream, first_sync = _read_transactions(
+        requests_mock, bulk_job_completed_response, auth_config, [pending, newer_sale], state_value=state["created_at"]
+    )
+    assert [record["id"] for record in first_sync] == [1002]
+    for record in first_sync:
+        state = stream.get_updated_state(state, record)
+    assert state == {"created_at": "2026-10-22T14:59:10+00:00"}
+
+    _, second_sync = _read_transactions(
+        requests_mock, bulk_job_completed_response, auth_config, [succeeded], state_value=state["created_at"]
+    )
+    assert [(record["id"], record["status"]) for record in second_sync] == [(1001, "SUCCESS")]
