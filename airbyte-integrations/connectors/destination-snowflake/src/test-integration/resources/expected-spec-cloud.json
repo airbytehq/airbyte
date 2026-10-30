@@ -43,7 +43,7 @@
       "schema" : {
         "type" : "string",
         "description" : "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
-        "title" : "Default Schema",
+        "title" : "Default schema",
         "group" : "connection",
         "order" : 4,
         "examples" : [ "AIRBYTE_SCHEMA" ]
@@ -70,15 +70,15 @@
             },
             "private_key" : {
               "type" : "string",
-              "description" : "RSA Private key to use for Snowflake connection. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more\n information on how to obtain this key.",
-              "title" : "Private Key",
+              "description" : "Enter the RSA private key for Snowflake key pair authentication. See <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake#step-1-set-up-key-pair-authentication\">Step 1</a> to generate the key pair and register its public key.",
+              "title" : "Private key",
               "order" : 0,
               "multiline" : true,
               "airbyte_secret" : true
             },
             "private_key_password" : {
               "type" : "string",
-              "description" : "Passphrase for private key",
+              "description" : "If the private key is encrypted, enter the passphrase you set when you created it. If you do not know it, obtain it from the administrator who provided the key.",
               "title" : "Passphrase",
               "order" : 0,
               "airbyte_secret" : true
@@ -98,7 +98,7 @@
             },
             "password" : {
               "type" : "string",
-              "description" : "Deprecated. Enter the password associated with the username.",
+              "description" : "Deprecated. Enter the password associated with the Snowflake user for this authentication method. Obtain the password from your Snowflake account administrator.",
               "title" : "Password",
               "order" : 0,
               "airbyte_secret" : true
@@ -119,7 +119,7 @@
             "programmatic_access_token" : {
               "type" : "string",
               "description" : "The programmatic access token generated for the Snowflake user. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake#programmatic-access-token-authentication\">docs</a> for more\n information on how to generate a token.",
-              "title" : "Programmatic Access Token",
+              "title" : "Programmatic access token",
               "order" : 0,
               "airbyte_secret" : true
             }
@@ -127,7 +127,7 @@
           "required" : [ "auth_type", "programmatic_access_token" ]
         } ],
         "description" : "Determines the type of authentication that should be used.",
-        "title" : "Authorization Method",
+        "title" : "Authentication method",
         "group" : "connection",
         "order" : 6,
         "type" : "object"
@@ -151,15 +151,15 @@
       },
       "raw_data_schema" : {
         "type" : "string",
-        "description" : "Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to \"airbyte_internal\".",
-        "title" : "Airbyte Internal Table Dataset Name",
+        "description" : "Airbyte will use this schema for its internal tables. In legacy raw tables mode, Airbyte stores raw tables in this schema. Defaults to \"airbyte_internal\".",
+        "title" : "Airbyte internal schema name",
         "group" : "advanced",
         "order" : 8
       },
       "trim_space" : {
         "type" : "boolean",
         "description" : "Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.",
-        "title" : "Trim Whitespace from String Fields",
+        "title" : "Trim whitespace from string fields",
         "group" : "advanced",
         "order" : 9,
         "default" : true
@@ -167,14 +167,14 @@
       "jdbc_url_params" : {
         "type" : "string",
         "description" : "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
-        "title" : "JDBC URL Params",
+        "title" : "JDBC URL parameters",
         "group" : "advanced",
         "order" : 10
       },
       "retention_period_days" : {
         "type" : "integer",
         "description" : "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
-        "title" : "Data Retention Period (days)",
+        "title" : "Data retention period (days)",
         "group" : "advanced",
         "order" : 11
       },
@@ -183,7 +183,7 @@
         "default" : "FLOAT",
         "enum" : [ "NUMBER(38,9)", "FLOAT" ],
         "description" : "Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.",
-        "title" : "Decimal Data Type",
+        "title" : "Decimal data type",
         "group" : "advanced",
         "order" : 12
       }

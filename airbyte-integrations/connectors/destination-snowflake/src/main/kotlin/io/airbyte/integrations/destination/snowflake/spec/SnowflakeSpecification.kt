@@ -61,7 +61,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     val database: String = ""
 
-    @get:JsonSchemaTitle("Default Schema")
+    @get:JsonSchemaTitle("Default schema")
     @get:JsonPropertyDescription(
         "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
     )
@@ -81,7 +81,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     val username: String = ""
 
-    @get:JsonSchemaTitle("Authorization Method")
+    @get:JsonSchemaTitle("Authentication method")
     @get:JsonSchemaDescription("Determines the type of authentication that should be used.")
     @get:JsonProperty("credentials")
     @get:JsonSchemaInject(json = """{"group": "connection", "order":6}""")
@@ -110,15 +110,15 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @Suppress("RedundantNullableReturnType")
     val legacyRawTablesOnly: Boolean? = false
 
-    @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
+    @get:JsonSchemaTitle("Airbyte internal schema name")
     @get:JsonPropertyDescription(
-        """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
+        """Airbyte will use this schema for its internal tables. In legacy raw tables mode, Airbyte stores raw tables in this schema. Defaults to "airbyte_internal".""",
     )
     @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableSchema: String? = null
 
-    @get:JsonSchemaTitle("Trim Whitespace from String Fields")
+    @get:JsonSchemaTitle("Trim whitespace from string fields")
     @get:JsonPropertyDescription(
         """Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
     )
@@ -127,7 +127,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @Suppress("RedundantNullableReturnType")
     val trimSpace: Boolean? = true
 
-    @get:JsonSchemaTitle("JDBC URL Params")
+    @get:JsonSchemaTitle("JDBC URL parameters")
     @get:JsonPropertyDescription(
         """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
@@ -135,7 +135,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val jdbcUrlParams: String? = null
 
-    @get:JsonSchemaTitle("Data Retention Period (days)")
+    @get:JsonSchemaTitle("Data retention period (days)")
     @get:JsonPropertyDescription(
         """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
     )
@@ -144,7 +144,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
 
-    @get:JsonSchemaTitle("Decimal Data Type")
+    @get:JsonSchemaTitle("Decimal data type")
     @get:JsonPropertyDescription(
         """Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.""",
     )
@@ -185,17 +185,18 @@ sealed class CredentialsSpecification(
 @JsonSchemaTitle("Key Pair Authentication")
 @JsonSchemaDescription("Configuration details for the Key Pair Authentication.")
 class KeyPairAuthSpecification(
-    @get:JsonSchemaTitle("Private Key")
+    @get:JsonSchemaTitle("Private key")
     @get:JsonPropertyDescription(
-        """RSA Private key to use for Snowflake connection. See the <a
- href="https://docs.airbyte.com/integrations/destinations/snowflake">docs</a> for more
- information on how to obtain this key.""",
+        """Enter the RSA private key for Snowflake key pair authentication. See <a href="https://docs.airbyte.com/integrations/destinations/snowflake#step-1-set-up-key-pair-authentication">Step 1</a> to generate the key pair and register its public key.""",
     )
     @get:JsonProperty("private_key")
     @get:JsonSchemaInject(json = """{"order": 0, "multiline": true, "airbyte_secret": true}""")
     val privateKey: String = "",
     @get:JsonSchemaTitle("Passphrase")
-    @get:JsonPropertyDescription("Passphrase for private key")
+    @get:JsonPropertyDescription(
+        "If the private key is encrypted, enter the passphrase you set when you created it. " +
+            "If you do not know it, obtain it from the administrator who provided the key.",
+    )
     @get:JsonProperty("private_key_password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val privateKeyPassword: String? = null,
@@ -207,7 +208,10 @@ class KeyPairAuthSpecification(
 )
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Deprecated. Enter the password associated with the username.")
+    @get:JsonPropertyDescription(
+        "Deprecated. Enter the password associated with the Snowflake user for this authentication method. " +
+            "Obtain the password from your Snowflake account administrator.",
+    )
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = "",
@@ -218,7 +222,7 @@ class UsernamePasswordAuthSpecification(
     "Configuration details for authenticating with a Snowflake programmatic access token (PAT) generated for the username above.",
 )
 class ProgrammaticAccessTokenAuthSpecification(
-    @get:JsonSchemaTitle("Programmatic Access Token")
+    @get:JsonSchemaTitle("Programmatic access token")
     @get:JsonPropertyDescription(
         """The programmatic access token generated for the Snowflake user. See the <a
  href="https://docs.airbyte.com/integrations/destinations/snowflake#programmatic-access-token-authentication">docs</a> for more
