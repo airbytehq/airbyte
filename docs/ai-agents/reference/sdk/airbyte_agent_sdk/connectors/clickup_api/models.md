@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[CommentsSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[FoldersSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[GoalsSearchData]
@@ -71,7 +72,6 @@ Classes
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[TimeTrackingSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[UserSearchData]
-    * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

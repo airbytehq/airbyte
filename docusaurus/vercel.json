@@ -9,6 +9,11 @@
   },
   "redirects": [
     {
+      "source": "/platform/using-airbyte/getting-started/academy",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 308
+    },
+    {
       "source": "/ai-agents/interfaces/ui/automations",
       "destination": "/ai-agents/interfaces/ui",
       "statusCode": 308
@@ -276,6 +281,21 @@
     {
       "source": "/integrations/sources/appstore-singer",
       "destination": "/integrations/sources/appstore",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/sources/mongodb-v2",
+      "destination": "/integrations/sources/mongodb",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/sources/mongodb-v2-migrations",
+      "destination": "/integrations/sources/mongodb-migrations",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting",
+      "destination": "/integrations/sources/mongodb/mongodb-troubleshooting",
       "statusCode": 301
     },
     {

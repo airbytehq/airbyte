@@ -604,8 +604,7 @@ def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it
 @pytest.mark.parametrize(
     "stream, status_code",
     [
-        ("legacy_teams", 404),
-        ("legacy_teams", 410),
+        ("legacy_teams", 415),
         ("projects", 402),
         ("projects", 415),
         ("deal_installments", 402),
@@ -613,7 +612,7 @@ def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it
     ],
 )
 def test_plan_responses_with_an_html_body_are_still_skipped(stream, status_code) -> None:
-    # Plan statuses and the API v1 404s of legacy_teams and permission_set_assignments stay skipped whatever the
+    # Plan statuses and the documented API v1 404 of permission_set_assignments stay skipped whatever the
     # body. An HTML 404 from an API v2 route fails instead (see the next test).
     html = HttpResponse(body="<html><body>Not available</body></html>", status_code=status_code, headers={"Content-Type": "text/html"})
     with HttpMocker() as http_mocker:
@@ -786,8 +785,8 @@ _HANDLER_KINDS = {
         "json": {402: "config", 404: "system", 410: "system", 415: "config"},
     },
     "legacy_teams": {
-        "html": {402: "config", 404: "skip", 410: "skip", 415: "skip"},
-        "json": {402: "config", 404: "skip", 410: "skip", 415: "skip"},
+        "html": {402: "config", 404: "system", 410: "system", 415: "skip"},
+        "json": {402: "config", 404: "system", 410: "system", 415: "skip"},
     },
     "projects": {
         "html": {402: "skip", 404: "guard", 410: "system", 415: "skip"},
@@ -873,3 +872,58 @@ def test_every_per_stream_handler_classifies_each_status_in_order(stream) -> Non
                 mismatches.append(f"{body} {status_code}: expected {outcome}, got {actual}")
 
     assert not mismatches, mismatches
+
+
+_SCOPE_MISMATCH = {"success": False, "error": "Scope and URL mismatch", "errorCode": 403}
+
+
+@pytest.mark.parametrize("stream", list(_STREAM_KINDS))
+def test_every_per_stream_handler_fails_a_missing_oauth_scope_before_its_403_skip(stream) -> None:
+    # A missing app scope is a setup problem, so the per-record 403 skips must not swallow it.
+    response = _response(403, html=False)
+    response._content = json.dumps(_SCOPE_MISMATCH).encode()
+
+    resolution = _per_stream_handler(stream).interpret_response(response)
+
+    assert resolution.response_action == ResponseAction.FAIL
+    assert resolution.failure_type == FailureType.config_error
+    assert "lacks the scope" in resolution.error_message
+
+
+@pytest.mark.parametrize("stream", ["deals", "deal_products", "deal_flow"])
+def test_missing_oauth_scope_fails_the_sync_instead_of_reading_empty(stream) -> None:
+    with HttpMocker() as http_mocker:
+        response = HttpResponse(json.dumps(_SCOPE_MISMATCH), 403)
+        if stream == "deals":
+            http_mocker.get(deals_request(), response)
+        else:
+            _mock_gated_stream(http_mocker, stream, response)
+
+        output = read_stream(stream, expecting_exception=True)
+
+    assert output.records == []
+    error = _error_trace(output)
+    assert error.failure_type == FailureType.config_error
+    assert "lacks the scope" in error.message
+
+
+def _base_error_handler():
+    from conftest import _YAML_FILE_PATH
+
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
+    return ModelToComponentFactory().create_component(DefaultErrorHandlerModel, manifest["definitions"]["base_error_handler"], config={})
+
+
+@pytest.mark.parametrize("stream", ["<base>"] + list(_STREAM_KINDS))
+def test_every_handler_refreshes_an_oauth_401_and_fails_a_token_401(stream) -> None:
+    handler = _base_error_handler() if stream == "<base>" else _per_stream_handler(stream)
+    for url, action in (
+        ("https://acme.pipedrive.com/api/v1/example", ResponseAction.REFRESH_TOKEN_THEN_RETRY),
+        ("https://api.pipedrive.com/v1/example", ResponseAction.FAIL),
+    ):
+        response = _response(401, html=False)
+        response._content = json.dumps({"success": False, "error": "unauthorized access", "errorCode": 401}).encode()
+        response.request = requests.Request("GET", url).prepare()
+        response.url = url
+
+        assert handler.interpret_response(response).response_action == action, url

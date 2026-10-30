@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.sendgrid.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[BlocksSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[BouncesSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[CampaignsSearchData]
@@ -75,7 +76,6 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupMembersSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupsSearchData]
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[TemplatesSearchData]
-    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

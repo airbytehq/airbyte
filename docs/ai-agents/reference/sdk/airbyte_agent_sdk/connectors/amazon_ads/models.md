@@ -101,8 +101,8 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.amazon_ads.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[ProfilesSearchData]
-    * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

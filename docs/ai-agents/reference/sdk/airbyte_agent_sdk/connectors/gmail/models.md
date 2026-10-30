@@ -62,12 +62,12 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.gmail.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[DraftsSearchData]
     * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[LabelsSearchData]
     * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[MessagesSearchData]
     * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[ProfileSearchData]
     * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[ThreadsSearchData]
-    * airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

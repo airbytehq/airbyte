@@ -87,7 +87,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against agents records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -178,6 +178,7 @@ Classes
         - rating: Satisfaction rating
         - missed: Whether chat was missed
         - agent_ids: IDs of agents in chat
+        - history: Chat history events including message text in msg
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
@@ -194,7 +195,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against chats records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -267,7 +268,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against departments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -399,7 +400,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against shortcuts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -490,7 +491,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against triggers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

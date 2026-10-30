@@ -653,9 +653,9 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.reddit_ads.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.reddit_ads.models.AirbyteSearchResult[AdsSearchData]
     * airbyte_agent_sdk.connectors.reddit_ads.models.AirbyteSearchResult[CampaignsSearchData]
-    * airbyte_agent_sdk.connectors.reddit_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

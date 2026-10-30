@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.incident_io.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[AlertsSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[CatalogTypesSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[CustomFieldsSearchData]
@@ -74,7 +75,6 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[SchedulesSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[SeveritiesSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

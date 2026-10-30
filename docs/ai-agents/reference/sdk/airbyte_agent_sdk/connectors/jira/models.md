@@ -62,13 +62,13 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.jira.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueCommentsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueFieldsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueWorklogsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssuesSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

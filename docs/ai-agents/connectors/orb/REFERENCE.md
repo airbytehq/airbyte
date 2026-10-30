@@ -10,7 +10,7 @@ The Orb connector supports the following entities and actions.
 |--------|---------|
 | Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search), [Context Store SQL Query](#customers-context-store-sql-query) |
 | Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Context Store Search](#subscriptions-context-store-search), [Context Store SQL Query](#subscriptions-context-store-sql-query) |
-| Plans | [List](#plans-list), [Get](#plans-get), [Context Store Search](#plans-context-store-search), [Context Store SQL Query](#plans-context-store-sql-query) |
+| Plans | [List](#plans-list), [Get](#plans-get), [Context Store Search](#plans-context-store-search), [Context Store SQL Query](#plans-context-store-sql-query), [Semantic Search](#plans-semantic-search) |
 | Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search), [Context Store SQL Query](#invoices-context-store-sql-query) |
 
 ## Customers
@@ -936,6 +936,89 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Plans Semantic Search
+
+Search plans records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "plans",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `plans.context_store_search` helper only accepts `query`.
+
+```python
+await orb.execute(
+    "plans",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "plans",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 | A description of the plan |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>

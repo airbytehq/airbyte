@@ -13,9 +13,9 @@ The Clickup-Api connector supports the following entities and actions.
 | Spaces | [List](#spaces-list), [Get](#spaces-get), [Context Store Search](#spaces-context-store-search), [Context Store SQL Query](#spaces-context-store-sql-query) |
 | Folders | [List](#folders-list), [Get](#folders-get), [Context Store Search](#folders-context-store-search), [Context Store SQL Query](#folders-context-store-sql-query) |
 | Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search), [Context Store SQL Query](#lists-context-store-sql-query) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query) |
-| Comments | [List](#comments-list), [Create](#comments-create), [Get](#comments-get), [Update](#comments-update), [Context Store Search](#comments-context-store-search), [Context Store SQL Query](#comments-context-store-sql-query) |
-| Goals | [List](#goals-list), [Get](#goals-get), [Context Store Search](#goals-context-store-search), [Context Store SQL Query](#goals-context-store-sql-query) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query), [Semantic Search](#tasks-semantic-search) |
+| Comments | [List](#comments-list), [Create](#comments-create), [Get](#comments-get), [Update](#comments-update), [Context Store Search](#comments-context-store-search), [Context Store SQL Query](#comments-context-store-sql-query), [Semantic Search](#comments-semantic-search) |
+| Goals | [List](#goals-list), [Get](#goals-get), [Context Store Search](#goals-context-store-search), [Context Store SQL Query](#goals-context-store-sql-query), [Semantic Search](#goals-semantic-search) |
 | Views | [List](#views-list), [Get](#views-get) |
 | View Tasks | [List](#view-tasks-list) |
 | Time Tracking | [List](#time-tracking-list), [Get](#time-tracking-get), [Context Store Search](#time-tracking-context-store-search), [Context Store SQL Query](#time-tracking-context-store-sql-query) |
@@ -1805,6 +1805,92 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tasks Semantic Search
+
+Search tasks records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "name", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `tasks.context_store_search` helper only accepts `query`.
+
+```python
+await clickup_api.execute(
+    "tasks",
+    "context_store_search",
+    {"semantic": {"field": "name", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "name", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `name` | 2048 | Name of the task |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date_updated` | `string` | Source record field |
+| `data[].entity.date_created` | `string` | Source record field |
+| `data[].entity.url` | `string` | Source record field |
+| `data[].entity.parent` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Comments
 
 ### Comments List
@@ -2229,6 +2315,89 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Comments Semantic Search
+
+Search comments records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "comment_text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `comments.context_store_search` helper only accepts `query`.
+
+```python
+await clickup_api.execute(
+    "comments",
+    "context_store_search",
+    {"semantic": {"field": "comment_text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "comment_text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `comment_text` | 2048 | Plain-text content of the comment |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Goals
 
 ### Goals List
@@ -2558,6 +2727,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta` | `object` | Query metadata |
 | `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
 | `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Goals Semantic Search
+
+Search goals records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "goals",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `goals.context_store_search` helper only accepts `query`.
+
+```python
+await clickup_api.execute(
+    "goals",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "goals",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 | Description of the goal |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.date_updated` | `string` | Source record field |
+| `data[].entity.date_created` | `string` | Source record field |
+| `data[].entity.team_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>

@@ -131,13 +131,13 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.gong.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallTranscriptsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallsExtensiveSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[SettingsScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[StatsActivityScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

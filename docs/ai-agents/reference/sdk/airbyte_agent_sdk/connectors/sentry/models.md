@@ -62,11 +62,11 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.sentry.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[EventsSearchData]
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[IssuesSearchData]
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[ReleasesSearchData]
-    * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

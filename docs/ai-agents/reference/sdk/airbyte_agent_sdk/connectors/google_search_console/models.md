@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.google_search_console.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SearchAnalyticsAllFieldsSearchData]
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SearchAnalyticsByCountrySearchData]
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SearchAnalyticsByDateSearchData]
@@ -70,7 +71,6 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SearchAnalyticsByQuerySearchData]
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SitemapsSearchData]
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[SitesSearchData]
-    * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

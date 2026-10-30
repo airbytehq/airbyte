@@ -372,7 +372,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against coupon records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -489,7 +489,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against credit_note records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -620,7 +620,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against customer records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -699,7 +699,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against event records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -836,7 +836,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invoice records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -941,7 +941,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against item_price records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1035,7 +1035,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against item records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1163,7 +1163,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against order records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1253,7 +1253,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against payment_source records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1397,7 +1397,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against subscription records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1520,7 +1520,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.chargebee.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against transaction records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

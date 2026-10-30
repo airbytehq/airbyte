@@ -1784,6 +1784,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupAdLabelsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupAdsSearchData]
@@ -1791,7 +1792,6 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignLabelsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignsSearchData]
-    * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

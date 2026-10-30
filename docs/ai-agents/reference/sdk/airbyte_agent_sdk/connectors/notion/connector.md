@@ -84,7 +84,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against blocks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -203,7 +203,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against comments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -291,7 +291,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against data_sources records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -694,7 +694,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against pages records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -800,7 +800,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

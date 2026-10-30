@@ -55,7 +55,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_groups records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -162,7 +162,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_groups_reports_daily records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -243,7 +243,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -353,7 +353,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads_reports_daily records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -470,7 +470,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads_reports_hourly records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -586,7 +586,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads_reports_lifetime records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -681,7 +681,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against advertisers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -771,7 +771,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against advertisers_reports_daily records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -844,7 +844,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against audiences records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -926,7 +926,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1015,7 +1015,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns_reports_daily records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1112,7 +1112,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against creative_assets_images records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1181,7 +1181,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against creative_assets_videos records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1244,7 +1244,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against spark_ads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

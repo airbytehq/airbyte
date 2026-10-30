@@ -65,7 +65,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against account_overview records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -127,7 +127,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against addresses records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -216,7 +216,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against agents_activity records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -292,7 +292,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against agents_overview records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -370,7 +370,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against call_legs records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -468,7 +468,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against calls records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -532,7 +532,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against current_queue_activity records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -587,7 +587,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against greeting_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -663,7 +663,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against greetings records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -731,7 +731,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ivrs records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -824,7 +824,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_talk.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against phone_numbers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

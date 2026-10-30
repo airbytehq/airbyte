@@ -47,7 +47,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against daily_active_users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -125,7 +125,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against devices records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -193,7 +193,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against four_weekly_active_users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -573,7 +573,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against locations records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -644,7 +644,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against pages records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -721,7 +721,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against traffic_sources records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -796,7 +796,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against website_overview records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -864,7 +864,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against weekly_active_users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

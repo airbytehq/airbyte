@@ -101,11 +101,11 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.orb.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[CustomersSearchData]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[InvoicesSearchData]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[PlansSearchData]
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[SubscriptionsSearchData]
-    * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

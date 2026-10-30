@@ -144,7 +144,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against charges records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -274,7 +274,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against customers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -545,7 +545,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against invoices records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -897,7 +897,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against refunds records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1328,7 +1328,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.stripe.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against subscriptions records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

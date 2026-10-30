@@ -368,6 +368,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.zoho_crm.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[CampaignsSearchData]
@@ -380,7 +381,6 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[ProductsSearchData]
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[QuotesSearchData]
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[TasksSearchData]
-    * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

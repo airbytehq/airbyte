@@ -51,7 +51,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against automations records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -136,7 +136,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -224,7 +224,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against email_activity records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -289,7 +289,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against interest_categories records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -365,7 +365,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against interests records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -464,7 +464,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against list_members records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -568,7 +568,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against lists records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -971,7 +971,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against reports records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1061,7 +1061,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against segment_members records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1129,7 +1129,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against segments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1206,7 +1206,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1273,7 +1273,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against unsubscribes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

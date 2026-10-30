@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[AttachmentsSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[SectionsSearchData]
@@ -70,7 +71,6 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[WorkspacesSearchData]
-    * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
