@@ -83,6 +83,7 @@ Incremental sync has two limitations for this stream:
 
 - Deleting an attached item in Chargebee doesn't remove its record from the destination. A full refresh with overwrite replaces the stream's data and drops it.
 - An item last updated before the start date isn't read as a parent. If that item is updated later, the connector only fetches its attached items that changed since the last sync, so its older attached items are never synced. To avoid this, set an earlier start date or periodically run a full refresh of the stream.
+
 :::
 
 ## Limitations & Troubleshooting
