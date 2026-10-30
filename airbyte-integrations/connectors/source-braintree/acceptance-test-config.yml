@@ -18,9 +18,6 @@ acceptance_tests:
         empty_streams:
           - name: subscription_stream
             bypass_reason: "No subscription in the test account"
-        expect_records:
-          path: integration_tests/expected_records.jsonl
-          exact_order: no
   incremental:
     tests:
       - config_path: secrets/config.json

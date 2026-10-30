@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
 )
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 
 from .utils import command_check
 
@@ -81,6 +82,32 @@ class TestSourceFacebookMarketing:
         )
         assert ok
         assert not error_msg
+
+    def test_check_connection_disables_rate_limit_pauses(self, api, config, logger_mock, fb_marketing):
+        """The platform fails a check that has not finished within 9 minutes, so the check must not wait out rate limits."""
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert ok and not error_msg
+        assert api.return_value.api.pause_on_rate_limit is False
+
+    def test_check_connection_rate_limited_account_fails_fast(self, requests_mock, mocker, config, logger_mock, fb_marketing):
+        """End to end through the real API: a blocked ad account surfaces the connector's rate-limit message
+        after the backoff ladder alone (5 calls), without any rate-limit pause."""
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+            status_code=400,
+            json={"error": {"code": 17, "error_subcode": 2446079, "message": "Ad Account Has Too Many API Calls", "is_transient": False}},
+            headers={"x-ad-account-usage": '{"acc_id_util_pct": 100, "reset_time_duration": 600}'},
+        )
+        sleep_mock = mocker.patch("source_facebook_marketing.api.sleep")
+
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert ok is False
+        assert error_msg.startswith("The maximum number of requests on the Facebook API has been reached")
+        sleep_mock.assert_not_called()
+        assert len([r for r in requests_mock.request_history if "/act_123/" in r.url]) == 5
 
     def test_check_connection_future_date_range(self, api, config, logger_mock, fb_marketing):
         config["start_date"] = "2219-10-10T00:00:00"
@@ -142,6 +169,43 @@ class TestSourceFacebookMarketing:
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
+    @pytest.mark.parametrize(
+        "breakdowns",
+        [
+            pytest.param(["publisher_platform", "device_platform", "age", "gender", "country"], id="configured-order"),
+            pytest.param(["country", "gender", "age", "device_platform", "publisher_platform"], id="reverse-order"),
+        ],
+    )
+    def test_get_custom_insights_streams_preserves_breakdowns_order(self, api, config, fb_marketing, breakdowns):
+        config["custom_insights"] = [
+            {
+                "name": "ordered",
+                "fields": ["ad_id", "account_id", "spend"],
+                "breakdowns": [*breakdowns, breakdowns[0]],
+                "action_breakdowns": ["action_type", "action_destination", "action_type"],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        stream = streams[0]
+
+        assert stream.breakdowns == breakdowns
+        assert stream.action_breakdowns == ["action_type", "action_destination"]
+        assert stream.primary_key == ["date_start", "account_id", "ad_id", *breakdowns]
+        assert stream.fields() == ["ad_id", "account_id", "spend"]
+
+    def test_get_custom_insights_streams_preserves_fields_order(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "ordered_fields",
+                "fields": ["ad_id", "account_id", "spend", "ad_id"],
+                "breakdowns": [],
+                "action_breakdowns": [],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert streams[0].fields() == ["ad_id", "account_id", "spend"]
+
     def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
@@ -183,6 +247,33 @@ class TestSourceFacebookMarketing:
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
+
+    def test_deprecated_dma_breakdown_removed_from_spec(self, fb_marketing):
+        # Meta replaced `dma` with `comscore_market` (oncall #12940). `dma` must no longer be a
+        # selectable breakdown, so a Custom Insights config still using it is rejected by the CDK's
+        # config-vs-spec validation. `comscore_market` remains available as the replacement.
+        spec = fb_marketing.spec(None).connectionSpecification
+        breakdowns_enum = spec["properties"]["custom_insights"]["items"]["properties"]["breakdowns"]["items"]["enum"]
+        assert "dma" not in breakdowns_enum
+        assert "comscore_market" in breakdowns_enum
+
+    def test_dma_breakdown_config_rejected_with_config_error(self, config, fb_marketing):
+        """Validate the actual error users see when their saved config still references dma."""
+        config["custom_insights"] = [
+            {
+                "name": "test_dma_stream",
+                "fields": ["account_id"],
+                "breakdowns": ["dma"],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        source_spec = fb_marketing.spec(None)
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            check_config_against_spec_or_exit(config, source_spec)
+
+        assert exc_info.value.failure_type.value == "config_error"
+        assert "dma" in exc_info.value.message
+        assert "Config validation error" in exc_info.value.message
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(

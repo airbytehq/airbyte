@@ -38,7 +38,7 @@ class UnpartitionedDeltaWriter(
         io,
         targetFileSize,
         schema,
-        identifierFieldIds
+        identifierFieldIds,
     ) {
 
     private val writer = RowDataDeltaWriter(null)

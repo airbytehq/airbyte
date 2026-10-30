@@ -34,7 +34,7 @@ private const val RULE2 = "${REGEX_CLASSIFIER_PREFIX}.rules[2]"
             Property(name = "$RULE2.error", value = "system"),
             Property(name = "$RULE2.pattern", value = "baz"),
             Property(name = "$RULE2.input-example", value = "foobarbaz"),
-        ]
+        ],
 )
 class RegexExceptionClassifierTest {
 

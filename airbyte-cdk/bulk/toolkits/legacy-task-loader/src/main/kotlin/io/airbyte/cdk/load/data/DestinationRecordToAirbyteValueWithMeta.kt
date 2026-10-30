@@ -12,9 +12,9 @@ import java.util.*
 
 /**
  * @param flatten whether to promote user-defined fields to the root level. If this is set to
- * `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
+ *   `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
  * @param extractedAtAsTimestampWithTimezone whether to return the `_airbyte_extracted_at` field as
- * an [IntegerValue] or as a [TimestampWithTimezoneValue].
+ *   an [IntegerValue] or as a [TimestampWithTimezoneValue].
  */
 class DestinationRecordToAirbyteValueWithMeta(
     val stream: DestinationStream,
@@ -43,13 +43,12 @@ class DestinationRecordToAirbyteValueWithMeta(
                                             linkedMapOf(
                                                 "field" to StringValue(it.field),
                                                 "change" to StringValue(it.change.name),
-                                                "reason" to StringValue(it.reason.name)
-                                            )
+                                                "reason" to StringValue(it.reason.name),
+                                            ),
                                         )
-                                    }
-                                        ?: emptyList()
-                                )
-                        )
+                                    } ?: emptyList(),
+                                ),
+                        ),
                     ),
                 Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(stream.generationId),
             )
@@ -107,8 +106,8 @@ fun Meta.Change.toAirbyteValue(): ObjectValue =
         linkedMapOf(
             "field" to StringValue(field),
             "change" to StringValue(change.name),
-            "reason" to StringValue(reason.name)
-        )
+            "reason" to StringValue(reason.name),
+        ),
     )
 
 fun List<Meta.Change>.toAirbyteValues(): List<ObjectValue> = map { it.toAirbyteValue() }

@@ -163,34 +163,9 @@ You can only use these templates for platform docs. Docs for connectors have the
 
 If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](/platform/connector-development/writing-connector-docs). Platform documentation is less formulaic.
 
-### Agent connector documentation {#agent-connector-docs}
+### Agent connector labels {#agent-connector-labels}
 
-Agent connector documentation follows a different workflow than traditional connector docs. Agent connectors are Python packages that equip AI agents to call third-party APIs. Their documentation is fully automated and flows through a three-stage pipeline that requires no manual intervention.
-
-#### How agent connector docs are delivered
-
-The documentation pipeline involves three repositories and two GitHub Apps:
-
-1. **Source repository (sonar)**: Connector definitions live in the private [sonar](https://github.com/airbytehq/sonar) repository under `integrations/*/connector.yaml`. When changes merge to `main`, the [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) workflow generates Python packages including documentation files. The [BlessedConnectorGenerator](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/generator.py) class uses Jinja2 templates ([README.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/README.md.jinja2), [REFERENCE.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/REFERENCE.md.jinja2)) to generate README.md and REFERENCE.md, while [generate-changelog.py](https://github.com/airbytehq/sonar/blob/main/scripts/connectors/generate-changelog.py) creates CHANGELOG.md entries. The `octavia-bot-hoard` GitHub App authenticates and pushes these generated files to the airbyte-agent-connectors repository.
-
-2. **Generated repository (airbyte-agent-connectors)**: The [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) repository receives the generated connector packages. Each connector has its own directory under `connectors/` containing the Python package and documentation files. The [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) workflow publishes packages to PyPI and creates GitHub releases.
-
-3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-connectors repository, copies all markdown files from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
-
-#### Key characteristics
-
-- **Fully automated**: No manual steps are required. Changes to connector definitions in sonar automatically propagate to the public documentation.
-- **Two-hour sync cycle**: Documentation updates appear on docs.airbyte.com within two hours of changes merging to airbyte-agent-connectors.
-- **Bot-managed PRs**: The `octavia-bot-hoard` and `octavia-bot` GitHub Apps handle authentication and PR creation across repositories.
-- **Auto-merge enabled**: Documentation sync PRs are labeled for auto-merge, minimizing manual review overhead.
-
-#### Workflow files reference
-
-| Repository | Workflow | Purpose |
-| --- | --- | --- |
-| [sonar](https://github.com/airbytehq/sonar) | [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) | Generates connector packages and pushes to airbyte-agent-connectors |
-| [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) | [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) | Publishes packages to PyPI |
-| [airbyte](https://github.com/airbytehq/airbyte) | [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) | Syncs docs from airbyte-agent-connectors to Docusaurus |
+Some data replication connectors also have an agent connector equivalent. Connector pages and the connector lists on `/integrations` mark these connectors. The list of agent-capable connectors lives in [`docusaurus/src/data/agent_connectors.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/src/data/agent_connectors.json). Add or remove a connector's slug there, without the `source-` or `destination-` prefix, to change its label.
 
 ## Multiple instances
 
@@ -202,7 +177,6 @@ Currently, the site has these instances:
 - Platform
 - Connectors
 - Release notes
-- AI Agents
 - Developers
 - Community
 
@@ -242,13 +216,12 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 6 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 5 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: Core, Self-Managed Enterprise, Standard, and Plus - doesn't include Pro, Enterprise Flex, or Embedded
+- `all`: everything except Embedded - Core, Standard, Plus, Pro, and Enterprise Flex
 - `oss-community`: Core only
-- `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
@@ -262,8 +235,6 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
-**Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
-
 In this example, the Core badge appears highlighted, and all other badges appear grayed out.
 
 ```markdown
@@ -276,14 +247,14 @@ products: oss-community
 Some text.
 ```
 
-In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, Plus, and Self-Managed Enterprise badges appear grayed out.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Plus badges appear grayed out.
 
 ```markdown
 ---
-products: cloud-teams, enterprise-flex, oss-enterprise
+products: cloud-teams, enterprise-flex
 ---
 
-# This topic is for Pro, Enterprise Flex, and Self-Managed Enterprise
+# This topic is for Pro and Enterprise Flex
 
 Some text.
 ```

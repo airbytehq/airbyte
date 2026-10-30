@@ -141,6 +141,8 @@ definitions:
         cursor_field: date
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S+0000"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -256,7 +258,7 @@ definitions:
           $ref: "#/schemas/dividends"
   base_requester:
     type: HttpRequester
-    url_base: https://api.marketstack.com/v1/
+    url_base: https://api.marketstack.com/v2/
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
