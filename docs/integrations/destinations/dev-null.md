@@ -51,10 +51,8 @@ log line includes the stream, the record index, and the record's fields:
 Logging Destination(stream=public.users, recordIndex=0, logEntry=1/100): {...}
 ```
 
-Each stream is logged independently. The log-entry counters are kept per internal batch: they reset
-each time the destination flushes a batch (every 100,000 records, 50 MB, or 5 minutes without new
-records), so over a long sync more than **N** entries can appear. The hard cap is 1,000 entries per
-batch, whichever logging type you choose.
+Each stream is logged independently, and the destination never logs more than **1,000 entries per
+stream**, whichever logging type you choose.
 
 | Logging type | Behavior | Options |
 | :--- | :--- | :--- |
@@ -70,9 +68,8 @@ and observe how the source and the platform behave under back-pressure.
 
 ### Failing
 
-Failing mode discards records until it has received the configured number of messages
-(`num_messages`) within one internal batch, then throws an exception, which fails the sync. Keep
-`num_messages` well below 100,000 (the batch size) so the failure is actually triggered. Use it to test failure
+Failing mode discards records until a stream has received the configured number of messages
+(`num_messages`), then throws an exception, which fails the sync. Use it to test failure
 handling, retries, and alerting.
 
 ## Sync modes
@@ -96,7 +93,7 @@ output as part of the stream identifier.
 ## Limitations
 
 - No data is persisted. There is nothing to inspect after a sync other than the logs.
-- Logging mode caps output at 1,000 entries per batch and may expose source data in logs.
+- Logging mode caps output at 1,000 entries per stream and may expose source data in logs.
 - On Airbyte Cloud only Silent mode is offered.
 
 ## Changelog
@@ -108,7 +105,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.9 | 2026-10-30 | [90277](https://github.com/airbytehq/airbyte/pull/90277) | Promote to certified (GA). |
+| 0.9.9 | 2026-10-30 | [90277](https://github.com/airbytehq/airbyte/pull/90277) | Promote to certified (GA). Logging/Failing modes count records per stream instead of per internal batch; `FAILING` now fails on exactly the Nth record. |
 | 0.9.8 | 2026-10-22 | [89655](https://github.com/airbytehq/airbyte/pull/89655) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139 |
 | 0.9.7 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / load 1.1.7 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
 | 0.9.6 | 2026-10-09 | [88426](https://github.com/airbytehq/airbyte/pull/88426) | Upgrade to Bulk CDK 1.1.1. |
