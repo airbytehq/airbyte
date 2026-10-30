@@ -49,48 +49,48 @@ The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on 
 | application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | balance_transactions | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable; `created[gte]` filter available |
-| bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| cardholders | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| cards | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| cardholders | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| cards | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | charges | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (refunds, disputes modify); `created` only |
-| checkout_sessions | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| checkout_sessions | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | coupons | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
-| credit_notes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| credit_notes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | customers | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable; `created` only. No `updated` filter. |
-| disputes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| early_fraud_warnings | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| disputes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| early_fraud_warnings | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | events | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Immutable point-in-time records; `created[gte]` is sufficient. Candidate for incremental in a future PR. |
-| external_account_bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| external_account_cards | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| external_account_bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| external_account_cards | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | file_links | small | top-level parent | none | created_at_only | deferred_no_api_support | `created` only |
 | files | small | top-level parent | none | created_at_only | deferred_no_api_support | `created` only |
-| invoice_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| invoice_line_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| invoice_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| invoice_line_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | invoices | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (payments, voids); `created` only |
 | payment_intents | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (confirmations); `created` only |
-| payment_methods | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| payment_methods | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | payouts | medium | top-level parent | none | created_at_only | deferred_no_api_support | Mostly immutable; `created[gte]` filter available |
-| persons | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| persons | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | plans | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
 | prices | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
 | products | small | top-level parent | none | created_at_only | deferred_no_api_support | Mutable; `created` only |
-| promotion_codes | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| promotion_codes | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable once created; `created` filter available |
-| reviews | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| setup_intents | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| reviews | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| setup_intents | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | shipping_rates | small | top-level parent | none | created_at_only | deferred_no_api_support | Config-style; `created` only |
-| subscription_items | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| subscription_schedule | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| subscription_items | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| subscription_schedule | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | subscriptions | large | top-level parent | none | created_at_only | deferred_no_api_support | Mutable (status changes); `created` only |
-| top_ups | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| transactions | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| top_ups | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| transactions | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | transfers | medium | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable; `created[gte]` filter available |
-| checkout_sessions_line_items | medium | child | checkout_session_updated | checkout_session_updated | incremental |  |
-| customer_balance_transactions | medium | child | created | created | incremental |  |
-| payout_balance_transactions | medium | child | updated | updated | incremental |  |
-| setup_attempts | medium | child | created | created | incremental |  |
-| transfer_reversals | medium | child | created | created | incremental |  |
-| usage_records | medium | child | none | created_at_only | deferred_child |  |
+| checkout_sessions_line_items | medium | child | checkout_session_updated | checkout_session_updated | incremental | |
+| customer_balance_transactions | medium | child | created | created | incremental | |
+| payout_balance_transactions | medium | child | updated | updated | incremental | |
+| setup_attempts | medium | child | created | created | incremental | |
+| transfer_reversals | medium | child | created | created | incremental | |
+| usage_records | medium | child | none | created_at_only | deferred_child | |
 
 ### Future incremental stream candidates
 
