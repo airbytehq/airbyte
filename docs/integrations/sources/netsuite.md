@@ -148,6 +148,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.29 | 2026-09-16 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Warn about workflow-locked records and fail syncs when most records are inaccessible |
+| 0.1.28 | 2026-08-18 | [79654](https://github.com/airbytehq/airbyte/pull/79654) | Prevent timezone-related incremental gaps and retry rejected date formats |
 | 0.1.27 | 2025-10-14 | [67787](https://github.com/airbytehq/airbyte/pull/67787) | Update dependencies |
 | 0.1.26 | 2025-10-07 | [67429](https://github.com/airbytehq/airbyte/pull/67429) | Update dependencies |
 | 0.1.25 | 2025-09-30 | [66934](https://github.com/airbytehq/airbyte/pull/66934) | Update dependencies |

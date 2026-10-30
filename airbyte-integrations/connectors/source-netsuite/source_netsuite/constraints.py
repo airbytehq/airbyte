@@ -43,5 +43,15 @@ CUSTOM_INCREMENTAL_CURSOR: str = "lastmodified"
 
 # Please keep the "%d/%m/%Y" format in the first position as it's the date format for Canonical.
 # Check https://github.com/canonical/airbyte/pull/63 for more details.
+# NetSuite's record collection `q` parameter accepts only bare date literals rendered in the
+# account's date-format preference. Datetime literals, including ISO-8601, are rejected.
 NETSUITE_INPUT_DATE_FORMATS: list[str] = ["%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d", "%d.%m.%Y"]
 NETSUITE_OUTPUT_DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+
+# Timezone-neutral representation carried on stream slices. Bounds are rendered in the
+# account's accepted format at request time so a rejected format can retry the same slice.
+SLICE_DATE_FORMAT: str = "%Y-%m-%d"
+
+# NetSuite resolves bare query dates in the account timezone. Backing the cursor off by the
+# largest supported negative UTC offset before truncation prevents an incremental dead zone.
+MAX_NETSUITE_UTC_OFFSET_HOURS: int = 12
