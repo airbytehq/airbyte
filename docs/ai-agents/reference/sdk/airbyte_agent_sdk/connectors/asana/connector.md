@@ -356,7 +356,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against attachments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -542,7 +542,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against projects records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -691,7 +691,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against sections records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -805,7 +805,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1063,7 +1063,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tasks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1227,7 +1227,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against teams records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1312,7 +1312,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1549,7 +1549,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against workspaces records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

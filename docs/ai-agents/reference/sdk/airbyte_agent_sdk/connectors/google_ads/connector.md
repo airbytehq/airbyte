@@ -78,7 +78,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -142,7 +142,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_group_ad_labels records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -219,7 +219,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_group_ads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -283,7 +283,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_group_labels records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -375,7 +375,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_groups records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -450,7 +450,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaign_labels records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -550,7 +550,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.google_analytics_data_api.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[DailyActiveUsersSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[DevicesSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[FourWeeklyActiveUsersSearchData]
@@ -70,7 +71,6 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[TrafficSourcesSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[WebsiteOverviewSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[WeeklyActiveUsersSearchData]
-    * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -56,7 +56,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against forms records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -132,7 +132,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against images records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -197,7 +197,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against responses records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -274,7 +274,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against themes records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -642,7 +642,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against webhooks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -706,7 +706,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.typeform.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against workspaces records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

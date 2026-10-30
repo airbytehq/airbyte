@@ -431,6 +431,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[AccountsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[AddressesSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[CallsSearchData]
@@ -442,7 +443,6 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[RecordingsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[TranscriptionsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[UsageRecordsSearchData]
-    * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

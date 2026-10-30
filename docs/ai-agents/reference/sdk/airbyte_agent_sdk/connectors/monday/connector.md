@@ -51,7 +51,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against activity_logs records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -128,7 +128,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against boards records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -205,7 +205,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against items records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -577,7 +577,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tags records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -634,7 +634,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against teams records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -706,7 +706,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against updates records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -787,7 +787,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against users records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -867,7 +867,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against workspaces records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

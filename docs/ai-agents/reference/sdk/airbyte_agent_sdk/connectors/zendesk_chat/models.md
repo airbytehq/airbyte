@@ -302,12 +302,12 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.zendesk_chat.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[AgentsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[ChatsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[DepartmentsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[ShortcutsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[TriggersSearchData]
-    * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1000,6 +1000,9 @@ Classes
 
     `duration: int | None`
     :   Chat duration in seconds
+
+    `history: list[typing.Any] | None`
+    :   Chat history events including message text in msg
 
     `id: str`
     :   Unique chat identifier

@@ -53,7 +53,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -133,7 +133,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_creatives records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -241,7 +241,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ad_sets records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -351,7 +351,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads_insights records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -424,7 +424,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against ads records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -528,7 +528,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against campaigns records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -647,7 +647,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against custom_conversions records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1020,7 +1020,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against images records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1145,7 +1145,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.facebook_marketing.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against videos records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

@@ -50,7 +50,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against accounts records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -128,7 +128,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against addresses records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -210,7 +210,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against calls records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -297,7 +297,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against conferences records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -377,7 +377,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against incoming_phone_numbers records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -472,7 +472,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against messages records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -558,7 +558,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against outgoing_caller_ids records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -635,7 +635,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against queues records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -714,7 +714,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against recordings records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -792,7 +792,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against transcriptions records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1174,7 +1174,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.twilio.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against usage_records records in the Airbyte Context Store.
         
         Only available in hosted execution mode.

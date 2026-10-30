@@ -62,6 +62,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.harvest.connector.AirbyteSearchResult[dict[str, Any]]
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[ClientsSearchData]
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[CompanySearchData]
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[ContactsSearchData]
@@ -80,7 +81,6 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[TimeTasksSearchData]
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[UserAssignmentsSearchData]
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[UsersSearchData]
-    * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -1816,6 +1816,9 @@ Classes
 
     ### Class variables
 
+    `body_html: Any`
+    :   HTML body of the issue (the opening message)
+
     `created_at: Any`
     :   Timestamp when the issue was created, in ISO 8601 format
 
@@ -2046,6 +2049,9 @@ Classes
 
     ### Class variables
 
+    `body_html: list[str]`
+    :   HTML body of the issue (the opening message)
+
     `created_at: list[str]`
     :   Timestamp when the issue was created, in ISO 8601 format
 
@@ -2210,6 +2216,9 @@ Classes
 
     ### Class variables
 
+    `body_html: str | None`
+    :   HTML body of the issue (the opening message)
+
     `created_at: str | None`
     :   Timestamp when the issue was created, in ISO 8601 format
 
@@ -2271,6 +2280,9 @@ Classes
 
     ### Class variables
 
+    `body_html: Literal['asc', 'desc']`
+    :   HTML body of the issue (the opening message)
+
     `created_at: Literal['asc', 'desc']`
     :   Timestamp when the issue was created, in ISO 8601 format
 
@@ -2328,6 +2340,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `body_html: str`
+    :   HTML body of the issue (the opening message)
 
     `created_at: str`
     :   Timestamp when the issue was created, in ISO 8601 format

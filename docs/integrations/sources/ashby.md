@@ -27,6 +27,8 @@ Your API key must have read permissions enabled for the modules that correspond 
 
 By default, Ashby API keys can't read confidential jobs and projects. To sync them, enable **Allow access to confidential jobs and projects?** on the API key.
 
+To read private candidate fields outside offers, also enable **Allow access to non-offer private fields?** on the API key. Module read permissions alone don't grant access to these fields.
+
 :::note
 The `application_criteria_evaluations` stream requires the AI Application Review feature to be enabled for your Ashby organization. If this feature is not enabled, the stream returns empty results.
 :::
@@ -37,7 +39,7 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites. At minimum, you must enable the **Organization** read permission (required for the connection check) plus read permissions for any additional modules whose streams you want to sync.
 3. In Airbyte, create a new Ashby source.
 4. Enter your **API key**.
-5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `application_feedback`, `applications`, and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations` and `application_history`, because those streams read the same filtered application list to decide which applications to request child records for. All other streams ignore the start date and always return everything the API exposes.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `application_feedback`, `applications`, and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations` and `application_history`, because those streams read the same filtered application list to decide which applications to request child records for. All other streams ignore the start date, including `candidates`; the start date doesn't limit their initial data load.
 
 ## Supported sync modes
 
@@ -47,13 +49,23 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 | Incremental - Append | Yes, for every stream except `application_criteria_evaluations`, `archive_reasons`, `interview_stage_groups`, `interview_stages`, `job_boards`, `job_postings`, and `sources` |
 | Incremental - Append + Deduped | Yes, for every stream except `application_criteria_evaluations`, `archive_reasons`, `interview_stage_groups`, `interview_stages`, `job_boards`, `job_postings`, and `sources` |
 
-Starting in version 1.5.0, the `applications` and `application_history` streams support incremental sync on the application's `updatedAt` timestamp. Starting in version 2.1.0, streams whose endpoints support it use Ashby's `syncToken`. Rejected tokens fail the stream and preserve its state by default; starting in version 2.1.2, `candidates` instead clears the rejected token and re-reads the stream in full.
+On existing connections, refresh the source schema after upgrading to make newly supported sync modes available, then select an Incremental mode for the streams you want to sync incrementally.
+
+### Sync-token streams
+
+Starting in version 2.1.0, all incremental streams except `applications` and `application_history` use Ashby's [sync tokens](https://developers.ashbyhq.com/docs/pagination-and-incremental-sync). The first incremental sync reads all available records, subject to the start date where it applies. The connector saves a token after it reads the last page, then uses that token on subsequent syncs to request only new or modified records. Airbyte manages the tokens automatically; you don't need to enter one in the source configuration.
+
+If Ashby rejects a stored token, the stream fails and keeps its state. For `sync_token_expired` or `sync_token_invalid`, refresh the affected stream in the connection to clear its state and re-read it in full. Starting in version 2.1.2, `candidates` is the exception: it clears the rejected token and re-reads the stream in full automatically.
 
 :::warning
 Ashby limits a sync-token incremental sync to 100 pages, about 10,000 records changed since the stream's last sync. A larger change set, for example after a bulk data migration, fails the stream with `incremental_sync_too_large`, and syncing again with the same state fails the same way. To recover, either switch the stream to Full Refresh, or refresh the stream and then sync the connection more often, at least daily. Ashby's sync tokens also expire after 14 days; sync incremental streams at least weekly. The `candidates` stream re-reads automatically if Ashby rejects its token.
 :::
 
-Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated no earlier than 1 day before the latest `updatedAt` from the previous sync. The 1-day lookback exists because Ashby returns applications in creation order, so an application updated during a sync could otherwise be missed. Applications updated within that day are emitted again on the next sync, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per application. Because every incremental sync still reads the full application list, the time savings come from `application_history`, described below. On existing connections, refresh the source schema to see the Incremental mode and the `application_updated_at` column on `application_history`.
+### Applications and application history
+
+Starting in version 1.5.0, `applications` and `application_history` support incremental sync on the application's `updatedAt` timestamp. They don't use sync tokens, so the token expiration and page-depth limits don't apply to these streams.
+
+Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated no earlier than 1 day before the latest `updatedAt` from the previous sync. The 1-day lookback exists because Ashby returns applications in creation order, so an application updated during a sync could otherwise be missed. Applications updated within that day are emitted again on the next sync, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per application. Because every incremental sync still reads the full application list, the time savings come from `application_history`, described below. Refresh the source schema to see the `application_updated_at` column on `application_history`.
 
 ## Supported streams
 

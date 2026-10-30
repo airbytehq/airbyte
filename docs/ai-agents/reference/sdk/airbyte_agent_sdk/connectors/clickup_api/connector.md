@@ -348,7 +348,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against comments records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -476,7 +476,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against folders records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -553,7 +553,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against goals records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -627,7 +627,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against lists records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -716,7 +716,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against spaces records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -792,7 +792,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against tasks records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -893,7 +893,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against teams records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -948,7 +948,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against time_tracking records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
@@ -1021,7 +1021,7 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.connector.AirbyteSearchResult[dict[str, Any]]`
     :   Run a SQL query against user records in the Airbyte Context Store.
         
         Only available in hosted execution mode.
