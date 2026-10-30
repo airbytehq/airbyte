@@ -183,7 +183,7 @@ definitions:
           DeveloperToken: "{{ config['developer_token'] }}"
         request_body_json:
           AccountId: "{{ stream_partition['account_id'] }}"
-          CampaignType: "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
+          CampaignType: "App,Audience,DynamicSearchAds,Hotel,ObjectiveBased,PerformanceMax,Search,Shopping"
           ReturnAdditionalFields: "AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting"
         authenticator: "#/definitions/authenticator"
       record_selector:

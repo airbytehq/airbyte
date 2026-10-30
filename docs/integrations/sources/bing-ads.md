@@ -321,6 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.18 | 2026-10-28 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
 | 3.0.17 | 2026-10-27 | [89793](https://github.com/airbytehq/airbyte/pull/89793) | Update dependencies |
 | 3.0.16 | 2026-10-21 | [89609](https://github.com/airbytehq/airbyte/pull/89609) | Classify expired file download URL errors as transient with a clearer error message |
 | 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
