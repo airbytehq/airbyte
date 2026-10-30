@@ -1,5 +1,16 @@
 # Airbyte Cloud release notes
 
+## October 30, 2026
+
+Connections
+
+- Notes, tips, and warnings in a connector's setup guide now display correctly when they have a title or appear inside a numbered or bulleted step. Previously, some of these callouts showed up as plain text or broke the layout of the step they were in.
+
+Platform
+
+- When several informational notices appear at the top of Airbyte, you can now collapse them with a single toggle and expand them again with **Show more**. Airbyte remembers your choice, and warnings and errors always stay visible. If a new notice appears, the group expands so you see it.
+- If SCIM provisioning with Microsoft Entra ID is enabled for your organization, Airbyte now accepts user provisioning requests that include Entra ID's enterprise user extension. Previously, Airbyte rejected these requests, so Entra ID couldn't create or update those users.
+
 ## October 29, 2026
 
 Connections
