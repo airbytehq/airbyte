@@ -1,0 +1,14 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.pytest_cache
+.mypy_cache
+.idea
+.vscode
+# Never bake local secrets into the image.
+secrets/
+unit_tests/
