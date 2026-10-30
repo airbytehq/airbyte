@@ -94,8 +94,9 @@ object DatabricksDataCleaner : DestinationCleaner {
                         }
                     }
 
-                val schemasToDrop =
-                    schemas.filter { IntegrationTest.isNamespaceOld(it, RETENTION_DAYS) }
+                val schemasToDrop = schemas.filter {
+                    IntegrationTest.isNamespaceOld(it, RETENTION_DAYS)
+                }
                 log.info {
                     "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
                 }
