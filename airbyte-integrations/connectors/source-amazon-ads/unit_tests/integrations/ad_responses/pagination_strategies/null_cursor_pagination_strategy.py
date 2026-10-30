@@ -1,0 +1,11 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
+from typing import Any, Dict
+
+from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
+
+
+class NullCursorPaginationStrategy(PaginationStrategy):
+    @staticmethod
+    def update(response: Dict[str, Any]) -> None:
+        response["cursorId"] = None

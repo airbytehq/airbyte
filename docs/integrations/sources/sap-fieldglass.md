@@ -18,6 +18,10 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 - [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,11 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 | Version | Date       | Pull Request                                    | Subject                                     |
 | :------ | :--------- | :---------------------------------------------- |:--------------------------------------------|
+| 0.2.39 | 2026-04-28 | [77405](https://github.com/airbytehq/airbyte/pull/77405) | Update dependencies |
+| 0.2.38 | 2026-04-21 | [76780](https://github.com/airbytehq/airbyte/pull/76780) | Update dependencies |
+| 0.2.37 | 2026-03-31 | [75819](https://github.com/airbytehq/airbyte/pull/75819) | Update dependencies |
+| 0.2.36 | 2026-03-24 | [75336](https://github.com/airbytehq/airbyte/pull/75336) | Update dependencies |
+| 0.2.35 | 2026-03-10 | [74695](https://github.com/airbytehq/airbyte/pull/74695) | Update dependencies |
 | 0.2.34 | 2026-02-24 | [73492](https://github.com/airbytehq/airbyte/pull/73492) | Update dependencies |
 | 0.2.33 | 2026-02-03 | [72546](https://github.com/airbytehq/airbyte/pull/72546) | Update dependencies |
 | 0.2.32 | 2026-01-20 | [72101](https://github.com/airbytehq/airbyte/pull/72101) | Update dependencies |

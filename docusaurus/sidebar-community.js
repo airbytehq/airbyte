@@ -1,9 +1,3 @@
-const sectionHeader = (title) => ({
-  type: "html",
-  value: title,
-  className: "navbar__category",
-});
-
 const contributeToAirbyte = {
   type: "category",
   label: "Contribute to Airbyte",
@@ -50,11 +44,6 @@ module.exports = {
         contributeToAirbyte,
         "code-of-conduct",
         licenses,
-        {
-          type: "link",
-          label: "Public roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],

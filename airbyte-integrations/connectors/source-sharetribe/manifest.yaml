@@ -262,6 +262,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          min_datetime: "{{ day_delta(-89, '%Y-%m-%dT%H:%M:%SZ') }}"
         start_time_option:
           type: RequestOption
           field_name: createdAtStart

@@ -1,5 +1,4 @@
 // Import the original mapper
-import { AgentConnectorTitle } from "@site/src/components/AgentConnectorTitle";
 import { AppliesTo } from "@site/src/components/AppliesTo";
 import { Arcade } from "@site/src/components/Arcade";
 import { FieldAnchor } from "@site/src/components/FieldAnchor";
@@ -21,7 +20,6 @@ import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 export default {
   // Re-use the default mapping
   ...MDXComponents,
-  AgentConnectorTitle,
   Arcade,
   AppliesTo,
   FieldAnchor,

@@ -285,6 +285,324 @@ class TestIncremental(TestCase):
             assert record.get("date") == "2024-01-15T07:00:00+00:00"
 
 
+class TestFutureStateRegression(TestCase):
+    """Regression tests for future-dated cursor state.
+
+    When the Meta API returns an end_time ahead of current UTC (e.g. for
+    UTC-negative accounts), the cursor can advance to a future timestamp.
+    On the next sync, sending that future value as ``since`` causes Meta to
+    reject the request (HTTP 400).
+
+    The fix has two parts:
+    1. ``lookback_window: P1D`` in the manifest pulls the effective start
+       back by one day, so even a slightly-future cursor produces a non-future
+       ``since`` parameter.
+    2. ``UserInsightsExtractor`` filters out records whose ``date`` is more
+       than 1 day ahead of current UTC (matching the ``day_delta(1)``
+       boundary), preventing the cursor from advancing further into the
+       future while still allowing legitimate UTC+ account records that are
+       only hours ahead.
+
+    These tests verify that:
+    - A future state does not produce a future ``since`` parameter.
+    - Records from UTC+ accounts (hours ahead of UTC) pass through.
+    - Records more than 1 day ahead are filtered out.
+    """
+
+    @staticmethod
+    def _read(
+        config_: ConfigBuilder,
+        state: list = None,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    @freezegun.freeze_time(_FROZEN_TIME)
+    def test_future_state_does_not_produce_future_since(self, http_mocker: HttpMocker) -> None:
+        """A saved cursor 1 day in the future must not produce a future ``since``.
+
+        Frozen time: 2024-01-15T12:00:00Z
+        Saved state date: 2024-01-16T07:00:00+00:00 (future)
+
+        With lookback_window P1D the effective start is pulled back by one day:
+            2024-01-16T07:00:00 - P1D = 2024-01-15T07:00:00+00:00
+
+        end_datetime = day_delta(1) = 2024-01-16T12:00:00Z
+
+        So we expect two P1D slices:
+            slice 1: since=2024-01-15T07:00:00+00:00  until=2024-01-16T07:00:00+00:00
+            slice 2: since=2024-01-16T07:00:00+00:00  until=2024-01-16T12:00:00+00:00
+
+        The crucial assertion: slice 1 ``since`` is 2024-01-15T07:00:00+00:00
+        (before frozen time), NOT 2024-01-16T07:00:00+00:00 (the raw state).
+
+        For slice 2 the ``since`` equals the original state; that slice is in
+        the future but will return no data (or the future-record filter in
+        ``UserInsightsExtractor`` will drop any records), so the cursor will
+        not advance further.
+        """
+        future_state_value = "2024-01-16T07:00:00+00:00"
+
+        # After lookback: effective start = state - P1D
+        expected_since_slice1 = "2024-01-15T07:00:00+00:00"
+        expected_until_slice1 = "2024-01-16T07:00:00+00:00"
+        # Second slice covers remainder up to end_datetime
+        expected_since_slice2 = "2024-01-16T07:00:00+00:00"
+        expected_until_slice2 = "2024-01-16T12:00:00+00:00"
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "states": [
+                        {
+                            "partition": {"business_account_id": BUSINESS_ACCOUNT_ID},
+                            "cursor": {"date": future_state_value},
+                        }
+                    ]
+                },
+            )
+            .build()
+        )
+
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+
+        # Slice 1: since is the lookback-adjusted value (NOT the future state)
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice1, until=expected_until_slice1, period=period, metric=metric
+                ).build(),
+                _build_user_insights_response(),
+            )
+
+        # Slice 2: future range - return a future-dated record to prove filter drops it
+        future_body = {
+            "data": [
+                {
+                    "name": "follower_count",
+                    "period": "day",
+                    "values": [{"value": 999, "end_time": "2024-01-17T07:00:00+0000"}],
+                    "title": "Follower Count",
+                    "description": "Total number of followers",
+                    "id": f"{BUSINESS_ACCOUNT_ID}/insights/follower_count/day",
+                },
+            ]
+        }
+        future_response = HttpResponse(json.dumps(future_body), 200)
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice2, until=expected_until_slice2, period=period, metric=metric
+                ).build(),
+                future_response,
+            )
+
+        test_config = ConfigBuilder().with_start_date("2024-01-14T00:00:00Z")
+        output = self._read(config_=test_config, state=state)
+
+        # Slice 1 returns records with date 2024-01-15T07:00:00+00:00 (not future) → emitted.
+        # Slice 2 returns records with date 2024-01-17T07:00:00+00:00 (>1 day ahead) → filtered out.
+        # So we should get exactly 1 record from slice 1.
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+        # The emitted record date should be from slice 1, not the future slice 2
+        assert record.get("date") == "2024-01-15T07:00:00+00:00"
+
+        # Verify state was emitted (cursor should not advance to the future date)
+        assert len(output.state_messages) >= 1
+
+    @HttpMocker()
+    @freezegun.freeze_time(_FROZEN_TIME)
+    def test_utc_plus_record_not_filtered(self, http_mocker: HttpMocker) -> None:
+        """A record ~8 h ahead of UTC (simulating UTC+8) must NOT be filtered.
+
+        Frozen time: 2024-01-15T12:00:00Z
+        Record end_time: 2024-01-15T20:00:00+0000 (8 h ahead — UTC+8 day boundary)
+
+        The filter threshold is ``now_utc + timedelta(days=1)`` =
+        2024-01-16T12:00:00Z.  Since 2024-01-15T20:00:00 < 2024-01-16T12:00:00,
+        this record should pass through and be emitted.
+        """
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+
+        # Build a response with end_time 8 hours ahead of frozen time (UTC+8 account)
+        utc_plus_body = {
+            "data": [
+                {
+                    "name": "follower_count",
+                    "period": "day",
+                    "values": [{"value": 42, "end_time": "2024-01-15T20:00:00+0000"}],
+                    "title": "Follower Count",
+                    "description": "Total number of followers",
+                    "id": f"{BUSINESS_ACCOUNT_ID}/insights/follower_count/day",
+                },
+            ]
+        }
+        utc_plus_response = HttpResponse(json.dumps(utc_plus_body), 200)
+
+        http_mocker.get(
+            _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
+            utc_plus_response,
+        )
+
+        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        output = self._read(config_=test_config)
+
+        # The record is 8 h ahead of UTC but within the 1-day filter threshold → emitted
+        assert len(output.records) >= 1
+        record = output.records[0].record.data
+        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+        assert record.get("date") == "2024-01-15T20:00:00+00:00"
+
+
+class TestFutureSinceParamErrorHandling(TestCase):
+    """Regression test for oncall issue #11701: 'since param is not valid'.
+
+    Reproduces the exact user error scenario:
+
+    1. A UTC+ account syncs user_insights. Meta returns end_time at the
+       account's day boundary expressed in UTC (e.g. 07:00 UTC for UTC+7),
+       which is ahead of now_utc().
+    2. The cursor advances to that future-offset date.
+    3. On the *next* sync, DatetimeBasedCursor generates a time slice whose
+       ``since`` parameter is in the future.
+    4. Instagram API rejects the request with HTTP 400, error code 100,
+       message "(#100) since param is not valid".
+
+    Without the HttpResponseFilter fix, step 4 would cause a sync failure.
+    With the fix, the error is gracefully ignored (IGNORE action) and the
+    sync completes — the skipped window will be picked up on the next sync
+    once the date is no longer in the future.
+    """
+
+    @staticmethod
+    def _read(
+        config_: ConfigBuilder,
+        state: list = None,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    @freezegun.freeze_time(_FROZEN_TIME)
+    def test_future_since_param_is_ignored(self, http_mocker: HttpMocker) -> None:
+        """Simulate the exact error from oncall #11701.
+
+        Frozen time: 2024-01-15T12:00:00Z
+        Saved cursor: 2024-01-16T07:00:00+00:00 (future — from a UTC+7 account)
+
+        With lookback_window P1D, the effective start is pulled back:
+            2024-01-16T07:00:00 - P1D = 2024-01-15T07:00:00+00:00
+
+        end_datetime = day_delta(1) = 2024-01-16T12:00:00Z
+
+        Slice 1: since=2024-01-15T07:00:00  until=2024-01-16T07:00:00  → 200 OK
+        Slice 2: since=2024-01-16T07:00:00  until=2024-01-16T12:00:00  → 400 error
+
+        Slice 2's ``since`` is in the future (> frozen time). The Instagram
+        API returns HTTP 400 with:
+            {"error": {"code": 100, "message": "(#100) since param is not valid. ..."}}
+
+        Without the fix this would fail the sync. With the fix (HttpResponseFilter
+        IGNORE action), the error is silently skipped and we still get records
+        from slice 1.
+        """
+        future_state_value = "2024-01-16T07:00:00+00:00"
+
+        # After lookback P1D: effective start = state - P1D
+        expected_since_slice1 = "2024-01-15T07:00:00+00:00"
+        expected_until_slice1 = "2024-01-16T07:00:00+00:00"
+        # Slice 2: the future window that triggers the API error
+        expected_since_slice2 = "2024-01-16T07:00:00+00:00"
+        expected_until_slice2 = "2024-01-16T12:00:00+00:00"
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "states": [
+                        {
+                            "partition": {"business_account_id": BUSINESS_ACCOUNT_ID},
+                            "cursor": {"date": future_state_value},
+                        }
+                    ]
+                },
+            )
+            .build()
+        )
+
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+
+        # Slice 1: non-future window returns data normally
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice1, until=expected_until_slice1, period=period, metric=metric
+                ).build(),
+                _build_user_insights_response(),
+            )
+
+        # Slice 2: future window — Instagram API returns the exact error from oncall #11701
+        since_invalid_error = _build_error_response(
+            code=100,
+            message="(#100) since param is not valid. Metrics data is available for the last 2 years",
+        )
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice2, until=expected_until_slice2, period=period, metric=metric
+                ).build(),
+                since_invalid_error,
+            )
+
+        test_config = ConfigBuilder().with_start_date("2024-01-14T00:00:00Z")
+        output = self._read(config_=test_config, state=state)
+
+        # The sync should succeed despite the HTTP 400 on slice 2.
+        # Slice 1 returns valid data → at least 1 record emitted.
+        assert len(output.records) >= 1
+        record = output.records[0].record.data
+        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+
+        # No ERROR-level logs — the error handler converted 400 → IGNORE
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+        # The handler's error_message should appear in logs, proving it fired
+        log_messages = [log.log.message for log in output.logs]
+        assert any(
+            "Skipping time window with future 'since' date" in msg for msg in log_messages
+        ), f"Expected 'Skipping time window with future 'since' date' in logs but got: {log_messages}"
+
+        # State should still be emitted (sync completes normally)
+        assert len(output.state_messages) >= 1
+
+
 class TestErrorHandling(TestCase):
     """Test error handling for user_insights stream.
 

@@ -29,14 +29,15 @@ The data will be a serialized JSON, containing the following fields
 - `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
 - `_airbyte_data`: a json string representing source data.
 
-#### Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -88,6 +89,10 @@ You should now have all the requirements needed to configure PubSub as a destina
 - **Service Account Key**: the contents of your Service Account Key JSON file
 
 Once you've configured PubSub as a destination, delete the Service Account Key from your computer.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

@@ -12,6 +12,7 @@ import jakarta.inject.Singleton
 
 data class BigqueryConfiguration(
     val projectId: String,
+    val jobProjectId: String,
     val datasetLocation: BigqueryRegion,
     val datasetId: String,
     val loadingMethod: LoadingMethodConfiguration,
@@ -40,19 +41,18 @@ class BigqueryConfigurationFactory :
     DestinationConfigurationFactory<BigquerySpecification, BigqueryConfiguration> {
     override fun makeWithoutExceptionHandling(pojo: BigquerySpecification): BigqueryConfiguration {
         val loadingMethodConfig =
-            when (pojo.loadingMethod) {
-                is GcsStagingSpecification -> {
-                    val gcsStagingSpec = pojo.loadingMethod as GcsStagingSpecification
+            when (val loadingMethod = pojo.loadingMethod) {
+                is GcsStagingSpecification ->
                     GcsStagingConfiguration(
-                        GcsClientConfiguration(gcsStagingSpec, pojo.datasetLocation.gcsRegion),
-                        gcsStagingSpec.filePostProcessing ?: GcsFilePostProcessing.DELETE,
+                        GcsClientConfiguration(loadingMethod, pojo.datasetLocation.gcsRegion),
+                        loadingMethod.filePostProcessing ?: GcsFilePostProcessing.DELETE,
                     )
-                }
                 is BatchedStandardInsertSpecification,
                 null -> BatchedStandardInsertConfiguration
             }
         return BigqueryConfiguration(
             projectId = pojo.projectId,
+            jobProjectId = pojo.jobProjectId?.takeUnless(String::isBlank) ?: pojo.projectId,
             pojo.datasetLocation,
             datasetId = pojo.datasetId,
             loadingMethodConfig,
@@ -60,11 +60,8 @@ class BigqueryConfigurationFactory :
             // default to hard delete for backwards compatibility.
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             internalTableDataset =
-                if (pojo.internalTableDataset.isNullOrBlank()) {
-                    DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
-                } else {
-                    pojo.internalTableDataset!!
-                },
+                pojo.internalTableDataset?.takeUnless(String::isBlank)
+                    ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
         )
     }

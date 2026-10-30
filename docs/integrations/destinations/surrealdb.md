@@ -4,23 +4,28 @@
 
 This page guides you through the process of setting up the SurrealDB destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | No                  |       |
-| Incremental - Append + Deduped | No                  |       |
-| Namespaces                     | No                  |       |
-
 #### Output Schema
 
-Each stream will be output into its own table in SurrealDB. Each table will contain 3 columns:
+Each stream will be output into its own table in SurrealDB. Each table will contain the following Airbyte columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SurrealDB is `string`.
 The connector use this as the ID of each record in the destination SurrealDB table.
 - `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SurrealDB is `datetime`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in SurrealDB is `object`.
+- `_airbyte_meta`: additional information about the record. The column type in SurrealDB is `object`.
+
+Each top-level field of the stream's JSON schema is written as its own field, defined as an optional SurrealDB type
+(`string`, `int`, `number`, `bool`, `object`, `array`, or `datetime` for `date-time` strings; `any` for untyped fields).
+Because `id` is reserved for the record ID in SurrealDB, a source field named `id` is written as `_airbyte_source_id`.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Getting Started
 
@@ -80,6 +85,10 @@ Using this feature requires additional configuration, when creating the destinat
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the SurrealDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). SurrealDB doesn't differentiate between a database and schema. The configured database acts as the default namespace.
+
 ## Changelog
 
 <details>
@@ -87,6 +96,8 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.1.2   | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `surrealdb_password` as `airbyte_secret` |
+| 0.1.1   | 2026-10-07 | [88340](https://github.com/airbytehq/airbyte/pull/88340) | Fix `DEFINE FIELD` type mapping (`boolean`, nullable/union types), `id` field conflict, sparse records, and `check` over HTTP. |
 | 0.1.0   | 2025-05-09 | [\#59742](https://github.com/airbytehq/airbyte/pull/59742) | Added SurrealDB destination.                                                                       |
 
 </details>

@@ -11,13 +11,22 @@ This connector transforms your records into documents and ingests them into Ragi
 
 ## Features
 
-- 🔁 Supports **append**, **overwrite**, and **append + dedup** sync modes.
-- 🧠 Extracts vector content from specified fields.
-- 📎 Attaches custom or static metadata to each document.
-- 🏷️ Assigns document names and external IDs.
-- 📦 Supports partitioning into multiple datasets (indexes).
+- Extracts vector content from specified fields.
+- Attaches custom or static metadata to each document.
+- Assigns document names and external IDs.
+- Supports partitioning into multiple datasets (indexes).
 
 ---
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Prerequisites
 
@@ -40,7 +49,7 @@ Go to **Destinations → + New Destination → Ragie**.
 | **API Key** | Your secret Ragie API token. | ✅ Yes |
 | **Content Fields** | List of field(s) from the record to use as the **main document content** (text). If empty, the whole record is used. Supports dot notation. | ⛔ Optional |
 | **Metadata Fields** | Field(s) to include as metadata. Use dot notation for nested fields. | ⛔ Optional |
-| **Partition Name** | Name of the partition/index in Ragie to write into. Defaults to system partition if empty. | ⛔ Optional |
+| **Partition Name** | Name of the partition/index in Ragie to write into. When empty, the connector omits the partition so Ragie writes to its `default` partition. | ⛔ Optional |
 | **Mode** | Ingestion mode: `'fast'` (default) or `'hi_res'`. | ✅ Yes |
 | **Document Name Field** | Field to use as the document’s display name. Auto-generated if empty. | ⛔ Optional |
 | **Static Metadata (JSON)** | JSON string of key-value pairs added to every document’s metadata. | ⛔ Optional |
@@ -130,12 +139,15 @@ This will be merged with each document’s metadata.
 
 ---
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
-| Version | Changes                                                          |
-| ------- | ---------------------------------------------------------------- |
-| 0.1.0   | Initial release with overwrite/append support and field mapping. |
+| Version | Date | Pull Request | Changes |
+| ------- | ---- | ------------ | ------- |
+| 0.1.1 | 2026-10-07 | [88292](https://github.com/airbytehq/airbyte/pull/88292) | Fix floating-point metadata writes, omit empty partitions, and stop logging authorization headers. |
+| 0.1.0 | | | Initial release with overwrite/append support and field mapping. |
 
 ---
-
-

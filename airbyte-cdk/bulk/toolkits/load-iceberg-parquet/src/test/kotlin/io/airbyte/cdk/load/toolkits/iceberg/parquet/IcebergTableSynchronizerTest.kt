@@ -5,6 +5,11 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
+import io.airbyte.cdk.load.message.Meta
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
@@ -12,9 +17,16 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import java.nio.file.Files
+import org.apache.hadoop.conf.Configuration
+import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.Type.PrimitiveType
 import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
@@ -50,6 +62,9 @@ class IcebergTableSynchronizerTest {
         // By default, let table.schema() return an empty schema. Tests can override this as needed.
         every { mockTable.schema() } returns Schema(listOf())
 
+        // By default, the table has no sort order. Tests using real tables handle this themselves.
+        every { mockTable.sortOrder() } returns SortOrder.unsorted()
+
         // Table.updateSchema() should return the mock UpdateSchema
         every { mockTable.updateSchema().allowIncompatibleChanges() } returns mockUpdateSchema
 
@@ -63,7 +78,7 @@ class IcebergTableSynchronizerTest {
     /** Helper to build a schema with [Types.NestedField]s. */
     private fun buildSchema(
         vararg fields: Types.NestedField,
-        identifierFields: Set<Int> = emptySet()
+        identifierFields: Set<Int> = emptySet(),
     ): Schema {
         return Schema(fields.toList(), identifierFields)
     }
@@ -88,7 +103,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // We expect the original schema to be returned
@@ -117,7 +132,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // The result is a new schema after changes, but we can only verify calls on the mock
@@ -144,7 +159,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify that "age" is updated to LONG
@@ -165,7 +180,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect makeColumnOptional("make_optional") to be called
@@ -188,7 +203,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn(null, "new_col", Types.StringType.get()) }
@@ -203,9 +218,9 @@ class IcebergTableSynchronizerTest {
                     1,
                     "user_info",
                     Types.StructType.of(
-                        Types.NestedField.required(2, "nested_id", Types.IntegerType.get())
-                    )
-                )
+                        Types.NestedField.required(2, "nested_id", Types.IntegerType.get()),
+                    ),
+                ),
             )
         val incomingSchema =
             buildSchema(
@@ -216,8 +231,8 @@ class IcebergTableSynchronizerTest {
                         Types.NestedField.required(2, "nested_id", Types.IntegerType.get()),
                         // new subfield
                         Types.NestedField.optional(3, "nested_name", Types.StringType.get()),
-                    )
-                )
+                    ),
+                ),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -231,7 +246,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn("user_info", "nested_name", Types.StringType.get()) }
@@ -252,7 +267,7 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -286,7 +301,7 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -305,7 +320,7 @@ class IcebergTableSynchronizerTest {
         val incomingSchema =
             buildSchema(
                 Types.NestedField.required(3, "id", Types.StringType.get()),
-                identifierFields = setOf(3)
+                identifierFields = setOf(3),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -313,7 +328,7 @@ class IcebergTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect setIdentifierFields(listOf("id")) to be called
@@ -329,7 +344,7 @@ class IcebergTableSynchronizerTest {
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "remove_me", Types.StringType.get()),
                 Types.NestedField.required(3, "make_optional", Types.IntegerType.get()),
-                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get())
+                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get()),
             )
         val incomingSchema =
             buildSchema(
@@ -341,7 +356,7 @@ class IcebergTableSynchronizerTest {
                 Types.NestedField.required(4, "upgrade_int", Types.LongType.get()),
                 // brand_new -> new column
                 Types.NestedField.optional(5, "brand_new", Types.FloatType.get()),
-                identifierFields = setOf(1)
+                identifierFields = setOf(1),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -351,14 +366,14 @@ class IcebergTableSynchronizerTest {
             superTypeFinder.findSuperType(
                 Types.IntegerType.get(),
                 Types.LongType.get(),
-                "upgrade_int"
+                "upgrade_int",
             )
         } returns Types.LongType.get()
 
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify calls, in any order
@@ -385,12 +400,12 @@ class IcebergTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessage(
-                """Schema evolution for column "age" between int and string is not allowed."""
+                """Schema evolution for column "age" between int and string is not allowed.""",
             )
     }
 
@@ -407,7 +422,7 @@ class IcebergTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.OVERWRITE
+                ColumnTypeChangeBehavior.OVERWRITE,
             )
 
         verify { mockUpdateSchema.deleteColumn("age") }
@@ -420,5 +435,425 @@ class IcebergTableSynchronizerTest {
 
         assertThat(schema).isSameAs(mockNewSchema)
         assertThat(pendingUpdates).hasSize(1)
+    }
+
+    @Test
+    fun `test overwrite with replaced column as identifier field defers identifier update`() {
+        // Simulates the scenario where a PK column's type changes (e.g. Double -> String)
+        // and the column is also an identifier field. Iceberg's requireColumn() fails for
+        // columns pending deletion, so we must commit the column replacement first, then
+        // handle identifier fields in a follow-up update.
+        val existingSchema =
+            buildSchema(Types.NestedField.required(1, "pk_col", Types.DoubleType.get()))
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(1, "pk_col", Types.StringType.get()),
+                identifierFields = setOf(1),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        // After the first commit (column replacement), table.updateSchema() returns a new mock
+        val mockIdentifierUpdateSchema = mockk<UpdateSchema>(relaxed = true)
+        val mockIdentifierNewSchema = mockk<Schema>(relaxed = true)
+        every { mockIdentifierUpdateSchema.apply() } returns mockIdentifierNewSchema
+
+        // First call returns mockUpdateSchema, second call (after commit+refresh) returns
+        // the identifier update mock.
+        every { mockTable.updateSchema().allowIncompatibleChanges() } returnsMany
+            listOf(mockUpdateSchema, mockIdentifierUpdateSchema)
+
+        val (schema, pendingUpdates) =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.OVERWRITE,
+            )
+
+        // First update: delete + add column (committed immediately due to deferred identifiers)
+        verify { mockUpdateSchema.deleteColumn("pk_col") }
+        verify { mockUpdateSchema.addColumn("pk_col", Types.StringType.get()) }
+        verify { mockUpdateSchema.commit() }
+
+        // Table is refreshed after the first commit
+        verify { mockTable.refresh() }
+
+        // Second update: identifier fields handled in a follow-up
+        verify { mockIdentifierUpdateSchema.requireColumn("pk_col") }
+        verify { mockIdentifierUpdateSchema.setIdentifierFields(listOf("pk_col")) }
+        // OVERWRITE mode doesn't commit immediately — returns as pending
+        verify(exactly = 0) { mockIdentifierUpdateSchema.commit() }
+
+        assertThat(schema).isSameAs(mockIdentifierNewSchema)
+        assertThat(pendingUpdates).hasSize(1)
+        assertThat(pendingUpdates.first()).isSameAs(mockIdentifierUpdateSchema)
+    }
+
+    // ==================================================================================
+    // Sort order tests — use real HadoopCatalog tables (not mocks) because mocked tests
+    // never exercise Iceberg's SortOrder.checkCompatibility validation.
+    // ==================================================================================
+
+    private fun createRealSynchronizer() =
+        IcebergTableSynchronizer(
+            IcebergTypesComparator(),
+            IcebergSuperTypeFinder(IcebergTypesComparator()),
+        )
+
+    /** Schema matching the customer's custom insight streams (Dedupe with 3 PKs). */
+    private fun dedupeSchema() =
+        Schema(
+            listOf(
+                Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                Types.NestedField.required(
+                    2,
+                    "_airbyte_extracted_at",
+                    Types.TimestampType.withZone(),
+                ),
+                Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
+                Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
+                Types.NestedField.required(5, "ad_id", Types.StringType.get()),
+                Types.NestedField.required(6, "date_start", Types.DateType.get()),
+                Types.NestedField.required(7, "account_id", Types.StringType.get()),
+                Types.NestedField.optional(8, "impressions", Types.LongType.get()),
+            ),
+            setOf(5, 6, 7), // identifier fields: ad_id, date_start, account_id
+        )
+
+    private fun dedupeSortOrder(schema: Schema): SortOrder =
+        SortOrder.builderFor(schema).asc("ad_id").asc("date_start").asc("account_id").build()
+
+    private fun createTableWithSortOrder(
+        catalog: HadoopCatalog,
+        tableId: TableIdentifier,
+        schema: Schema,
+        sortOrder: SortOrder,
+    ): Table {
+        catalog.createNamespace(tableId.namespace())
+        return catalog
+            .buildTable(tableId, schema)
+            .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+            .withSortOrder(sortOrder)
+            .create()
+    }
+
+    private fun createTableWithoutSortOrder(
+        catalog: HadoopCatalog,
+        tableId: TableIdentifier,
+        schema: Schema,
+    ): Table {
+        catalog.createNamespace(tableId.namespace())
+        return catalog
+            .buildTable(tableId, schema)
+            .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+            .create()
+    }
+
+    private fun oldRequiredMetaSchema(): Schema =
+        Schema(
+            listOf(
+                Types.NestedField.required(
+                    1,
+                    Meta.COLUMN_NAME_AB_META,
+                    Types.StructType.of(
+                        Types.NestedField.required(2, "sync_id", Types.LongType.get()),
+                        Types.NestedField.required(
+                            3,
+                            "changes",
+                            Types.ListType.ofRequired(
+                                4,
+                                Types.StructType.of(
+                                    Types.NestedField.required(5, "field", Types.StringType.get()),
+                                    Types.NestedField.required(6, "change", Types.StringType.get()),
+                                    Types.NestedField.required(7, "reason", Types.StringType.get()),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                Types.NestedField.required(8, "id", Types.StringType.get()),
+            ),
+        )
+
+    private fun nullableMetaIncomingSchema(): Schema =
+        ObjectType(
+                linkedMapOf(
+                    Meta.COLUMN_NAME_AB_META to
+                        FieldType(Meta.AirbyteMetaFields.META.type, nullable = false),
+                    "id" to FieldType(StringType, nullable = false),
+                ),
+            )
+            .toIcebergSchema(emptyList())
+
+    private fun assertMetaSchemaRelaxedInPlace(
+        tableName: String,
+        behavior: ColumnTypeChangeBehavior,
+    ) {
+        val warehousePath = Files.createTempDirectory("iceberg-meta-nullability")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", tableName)
+        val table = createTableWithoutSortOrder(catalog, tableId, oldRequiredMetaSchema())
+        val incomingSchema = nullableMetaIncomingSchema()
+        val oldSchema = table.schema()
+        val oldMeta = oldSchema.findField(Meta.COLUMN_NAME_AB_META)!!
+        val oldChanges = oldSchema.findField("${Meta.COLUMN_NAME_AB_META}.changes")!!
+        val oldList = oldChanges.type().asListType()
+        val oldElement = oldList.elementType().asStructType()
+        val oldNestedFields = oldElement.fields().associate { it.name() to it.fieldId() }
+
+        val firstResult =
+            createRealSynchronizer().maybeApplySchemaChanges(table, incomingSchema, behavior)
+        if (behavior == ColumnTypeChangeBehavior.OVERWRITE) {
+            firstResult.pendingUpdates.forEach { it.commit() }
+        }
+
+        val reloadedTable = catalog.loadTable(tableId)
+        reloadedTable.refresh()
+        val relaxedSchema = reloadedTable.schema()
+        val relaxedMeta = relaxedSchema.findField(Meta.COLUMN_NAME_AB_META)!!
+        val relaxedChanges = relaxedSchema.findField("${Meta.COLUMN_NAME_AB_META}.changes")!!
+        val relaxedList = relaxedChanges.type().asListType()
+        val relaxedElement = relaxedList.elementType().asStructType()
+
+        assertThat(relaxedMeta.fieldId()).isEqualTo(oldMeta.fieldId())
+        assertThat(relaxedChanges.fieldId()).isEqualTo(oldChanges.fieldId())
+        assertThat(relaxedList.elementId()).isEqualTo(oldList.elementId())
+        assertThat(relaxedList.isElementOptional).isTrue()
+        assertThat(relaxedElement.fields()).allMatch { it.isOptional }
+        assertThat(relaxedElement.fields().associate { it.name() to it.fieldId() })
+            .isEqualTo(oldNestedFields)
+
+        val secondResult =
+            createRealSynchronizer()
+                .maybeApplySchemaChanges(reloadedTable, incomingSchema, behavior)
+        assertThat(secondResult.pendingUpdates).isEmpty()
+        assertThat(reloadedTable.schema().toString()).isEqualTo(relaxedSchema.toString())
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    @Test
+    fun `real table relaxes nested list nullability with safe supertype`() {
+        assertMetaSchemaRelaxedInPlace(
+            "meta_safe_supertype",
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+    }
+
+    @Test
+    fun `real table relaxes nested list nullability with overwrite`() {
+        assertMetaSchemaRelaxedInPlace("meta_overwrite", ColumnTypeChangeBehavior.OVERWRITE)
+    }
+
+    /**
+     * Scenario A: Source upgrade removes a PK column (ad_id) that the sort order references. After
+     * fix: schema evolution should succeed and sort order should retain only the remaining PK
+     * columns.
+     */
+    @Test
+    fun `scenario A - removing a sort-order column should update sort order and succeed`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "scenario_a")
+
+        val schema = dedupeSchema()
+        val table = createTableWithSortOrder(catalog, tableId, schema, dedupeSortOrder(schema))
+
+        // Incoming schema: ad_id removed, identifiers updated
+        val incomingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone(),
+                    ),
+                    Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
+                    Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
+                    // ad_id (field 5) removed
+                    Types.NestedField.required(6, "date_start", Types.DateType.get()),
+                    Types.NestedField.required(7, "account_id", Types.StringType.get()),
+                    Types.NestedField.optional(8, "impressions", Types.LongType.get()),
+                ),
+                setOf(6, 7), // identifier fields: date_start, account_id
+            )
+
+        val synchronizer = createRealSynchronizer()
+        synchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        // ad_id should be gone from the schema
+        table.refresh()
+        assertThat(table.schema().findField("ad_id")).isNull()
+
+        // Sort order should have 2 remaining fields (date_start, account_id)
+        val updatedSortOrder = table.sortOrder()
+        assertThat(updatedSortOrder.fields()).hasSize(2)
+        assertThat(updatedSortOrder.fields().map { table.schema().findColumnName(it.sourceId()) })
+            .containsExactly("date_start", "account_id")
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    /**
+     * Scenario B: Stream switches from Dedupe to Append. Incoming schema has no identifier fields.
+     * The sort order should be cleared to unsorted.
+     */
+    @Test
+    fun `scenario B - dedupe to append should clear sort order`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "scenario_b")
+
+        val schema = dedupeSchema()
+        val table = createTableWithSortOrder(catalog, tableId, schema, dedupeSortOrder(schema))
+
+        // Incoming schema: same columns but NO identifier fields (Append mode)
+        val incomingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone(),
+                    ),
+                    Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
+                    Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
+                    Types.NestedField.optional(5, "ad_id", Types.StringType.get()),
+                    Types.NestedField.optional(6, "date_start", Types.DateType.get()),
+                    Types.NestedField.optional(7, "account_id", Types.StringType.get()),
+                    Types.NestedField.optional(8, "impressions", Types.LongType.get()),
+                ),
+                // No identifier fields — Append mode
+            )
+
+        val synchronizer = createRealSynchronizer()
+        synchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        table.refresh()
+        assertThat(table.sortOrder().isUnsorted).isTrue()
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    /**
+     * Scenario D (with column deletion): PKs change within Dedupe and the old PK column is also
+     * removed from the schema. Sort order should be updated to match new PKs, and the column
+     * deletion should succeed.
+     *
+     * This is the exact customer scenario: ad_id removed from both PKs and schema.
+     */
+    @Test
+    fun `scenario D - pk change with column deletion should update sort order`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "scenario_d_with_delete")
+
+        val schema = dedupeSchema()
+        val table = createTableWithSortOrder(catalog, tableId, schema, dedupeSortOrder(schema))
+
+        // Incoming schema: ad_id removed from both columns and identifiers
+        val incomingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone(),
+                    ),
+                    Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
+                    Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
+                    // ad_id removed
+                    Types.NestedField.required(6, "date_start", Types.DateType.get()),
+                    Types.NestedField.required(7, "account_id", Types.StringType.get()),
+                    Types.NestedField.optional(8, "impressions", Types.LongType.get()),
+                ),
+                setOf(6, 7), // identifier fields: date_start, account_id
+            )
+
+        val synchronizer = createRealSynchronizer()
+        synchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        table.refresh()
+        assertThat(table.schema().findField("ad_id")).isNull()
+
+        val updatedSortOrder = table.sortOrder()
+        assertThat(updatedSortOrder.fields()).hasSize(2)
+        assertThat(updatedSortOrder.fields().map { table.schema().findColumnName(it.sourceId()) })
+            .containsExactly("date_start", "account_id")
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    /**
+     * Scenario D (standalone): PKs change within Dedupe but the old PK column remains in the schema
+     * as a non-PK column. Sort order should be updated to match new PKs.
+     */
+    @Test
+    fun `scenario D - pk change without column deletion should update sort order`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "scenario_d_standalone")
+
+        val schema = dedupeSchema()
+        val table = createTableWithSortOrder(catalog, tableId, schema, dedupeSortOrder(schema))
+
+        // Incoming schema: ad_id still present but no longer an identifier
+        val incomingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone(),
+                    ),
+                    Types.NestedField.required(3, "_airbyte_meta", Types.StringType.get()),
+                    Types.NestedField.required(4, "_airbyte_generation_id", Types.LongType.get()),
+                    Types.NestedField.optional(5, "ad_id", Types.StringType.get()),
+                    Types.NestedField.required(6, "date_start", Types.DateType.get()),
+                    Types.NestedField.required(7, "account_id", Types.StringType.get()),
+                    Types.NestedField.optional(8, "impressions", Types.LongType.get()),
+                ),
+                setOf(6, 7), // identifier fields: date_start, account_id (ad_id removed from PKs)
+            )
+
+        val synchronizer = createRealSynchronizer()
+        synchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        table.refresh()
+        // ad_id should still exist as a column
+        assertThat(table.schema().findField("ad_id")).isNotNull()
+
+        // Sort order should reflect new PKs only
+        val updatedSortOrder = table.sortOrder()
+        assertThat(updatedSortOrder.fields()).hasSize(2)
+        assertThat(updatedSortOrder.fields().map { table.schema().findColumnName(it.sourceId()) })
+            .containsExactly("date_start", "account_id")
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
     }
 }

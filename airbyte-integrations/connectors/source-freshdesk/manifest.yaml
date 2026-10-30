@@ -854,20 +854,32 @@ definitions:
           path: surveys/satisfaction_ratings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream satisfaction_ratings returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ response is mapping and 'Surveys feature' in (response.get('message', '') | string) }}"
+                error_message: >-
+                  The satisfaction_ratings stream requires the Freshdesk Surveys (CSAT) feature, which is not available
+                  on your Freshdesk plan. Deselect the satisfaction_ratings and surveys streams, or upgrade your
+                  Freshdesk plan.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes: [403]
+                error_message: >-
+                  Freshdesk denied access to the satisfaction_ratings stream. Confirm the API key belongs to a user
+                  with permission to view surveys, or deselect the satisfaction_ratings stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                error_message: >-
+                  The endpoint to access stream satisfaction_ratings returned 401: Unauthorized. This is most likely due to wrong credentials.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1095,6 +1107,13 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        # The API currently returns the SLA policy id as a string (observed 2026-10, not in Freshdesk's docs);
+        # cast back to the integer the schema declares.
+        - type: AddFields
+          fields:
+            - path: ["id"]
+              value: "{{ record['id'] | int(default=record['id']) if record.get('id') is not none else none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1277,20 +1296,32 @@ definitions:
           path: surveys
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The endpoint to access stream surveys returned 401: Unauthorized. This is most likely due to wrong credentials.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ response is mapping and 'Surveys feature' in (response.get('message', '') | string) }}"
+                error_message: >-
+                  The surveys stream requires the Freshdesk Surveys (CSAT) feature, which is not available on your
+                  Freshdesk plan. Deselect the satisfaction_ratings and surveys streams, or upgrade your Freshdesk
+                  plan.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes: [403]
+                error_message: >-
+                  Freshdesk denied access to the surveys stream. Confirm the API key belongs to a user with permission
+                  to view surveys, or deselect the surveys stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                error_message: >-
+                  The endpoint to access stream surveys returned 401: Unauthorized. This is most likely due to wrong credentials.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1438,6 +1469,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tickets"
+    ticket_activities:
+      type: DeclarativeStream
+      name: ticket_activities
+      primary_key:
+        - _airbyte_ticket_activity_id
+      retriever:
+        type: CustomRetriever
+        class_name: source_declarative_manifest.components.TicketActivitiesRetriever
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: performed_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config.get('start_date') or day_delta(-30,
+            '%Y-%m-%dT%H:%M:%SZ'), '%Y-%m-%dT00:00:00Z') }}
+          min_datetime: "{{ format_datetime(day_delta(-30, '%Y-%m-%dT%H:%M:%SZ'), '%Y-%m-%dT00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%d-%m-%Y %H:%M:%S %z"
+        step: P1D
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_activities"
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -1521,6 +1580,7 @@ streams:
   - $ref: "#/definitions/streams/surveys"
   - $ref: "#/definitions/streams/ticket_fields"
   - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/ticket_activities"
   - $ref: "#/definitions/streams/time_entries"
 
 spec:
@@ -1685,6 +1745,27 @@ spec:
         order: 4
         title: Lookback Window
         default: 14
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description: Your API subscription tier (affects rate limits)
+        enum:
+          - growth
+          - pro
+          - enterprise
+        default: growth
+        order: 5
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Freshdesk API plan.
+        default: 5
+        minimum: 2
+        maximum: 16
+        order: 6
     additionalProperties: true
 
 metadata:
@@ -1716,11 +1797,15 @@ metadata:
     surveys: false
     ticket_fields: false
     tickets: false
+    ticket_activities: false
     time_entries: false
   yamlComponents:
     streams:
       tickets:
         - paginator
+        - incrementalSync
+      ticket_activities:
+        - retriever
         - incrementalSync
     global:
       - authenticator
@@ -3672,6 +3757,39 @@ schemas:
           - object
           - "null"
     additionalProperties: true
+  ticket_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _airbyte_ticket_activity_id:
+        type: string
+      export_date:
+        type:
+          - string
+          - "null"
+        format: date
+      performed_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      performer_type:
+        type:
+          - string
+          - "null"
+      performer_id:
+        type:
+          - integer
+          - "null"
+      activity:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
   time_entries:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3726,16 +3844,18 @@ schemas:
           - "null"
     additionalProperties: true
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 16
+
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: "PT1M"
-      # due to lack for support for interpolated string for the call_limit field, this has been
-      # hardcoded to 50 which is the default rate for free plan
-      # in the near term use "{{ config.get('requests_per_minute')}}"
-      # long term is to utilize the `rate_limit_plan` field in config and specifying for each endpoint
-      call_limit: 50 
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'growth': 200, 'pro': 400, 'enterprise': 700}.get(config.get('subscription_tier', 'growth'), 200) }}"
+          interval: "PT1M"
       matchers:
         - method: GET
           url_base: "https://{{ config['domain'] }}/api/v2/"

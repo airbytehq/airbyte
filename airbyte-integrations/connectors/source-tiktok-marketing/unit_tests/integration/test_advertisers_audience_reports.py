@@ -19,7 +19,32 @@ from .config_builder import ConfigBuilder
 class TestAdvertiserAudienceReportsLifetime(TestCase):
     stream_name = "advertisers_audience_reports_lifetime"
     advertiser_id = "872746382648"
-    metrics = ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]
+    metrics = [
+        "spend",
+        "cpc",
+        "cpm",
+        "impressions",
+        "clicks",
+        "ctr",
+        "reach",
+        "cost_per_1000_reached",
+        "frequency",
+        "video_play_actions",
+        "video_watched_2s",
+        "video_watched_6s",
+        "average_video_play",
+        "average_video_play_per_user",
+        "video_views_p25",
+        "video_views_p50",
+        "video_views_p75",
+        "video_views_p100",
+        "profile_visits",
+        "likes",
+        "comments",
+        "shares",
+        "follows",
+        "clicks_on_music_disc",
+    ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
         return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()

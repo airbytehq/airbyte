@@ -144,15 +144,13 @@ columns are created using Quoted identifiers preserving the case sensitivity.
 
 ## Supported sync modes
 
-The Yellowbrick destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Schema map
 
@@ -190,6 +188,10 @@ Each table will contain 3 columns:
 ## Tutorials
 
 - Comming soon.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Yellowbrick schema.
 
 ## Changelog
 

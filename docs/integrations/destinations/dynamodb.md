@@ -24,19 +24,21 @@ objects containing 4 fields:
 - `_airbyte_data`: a json blob representing with the extracted data.
 - `sync_time`: a timestamp representing when the sync up task be triggered.
 
-### Features
-
-| Feature                        | Support | Notes                                                                                   |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
-| Incremental - Append Sync      |   ✅    |                                                                                         |
-| Incremental - Append + Deduped |   ❌    |                                                                                         |
-| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
-
 ### Performance considerations
 
-This connector by default uses 10 capacity units for both Read and Write in DynamoDB tables. Please
-provision more capacity units in the DynamoDB console when there are performance constraints.
+Tables created by this connector use the on-demand (`PAY_PER_REQUEST`) billing mode, so no
+capacity units need to be provisioned up front. Records are written in batches of 25 items with
+automatic retries for unprocessed items.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -59,9 +61,15 @@ provision more capacity units in the DynamoDB console when there are performance
     - See
       [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
       on how to generate an access key.
-    - We recommend creating an Airbyte-specific user. This user will require
-      [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_specific-table.html)
-      to the DynamoDB table.
+    - We recommend creating an Airbyte-specific user. Because the connector creates one table per
+      stream (and a temporary `<prefix>_airbyte_connection_test_*` table during **Test connection**),
+      read/write access to existing tables is not enough: the user's
+      [IAM policy](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-structure.html)
+      must allow the following actions on `arn:aws:dynamodb:<region>:<account>:table/<prefix>_*`:
+      `dynamodb:CreateTable`, `dynamodb:DescribeTable`, `dynamodb:DeleteTable`, `dynamodb:PutItem`
+      and `dynamodb:BatchWriteItem`. A missing `dynamodb:CreateTable` permission results in
+      `AccessDeniedException: User ... is not authorized to perform: dynamodb:CreateTable` when
+      testing the connection.
   - **Secret Access Key**
     - Corresponding key to the above key id.
 - Make sure your DynamoDB tables are accessible from the machine running Airbyte.
@@ -71,6 +79,10 @@ provision more capacity units in the DynamoDB console when there are performance
     [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/access-control-overview.html).
   - The easiest way to verify if Airbyte is able to connect to your DynamoDB tables is via the check
     connection tool in the UI.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

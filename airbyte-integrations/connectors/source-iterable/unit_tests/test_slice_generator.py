@@ -102,4 +102,35 @@ def test_reduce_range():
     next(slice_generator)
     reduced_slice = slice_generator.reduce_range()
     assert reduced_slice.start_date == datetime(2022, 1, 1)
-    assert reduced_slice.end_date == datetime(2022, 1, 31)
+    # The original slice was 30 days (Jan 1 – Jan 31). reduce_range() should halve
+    # that to 15 days, yielding Jan 16 instead of the full Jan 31.
+    assert reduced_slice.end_date == datetime(2022, 1, 16)
+
+
+def test_reduce_range_successive_halving():
+    """Calling reduce_range() repeatedly should keep halving the actual slice size."""
+    slice_generator = AdjustableSliceGenerator(start_date=datetime(2022, 1, 1), end_date=datetime(2022, 3, 1))
+    next(slice_generator)
+
+    first = slice_generator.reduce_range()
+    assert first.start_date == datetime(2022, 1, 1)
+    assert first.end_date == datetime(2022, 1, 16)  # 30 / 2 = 15 days
+
+    second = slice_generator.reduce_range()
+    assert second.start_date == datetime(2022, 1, 1)
+    assert second.end_date == datetime(2022, 1, 8)  # 15 / 2 = 7 days (int(7.5))
+
+    third = slice_generator.reduce_range()
+    assert third.start_date == datetime(2022, 1, 1)
+    assert third.end_date == datetime(2022, 1, 4)  # 7 / 2 = 3 days (int(3.5))
+
+
+def test_reduce_range_respects_min_range():
+    """reduce_range() should not go below MIN_RANGE_DAYS (1 day)."""
+    slice_generator = AdjustableSliceGenerator(start_date=datetime(2022, 1, 1), end_date=datetime(2022, 1, 2))
+    next(slice_generator)
+
+    reduced_slice = slice_generator.reduce_range()
+    assert reduced_slice.start_date == datetime(2022, 1, 1)
+    # 1 day / 2 = 0.5 → floor is MIN_RANGE_DAYS = 1 day
+    assert reduced_slice.end_date == datetime(2022, 1, 2)

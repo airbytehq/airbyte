@@ -1,5 +1,15 @@
 # GlassFlow
 
+:::warning
+
+## Deprecation Notice
+
+The GlassFlow destination connector is archived and is no longer available in the Airbyte connector catalog. GlassFlow's legacy serverless pipeline product [is no longer available](https://www.glassflow.dev/blog/glassflow-vs-other-serverless-solutions), and the `api.glassflow.dev` host used by this connector no longer resolves.
+
+GlassFlow's current products do not provide a compatible replacement for this connector's pipeline publishing API. Existing pipeline IDs and access tokens cannot restore connectivity. Choose another supported destination or evaluate a new integration using [GlassFlow's current documentation](https://docs.glassflow.ai/).
+
+:::
+
 ## Overview
 
 The GlassFlow destination allows you to send/stream data to a GlassFlow pipeline. GlassFlow is 
@@ -19,14 +29,15 @@ Each stream will be output a GlassFlow message. The message properties will be
 
 The message will be serialized as JSON.
 
-#### Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -36,6 +47,10 @@ To use the GlassFlow destination, you'll need:
 
 - A GlassFlow pipeline_id and pipeline_access_token to publish messages.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -43,6 +58,7 @@ To use the GlassFlow destination, you'll need:
 
 | Version | Date              | Pull Request                                              | Subject                                         |
 |:--------|:------------------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.7 | 2026-10-07 | [88287](https://github.com/airbytehq/airbyte/pull/88287) | Archive connector for the discontinued GlassFlow serverless pipeline API |
 | 0.1.6 | 2025-05-03 | [59349](https://github.com/airbytehq/airbyte/pull/59349) | Update dependencies |
 | 0.1.5 | 2025-04-26 | [58697](https://github.com/airbytehq/airbyte/pull/58697) | Update dependencies |
 | 0.1.4 | 2025-04-19 | [58260](https://github.com/airbytehq/airbyte/pull/58260) | Update dependencies |

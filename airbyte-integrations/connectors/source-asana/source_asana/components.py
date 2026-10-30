@@ -27,11 +27,12 @@ class AsanaHttpRequester(HttpRequester):
 
     def get_request_params(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params = self._request_params_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        params = self._request_params_interpolator.eval_request_inputs(stream_slice, next_page_token)
         if isinstance(params, dict):
             params.update(self._get_opt_fields())
             return params

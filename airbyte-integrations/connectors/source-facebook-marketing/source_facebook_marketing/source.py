@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
     AdCreatives,
+    AdCreativesFromAds,
     Ads,
     AdSets,
     AdsInsights,
@@ -37,15 +38,15 @@ from source_facebook_marketing.streams import (
     AdsInsightsActionVideoSound,
     AdsInsightsActionVideoType,
     AdsInsightsAgeAndGender,
+    AdsInsightsComscoreMarket,
     AdsInsightsCountry,
     AdsInsightsDeliveryDevice,
     AdsInsightsDeliveryPlatform,
     AdsInsightsDeliveryPlatformAndDevicePlatform,
     AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsComscoreMarketRegion,
     AdsInsightsDemographicsCountry,
-    AdsInsightsDemographicsDMARegion,
     AdsInsightsDemographicsGender,
-    AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
@@ -106,9 +107,14 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, "End date must be equal or after start date."
 
             if config.credentials is not None:
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+                api = API(
+                    access_token=config.credentials.access_token,
+                    page_size=config.page_size,
+                )
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
+            # fail fast on rate limits: the platform fails a check that has not finished within 9 minutes
+            api.api.pause_on_rate_limit = False
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
@@ -159,6 +165,7 @@ class SourceFacebookMarketing(AbstractSource):
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
             include_incrementality=config.include_incrementality,
+            include_engaged_view=config.include_engaged_view,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -184,6 +191,15 @@ class SourceFacebookMarketing(AbstractSource):
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
+            AdCreativesFromAds(
+                api=api,
+                account_ids=config.account_ids,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.ad_statuses,
+                page_size=config.page_size,
+            ),
             AdsInsights(
                 page_size=config.page_size,
                 action_breakdowns=config.default_ads_insights_action_breakdowns,
@@ -194,7 +210,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
             AdsInsightsCountry(page_size=config.page_size, **insights_args),
             AdsInsightsRegion(page_size=config.page_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, **insights_args),
+            AdsInsightsComscoreMarket(page_size=config.page_size, **insights_args),
             AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, **insights_args),
             AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
@@ -208,7 +224,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsComscoreMarketRegion(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
@@ -274,7 +290,10 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "access_token": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "access_token"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "access_token",
+                                ],
                             },
                         },
                     },
@@ -291,11 +310,17 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "client_id": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_id"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_id",
+                                ],
                             },
                             "client_secret": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_secret"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_secret",
+                                ],
                             },
                         },
                     },
@@ -322,17 +347,19 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 account_ids=config.account_ids,
                 name=f"Custom{insight.name}",
-                fields=list(insight_fields),
-                breakdowns=list(set(insight.breakdowns)),
-                action_breakdowns=list(set(insight.action_breakdowns)),
+                fields=list(dict.fromkeys(insight.fields)),
+                breakdowns=list(dict.fromkeys(insight.breakdowns)),
+                action_breakdowns=list(dict.fromkeys(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
+                time_increment_period=insight.time_increment_period,
                 start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
                 include_incrementality=insight.include_incrementality,
+                include_engaged_view=insight.include_engaged_view,
             )
             streams.append(stream)
         return streams

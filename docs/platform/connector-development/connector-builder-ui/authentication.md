@@ -370,3 +370,7 @@ If your connector uses the same API key authentication for both data retrieval a
 ## Custom authentication methods
 
 Some APIs require complex custom authentication schemes involving signing requests or doing multiple requests to authenticate. In these cases, use the [low-code/YAML mode](/platform/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/platform/connector-development/cdk-python/).
+
+## Related
+
+- *YAML Components*: [Authentication](/platform/connector-development/config-based/understanding-the-yaml-file/authentication)

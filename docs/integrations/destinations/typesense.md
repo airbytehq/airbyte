@@ -14,14 +14,15 @@ With append mode, you have to create the collection first and can use [pre-defin
 
 Each stream will be output into its own collection in Typesense. If an id column is not provided, it will be generated.
 
-#### Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -37,6 +38,10 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 To connect a Typesense with HA, you can type multiple hosts on the host field using a comma separator.
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -44,6 +49,7 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.1.53 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret`; fix the image entrypoint |
 | 0.1.52 | 2025-05-17 | [60709](https://github.com/airbytehq/airbyte/pull/60709) | Update dependencies |
 | 0.1.51 | 2025-05-10 | [59776](https://github.com/airbytehq/airbyte/pull/59776) | Update dependencies |
 | 0.1.50 | 2025-05-03 | [59331](https://github.com/airbytehq/airbyte/pull/59331) | Update dependencies |

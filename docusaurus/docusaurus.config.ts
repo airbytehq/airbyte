@@ -3,10 +3,6 @@ import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
 import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
-import {
-  loadAgentEngineApiSidebar,
-  replaceApiReferenceCategory,
-} from "./src/scripts/agent-engine-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -17,17 +13,9 @@ const getRemarkPlugins = () => ({
   specDecoration: require("./src/remark/specDecoration"),
   docMetaTags: require("./src/remark/docMetaTags"),
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
-  npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
-  agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
 });
 
 const plugins = getRemarkPlugins();
-
-// Import constants for Agent Engine API sidebar generation
-const {
-  SPEC_CACHE_PATH,
-  API_SIDEBAR_PATH,
-} = require("./src/scripts/agent-engine-api/constants");
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -35,18 +23,22 @@ const darkCodeTheme = prismThemes.dracula;
 const config: Config = {
   future: {
     v4: true,
-    experimental_faster: true,
+    faster: true,
   },
   markdown: {
     mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
     },
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
     "@saucelabs/theme-github-codeblock",
-    "docusaurus-theme-openapi-docs",
   ],
   title: "Airbyte Docs",
   tagline:
@@ -55,30 +47,13 @@ const config: Config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
+  trailingSlash: false,
   onBrokenLinks: "throw",
 
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
 
-  // Adds one off script tags to the head of each page
-  // e.g. <script async data-api-key="..." id="unifytag" src="..."></script>
-  scripts: [
-    {
-      src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
-      async: true,
-      type: "module",
-      id: "unifytag",
-      "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
-      async: true,
-      "data-apikey": "2094e2379643f69f7aec647a15f786",
-      "data-cookieless": "1",
-      "data-auto-identify": "1",
-    },
-  ],
   headTags: [
     {
       tagName: "meta",
@@ -135,7 +110,7 @@ const config: Config = {
         },
       };
     },
-    // This plugin controls "platform" docs, which are versioned
+    // This plugin controls "platform" docs (no longer versioned)
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -143,50 +118,11 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        lastVersion: "current", // Default to Cloud/Next version instead of latest numbered version
-        editUrl: ({
-          version,
-          docPath,
-        }: {
-          version: string;
-          docPath: string;
-        }) => {
-          if (version === "current") {
-            // For the "next" (unreleased) version
-            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
-          } else {
-            // For released versions
-            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
-          }
-        },
+        editUrl:
+          "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
-        ],
-      },
-    ],
-    // This plugin controls AI Agent Tools docs, which are not versioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "ai-agents",
-        path: "../docs/ai-agents",
-        routeBasePath: "/ai-agents",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
-        async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
-          const sidebarItems = await defaultSidebarItemsGenerator(args);
-
-          // Load and filter the Agent Engine API sidebar based on allowed tags
-          const agentEngineApiItems = loadAgentEngineApiSidebar();
-
-          // Replace the "api-reference" category with the filtered API items
-          return replaceApiReferenceCategory(sidebarItems, agentEngineApiItems);
-        },
-        remarkPlugins: [
-          plugins.agentConnectorHeaderDecoration,
-          plugins.addButtonToTitle,
-          [plugins.npm2yarn, { sync: true }],
         ],
       },
     ],
@@ -256,26 +192,8 @@ const config: Config = {
         ],
       },
     ],
-    [
-      "docusaurus-plugin-openapi-docs",
-      {
-        id: "agent-engine-api",
-        docsPluginId: "ai-agents",
-        config: {
-          "agent-engine": {
-            specPath: "src/data/agent_engine_api_spec.json",
-            outputDir: "../docs/ai-agents/api/api-reference",
-            sidebarOptions: {
-              groupPathsBy: "tag",
-              categoryLinkSource: "tag",
-              sidebarCollapsed: true,
-              sidebarCollapsible: true,
-            },
-          },
-        },
-      },
-    ],
     require.resolve("./src/plugins/enterpriseConnectors"),
+    require.resolve("./src/plugins/agentConnectors"),
     [
       "@signalwire/docusaurus-plugin-llms-txt",
       {
@@ -325,10 +243,20 @@ const config: Config = {
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-    require.resolve("./src/scripts/kapaWithOsanoConsent.js"),
+    require.resolve("./src/scripts/kapaWithDataGrailConsent.js"),
   ],
 
   themeConfig: {
+    // Default social card for og:image/twitter:image on every page. Per-page
+    // front matter `image` still takes precedence.
+    image: "img/airbyte-docs-social-card.png",
+    metadata: [
+      // Docs pages override this with "article" in src/theme/DocItem/Metadata.
+      { property: "og:type", content: "website" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Airbyte Documentation" },
+    ],
     colorMode: {
       disableSwitch: false,
     },
@@ -351,10 +279,10 @@ const config: Config = {
     announcementBar: {
       id: "try_airbyte_cloud",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.com/signup?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_cloud_docs_banner">Try Airbyte Cloud!</a> Free trial for 14 days, no credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
-      isCloseable: true,
+      isCloseable: false,
     },
     navbar: {
       title: "Docs",
@@ -365,53 +293,40 @@ const config: Config = {
         height: 40,
       },
       items: [
-        // "Data Replication" dropdown groups the five sub-sections
-        // `to` makes the label itself clickable (navigates to Platform)
         {
-          type: "dropdown",
+          type: "docSidebar",
           position: "left",
-          label: "Data Replication",
-          to: "/platform/",
-          items: [
-            {
-              type: "docSidebar",
-              docsPluginId: "platform",
-              sidebarId: "platform",
-              label: "Platform",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "connectors",
-              sidebarId: "connectors",
-              label: "Connectors",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "release_notes",
-              sidebarId: "releaseNotes",
-              label: "Release notes",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "developers",
-              sidebarId: "developers",
-              label: "Developers",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "community",
-              sidebarId: "community",
-              label: "Community",
-            },
-          ],
+          docsPluginId: "platform",
+          sidebarId: "platform",
+          label: "Platform",
         },
-        // "Agent Engine" is a direct link (no dropdown needed)
         {
-          type: "doc",
+          type: "docSidebar",
           position: "left",
-          docsPluginId: "ai-agents",
-          docId: "README",
-          label: "Agent Engine",
+          docsPluginId: "connectors",
+          sidebarId: "connectors",
+          label: "Connectors",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "release_notes",
+          sidebarId: "releaseNotes",
+          label: "Release notes",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "developers",
+          sidebarId: "developers",
+          label: "Developers",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "community",
+          sidebarId: "community",
+          label: "Community",
         },
         {
           href: "https://status.airbyte.com",
@@ -419,14 +334,6 @@ const config: Config = {
           className: "cloudStatusLink",
         },
         // --- Right side ---
-        // Platform docs version selector
-        {
-          type: "docsVersionDropdown",
-          position: "right",
-          docsPluginId: "platform",
-          label: "Version",
-          dropdownActiveClassDisabled: true,
-        },
         {
           href: "https://github.com/airbytehq",
           position: "right",

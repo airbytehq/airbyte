@@ -33,7 +33,6 @@ You'll need the following information to configure the destination:
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Configuration
 
@@ -110,6 +109,10 @@ vector_store.fields.append("text")
 vector_store.similarity_search("test")
 ```
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -117,6 +120,12 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.63 | 2026-10-14 | [88972](https://github.com/airbytehq/airbyte/pull/88972) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
+| 0.0.62 | 2026-09-28 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
+| 0.0.61 | 2026-08-13 | [84362](https://github.com/airbytehq/airbyte/pull/84362) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
+| 0.0.60 | 2026-07-02 | [81383](https://github.com/airbytehq/airbyte/pull/81383) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.0.59 | 2026-07-02 | [81394](https://github.com/airbytehq/airbyte/pull/81394) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
+| 0.0.58 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.0.57 | 2025-10-21 | [68333](https://github.com/airbytehq/airbyte/pull/68333) | Update dependencies |
 | 0.0.56 | 2025-10-14 | [61075](https://github.com/airbytehq/airbyte/pull/61075) | Update dependencies |
 | 0.0.55 | 2025-05-17 | [57175](https://github.com/airbytehq/airbyte/pull/57175) | Update dependencies |

@@ -80,7 +80,7 @@ If you deploy Airbyte with abctl, follow the steps below to update your values a
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
-    connectorBuilderServer:
+    manifestServer:
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
@@ -123,7 +123,7 @@ If you're deploying Airbyte using public Helm charts without abctl, follow the s
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"
-    connectorBuilderServer:
+    manifestServer:
       extraEnv:
         - name: AIRBYTE_ENABLE_UNSAFE_CODE
           value: "true"

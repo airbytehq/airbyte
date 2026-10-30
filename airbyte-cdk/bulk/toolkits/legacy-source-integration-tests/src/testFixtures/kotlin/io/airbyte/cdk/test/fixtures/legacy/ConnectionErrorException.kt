@@ -6,8 +6,10 @@ package io.airbyte.cdk.test.fixtures.legacy
 class ConnectionErrorException : RuntimeException {
     var stateCode: String? = null
         private set
+
     var errorCode: Int = 0
         private set
+
     var exceptionMessage: String? = null
         private set
 
@@ -21,7 +23,7 @@ class ConnectionErrorException : RuntimeException {
     constructor(
         stateCode: String?,
         exceptionMessage: String?,
-        exception: Throwable?
+        exception: Throwable?,
     ) : super(exception) {
         this.stateCode = stateCode
         this.exceptionMessage = exceptionMessage
@@ -31,7 +33,7 @@ class ConnectionErrorException : RuntimeException {
         stateCode: String?,
         errorCode: Int,
         exceptionMessage: String?,
-        exception: Throwable?
+        exception: Throwable?,
     ) : super(exception) {
         this.stateCode = stateCode
         this.errorCode = errorCode

@@ -1,24 +1,7 @@
 ##@ Makefile
 
-##@ Define the default airbyte-ci version
-AIRBYTE_CI_VERSION ?= latest
-
 ## Detect the operating system
 OS := $(shell uname)
-
-tools.airbyte-ci.install: tools.airbyte-ci.clean tools.airbyte-ci-binary.install tools.airbyte-ci.check
-
-tools.airbyte-ci-binary.install: ## Install airbyte-ci binary
-	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_install.py ${AIRBYTE_CI_VERSION}
-
-tools.airbyte-ci-dev.install: ## Install the local development version of airbyte-ci
-	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_dev_install.py
-
-tools.airbyte-ci.check: ## Check if airbyte-ci is installed correctly
-	@./airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_check.sh
-
-tools.airbyte-ci.clean: ## Clean airbyte-ci installations
-	@./airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_clean.sh
 
 tools.git-hooks.clean: ## Clean git hooks
 	@echo "Unset core.hooksPath"
@@ -39,14 +22,14 @@ tools.pre-commit.install.Darwin:
 	@brew install pre-commit maven
 	@echo "Pre-commit installation complete"
 
-tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks
+tools.git-hooks.install: tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks
 	@echo "Installing pre-commit hooks..."
 	@pre-commit install --hook-type pre-push
 	@echo "Pre-push hooks installed."
 
-tools.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
+tools.install: tools.pre-commit.install.$(OS)
 
 version.bulk.cdk:
 	@echo "Latest version of the Bulk CDK is $(shell curl -k --silent "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-load/maven-metadata.xml" | sed -ne 's:.*<latest>\(.*\)</latest>:\1:p')"
 
-.PHONY: tools.install tools.pre-commit.install tools.git-hooks.install tools.git-hooks.clean tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean
+.PHONY: tools.install tools.pre-commit.install tools.git-hooks.install tools.git-hooks.clean

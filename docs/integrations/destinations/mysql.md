@@ -5,15 +5,15 @@ There are two flavors of connectors for this destination:
 1. destination-mysql connector. Supports both SSL and non SSL connections.
 2. destination-mysql-strict-encrypt connector. Pretty same as connector above, but supports SSL connections only.
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-| SSH Tunnel Connection          | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -26,12 +26,12 @@ Airbyte Cloud only supports connecting to your MySQL instance with TLS encryptio
 To use the MySQL destination, you'll need:
 
 - To sync data to MySQL **with** typing and deduping: MySQL database 8.0.0 or above
-- To sync data to MySQL **without** typing and deduping: MySQL 5.0 or above.
+- To sync data to MySQL **without** typing and deduping: MySQL 5.7 or above. The bundled MySQL Connector/J 9.x driver officially supports MySQL 8.0 and later; MySQL 5.7 is no longer supported upstream but still works with this connector.
+- When SSL is enabled (the default, and the only option on Airbyte Cloud), the server must accept TLS 1.2 or TLS 1.3. The driver no longer negotiates TLS 1.0 or TLS 1.1.
 
 #### Troubleshooting
 
-Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
-To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
+If the connection fails with `Cannot create a PoolableConnectionFactory` or an SSL handshake error, check that the server (for example an older Amazon RDS MySQL instance) offers TLS 1.2 or later. Enable a supported TLS version on the server; the driver cannot be configured to fall back to TLS 1.0 or 1.1.
 
 #### Network Access
 
@@ -66,6 +66,8 @@ The following JDBC URL parameters are set by Airbyte and cannot be overridden by
 - `requireSSL=true` (unless `ssl` is set to false)
 - `verifyServerCertificate=false` (unless `ssl` is set to false)
 - `zeroDateTimeBehavior=convertToNull`
+- `allowLoadLocalInfile=true`
+- `connectionTimeZone=LOCAL` (the connector writes and reads `_airbyte_extracted_at` in the connector's own time zone; do not set `connectionTimeZone` or its alias `serverTimezone` in `jdbc_url_params`)
 
 ## Known Limitations
 
@@ -104,13 +106,18 @@ Using this feature requires additional configuration, when creating the destinat
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the MySQl password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). MySQL doesn't differentiate between a database and schema. The configured database acts as the default namespace.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                             |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.1.2 | 2026-10-26 | [89768](https://github.com/airbytehq/airbyte/pull/89768) | Upgrade MySQL Connector/J 8.0.22 to 9.6.0 and pin `connectionTimeZone=LOCAL` so typing no longer skips records on servers west of UTC (MySQL and MySQL Strict Encrypt destinations). |
 | 1.1.1 | 2025-08-04 | [63736](https://github.com/airbytehq/airbyte/pull/63736) | Use MySQL/MariaDB compatible timestamp format |
 | 1.1.0 | 2025-03-25 | [50861](https://github.com/airbytehq/airbyte/pull/50861) | add support for mariadb |
 | 1.0.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |

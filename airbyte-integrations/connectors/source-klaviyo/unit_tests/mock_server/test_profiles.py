@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import KlaviyoRequestBuilder
@@ -52,7 +53,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -185,7 +186,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -240,7 +241,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -301,7 +302,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -359,7 +360,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -433,7 +434,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -475,7 +476,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -514,7 +515,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -540,11 +541,11 @@ class TestProfilesStream(TestCase):
         The manifest configures:
         request_parameters:
           additional-fields[profile]: >-
-            {{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}
+            {{ 'subscriptions,predictive_analytics' if not config['disable_fetching_predictive_analytics'] else 'subscriptions' }}
 
         Given: Config with disable_fetching_predictive_analytics=True
         When: Running a sync
-        Then: The additional-fields parameter should be empty
+        Then: The additional-fields parameter should only contain 'subscriptions'
         """
         config = (
             ConfigBuilder()
@@ -554,14 +555,14 @@ class TestProfilesStream(TestCase):
             .build()
         )
 
-        # When predictive_analytics is disabled, additional-fields[profile] should be empty string
+        # When predictive_analytics is disabled, additional-fields[profile] should only contain 'subscriptions'
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "",
+                    "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
                 }
             )
@@ -592,3 +593,50 @@ class TestProfilesStream(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "profile_no_analytics"
+
+    @HttpMocker()
+    def test_profiles_include_subscription_data(self, http_mocker: HttpMocker):
+        """
+        Test that subscription data is present in profile records when returned by the API.
+
+        Since Klaviyo API Revision 2024-10-15, the subscriptions field must be explicitly
+        requested via additional-fields[profile]=subscriptions. This test verifies that
+        when the API returns subscription/consent data, it is correctly passed through
+        to the output records.
+
+        Uses the profiles.json fixture which contains a realistic profile with subscriptions.
+
+        Given: A Klaviyo API response containing profiles with subscription data
+        When: Running a full refresh sync
+        Then: The output records should contain the subscriptions field with nested consent data
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+
+        # Load the realistic profile fixture which includes subscriptions data
+        profiles_fixture = find_template("profiles", __file__)
+
+        http_mocker.get(
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
+                    "page[size]": "100",
+                }
+            )
+            .build(),
+            KlaviyoPaginatedResponseBuilder.single_page(profiles_fixture),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["id"] == "profile_001"
+        assert "subscriptions" in record["attributes"]
+        assert record["attributes"]["subscriptions"]["email"]["marketing"]["consent"] == "SUBSCRIBED"
+        assert record["attributes"]["subscriptions"]["email"]["marketing"]["can_receive_email_marketing"] is True
+        assert record["attributes"]["subscriptions"]["sms"]["marketing"]["can_receive_sms_marketing"] is False

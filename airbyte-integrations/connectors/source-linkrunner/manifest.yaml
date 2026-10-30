@@ -1,0 +1,342 @@
+version: 1.0.0
+
+type: DeclarativeSource
+
+description: >-
+  Linkrunner is a Mobile Measurement Partner (MMP) that helps track user
+  journeys from first click to revenue generation. This connector extracts
+  campaign data and attributed user analytics from Linkrunner's Data API,
+  enabling comprehensive mobile attribution reporting and analysis. Supports
+  filtering by campaign status, advertising channels (Google, Meta, TikTok), and
+  time-based attribution data with automatic pagination and parent-child stream
+  relationships.
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['linkrunner-key'] }}"
+        header: linkrunner-key
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                  - 500
+                  - 502
+                  - 503
+                  - 504
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+      request_parameters:
+        filter: "{{ config.get('filter', 'ALL') }}"
+        channel: "{{ config.get('channel', '') }}"
+
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 100
+        stop_condition: "{{ not response.get('data', {}).get('campaigns', []) }}"
+
+streams:
+  - type: DeclarativeStream
+    name: campaigns
+    primary_key: display_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+        url: https://api.linkrunner.io/api/v1/campaigns
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - campaigns
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          display_id:
+            type: string
+
+          name:
+            type: [string, "null"]
+
+          created_at:
+            type: [string, "null"]
+
+          update_at:
+            type: [string, "null"]
+
+          google:
+            type: [boolean, "null"]
+
+          meta:
+            type: [boolean, "null"]
+
+          meta_campaign_id:
+            type: [string, "null"]
+
+          meta_web_to_app:
+            type: [boolean, "null"]
+
+          active:
+            type: [boolean, "null"]
+
+          default_link:
+            type: [boolean, "null"]
+
+          attributed_users:
+            type: [number, "null"]
+
+          link:
+            type: [string, "null"]
+
+          shareable_link:
+            type: [string, "null"]
+
+          website:
+            type: [string, "null"]
+
+          domain:
+            type: [string, "null"]
+            description: Domain used to generate campaign links
+
+          android_web_redirect:
+            type: [string, "null"]
+            description: Android-specific web redirect URL
+
+          ios_web_redirect:
+            type: [string, "null"]
+            description: iOS-specific web redirect URL
+
+          store_listings:
+            type: [array, "null"]
+            description: Store listings associated with this campaign
+            items:
+              type: object
+              properties:
+                store_listing_id:
+                  type: string
+                name:
+                  type: string
+                platform:
+                  type: string
+                  enum:
+                    - IOS
+                    - ANDROID
+
+          network_account:
+            type: [object, "null"]
+            properties:
+              id:
+                type: [number, "null"]
+              name:
+                type: [string, "null"]
+              status:
+                type: [string, "null"]
+              capi_configured:
+                type: [boolean, "null"]
+
+        additionalProperties: true
+
+  - type: DeclarativeStream
+    name: attributed_users
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          display_id: "{{ stream_slice.display_id }}"
+          start_timestamp: "{{ config.get('start_timestamp', '') }}"
+          end_timestamp: "{{ config.get('end_timestamp', '') }}"
+          timezone: "{{ config.get('timezone', 'UTC') }}"
+        url: https://api.linkrunner.io/api/v1/attributed-users
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - users
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 100
+        stop_condition: "{{ not response.get('data', {}).get('users', []) }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: display_id
+            partition_field: display_id
+            stream:
+              $ref: "#/streams/0"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributed_at:
+            type: [string, "null"]
+
+          campaign_display_id:
+            type: [string, "null"]
+
+          campaign_name:
+            type: [string, "null"]
+
+          link:
+            type: [string, "null"]
+
+          installed_at:
+            type: [string, "null"]
+
+          store_click_at:
+            type: [string, "null"]
+
+          ad_set_id:
+            type: [string, "null"]
+
+          user_data:
+            type: [object, "null"]
+            properties:
+              id:
+                type: [string, "null"]
+              email:
+                type: [string, "null"]
+              device_data:
+                type: [object, "null"]
+                properties:
+                  idfv:
+                    type: [string, "null"]
+                  locale:
+                    type: [string, "null"]
+                  country:
+                    type: [string, "null"]
+                  language:
+                    type: [string, "null"]
+                  timezone:
+                    type: [string, "null"]
+                  device_display:
+                    type: [object, "null"]
+                    properties:
+                      scale:
+                        type: [number, "null"]
+                      width:
+                        type: [number, "null"]
+                      height:
+                        type: [number, "null"]
+                  timezone_offset:
+                    type: [number, "null"]
+                  install_instance_id:
+                    type: [string, "null"]
+                  adservices_attribution_token:
+                    type: [string, "null"]
+                  idfa:
+                    type: [string, "null"]
+
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    required:
+      - linkrunner-key
+    properties:
+      linkrunner-key:
+        type: string
+        title: LinkRunner API Key
+        description: Your LinkRunner API key from the dashboard
+        airbyte_secret: true
+        order: 0
+
+      filter:
+        type: string
+        title: Campaign Filter
+        enum: [ALL, ACTIVE, INACTIVE]
+        default: ALL
+        order: 1
+
+      channel:
+        type: string
+        title: Channel Filter
+        enum: ["", GOOGLE, META, TIKTOK]
+        order: 2
+
+      start_timestamp:
+        type: string
+        title: Start Timestamp
+        format: date-time
+        order: 3
+
+      end_timestamp:
+        type: string
+        title: End Timestamp
+        format: date-time
+        order: 4
+
+      timezone:
+        type: string
+        title: Timezone
+        default: UTC
+        order: 5
+
+metadata:
+  autoImportSchema:
+    campaigns: true
+    attributed_users: true

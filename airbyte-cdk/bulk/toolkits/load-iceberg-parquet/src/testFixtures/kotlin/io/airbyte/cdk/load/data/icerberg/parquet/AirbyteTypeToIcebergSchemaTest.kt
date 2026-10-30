@@ -84,7 +84,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles BooleanType`() {
         assertEquals(
             Types.BooleanType.get(),
-            converter.convert(BooleanType, stringifyObjects = false)
+            converter.convert(BooleanType, stringifyObjects = false),
         )
     }
 
@@ -102,7 +102,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles NumberType`() {
         assertEquals(
             Types.DoubleType.get(),
-            converter.convert(NumberType, stringifyObjects = false)
+            converter.convert(NumberType, stringifyObjects = false),
         )
     }
 
@@ -124,7 +124,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles StringType`() {
         assertEquals(
             Types.StringType.get(),
-            converter.convert(StringType, stringifyObjects = false)
+            converter.convert(StringType, stringifyObjects = false),
         )
     }
 
@@ -132,7 +132,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimeTypeWithTimezone`() {
         assertEquals(
             Types.TimeType.get(),
-            converter.convert(TimeTypeWithTimezone, stringifyObjects = false)
+            converter.convert(TimeTypeWithTimezone, stringifyObjects = false),
         )
     }
 
@@ -140,7 +140,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimeTypeWithoutTimezone`() {
         assertEquals(
             Types.TimeType.get(),
-            converter.convert(TimeTypeWithoutTimezone, stringifyObjects = false)
+            converter.convert(TimeTypeWithoutTimezone, stringifyObjects = false),
         )
     }
 
@@ -148,7 +148,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimestampTypeWithTimezone`() {
         assertEquals(
             Types.TimestampType.withZone(),
-            converter.convert(TimestampTypeWithTimezone, stringifyObjects = false)
+            converter.convert(TimestampTypeWithTimezone, stringifyObjects = false),
         )
     }
 
@@ -156,7 +156,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimestampTypeWithoutTimezone`() {
         assertEquals(
             Types.TimestampType.withoutZone(),
-            converter.convert(TimestampTypeWithoutTimezone, stringifyObjects = false)
+            converter.convert(TimestampTypeWithoutTimezone, stringifyObjects = false),
         )
     }
 
@@ -182,7 +182,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles UnknownType`() {
         assertEquals(
             Types.StringType.get(),
-            converter.convert(UnknownType(Jsons.emptyObject()), stringifyObjects = false)
+            converter.convert(UnknownType(Jsons.emptyObject()), stringifyObjects = false),
         )
     }
 
@@ -212,5 +212,36 @@ class AirbyteTypeToIcebergSchemaTest {
         val identifierFieldIds = schema.identifierFieldIds()
         assertEquals(1, identifierFieldIds.size)
         assertEquals(true, identifierFieldIds.contains(ageColumn.fieldId()))
+    }
+
+    @Test
+    fun `toIcebergSchema maps PK NumberType to StringType for identifier compatibility`() {
+        val objectType =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(NumberType, false),
+                    "amount" to FieldType(NumberType, true),
+                ),
+            )
+        val schema = objectType.toIcebergSchema(mutableListOf(mutableListOf("id")))
+
+        assertEquals(2, schema.columns().size)
+        val idColumn = schema.findField("id")
+        val amountColumn = schema.findField("amount")
+
+        // PK NumberType field should be StringType (for Iceberg identifier compatibility)
+        assertNotNull(idColumn)
+        assertFalse(idColumn!!.isOptional)
+        assertEquals(Types.StringType.get(), idColumn.type())
+
+        // Non-PK NumberType field should remain DoubleType
+        assertNotNull(amountColumn)
+        assertTrue(amountColumn!!.isOptional)
+        assertEquals(Types.DoubleType.get(), amountColumn.type())
+
+        // PK field should be in identifier fields (StringType is allowed)
+        val identifierFieldIds = schema.identifierFieldIds()
+        assertEquals(1, identifierFieldIds.size)
+        assertTrue(identifierFieldIds.contains(idColumn.fieldId()))
     }
 }

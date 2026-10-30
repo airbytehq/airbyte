@@ -24,13 +24,15 @@ All streams will be output into a corpus in Vectara whose name must be specified
 
 Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
 
-### Features
+## Supported sync modes
 
-| Feature                   | Supported? |
-| :------------------------ | :--------- |
-| Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | Yes        |
-| Incremental - Dedupe Sync | Yes        |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -38,10 +40,10 @@ You will need a Vectara account to use Vectara with Airbyte. To get started, use
 
 1. [Sign up](https://vectara.com/integrations/airbyte) for a Vectara account if you don't already have one. Once you have completed your sign up you will have a Vectara customer ID. You can find your customer ID by clicking on your name, on the top-right of the Vectara console window.
 2. Within your account you can create your corpus, which represents an area that stores text data you want to ingest into Vectara.
-   - To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus ID right on the top. You can see more details in this [guide](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
+   - To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus key right on the top. You can see more details in this [guide](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
    - Optionally you can define filtering attributes and apply some advanced options.
    - For the Vectara connector to work properly you **must** define a special meta-data field called `_ab_stream` (string typed) which the connector uses to identify source streams.
-3. The Vectara destination connector uses [OAuth2.0 Credentials](https://docs.vectara.com/docs/learn/authentication/oauth-2). You will need your `Client ID` and `Client Secret` handy for your connector setup.
+3. The Vectara destination connector uses [OAuth2.0 Credentials](https://docs.vectara.com/docs/api-reference/auth-apis/oauth-2) (an app client created in the Vectara console under **API access > App clients**). You will need your `Client ID` and `Client Secret` handy for your connector setup.
 
 ### Setup the Vectara Destination in Airbyte
 
@@ -52,7 +54,7 @@ You'll need the following information to configure the Vectara destination:
 - (Required) OAuth2.0 Credentials
   - (Required) **Client ID**
   - (Required) **Client Secret**
-- (Required) **Customer ID**
+- (Optional) **Customer ID**. Only kept for backwards compatibility; it is no longer needed to authenticate against the Vectara API v2.
 - (Required) **Corpus Name**. You can specify a corpus name you've setup manually given the instructions above, or if you specify a corpus name that does not exist, the connector will generate a new corpus in this name and setup the required meta-data filtering fields within that corpus.
 
 In addition, in the connector UI you define two set of fields for this connector:
@@ -61,6 +63,10 @@ In addition, in the connector UI you define two set of fields for this connector
 - `title_field` define the source field which will be used as a title of the document on the Vectara side
 - `metadata_fields` define the source fields which will be added to each document as meta-data.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -68,6 +74,7 @@ In addition, in the connector UI you define two set of fields for this connector
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.32 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88339) | Migrate from the retired Vectara API v1 (and per-customer Cognito OAuth endpoint) to API v2 / `auth.vectara.com` |
 | 0.2.31 | 2024-11-25 | [48659](https://github.com/airbytehq/airbyte/pull/48659) | Update dependencies |
 | 0.2.30 | 2024-11-04 | [48222](https://github.com/airbytehq/airbyte/pull/48222) | Update dependencies |
 | 0.2.29 | 2024-10-29 | [47744](https://github.com/airbytehq/airbyte/pull/47744) | Update dependencies |

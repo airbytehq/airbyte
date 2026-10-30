@@ -3,11 +3,11 @@
  * It's called during the prebuild phase to prepare data for the build process.
  *
  * The cache is used by:
- * - remark/specDecoration.js - needs: dockerRepository_oss, spec_oss.connectionSpecification
- * - remark/connectorList.js - needs: remoteRegistries_oss for isPypiConnector filter
- * - remark/utils.js - needs: dockerRepository_oss, name_oss, is_oss, is_cloud,
- *                     iconUrl_oss, supportLevel_oss, documentationUrl_oss
- * - sidebar-connectors.js - needs: docUrl, supportLevel, dockerRepository_oss
+ * - remark/specDecoration.js - needs: dockerRepository, spec.connectionSpecification
+ * - remark/connectorList.js - needs: remoteRegistries for isPypiConnector filter
+ * - remark/utils.js - needs: dockerRepository, name, is_oss, is_cloud,
+ *                     iconUrl, supportLevel, documentationUrl
+ * - sidebar-connectors.js - needs: docUrl, supportLevel, dockerRepository
  *
  * This avoids network timeouts during the build process by fetching data once upfront.
  * The cache file is cleaned up after the build completes (see cleanup-cache.js).

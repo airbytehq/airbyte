@@ -35,7 +35,6 @@ You'll need the following information to configure the destination:
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Data type mapping
 
@@ -78,6 +77,9 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 - page_content (string) - the text content of the chunk
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
@@ -86,6 +88,10 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.31 | 2026-10-07 | [88166](https://github.com/airbytehq/airbyte/pull/88166) | Remove the ruff dev dependency so connector CI formats with the repository ruff version |
+| 0.2.30 | 2026-08-13 | [84363](https://github.com/airbytehq/airbyte/pull/84363) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
+| 0.2.29 | 2026-07-02 | [81385](https://github.com/airbytehq/airbyte/pull/81385) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.2.28 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.2.27 | 2025-10-21 | [68344](https://github.com/airbytehq/airbyte/pull/68344) | Update dependencies |
 | 0.2.26 | 2025-10-14 | [63066](https://github.com/airbytehq/airbyte/pull/63066) | Update dependencies |
 | 0.2.25 | 2025-05-17 | [51743](https://github.com/airbytehq/airbyte/pull/51743) | Update dependencies |

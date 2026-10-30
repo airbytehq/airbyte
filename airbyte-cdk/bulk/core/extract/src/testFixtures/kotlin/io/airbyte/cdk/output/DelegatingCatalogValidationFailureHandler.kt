@@ -21,5 +21,6 @@ class DelegatingCatalogValidationFailureHandler(
         outputConsumer.accept(
             AirbyteLogMessage().withLevel(AirbyteLogMessage.Level.WARN).withMessage(f.toString()),
         )
+        f.asErrorTrace()?.let { outputConsumer.accept(it) }
     }
 }

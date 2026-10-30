@@ -168,6 +168,66 @@ definitions:
       name: "programs"
       path: "rest/asset/v1/programs.json"
 
+  emails_stream:
+    # API Docs: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails
+    name: "emails"
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+        page_size_option:
+          type: RequestOption
+          field_name: "maxReturn"
+          inject_into: request_parameter
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["createdAt"]
+            value: "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+          - type: AddedFieldDefinition
+            path: ["updatedAt"]
+            value: "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+    $parameters:
+      name: "emails"
+      path: "rest/asset/v1/emails.json"
+
+  program_tokens_stream:
+    # API Docs: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens
+    name: "program_tokens"
+    type: DeclarativeStream
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_marketo/schemas/program_tokens.json"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["result", "*", "tokens", "*"]
+      requester:
+        $ref: "#/definitions/requester"
+        path: "rest/asset/v1/folder/{{ stream_partition['program_id'] }}/tokens.json"
+        request_parameters:
+          folderType: "Program"
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "program_id"
+            stream: "#/definitions/programs_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["program_id"]
+            value: "{{ stream_partition['program_id'] }}"
+
 streams:
   # Full refresh streams
   - "#/definitions/activity_types_stream"
@@ -179,6 +239,10 @@ streams:
 
   # Incremental streams
   - "#/definitions/programs_stream"
+  - "#/definitions/emails_stream"
+
+  # Substreams
+  - "#/definitions/program_tokens_stream"
 
 check:
   type: CheckStream
