@@ -92,6 +92,20 @@ def test_check_connection_validates_settings(config, valid):
     assert (error is None) is valid
 
 
+@pytest.mark.parametrize(
+    "config",
+    [
+        {},
+        {"count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+    ],
+)
+def test_check_connection_uses_defaults_for_omitted_settings(config):
+    ok, error = SourceFaker().check_connection(logger, config)
+    assert ok is True
+    assert error is None
+
+
 def test_read_small_random_data():
     source = SourceFaker()
     config = {"count": 10, "parallelism": 1}
