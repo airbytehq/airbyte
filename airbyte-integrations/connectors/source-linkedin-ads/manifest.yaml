@@ -1978,10 +1978,40 @@ spec:
     required:
       - start_date
     additionalProperties: true
+    # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the
+    # groups it shows, in form order. Properties opt into a group with `group`. A section with `check: true` is
+    # checked when the user completes it: the platform sends a CHECK whose config carries a top-level `check-section`
+    # key, and the connector runs its declared check with the configuration collected up to that section (see the
+    # CDK's airbyte_cdk.sources.utils.check_section). The review section has no check of its own: the full check the
+    # platform runs before creating the source covers it.
+    groups:
+      - id: account
+      - id: filters
+        title: Data filters
+      - id: advanced
+        title: Advanced
+    sections:
+      - id: account
+        title: Connect account
+        order: 0
+        description: Sign in to LinkedIn and choose where to start syncing from.
+        groups:
+          - account
+          - filters
+        check: true
+      - id: review
+        title: Review & set up
+        order: 1
+        description: Name your source and check the optional settings.
+        groups:
+          - advanced
     properties:
       credentials:
         title: Authentication
         type: object
+        order: 0
+        group: account
+        display_type: radio
         oneOf:
           - type: object
             title: OAuth2.0
@@ -2024,6 +2054,8 @@ spec:
       start_date:
         type: string
         title: Start Date
+        order: 1
+        group: account
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         pattern_descriptor: YYYY-MM-DD
         description: "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated."
@@ -2033,12 +2065,16 @@ spec:
       lookback_window:
         type: integer
         title: Lookback Window
+        order: 5
+        group: advanced
         default: 0
         minimum: 0
         description: How far into the past to look for records. (in days)
       account_ids:
         title: Account IDs
         type: array
+        order: 2
+        group: filters
         description: 'Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the <a href="https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en">LinkedIn docs</a> to locate these IDs.'
         items:
           type: integer
@@ -2048,6 +2084,8 @@ spec:
       ad_analytics_reports:
         title: Custom Ad Analytics Reports
         type: array
+        order: 3
+        group: filters
         items:
           type: object
           title: Ad Analytics Report Configuration
@@ -2101,6 +2139,8 @@ spec:
       ad_statistics_reports:
         title: Custom Ad Statistics Reports
         type: array
+        order: 4
+        group: filters
         items:
           type: object
           title: Ad Statistics Report Configuration
@@ -2153,6 +2193,8 @@ spec:
         title: Number of Workers
         description: The number of workers to use for the connector. This is used to limit the number of concurrent requests to the LinkedIn Ads API. If not set, the default is 3 workers.
         type: integer
+        order: 6
+        group: advanced
         default: 3
         minimum: 2
         maximum: 50
