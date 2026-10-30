@@ -64,7 +64,7 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
 
 /**
  * Cleans up old test namespaces from Databricks. Finds schemas matching `test%` and drops those
- * older than [RETENTION_DAYS].
+ * older than the [RETENTION_DAYS].
  *
  * Unity Catalog caps a catalog at 10,000 schemas and each CI run leaves a few hundred behind, so
  * the CDK default of 30 days exhausts the quota (`UC_RESOURCE_QUOTA_EXCEEDED`).
