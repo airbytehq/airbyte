@@ -54,6 +54,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.74 | 2026-10-27 | [89920](https://github.com/airbytehq/airbyte/pull/89920) | Update dependencies |
+| 0.0.73 | 2026-10-20 | [89257](https://github.com/airbytehq/airbyte/pull/89257) | Update dependencies |
 | 0.0.72 | 2026-10-13 | [88642](https://github.com/airbytehq/airbyte/pull/88642) | Update dependencies |
 | 0.0.71 | 2026-10-07 | [88270](https://github.com/airbytehq/airbyte/pull/88270) | Add OAuth (refresh token) authentication so access tokens are refreshed every sync; migrate legacy `api_key` configs |
 | 0.0.70 | 2026-10-06 | [87907](https://github.com/airbytehq/airbyte/pull/87907) | Update dependencies |

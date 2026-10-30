@@ -33,14 +33,14 @@ object IcebergExpectedRecordMapper : ExpectedRecordMapper {
         when (value) {
             is TimeWithTimezoneValue ->
                 TimeWithoutTimezoneValue(
-                    value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
+                    value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime(),
                 )
             is TimestampWithTimezoneValue ->
                 TimestampWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
             is ArrayValue -> ArrayValue(value.values.map { mapTemporalTypesToUtc(it) })
             is ObjectValue ->
                 ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> mapTemporalTypesToUtc(v) }
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> mapTemporalTypesToUtc(v) },
                 )
             else -> value
         }

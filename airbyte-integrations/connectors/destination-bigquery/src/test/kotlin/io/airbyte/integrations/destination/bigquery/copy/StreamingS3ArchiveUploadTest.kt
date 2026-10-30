@@ -49,11 +49,11 @@ class StreamingS3ArchiveUploadTest {
                 assertTrue(f.completing.await(5, TimeUnit.SECONDS))
                 assertEquals(
                     listOf(1, 2, 3),
-                    f.completionRequest!!.multipartUpload().parts().map { it.partNumber() }
+                    f.completionRequest!!.multipartUpload().parts().map { it.partNumber() },
                 )
                 assertEquals(
                     listOf("checksum-1", "checksum-2", "checksum-3"),
-                    f.completionRequest!!.multipartUpload().parts().map { it.checksumCRC32() }
+                    f.completionRequest!!.multipartUpload().parts().map { it.checksumCRC32() },
                 )
                 assertArrayEquals("efgh".toByteArray(), second.bytes.get(5, TimeUnit.SECONDS))
                 assertArrayEquals("i".toByteArray(), third.bytes.get(5, TimeUnit.SECONDS))
@@ -74,7 +74,7 @@ class StreamingS3ArchiveUploadTest {
                         match<CreateMultipartUploadRequest> {
                             it.metadata() == mapOf("batch-id" to "batch") &&
                                 it.contentType() == "application/x-ndjson"
-                        }
+                        },
                     )
                 }
             }
@@ -112,7 +112,7 @@ class StreamingS3ArchiveUploadTest {
                 bodyFactory = {
                     opened.incrementAndGet()
                     ArchiveFileBody(it)
-                }
+                },
             )
             .use { f ->
                 f.session.append("abcd".toByteArray())
@@ -160,7 +160,7 @@ class StreamingS3ArchiveUploadTest {
             creation.complete(CreateMultipartUploadResponse.builder().uploadId("late-id").build())
             verify(exactly = 1) {
                 f.client.abortMultipartUpload(
-                    match<AbortMultipartUploadRequest> { it.uploadId() == "late-id" }
+                    match<AbortMultipartUploadRequest> { it.uploadId() == "late-id" },
                 )
             }
             assertEquals(0, f.budget.retainedBytes())
@@ -207,7 +207,7 @@ class StreamingS3ArchiveUploadTest {
                 causes.any { it.suppressed.isNotEmpty() },
                 causes.joinToString {
                     "${it.javaClass.simpleName}: ${it.message}; suppressed=${it.suppressed.toList()}"
-                }
+                },
             )
             verify(exactly = 0) {
                 f.client.completeMultipartUpload(any<CompleteMultipartUploadRequest>())
@@ -244,7 +244,7 @@ class StreamingS3ArchiveUploadTest {
                 part.succeed()
                 assertArrayEquals(
                     "efgh".toByteArray(),
-                    second.nextPart().bytes.get(5, TimeUnit.SECONDS)
+                    second.nextPart().bytes.get(5, TimeUnit.SECONDS),
                 )
             }
         }
@@ -272,10 +272,11 @@ class StreamingS3ArchiveUploadTest {
                                     }
                                     return -1
                                 }
+
                                 override fun close() = Unit
                             }
                         }
-                    }
+                    },
                 )
             try {
                 f.session.append("abcd".toByteArray())
@@ -353,7 +354,7 @@ class StreamingS3ArchiveUploadTest {
         gate: Semaphore = Semaphore(8),
         creation: CompletableFuture<CreateMultipartUploadResponse> =
             CompletableFuture.completedFuture(
-                CreateMultipartUploadResponse.builder().uploadId("id").build()
+                CreateMultipartUploadResponse.builder().uploadId("id").build(),
             ),
         bodyFactory: (Path) -> ArchiveFileBody = { ArchiveFileBody(it) },
     ) : AutoCloseable {
@@ -365,6 +366,7 @@ class StreamingS3ArchiveUploadTest {
         @Volatile var completionRequest: CompleteMultipartUploadRequest? = null
         private val cleanup = Executors.newFixedThreadPool(2)
         val session: StreamingS3ArchiveUpload
+
         init {
             every { client.createMultipartUpload(any<CreateMultipartUploadRequest>()) } returns
                 creation
@@ -384,20 +386,24 @@ class StreamingS3ArchiveUploadTest {
                         .subscribe(
                             object : Subscriber<ByteBuffer> {
                                 private val bytes = ByteArrayOutputStream()
+
                                 override fun onSubscribe(s: Subscription) =
                                     s.request(Long.MAX_VALUE)
+
                                 override fun onNext(value: ByteBuffer) {
                                     val chunk = ByteArray(value.remaining())
                                     value.get(chunk)
                                     bytes.write(chunk)
                                 }
+
                                 override fun onError(t: Throwable) {
                                     part.bytes.completeExceptionally(t)
                                 }
+
                                 override fun onComplete() {
                                     part.bytes.complete(bytes.toByteArray())
                                 }
-                            }
+                            },
                         )
                     requests.add(part)
                     part.response
@@ -416,11 +422,13 @@ class StreamingS3ArchiveUploadTest {
                     cleanupTimeout = Duration.ofSeconds(1),
                     bodyFactory = bodyFactory,
                     onUnsafe = { unsafe.add(it) },
-                    partSize = 4
+                    partSize = 4,
                 )
         }
+
         fun nextPart(): Part =
             requireNotNull(requests.poll(5, TimeUnit.SECONDS)) { "No UploadPart request arrived" }
+
         override fun close() {
             try {
                 if (ignoreCloseFailure) runCatching { session.close() } else session.close()
@@ -434,13 +442,14 @@ class StreamingS3ArchiveUploadTest {
     private class Part(val number: Int) {
         val bytes = CompletableFuture<ByteArray>()
         val response = CompletableFuture<UploadPartResponse>()
+
         fun succeed() {
             bytes.get(5, TimeUnit.SECONDS)
             response.complete(
                 UploadPartResponse.builder()
                     .eTag("etag-$number")
                     .checksumCRC32("checksum-$number")
-                    .build()
+                    .build(),
             )
         }
     }

@@ -307,8 +307,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| ------------ | ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
+| 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
+| 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |
 | 0.12.42 | 2026-10-13 | [88639](https://github.com/airbytehq/airbyte/pull/88639) | Update dependencies |
 | 0.12.41 | 2026-10-06 | [87878](https://github.com/airbytehq/airbyte/pull/87878) | Update dependencies |
 | 0.12.40 | 2026-09-29 | [87193](https://github.com/airbytehq/airbyte/pull/87193) | Update dependencies |

@@ -767,7 +767,7 @@ internal class RedshiftAirbyteClientTest {
         every {
             s3Client.putObject(
                 any<PutObjectRequest>(),
-                any<software.amazon.awssdk.core.sync.RequestBody>()
+                any<software.amazon.awssdk.core.sync.RequestBody>(),
             )
         } returns PutObjectResponse.builder().build()
 
@@ -794,7 +794,7 @@ internal class RedshiftAirbyteClientTest {
 
         verify {
             s3Client.deleteObject(
-                match<DeleteObjectRequest> { it.bucket() == "bucket" && it.key() == "key" }
+                match<DeleteObjectRequest> { it.bucket() == "bucket" && it.key() == "key" },
             )
         }
     }
