@@ -55,21 +55,24 @@ class PostgresSpecificationOss : PostgresSpecification() {
     override val host: String = ""
 
     @get:JsonSchemaTitle("Port")
-    @get:JsonPropertyDescription("Port of the database.")
+    @get:JsonPropertyDescription(
+        "The TCP port where PostgreSQL accepts connections. The standard PostgreSQL port is 5432; " +
+            "use the port configured for your database server.",
+    )
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""",
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "default": 5432, "examples": ["5432"]}""",
     )
     override val port: Int = 5432
 
-    @get:JsonSchemaTitle("Database Name")
-    @get:JsonPropertyDescription("Name of the database.")
+    @get:JsonSchemaTitle("Database name")
+    @get:JsonPropertyDescription("Name of the PostgreSQL database that Airbyte will write to.")
     @get:JsonProperty("database")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 2}""")
     override val database: String = ""
 
-    @get:JsonSchemaTitle("Default Schema")
+    @get:JsonSchemaTitle("Default schema")
     @get:JsonPropertyDescription(
         "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
     )
@@ -87,12 +90,16 @@ class PostgresSpecificationOss : PostgresSpecification() {
     override val username: String = ""
 
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Password associated with the username.")
+    @get:JsonPropertyDescription(
+        "Enter the password assigned to the PostgreSQL user when password authentication is enabled; " +
+            "leave blank if your server uses passwordless authentication. See " +
+            """<a href="https://docs.airbyte.com/integrations/destinations/postgres#step-1-set-up-postgres">Step 1</a> for how to create the user.""",
+    )
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 5, "airbyte_secret": true}""")
     override val password: String? = null
 
-    @get:JsonSchemaTitle("SSL Connection")
+    @get:JsonSchemaTitle("SSL connection")
     @get:JsonPropertyDescription(
         "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
     )
@@ -101,7 +108,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @Suppress("RedundantNullableReturnType")
     override val ssl: Boolean? = false
 
-    @get:JsonSchemaTitle("SSL Modes")
+    @get:JsonSchemaTitle("SSL mode")
     @get:JsonPropertyDescription(
         """SSL connection modes.
   <b>disable</b> - Disables encryption of communication between Airbyte and destination database.
@@ -110,7 +117,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
   <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.
   <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.
   <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.
- See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>.""",
+ See more information in the <a href="https://docs.airbyte.com/integrations/destinations/postgres#step-2-set-up-the-postgres-connector-in-airbyte">Postgres connector setup instructions</a>.""",
     )
     @get:JsonProperty("ssl_mode")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
@@ -126,7 +133,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     )
     override val cdcDeletionMode: CdcDeletionMode? = null
 
-    @get:JsonSchemaTitle("JDBC URL Params")
+    @get:JsonSchemaTitle("JDBC URL parameters")
     @get:JsonPropertyDescription(
         """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).""",
     )
@@ -134,7 +141,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
     override val jdbcUrlParams: String? = null
 
-    @get:JsonSchemaTitle("Airbyte Internal Schema Name")
+    @get:JsonSchemaTitle("Airbyte internal schema name")
     @get:JsonPropertyDescription(
         """Airbyte will use this schema for various internal tables. In legacy raw tables mode, the raw tables will be stored in this schema. Defaults to "airbyte_internal".""",
     )
@@ -143,7 +150,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     override val internalTableSchema: String? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "Disable final tables (warning: unstable option; columns in raw table schema might change between versions)",
     )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
@@ -153,7 +160,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @Suppress("RedundantNullableReturnType")
     override val legacyRawTablesOnly: Boolean? = false
 
-    @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
+    @get:JsonSchemaTitle("Drop tables with CASCADE (warning: risk of unrecoverable data loss)")
     @get:JsonPropertyDescription(
         """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.""",
     )
@@ -183,7 +190,7 @@ class PostgresSpecificationOss : PostgresSpecification() {
     }
 
     @JsonGetter("tunnel_method")
-    @JsonSchemaTitle("SSH Tunnel Method")
+    @JsonSchemaTitle("SSH tunnel method")
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
     )
@@ -204,21 +211,24 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     override val host: String = ""
 
     @get:JsonSchemaTitle("Port")
-    @get:JsonPropertyDescription("Port of the database.")
+    @get:JsonPropertyDescription(
+        "The TCP port where PostgreSQL accepts connections. The standard PostgreSQL port is 5432; " +
+            "use the port configured for your database server.",
+    )
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""",
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "default": 5432, "examples": ["5432"]}""",
     )
     override val port: Int = 5432
 
-    @get:JsonSchemaTitle("Database Name")
-    @get:JsonPropertyDescription("Name of the database.")
+    @get:JsonSchemaTitle("Database name")
+    @get:JsonPropertyDescription("Name of the PostgreSQL database that Airbyte will write to.")
     @get:JsonProperty("database")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 2}""")
     override val database: String = ""
 
-    @get:JsonSchemaTitle("Default Schema")
+    @get:JsonSchemaTitle("Default schema")
     @get:JsonPropertyDescription(
         "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
     )
@@ -236,12 +246,16 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     override val username: String = ""
 
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Password associated with the username.")
+    @get:JsonPropertyDescription(
+        "Enter the password assigned to the PostgreSQL user when password authentication is enabled; " +
+            "leave blank if your server uses passwordless authentication. See " +
+            """<a href="https://docs.airbyte.com/integrations/destinations/postgres#step-1-set-up-postgres">Step 1</a> for how to create the user.""",
+    )
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 5, "airbyte_secret": true}""")
     override val password: String? = null
 
-    @get:JsonSchemaTitle("SSL Connection")
+    @get:JsonSchemaTitle("SSL connection")
     @get:JsonPropertyDescription(
         "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
     )
@@ -250,7 +264,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @Suppress("RedundantNullableReturnType")
     override val ssl: Boolean? = true
 
-    @get:JsonSchemaTitle("SSL Modes")
+    @get:JsonSchemaTitle("SSL mode")
     @get:JsonPropertyDescription(
         """SSL connection modes.
   <b>disable</b> - Disables encryption of communication between Airbyte and destination database.
@@ -259,7 +273,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
   <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.
   <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.
   <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.
- See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>.""",
+ See more information in the <a href="https://docs.airbyte.com/integrations/destinations/postgres#step-2-set-up-the-postgres-connector-in-airbyte">Postgres connector setup instructions</a>.""",
     )
     @get:JsonProperty("ssl_mode")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
@@ -275,7 +289,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     )
     override val cdcDeletionMode: CdcDeletionMode? = null
 
-    @get:JsonSchemaTitle("JDBC URL Params")
+    @get:JsonSchemaTitle("JDBC URL parameters")
     @get:JsonPropertyDescription(
         """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).""",
     )
@@ -283,7 +297,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
     override val jdbcUrlParams: String? = null
 
-    @get:JsonSchemaTitle("Airbyte Internal Schema Name")
+    @get:JsonSchemaTitle("Airbyte internal schema name")
     @get:JsonPropertyDescription(
         """Airbyte will use this schema for various internal tables. In legacy raw tables mode, the raw tables will be stored in this schema. Defaults to "airbyte_internal".""",
     )
@@ -292,7 +306,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     override val internalTableSchema: String? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "Disable final tables (warning: unstable option; columns in raw table schema might change between versions)",
     )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
@@ -302,7 +316,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @Suppress("RedundantNullableReturnType")
     override val legacyRawTablesOnly: Boolean? = false
 
-    @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
+    @get:JsonSchemaTitle("Drop tables with CASCADE (warning: risk of unrecoverable data loss)")
     @get:JsonPropertyDescription(
         """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.""",
     )
@@ -332,7 +346,7 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     }
 
     @JsonGetter("tunnel_method")
-    @JsonSchemaTitle("SSH Tunnel Method")
+    @JsonSchemaTitle("SSH tunnel method")
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
     )
@@ -398,14 +412,18 @@ class SslModeRequire : SslMode {
 @JsonSchemaTitle("verify-ca")
 @JsonSchemaDescription("Verify-ca SSL mode.")
 data class SslModeVerifyCa(
-    @get:JsonSchemaTitle("CA Certificate")
-    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonSchemaTitle("CA certificate")
+    @get:JsonPropertyDescription(
+        "Obtain the CA certificate from your database administrator or certificate authority; " +
+            "it verifies the PostgreSQL server's SSL certificate.",
+    )
     @get:JsonProperty("ca_certificate")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
     val caCertificate: String = "",
-    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonSchemaTitle("Client key password")
     @get:JsonPropertyDescription(
-        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+        "For an encrypted client private key, enter the passphrase set when the key was created; " +
+            "obtain it from the administrator who provided the key. Leave this field empty if the key has no passphrase.",
     )
     @get:JsonProperty("client_key_password")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 2}""")
@@ -421,24 +439,34 @@ data class SslModeVerifyCa(
 @JsonSchemaTitle("verify-full")
 @JsonSchemaDescription("Verify-full SSL mode.")
 data class SslModeVerifyFull(
-    @get:JsonSchemaTitle("CA Certificate")
-    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonSchemaTitle("CA certificate")
+    @get:JsonPropertyDescription(
+        "Obtain the CA certificate from your database administrator or certificate authority; " +
+            "it verifies the PostgreSQL server's SSL certificate.",
+    )
     @get:JsonProperty("ca_certificate")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
     val caCertificate: String = "",
-    @get:JsonSchemaTitle("Client Certificate")
-    @get:JsonPropertyDescription("Client certificate")
+    @get:JsonSchemaTitle("Client certificate")
+    @get:JsonPropertyDescription(
+        "When the PostgreSQL server requires mutual TLS, obtain the client certificate from " +
+            "your database administrator or certificate authority.",
+    )
     @get:JsonProperty("client_certificate")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 2}""")
     val clientCertificate: String = "",
-    @get:JsonSchemaTitle("Client Key")
-    @get:JsonPropertyDescription("Client key")
+    @get:JsonSchemaTitle("Client key")
+    @get:JsonPropertyDescription(
+        "When the PostgreSQL server requires mutual TLS, obtain the private key that matches " +
+            "the client certificate from your database administrator through an approved secure channel.",
+    )
     @get:JsonProperty("client_key")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 3}""")
     val clientKey: String = "",
-    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonSchemaTitle("Client key password")
     @get:JsonPropertyDescription(
-        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+        "For an encrypted client private key, enter the passphrase set when the key was created; " +
+            "obtain it from the administrator who provided the key. Leave this field empty if the key has no passphrase.",
     )
     @get:JsonProperty("client_key_password")
     @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 4}""")
