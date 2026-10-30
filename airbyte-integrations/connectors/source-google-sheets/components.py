@@ -38,17 +38,22 @@ class ValidateGoogleSheetsConfig:
         if "spreadsheet_id" not in config:
             return
         value = config["spreadsheet_id"]
-        spreadsheet_id = value.strip() if isinstance(value, str) else ""
-        if "://" in spreadsheet_id:
-            try:
-                url = urlsplit(spreadsheet_id)
-                match = re.fullmatch(r"/spreadsheets/d/([\w-]+)(?:/.*)?", url.path, flags=re.ASCII)
-                if url.scheme != "https" or url.netloc != "docs.google.com" or not match:
-                    raise ValueError()
+        value = value.strip() if isinstance(value, str) else ""
+        match = re.fullmatch(r"([A-Za-z0-9_-]+)/?", value)
+        spreadsheet_id = match.group(1) if match else ""
+        if value.startswith("https://"):
+            match = re.search(r"/([-\w]{20,})([/]?)", value)
+            if match:
                 spreadsheet_id = match.group(1)
-            except ValueError:
-                spreadsheet_id = ""
-        if not re.fullmatch(r"[A-Za-z0-9_-]+", spreadsheet_id):
+            else:
+                try:
+                    url = urlsplit(value)
+                    match = re.fullmatch(r"/spreadsheets/(?:u/\d+/)?d/([\w-]+)(?:/.*)?", url.path, flags=re.ASCII)
+                    if url.netloc == "docs.google.com" and match:
+                        spreadsheet_id = match.group(1)
+                except ValueError:
+                    pass
+        if not spreadsheet_id:
             message = "Spreadsheet Link is invalid. Enter a spreadsheet ID or a https://docs.google.com/spreadsheets/d/<id>/ URL."
             raise AirbyteTracedException(
                 message=message, internal_message="Invalid Spreadsheet Link format.", failure_type=FailureType.config_error

@@ -3,6 +3,7 @@
 #
 
 import json
+import re
 from copy import deepcopy
 from typing import Iterable
 from unittest.mock import Mock
@@ -31,7 +32,9 @@ def http_mocker() -> Iterable[HttpMocker]:
     [
         "a_spreadsheet_id",
         " a_spreadsheet_id ",
+        "a_spreadsheet_id/",
         "https://docs.google.com/spreadsheets/d/a_spreadsheet_id",
+        "https://docs.google.com/spreadsheets/u/0/d/a_spreadsheet_id/edit",
         "https://docs.google.com/spreadsheets/d/a_spreadsheet_id/edit?usp=sharing#gid=0",
     ],
 )
@@ -40,6 +43,24 @@ def test_check_normalizes_spreadsheet_link(value: str, http_mocker: HttpMocker) 
     GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "check_succeeded_range")
     output = GoogleSheetsBaseTest._check({"spreadsheet_id": value, "credentials": oauth_credentials}, expecting_exception=False)
     assert output.logs[-1].log.message == "Check succeeded"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "https://docs.google.com/spreadsheets/u/0/d/a_spreadsheet_id_1234567890/edit",
+        "https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id_1234567890/values/Sheet1",
+        "https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id_1234567890",
+        "https://example.com/a_spreadsheet_id_1234567890/edit",
+        "https://docs.google.com/document/d/a_spreadsheet_id_1234567890/edit",
+        "https://docs.google.com/a_spreadsheet_id_1234567890/another_spreadsheet_id_1234567890",
+    ],
+)
+def test_preserves_released_manifest_id_extraction(value: str) -> None:
+    expected_id = re.search(r"/([-\w]{20,})([/]?)", value).group(1)
+    config = {"spreadsheet_id": value}
+    ValidateGoogleSheetsConfig().transform(config)
+    assert config["spreadsheet_id"] == expected_id
 
 
 @pytest.mark.parametrize(

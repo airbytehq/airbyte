@@ -290,7 +290,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 ### Troubleshooting
 
-- **Invalid Spreadsheet Link:** Enter a bare spreadsheet ID or a full `https://docs.google.com/spreadsheets/d/<id>/...` URL. Airbyte extracts the ID from supported URLs; links to other Google files or websites are not accepted.
+- **Invalid Spreadsheet Link:** Enter a bare spreadsheet ID (an optional trailing `/` is accepted) or a full spreadsheet URL. Supported forms include `https://docs.google.com/spreadsheets/d/<id>/...`, `https://docs.google.com/spreadsheets/u/0/d/<id>/...`, and `https://sheets.googleapis.com/v4/spreadsheets/<id>/...`. Existing HTTPS links with an extractable ID remain supported; access is checked through the Google Sheets API.
 - **Spreadsheet not found or access denied:** Check that the spreadsheet exists and the link is correct. Share the spreadsheet with the service account's `client_email` from its JSON key, or with the Google user authorized for the source.
 - **Google API disabled:** In the Google Cloud project associated with your credentials, enable both the Google Sheets API and Google Drive API. Allow a few minutes for the change to take effect, then retry.
 - **Authentication failed:** Re-authenticate the source if OAuth authorization has expired or been revoked. For service accounts, supply the complete JSON key downloaded from Google Cloud; create a new key if the existing key is invalid or revoked.
