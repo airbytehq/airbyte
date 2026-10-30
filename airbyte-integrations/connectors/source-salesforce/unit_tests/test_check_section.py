@@ -66,7 +66,10 @@ class TestCheckSectionConnection:
             with pytest.raises(AirbyteTracedException) as exc_info:
                 source.check_section_connection(logger, "account", config)
 
-        assert exc_info.value.message == "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+        assert (
+            exc_info.value.message
+            == "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com."
+        )
 
     def test_account_section_validates_the_data_filters(self):
         config = ConfigBuilder().build()
@@ -120,7 +123,7 @@ class TestCheckEntrypoint:
 
             assert _run_check(tmp_path, ACCOUNT_SECTION_CONFIG) == (
                 Status.FAILED.value,
-                "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
+                "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com.",
             )
 
     def test_account_section_requires_its_fields(self, tmp_path):
