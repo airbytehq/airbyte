@@ -4,9 +4,7 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": [
-      "shop"
-    ],
+    "required": ["shop"],
     "groups": [
       {
         "id": "account"
@@ -26,10 +24,7 @@
         "title": "Connect account",
         "order": 0,
         "description": "Install the Airbyte app on the Shopify store you want to sync.",
-        "groups": [
-          "account",
-          "filters"
-        ],
+        "groups": ["account", "filters"],
         "check": true
       },
       {
@@ -37,9 +32,7 @@
         "title": "Review & set up",
         "order": 1,
         "description": "Name your source and check the optional settings.",
-        "groups": [
-          "advanced"
-        ]
+        "groups": ["advanced"]
       }
     ],
     "additionalProperties": true,
@@ -68,9 +61,7 @@
             "type": "object",
             "title": "OAuth2.0",
             "description": "OAuth2.0",
-            "required": [
-              "auth_method"
-            ],
+            "required": ["auth_method"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -104,10 +95,7 @@
             "title": "API Password",
             "description": "API Password Auth",
             "type": "object",
-            "required": [
-              "auth_method",
-              "api_password"
-            ],
+            "required": ["auth_method", "api_password"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -210,10 +198,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "auth_method"
-    ],
+    "predicate_key": ["credentials", "auth_method"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -222,16 +207,11 @@
         "properties": {
           "shop": {
             "type": "string",
-            "path_in_connector_config": [
-              "shop"
-            ]
+            "path_in_connector_config": ["shop"]
           },
           "access_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "access_token"
-            ]
+            "path_in_connector_config": ["credentials", "access_token"]
           }
         }
       },
@@ -253,17 +233,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }
