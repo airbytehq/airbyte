@@ -82,7 +82,11 @@ def test_source_streams():
     "config, valid",
     [
         ({"count": 10, "records_per_slice": 5, "parallelism": 2}, True),
+        ({"count": 5000, "seed": 42}, True),
+        ({"count": 5000, "seed": 42, "records_per_slice": 1000}, True),
+        ({}, True),
         ({"count": 10, "records_per_slice": 5, "parallelism": 0}, False),
+        ({"count": 10, "records_per_slice": 0, "parallelism": 2}, False),
         ({"count": "ten", "records_per_slice": 5, "parallelism": 2}, False),
     ],
 )
