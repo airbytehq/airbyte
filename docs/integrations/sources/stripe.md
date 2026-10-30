@@ -187,7 +187,6 @@ For high-usage streams like `Charges`, `Invoice Items`, `Invoice Line Items`, `I
 
 You can customize which streams have cursor age validation by modifying the **Streams with API Data Retention Validation** list in your connection settings. The full list of streams eligible for cursor age validation is:
 
-- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -223,6 +222,8 @@ You can customize which streams have cursor age validation by modifying the **St
 - `Transactions`
 - `Transfers`
 
+`Accounts` still appears in the **Streams with API Data Retention Validation** setting so that saved configurations stay valid, but selecting it has no effect. Since version 7.0.4 the `Accounts` stream doesn't read the Events API, so there is no 30-day retention limit to check for it.
+
 :::warning
 **Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
 :::
@@ -232,6 +233,7 @@ You can customize which streams have cursor age validation by modifying the **St
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 
+- `Accounts` (cursor field is `updated`, set from `created`)
 - `Balance Transactions`
 - `Customer Balance Transactions`
 - `Events`
@@ -251,7 +253,6 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 
 :::
 
-- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -289,6 +290,10 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `Top Ups`
 - `Transactions`
 - `Transfers`
+
+#### Connected accounts only sync when they are created
+
+The `Accounts` stream lists the connected accounts of a Stripe Connect platform. Incremental syncs read `/v1/accounts` filtered by `created`, so a new connected account arrives on the next sync, but a change to an existing connected account (for example its `charges_enabled` or `requirements` fields) isn't picked up. Stripe files `account.updated` events in the connected account's own event feed rather than the platform's, so the connector can't use the Events API to detect those changes. Refresh the `Accounts` stream when you need current details for existing connected accounts. The `Persons` stream has the same limitation, because `person.*` events are also scoped to the connected account.
 
 #### Invoice line item IDs that don't start with `il_`
 
@@ -336,6 +341,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.0.4 | 2026-10-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Read `accounts` incremental syncs from `/v1/accounts` with a `created` window instead of the platform's `account.updated` events, which Stripe files under the connected account and never reach a Connect platform |
 | 7.0.3 | 2026-10-20 | [89581](https://github.com/airbytehq/airbyte/pull/89581) | Read `bank_accounts` full refreshes from 30-day `customers` slices instead of one partition per customer, and fail on HTTP 400 instead of silently skipping a slice |
 | 7.0.2 | 2026-10-20 | [89447](https://github.com/airbytehq/airbyte/pull/89447) | Update dependencies |
 | 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
