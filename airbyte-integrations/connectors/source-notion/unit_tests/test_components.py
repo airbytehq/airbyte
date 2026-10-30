@@ -3,93 +3,12 @@
 #
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
-
-
-def test_users_stream_transformation(components_module):
-    input_record = {
-        "object": "user",
-        "id": "123",
-        "name": "Airbyte",
-        "avatar_url": "some url",
-        "type": "bot",
-        "bot": {
-            "owner": {
-                "type": "user",
-                "user": {
-                    "object": "user",
-                    "id": "id",
-                    "name": "Test User",
-                    "avatar_url": None,
-                    "type": "person",
-                    "person": {"email": "email"},
-                },
-            },
-            "workspace_name": "test",
-        },
-    }
-    output_record = {
-        "object": "user",
-        "id": "123",
-        "name": "Airbyte",
-        "avatar_url": "some url",
-        "type": "bot",
-        "bot": {
-            "owner": {
-                "type": "user",
-                "info": {
-                    "object": "user",
-                    "id": "id",
-                    "name": "Test User",
-                    "avatar_url": None,
-                    "type": "person",
-                    "person": {"email": "email"},
-                },
-            },
-            "workspace_name": "test",
-        },
-    }
-    assert components_module.NotionUserTransformation().transform(input_record) == output_record
-
-
-def test_notion_properties_transformation(components_module):
-    input_record = {
-        "id": "123",
-        "properties": {
-            "Due date": {"id": "M%3BBw", "type": "date", "date": {"start": "2023-02-23", "end": None, "time_zone": None}},
-            "Status": {
-                "id": "Z%3ClH",
-                "type": "status",
-                "status": {"id": "86ddb6ec-0627-47f8-800d-b65afd28be13", "name": "Not started", "color": "default"},
-            },
-        },
-    }
-
-    output_record = {
-        "id": "123",
-        "properties": [
-            {
-                "name": "Due date",
-                "value": {"id": "M%3BBw", "type": "date", "date": {"start": "2023-02-23", "end": None, "time_zone": None}},
-            },
-            {
-                "name": "Status",
-                "value": {
-                    "id": "Z%3ClH",
-                    "type": "status",
-                    "status": {"id": "86ddb6ec-0627-47f8-800d-b65afd28be13", "name": "Not started", "color": "default"},
-                },
-            },
-        ],
-    }
-    assert components_module.NotionPropertiesTransformation().transform(input_record) == output_record
 
 
 state_test_records = [

@@ -166,7 +166,7 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_granularity: "PT0.000001S"
     start_datetime:
-      datetime: "{{ config['date_from'] }}"
+      datetime: "{{ config['date_from'][:10] if config.get('date_from') else today_utc() }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"

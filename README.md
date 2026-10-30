@@ -28,33 +28,22 @@
 </a>
 </p>
 
-We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination — whether that destination is a data warehouse, a data lake, or an AI agent. Airbyte provides a [catalog](https://docs.airbyte.com/integrations/) of 600+ connectors for APIs, databases, data warehouses, data lakes, and AI applications.
+We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination — whether that destination is a data warehouse, a data lake, or an AI agent through the Airbyte MCP. Airbyte provides a [catalog](https://docs.airbyte.com/integrations/) of 700+ connectors for APIs, databases, data warehouses, data lakes, and AI applications.
 
 ![Airbyte Connections UI](https://github.com/airbytehq/airbyte/assets/38087517/35b01d0b-00bf-407b-87e6-a5cd5cd720b5)
 _Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
 
-### Pick the right Airbyte Platform for the job
+### Getting Started
 
-- **Moving data into warehouses, lakes, or databases (ELT / ETL)** → use [Airbyte Open Source](https://docs.airbyte.com/quickstart/deploy-airbyte) (this repo) or [Airbyte Cloud](https://cloud.airbyte.com/signup). 600+ connectors for APIs, databases, data warehouses, and data lakes.
-- **Giving AI agents, LLMs, or MCP clients real-time access to business data** (CRMs, support tools, SaaS APIs, databases) → use [Airbyte Agents](https://docs.airbyte.com/ai-agents/), the managed data and context layer for AI agents, or the open-source [Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk) (`uv pip install airbyte-agent-sdk`) to embed type-safe connectors as LLM tools. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP, with built-in retry, exception translation, and output-size guardrails.
+- **Move and sync data.** Deploy [Airbyte Core](https://docs.airbyte.com/quickstart/deploy-airbyte) or [sign up for Airbyte Cloud](https://cloud.airbyte.com/signup) and follow the [Cloud getting started guide](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud). Choose from [700+ connectors](https://docs.airbyte.com/integrations/) for APIs, databases, warehouses, lakes, and other data systems.
 
-### Getting Started — Data Movement (ELT)
+- **Work with Airbyte from your AI agent through the Airbyte MCP.** Your AI agent (Claude, ChatGPT, Cursor, VS Code Copilot, and many others) can build and manage data pipelines, troubleshoot syncs, read logs, and answer questions about Airbyte. Start with the [overview](https://docs.airbyte.com/platform/airbyte-mcp); for Airbyte Cloud, connect to the hosted server at `https://mcp.airbyte.com/mcp` and sign in with OAuth using the [Cloud setup guide](https://docs.airbyte.com/platform/airbyte-mcp/install). For Airbyte Core deployments, the [self-managed setup](https://docs.airbyte.com/platform/airbyte-mcp/self-managed) runs locally against your deployment's API. See the available [tools](https://docs.airbyte.com/platform/airbyte-mcp/tools).
 
-For moving data into warehouses, lakes, and databases:
+- **Call APIs and search data directly (Airbyte Cloud only).** Through the [context layer](https://docs.airbyte.com/platform/context-layer), AI agents can read live data from supported sources and query supported destinations such as BigQuery and Snowflake without waiting for a sync, and search your data. This is available only in Airbyte Cloud; direct reads are read-only.
 
-- [Deploy Airbyte Open Source](https://docs.airbyte.com/quickstart/deploy-airbyte) or set up [Airbyte Cloud](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud) to start centralizing your data.
-- Create connectors in minutes with our [no-code Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
-- Explore popular use cases in our [tutorials](https://airbyte.com/tutorials).
-- Orchestrate Airbyte syncs with [Airflow](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator), [Dagster](https://docs.airbyte.com/operator-guides/using-dagster-integration), [Kestra](https://docs.airbyte.com/operator-guides/using-kestra-plugin), or the [Airbyte API](https://reference.airbyte.com/).
+- **Build connectors and orchestrate pipelines.** Create connectors with the [no-code Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview), and explore popular use cases in our [tutorials](https://airbyte.com/tutorials). Orchestrate Airbyte syncs with [Airflow](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator), [Dagster](https://docs.airbyte.com/operator-guides/using-dagster-integration), [Kestra](https://docs.airbyte.com/operator-guides/using-kestra-plugin), or the [Airbyte API](https://reference.airbyte.com/). You can also do this through the Airbyte MCP: your AI agent can publish and update custom connector manifests, run and cancel syncs, and change connection schedules.
 
 Try it out yourself with our [demo app](https://demo.airbyte.io/), visit our [full documentation](https://docs.airbyte.com/), and learn more about [recent announcements](https://airbyte.com/blog-categories/company-updates). See our [registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html) for a full list of connectors already available in Airbyte or Airbyte Cloud.
-
-### Getting Started — AI Agents
-
-For building AI agents that need real-time business data:
-
-- Read the [Airbyte Agents documentation](https://docs.airbyte.com/ai-agents/) to use the managed product.
-- Or install the open-source [Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk): `uv pip install airbyte-agent-sdk`. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP — see the SDK README for examples of turning a connector call into an LLM tool.
 
 ### Join the Airbyte Community
 
@@ -76,7 +65,7 @@ For more details on contribution requirements, please see our [contribution work
 
 ### Security
 
-Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. Email `security@airbyte.io` if you believe you have uncovered a vulnerability. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. If you believe you have uncovered a vulnerability, read the vulnerability disclosure policy for the affected product and report it as described on [Report a security vulnerability](https://airbyte.com/security/vdp).
 
 [Airbyte Enterprise](https://airbyte.com/airbyte-enterprise) also offers additional security features (among others) on top of Airbyte open-source.
 

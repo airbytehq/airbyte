@@ -1,65 +1,87 @@
 ---
-products: oss-*
+products: enterprise-flex
 ---
 
 # Scaling Airbyte
 
-As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood: 1. Scheduler 2. Server 3. Temporal 4. Database
+Airbyte's most scalable self-managed option is [Enterprise Flex](../enterprise-flex/readme.md). Airbyte runs the control plane for you in Airbyte Cloud, and you run one or more data planes in your own infrastructure. Scaling Airbyte means scaling those data planes: giving them enough compute, running enough of them in the right places, and tuning how many jobs they run at once.
 
-These components perform control plane operations that are low-scale, low-resource work. In addition to the work being low cost, these components are efficient and optimized for these jobs, meaning that only uncommonly large workloads will require deployments at scale. In general, you would only encounter scaling issues when running over a thousand connections.
+This guide explains what to scale and how. It assumes you already have a data plane running. If you don't, see [Deploy a data plane with Helm](../enterprise-flex/data-plane.md).
 
-As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 100 connections configured. Almost all of these connections are scheduled, either hourly or daily, resulting in at most 100 concurrent jobs.
+## Choose between Core and Enterprise Flex
 
-## What To Scale
+Airbyte Core, the open source version of Airbyte, is a capable platform that many organizations run in production with large workloads. It uses the same workload launcher and connector pods as a Flex data plane, so the sizing guidance below applies to Core workers too. If you run Core, you also own the control plane: scheduling, API, database, and Temporal. You can tune those components (see [Configuring Airbyte](configuring-airbyte.md)), but doing so, and keeping them healthy as you grow, is your responsibility.
 
-[Workloads](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. The workload system is responsible for launching the pods that execute Airbyte operations \(e.g. Discover, Read, Sync etc\).
+Enterprise Flex is a better fit when your needs shift from moving data to running Airbyte as a shared service:
 
-The workload launcher will create one Kubernetes pod. The connector and sidecar images then do all the actual work.
+- You want Airbyte to run, scale, and upgrade the control plane so you only operate data planes.
+- You need to run jobs in multiple regions or clouds, or want multiple data planes in one region for availability.
+- You need governance: [SSO](../access-management/sso.md), [role-based access control](../access-management/rbac.md), [SCIM](../access-management/scim.md), and [audit logs](../access-management/audit-logs.md) that Core doesn't include.
+- You need capacity controls, so critical syncs run on time when the platform is busy.
+- You want a partner. Flex customers work with an Airbyte Solution Architect who helps you plan, support, and manage your deployment.
 
-Thus, scaling Airbyte is a matter of ensuring that the Kubernetes cluster Airbyte runs on has sufficient resources to schedule its various job pods.
+You don't have to outgrow Core to choose Flex. Many teams move because they want those capabilities, or because they'd rather not operate a control plane. If none of them matter to you, Core remains a good choice. If you'd rather not run any infrastructure, use [Airbyte Cloud](https://airbyte.com/product/airbyte-cloud).
 
-Jobs-wise, we are mainly concerned with Sync jobs when thinking about scale. Sync jobs sync data from sources to destinations and are the majority of jobs run. Sync jobs use two workers. One worker reads from the source; the other worker writes to the destination.
+:::note
+For production workloads, deploy data planes to a Kubernetes cluster with Helm. [Airbox](../enterprise-flex/data-plane-util.md) deploys a data plane onto a single machine with Docker Desktop. It's a fast way to start moving data, not a scaled deployment.
+:::
 
-**In general, we recommend starting out with a mid-sized cloud instance \(e.g. 4 or 8 cores\) and gradually tuning instance size to your workload.**
+## What to scale
 
-There are two resources to be aware of when thinking of scale: 1. Memory 2. Disk space
+[Workloads](../understanding-airbyte/jobs.md) do the heavy lifting in Airbyte. For every job (sync, check, discover), the data plane's workload launcher starts a Kubernetes pod that runs the connector and sidecar containers. The control plane orchestrates jobs but doesn't move data.
 
-### Memory
+Scaling a data plane comes down to a few dimensions.
 
-As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Sync job, the main memory culprit is the Source worker.
+| Dimension                   | What it controls                                                     |
+| --------------------------- | -------------------------------------------------------------------- |
+| Cluster size                | How many job pods can be scheduled at once and how large they can be |
+| Number of data planes       | Where jobs run, and how resilient each region is                     |
+| Concurrency                 | How many jobs a data plane launches at once                          |
+| Pod resources               | CPU and memory available to each connector                           |
+| Node pools and auto-scaling | Which nodes job pods land on and whether the cluster grows with load |
 
-This is because the Source worker reads up to 10,000 records in memory. This can present problems for database sources with tables that have large row sizes. e.g. a table with an average row size of 0.5MBs will require 0.5 \* 10000 / 1000 = 5GBs of RAM. See [this issue](https://github.com/airbytehq/airbyte/issues/3439) for more information.
+## Size your cluster
 
-There are several ways to increase available memory for syncs. See [Configuring connector resources](configuring-connector-resources) for details.
+Airbyte recommends deploying to Amazon EKS, Google Kubernetes Engine, or Azure Kubernetes Service across 2 or more availability zones. See [Infrastructure prerequisites](../enterprise-flex/data-plane.md#infrastructure-prerequisites) for supported platforms.
 
-### Disk Space
+Each sync runs as one pod with three containers: the source, the destination, and an orchestrator that moves data between them. Checks and schema discovery run in their own short-lived pods. As a rule of thumb, make sure the cluster can schedule at least `<maximum concurrent syncs>` sync pods at once, plus headroom for check and discover pods.
 
-Airbyte uses backpressure to try to read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
+Start with a mid-sized cluster (for example, nodes with 4 or 8 cores) and tune from there based on the usage you observe. Connector images are around 300 MB each, and long-running syncs produce logs, so allocate at least 30 GB of disk per node.
 
-However, disk space might become an issue for the following reasons:
+## Run multiple data planes
 
-1. Long-running syncs can produce a fair amount of logs. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
-2. Although Airbyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with multiple connectors can easily use up to 10GBs of disk space.
+A data plane belongs to a region, and each workspace runs its connections in one region. Add data planes when you need to:
 
-Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you be safe than sorry, so err on the side of over-provisioning.
+- **Run in more places.** Create a region and a data plane for each geography or cloud where data must stay, then assign workspaces to those regions. See [Determine which regions you need](../enterprise-flex/getting-started.md#determine-which-regions-you-need).
+- **Add availability within a region.** Run two or more data planes in the same region. Both must belong to the same Airbyte region and use the same secrets manager. See [Limitations and considerations](../enterprise-flex/getting-started.md#limitations-and-considerations).
 
-### On Kubernetes
+Data planes only make outbound requests to the control plane, so adding a data plane doesn't require new inbound network rules. Each data plane must use the same secrets manager as the control plane.
 
-Users running Airbyte Kubernetes also have to make sure the Kubernetes cluster can accommodate the number of pods Airbyte creates.
+## Control concurrency
 
-To be safe, make sure the Kubernetes cluster can schedule up to `2 x <number-of-possible-concurrent-connections>` pods at once. This is the worse case estimate, and most users should be fine with `2 x <number-of-possible-concurrent-connections>` as a rule of thumb.
+Two settings determine how many jobs run at once.
 
-### Temporal DB
+- **Data workers.** Your organization has a contracted number of data workers, allocated per region. When a region's data workers are all in use, new syncs in that region queue until capacity is available. You can move capacity between regions and enable on-demand capacity for critical connections. See [Manage and monitor data workers](../cloud/managing-airbyte-cloud/manage-data-workers.md).
+- **Launcher parallelism.** Each data plane's workload launcher claims and starts up to `workloadLauncher.parallelism` jobs at once (default: 10). This limits how many jobs one launcher replica is starting concurrently, not how many can run. Raise it in your data plane's Helm values if jobs are waiting to start while the cluster still has room. To scale the launcher horizontally or make it resilient, raise `workloadLauncher.replicaCount`; replicas share the claim queue.
 
-Temporal maintains multiple idle connections. By the default value is `20` and you may want to lower or increase this number. One issue we noticed is
-that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable and
-might end up allowing 4-5 times more connections than expected.
+Concurrency only helps if the cluster has room for the resulting pods. Raise launcher parallelism and cluster capacity together.
 
-If you want to increase the amount of allowed idle connections, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
-is capped by `SQL_MAX_CONNS`.
+## Set pod resources
 
-## Feedback
+Connector pods request CPU and memory from the cluster. Too little and syncs slow down or fail with out-of-memory errors. Too much and the cluster runs fewer pods than it could.
 
-The advice here is best-effort and by no means comprehensive. Please reach out on Slack if anything doesn't make sense or if something can be improved.
+By default, Airbyte applies per-connector resource defaults that it maintains (`workloads.resources.useConnectorResourceDefaults: true`). Set your own data plane-wide defaults for connector containers in your Helm values under `workloads.resources.mainContainer`, and tune the other containers under `workloads.resources.check`, `workloads.resources.discover`, `workloads.resources.replication` (the orchestrator container in sync pods), and `workloads.resources.sidecar`. Each takes `cpu` and `memory` with `request` and `limit` keys. To override resources for one connector type or one connection, see [Configuring connector resources](configuring-connector-resources.md).
 
-If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
+Memory is the most common constraint. The orchestrator buffers records between the source and destination, so database tables with large rows or wide schemas need more memory than the defaults provide. For how Kubernetes applies requests and limits, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+
+## Use node pools and auto-scaling
+
+Job pods are short-lived and spiky, which makes them a good fit for a dedicated node pool that scales automatically.
+
+- Use `jobs.kube.nodeSelector` and `jobs.kube.tolerations` in your Helm values to place job pods on a node pool that's separate from the data plane's long-running services.
+- Enable [node auto-scaling](https://kubernetes.io/docs/concepts/cluster-administration/node-autoscaling/) for that node pool in your cloud provider so nodes are added when pods are pending and removed when they finish. Set the pool's maximum size high enough to hold your peak number of concurrent sync pods.
+- Keep pod resource requests accurate. Kubernetes adds and removes nodes based on pod requests, not actual usage. Requests that are too low cause pods to be scheduled onto nodes that can't sustain them; requests that are too high leave nodes underused.
+
+## Monitor and adjust
+
+Use the data worker [usage chart](../cloud/managing-airbyte-cloud/manage-data-workers.md#how-to-interpret-the-usage-chart) to see peak concurrency per region, and your cluster's metrics to see whether pods are pending, evicted, or hitting memory limits. Adjust one dimension at a time and watch the effect before changing the next.

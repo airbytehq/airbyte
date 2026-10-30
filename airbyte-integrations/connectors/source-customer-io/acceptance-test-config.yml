@@ -16,17 +16,15 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-  # incremental:
-  #   # bypass_reason: "This connector does not implement incremental sync"
-  #  tests:
-  #    - config_path: "secrets/config.json"
-  #      configured_catalog_path: "integration_tests/configured_catalog.json"
-  #      future_state:
-  #        future_state_path: "integration_tests/abnormal_state.json"
+        empty_streams:
+          - name: broadcasts
+            bypass_reason: "The test workspace has no API-triggered broadcasts, and the App API cannot create one. Covered by unit_tests/test_messaging_and_audience_streams.py."
+          - name: broadcast_actions
+            bypass_reason: "Substream of broadcasts, which is empty in the test workspace. Covered by unit_tests/test_messaging_and_audience_streams.py."
+          - name: subscription_topics
+            bypass_reason: "The test workspace has no subscription topics, and the App API cannot create one. Covered by unit_tests/test_workspace_configuration_streams.py."
+          - name: object_types
+            bypass_reason: "The test workspace has no object types, and the App API cannot create one. Covered by unit_tests/test_workspace_configuration_streams.py."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -61,7 +61,8 @@ class CdcPartitionsCreatorFactory<T : PartiallyOrdered<T>>(
 
 @Singleton
 class CdcPartitionsCreatorFactorySupplier<
-    F : CdcPartitionsCreatorFactory<P>, P : PartiallyOrdered<P>>(val factory: F) :
-    PartitionsCreatorFactorySupplier<F> {
+    F : CdcPartitionsCreatorFactory<P>,
+    P : PartiallyOrdered<P>,
+>(val factory: F) : PartitionsCreatorFactorySupplier<F> {
     override fun get(): F = factory
 }
