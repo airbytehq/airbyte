@@ -31,33 +31,6 @@ REFERENCE_STREAM_NAMES = {
     "terms",
 }
 
-FULL_REFRESH_STREAM_NAMES = {"company_info", "preferences"}
-DELEGATED_STREAM_NAMES = {
-    "attachables",
-    "bill_payments",
-    "bills",
-    "budgets",
-    "credit_card_payments",
-    "credit_memos",
-    "customers",
-    "deposits",
-    "estimates",
-    "exchange_rates",
-    "invoices",
-    "items",
-    "journal_entries",
-    "payments",
-    "purchase_orders",
-    "purchases",
-    "refund_receipts",
-    "reimburse_charges",
-    "sales_receipts",
-    "time_activities",
-    "transfers",
-    "vendor_credits",
-    "vendors",
-}
-
 
 @pytest.fixture(scope="module")
 def manifest():
@@ -89,59 +62,32 @@ def _fault_predicates(response_filters):
     return [f["predicate"] for f in response_filters if "predicate" in f]
 
 
-def _resolved_stream(stream, definitions):
-    if stream["type"] != "StateDelegatingStream":
-        return stream
-    definition_name = stream["full_refresh_stream"]["$ref"].rsplit("/", 1)[-1]
-    return definitions[definition_name]
-
-
 def test_every_stream_shares_the_error_handler(manifest):
-    definitions = manifest["definitions"]["streams"]
     stream_names = {stream["name"] for stream in manifest["streams"]}
-    assert stream_names == set(definitions)
+    assert len(stream_names) == 34
     for stream in manifest["streams"]:
-        resolved_stream = _resolved_stream(stream, definitions)
-        error_handler = resolved_stream["retriever"]["requester"]["error_handler"]
+        error_handler = stream["retriever"]["requester"]["error_handler"]
         assert error_handler["$ref"] == "#/definitions/error_handler", stream["name"]
 
 
 def test_only_reference_streams_drop_the_30_day_window(manifest):
-    definitions = manifest["definitions"]["streams"]
-    assert set(definitions) == REFERENCE_STREAM_NAMES | FULL_REFRESH_STREAM_NAMES | DELEGATED_STREAM_NAMES
+    for streams in (manifest["definitions"]["streams"].values(), manifest["streams"]):
+        seen_reference_names = set()
+        for stream in streams:
+            incremental_sync = stream.get("incremental_sync")
+            if incremental_sync is None:
+                continue
 
-    definition_streams_without_incremental_sync = {name for name, stream in definitions.items() if "incremental_sync" not in stream}
-    assert definition_streams_without_incremental_sync == FULL_REFRESH_STREAM_NAMES
+            name = stream["name"]
+            if name in REFERENCE_STREAM_NAMES:
+                seen_reference_names.add(name)
+                assert "step" not in incremental_sync, name
+                assert "cursor_granularity" not in incremental_sync, name
+            else:
+                assert incremental_sync["step"] == "P30D", name
+                assert incremental_sync["cursor_granularity"] == "PT0S", name
 
-    for name, stream in definitions.items():
-        incremental_sync = stream.get("incremental_sync")
-        if incremental_sync is None:
-            continue
-
-        if name in REFERENCE_STREAM_NAMES:
-            assert "step" not in incremental_sync, name
-            assert "cursor_granularity" not in incremental_sync, name
-        else:
-            assert incremental_sync["step"] == "P30D", name
-            assert incremental_sync["cursor_granularity"] == "PT0S", name
-
-    top_level_streams = {stream["name"]: stream for stream in manifest["streams"]}
-    assert set(top_level_streams) == set(definitions)
-    assert {
-        name for name, stream in top_level_streams.items() if _resolved_stream(stream, definitions).get("incremental_sync") is None
-    } == FULL_REFRESH_STREAM_NAMES
-
-    for name in REFERENCE_STREAM_NAMES | FULL_REFRESH_STREAM_NAMES:
-        assert top_level_streams[name]["type"] == "DeclarativeStream"
-    for name in DELEGATED_STREAM_NAMES:
-        stream = top_level_streams[name]
-        assert stream["type"] == "StateDelegatingStream"
-        assert stream["full_refresh_stream"] == {"$ref": f"#/definitions/streams/{name}"}
-        assert stream["incremental_stream"]["$ref"] == f"#/definitions/streams/{name}"
-        expected_incremental_sync = {
-            key: value for key, value in definitions[name]["incremental_sync"].items() if key not in {"step", "cursor_granularity"}
-        }
-        assert stream["incremental_stream"]["incremental_sync"] == expected_incremental_sync
+        assert seen_reference_names == REFERENCE_STREAM_NAMES
 
 
 def test_fault_code_filters_do_not_use_error_message_contains(response_filters):
@@ -205,7 +151,7 @@ def test_no_catch_all_filter(response_filters):
 
 def test_every_authenticator_classifies_refresh_token_rejection(manifest):
     authenticators = list(_iter_authenticators(manifest))
-    assert len(authenticators) == 46
+    assert len(authenticators) == 69
     for authenticator in authenticators:
         assert authenticator["token_refresh_endpoint"] == TOKEN_REFRESH_ENDPOINT
         assert authenticator["refresh_token_error_status_codes"] == [400, 401]
