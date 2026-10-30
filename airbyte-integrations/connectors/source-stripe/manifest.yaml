@@ -986,7 +986,6 @@ definitions:
 
     accounts:
       type: StateDelegatingStream
-      api_retention_period: "{{ 'P30D' if 'accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: accounts
       full_refresh_stream:
@@ -999,13 +998,15 @@ definitions:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/accounts"
+      # Stripe files account.updated for connected accounts in the connected account's own
+      # event feed, so a platform's /v1/events never carries them. Read new connected
+      # accounts from /v1/accounts by created instead of from events.
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/entity_stream"
         retriever:
-          $ref: "#/definitions/events_objects_retriever"
+          $ref: "#/definitions/base_retriever"
           $parameters:
-            request_parameters:
-              types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+            path: accounts
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -1992,7 +1993,7 @@ spec:
         description: >-
           When set, the connector will always re-export data from the past N days,
           where N is the value set here. This is useful if your data is frequently updated
-          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Accounts, Events,
           SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
           href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
         order: 3
