@@ -552,13 +552,15 @@ def test_delegated_streams_with_state_use_one_window(stream_name: str, entity: s
 @freeze_time(FROZEN_NOW)
 @pytest.mark.parametrize("stream_name,entity", [("accounts", "Account"), ("invoices", "Invoice")])
 @pytest.mark.parametrize(
-    "cursor,start_date",
+    "cursor,expected_cursor,start_date",
     [
-        ("2025-01-01T00:00:00+00:00", "2020-01-01T00:00:00Z"),
-        ("2025-06-01T00:00:00+00:00", "2025-06-01T00:00:00Z"),
+        ("2025-01-01T00:00:00+00:00", "2025-01-01T00:00:00+0000", "2020-01-01T00:00:00Z"),
+        ("2025-06-01T00:00:00+00:00", "2025-06-01T00:00:00+0000", "2025-06-01T00:00:00Z"),
     ],
 )
-def test_empty_incremental_reads_keep_the_input_cursor(stream_name: str, entity: str, cursor: str, start_date: str, manifest):
+def test_empty_incremental_reads_keep_the_input_cursor(
+    stream_name: str, entity: str, cursor: str, expected_cursor: str, start_date: str, manifest
+):
     config = _frozen_config(start_date=start_date)
     state = _state(stream_name, cursor)
     request = HttpRequest(
@@ -589,7 +591,7 @@ def test_empty_incremental_reads_keep_the_input_cursor(stream_name: str, entity:
     assert output.errors == []
     assert output.records == []
     actual_cursor = output.most_recent_state.stream_state.airbyte_cursor
-    assert datetime.datetime.fromisoformat(actual_cursor) == datetime.datetime.fromisoformat(cursor)
+    assert actual_cursor == expected_cursor
 
 
 @freeze_time(FROZEN_NOW)
@@ -656,10 +658,13 @@ def test_delegated_stream_full_refresh_keeps_30_day_windows(manifest):
     assert len(output.records) == 3
 
 
+@pytest.mark.parametrize(
+    "previous_cursor,expected_cursor",
+    [("2025-06-01T00:00:00+00:00", "2025-06-01T00:00:00+0000")],
+)
 @freeze_time(FROZEN_NOW)
-def test_delegated_stream_reports_page_two_failure_without_advancing_state(manifest):
+def test_delegated_stream_reports_page_two_failure_without_advancing_state(manifest, previous_cursor: str, expected_cursor: str):
     config = _frozen_config(start_date="2020-01-01T00:00:00Z", max_results=2)
-    previous_cursor = "2025-06-01T00:00:00+00:00"
     state = _state("invoices", previous_cursor)
     first = HttpRequest(
         QUERY_URL,
@@ -711,7 +716,7 @@ def test_delegated_stream_reports_page_two_failure_without_advancing_state(manif
     assert output.errors[0].trace.error.failure_type == FailureType.config_error
     emitted_cursors = [message.state.stream.stream_state.airbyte_cursor for message in output.state_messages]
     assert emitted_cursors
-    assert all(datetime.datetime.fromisoformat(cursor) == datetime.datetime.fromisoformat(previous_cursor) for cursor in emitted_cursors)
+    assert all(cursor == expected_cursor for cursor in emitted_cursors)
 
 
 @freeze_time(FROZEN_NOW)
