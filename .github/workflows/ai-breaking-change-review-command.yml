@@ -97,7 +97,7 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          start-message: "🚨 **AI Breaking Change Review session starting...** Assessing whether the change needs to be breaking, its destination data-loss risk, and whether the migration guide, metadata message, and docs are accurate and sufficient for users to upgrade safely. Sign-off stays with @airbytehq/breaking-change-reviewers. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/breaking_change_review.md)"
+          start-message: "🚨 **AI Breaking Change Review session starting...** Assessing whether the change needs to be breaking, its destination data-loss risk, and whether the migration guide, metadata message, and docs are accurate and sufficient for users to upgrade safely. Sign-off stays with @airbytehq/breaking-change-reviewers. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/plugins/devin-playbooks/playbooks/breaking_change_review.md)"
           tags: |
             breaking-change
             area/documentation
