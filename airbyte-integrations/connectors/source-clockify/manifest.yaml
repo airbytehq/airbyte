@@ -44,6 +44,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -296,6 +297,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -553,6 +555,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -633,6 +636,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -698,6 +702,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -770,6 +775,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -814,6 +820,7 @@ definitions:
                       pagination_strategy:
                         type: PageIncrement
                         page_size: 50
+                        start_from_page: 1
                   schema_loader:
                     type: InlineSchemaLoader
                     schema:
@@ -1170,6 +1177,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -1214,6 +1222,7 @@ definitions:
                       pagination_strategy:
                         type: PageIncrement
                         page_size: 50
+                        start_from_page: 1
                   schema_loader:
                     type: InlineSchemaLoader
                     schema:
@@ -1591,6 +1600,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1842,6 +1852,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2098,6 +2109,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2177,6 +2189,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2241,6 +2254,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2312,6 +2326,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2356,6 +2371,7 @@ streams:
                     pagination_strategy:
                       type: PageIncrement
                       page_size: 50
+                      start_from_page: 1
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
@@ -2705,6 +2721,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2749,6 +2766,7 @@ streams:
                     pagination_strategy:
                       type: PageIncrement
                       page_size: 50
+                      start_from_page: 1
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
