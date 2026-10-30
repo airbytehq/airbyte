@@ -97,8 +97,7 @@ class GcsV2Specification :
             resolveNamesMethod = { Transformations.toS3SafeCharacters(it) },
         )
 
-    private fun String?.orDefault(default: String): String =
-        if (isNullOrBlank()) default else this
+    private fun String?.orDefault(default: String): String = if (isNullOrBlank()) default else this
 
     companion object {
         const val DEFAULT_PATH_FORMAT =
