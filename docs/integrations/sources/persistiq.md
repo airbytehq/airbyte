@@ -36,6 +36,10 @@ The PersistIq connector should not run into PersistIq API limitations under norm
 
 Please read [How to find your API key](https://apidocs.persistiq.com/#introduction).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -43,6 +47,7 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.3.25 | 2026-10-07 | [88277](https://github.com/airbytehq/airbyte/pull/88277) | Fix pagination: read `next_page`/`has_more` from the response body so `leads` and `campaigns` sync beyond the first 100 records |
 | 0.3.24 | 2025-05-24 | [60565](https://github.com/airbytehq/airbyte/pull/60565) | Update dependencies |
 | 0.3.23 | 2025-05-10 | [60118](https://github.com/airbytehq/airbyte/pull/60118) | Update dependencies |
 | 0.3.22 | 2025-05-03 | [59461](https://github.com/airbytehq/airbyte/pull/59461) | Update dependencies |

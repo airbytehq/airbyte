@@ -3,15 +3,20 @@
 #
 
 
-from logging import Logger
+import io
+from dataclasses import dataclass
+from logging import Logger, getLogger
 from typing import Any, Iterable, List, Mapping, Optional, cast
 
+import orjson
 import requests
 
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
@@ -23,7 +28,32 @@ from destination_convex.config import ConvexConfig
 from destination_convex.writer import ConvexWriter
 
 
+@dataclass
+class _StateMessage(AirbyteMessage):
+    raw_message: Optional[Mapping[str, Any]] = None
+
+
 class DestinationConvex(Destination):
+    def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
+        for line in input_stream:
+            try:
+                raw_message = orjson.loads(line)
+            except orjson.JSONDecodeError:
+                getLogger("airbyte").info("Ignoring input which can't be deserialized as an Airbyte message")
+                continue
+            message = AirbyteMessageSerializer.load(raw_message)
+            if message.type == Type.STATE:
+                # The CDK's dataclass serializer drops protocol extensions such as the platform's state.id.
+                yield _StateMessage(type=message.type, state=message.state, raw_message=raw_message)
+            else:
+                yield message
+
+    def run(self, args: List[str]) -> None:
+        init_uncaught_exception_handler(getLogger("airbyte"))
+        for message in self.run_cmd(self.parse_args(args)):
+            serialized = message.raw_message if isinstance(message, _StateMessage) else AirbyteMessageSerializer.dump(message)
+            print(orjson.dumps(serialized).decode())
+
     def write(
         self,
         config: Mapping[str, Any],
@@ -51,10 +81,11 @@ class DestinationConvex(Destination):
         streams_to_delete = []
         indexes_to_add = {}
         for configured_stream in configured_catalog.streams:
+            table_name = self.table_name_for_stream(configured_stream.stream.namespace, configured_stream.stream.name)
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                streams_to_delete.append(configured_stream.stream.name)
+                streams_to_delete.append(table_name)
             elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
-                indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
+                indexes_to_add[table_name] = configured_stream.primary_key
         if len(streams_to_delete) != 0:
             writer.delete_tables(streams_to_delete)
         if len(indexes_to_add) != 0:

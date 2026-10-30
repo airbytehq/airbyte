@@ -2,6 +2,10 @@
 
 The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -9,6 +13,9 @@ The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.26 | 2026-10-07 | [88219](https://github.com/airbytehq/airbyte/pull/88219) | Fail fast with a clear config error on unknown/delisted tickers (HTTP 404) and unsupported interval/range combinations (HTTP 422) |
+| 0.3.25 | 2026-10-06 | [79086](https://github.com/airbytehq/airbyte/pull/79086) | Update dependencies |
+| 0.3.24 | 2026-10-02 | [87643](https://github.com/airbytehq/airbyte/pull/87643) | Replace sentinel pagination with per-ticker partitions (final request returned 404) |
 | 0.3.23 | 2025-05-24 | [60760](https://github.com/airbytehq/airbyte/pull/60760) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59990](https://github.com/airbytehq/airbyte/pull/59990) | Update dependencies |
 | 0.3.21 | 2025-05-04 | [59526](https://github.com/airbytehq/airbyte/pull/59526) | Update dependencies |

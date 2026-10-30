@@ -1,0 +1,29 @@
+{
+  "ticket_events": [
+    {
+      "id": 926256957613,
+      "ticket_id": 123,
+      "timestamp": 1719792000,
+      "created_at": "2024-07-01T00:00:00Z",
+      "updater_id": 35436,
+      "via": "web",
+      "via_reference_id": null,
+      "system": {
+        "client": "browser",
+        "ip_address": "192.168.1.1"
+      },
+      "event_type": "Audit",
+      "child_events": [
+        {
+          "id": 926256957614,
+          "event_type": "Comment",
+          "body": "Test comment"
+        }
+      ]
+    }
+  ],
+  "count": 1,
+  "end_of_stream": true,
+  "end_time": 1719792000,
+  "next_page": null
+}

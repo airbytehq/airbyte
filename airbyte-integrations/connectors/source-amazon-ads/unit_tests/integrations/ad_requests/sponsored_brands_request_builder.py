@@ -13,6 +13,10 @@ class SponsoredBrandsRequestBuilder(AmazonAdsBaseRequestBuilder):
         )
 
     @classmethod
+    def ads_endpoint(cls, client_id: str, client_access_token: str, profile_id: str) -> "SponsoredBrandsRequestBuilder":
+        return cls("sb/v4/ads/list").with_client_id(client_id).with_client_access_token(client_access_token).with_profile_id(profile_id)
+
+    @classmethod
     def keywords_endpoint(
         cls, client_id: str, client_access_token: str, profile_id: str, limit: Optional[int] = 100, start_index: Optional[int] = 0
     ) -> "SponsoredBrandsRequestBuilder":

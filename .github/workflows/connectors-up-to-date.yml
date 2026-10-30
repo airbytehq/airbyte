@@ -22,6 +22,9 @@ on:
           `--connectors-filter=source-github,source-stripe` (multiple by name),
           `--certified-only --connector-type=destination` (custom query).
         default: ""
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 jobs:
   generate_matrix:
     name: Generate matrix
@@ -250,6 +253,9 @@ jobs:
       # --- Step 3: Update base image ---
       - name: Update base image in metadata.yaml
         id: bump-base-image
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
           BUMP_IMAGE_OUTPUT=$(
             airbyte-ops local connector bump-base-image \

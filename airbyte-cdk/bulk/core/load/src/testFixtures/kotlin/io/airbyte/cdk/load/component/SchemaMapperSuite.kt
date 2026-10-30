@@ -57,7 +57,7 @@ interface SchemaMapperSuite {
         harness.testTableIdentifiers(
             """namespace-test- -`~!@#$%^&*()-=_+[]\{}|;':",./<>?""",
             """table-test- -`~!@#$%^&*()-=_+[]\{}|;':",./<>?""",
-            expectedTableName
+            expectedTableName,
         )
     }
 
@@ -89,7 +89,7 @@ interface SchemaMapperSuite {
                                 AirbyteStream()
                                     .withName("foo-1")
                                     .withNamespace("bar-1")
-                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}"""))
+                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}""")),
                             )
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withSyncId(42)
@@ -100,13 +100,13 @@ interface SchemaMapperSuite {
                                 AirbyteStream()
                                     .withName("foo_1")
                                     .withNamespace("bar_1")
-                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}"""))
+                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}""")),
                             )
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withSyncId(42)
                             .withMinimumGenerationId(0)
                             .withGenerationId(42),
-                    )
+                    ),
                 )
         val syncCatalog =
             DefaultDestinationCatalogFactory()
@@ -116,14 +116,14 @@ interface SchemaMapperSuite {
         assertEquals(
             configuredCatalog.streams.size,
             uniqueFinalTableNames.size,
-            "Expected munged table names to be unique: $uniqueFinalTableNames"
+            "Expected munged table names to be unique: $uniqueFinalTableNames",
         )
     }
 
     fun `column name with funky chars`(expectedColumnName: String) {
         harness.testColumnIdentifiers(
             """column-test- -`~!@#$%^&*()-=_+[]\{}|;':",./<>?""",
-            expectedColumnName
+            expectedColumnName,
         )
     }
 
@@ -167,15 +167,16 @@ interface SchemaMapperSuite {
                                                  "foo_1": {"type": "integer"}
                                               }
                                             }
-                                            """.trimIndent()
-                                        )
-                                    )
+                                            """
+                                                .trimIndent(),
+                                        ),
+                                    ),
                             )
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withSyncId(42)
                             .withMinimumGenerationId(0)
                             .withGenerationId(42),
-                    )
+                    ),
                 )
         val syncCatalog =
             DefaultDestinationCatalogFactory()
@@ -185,7 +186,7 @@ interface SchemaMapperSuite {
         assertEquals(
             configuredCatalog.streams.first().stream.jsonSchema["properties"].size(),
             uniqueColumnNames.size,
-            "Expected munged column names to be unique: $uniqueColumnNames"
+            "Expected munged column names to be unique: $uniqueColumnNames",
         )
     }
 

@@ -10,19 +10,20 @@ import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import java.nio.file.Files
 import java.nio.file.Path
-import org.junit.jupiter.api.Disabled
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
 class MSSQLBulkLoadCheckTest :
     CheckIntegrationTest<MSSQLSpecification>(
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    Files.readString(Path.of(BulkInsert.CONFIG_FILE)),
-                    name = "Bulk Load Check Should work",
+                    Files.readString(Path.of(CONFIG_FILE)),
+                    name = "Azure Bulk Load Check should work",
                 ),
             ),
         emptyMap(),
         configUpdater = FakeConfigurationUpdater,
-    )
+    ) {
+    companion object {
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
+    }
+}

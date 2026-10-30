@@ -328,7 +328,7 @@ definitions:
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or (config.get('join_channels') and not record.get('is_archived', false))) }}"
             parent_key: id
             partition_field: channel
             request_option:
@@ -445,6 +445,7 @@ definitions:
       cursor_field: "float_ts"
       cursor_datetime_formats:
         - "%s"
+        - "%s_as_float"
       datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime

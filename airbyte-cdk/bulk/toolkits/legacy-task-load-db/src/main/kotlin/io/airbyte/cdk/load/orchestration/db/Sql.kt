@@ -50,7 +50,7 @@ data class Sql(val transactions: List<List<String>>) {
                 require(!transaction.any { it.isEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
-            }
+            },
         )
     }
 
@@ -108,7 +108,7 @@ data class Sql(val transactions: List<List<String>>) {
                                 }
                             }
                     }
-                    .filter { it.isNotEmpty() }
+                    .filter { it.isNotEmpty() },
             )
         }
 

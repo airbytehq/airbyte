@@ -244,8 +244,8 @@ class EmittedStatsStoreImplTest {
                                 finalTableName =
                                     io.airbyte.cdk.load.schema.model.TableName(
                                         namespace ?: "default",
-                                        name
-                                    )
+                                        name,
+                                    ),
                             ),
                         columnSchema =
                             io.airbyte.cdk.load.schema.model.ColumnSchema(
@@ -254,7 +254,7 @@ class EmittedStatsStoreImplTest {
                                 finalSchema = mapOf(),
                             ),
                         importType = Append,
-                    )
+                    ),
             )
         }
     }

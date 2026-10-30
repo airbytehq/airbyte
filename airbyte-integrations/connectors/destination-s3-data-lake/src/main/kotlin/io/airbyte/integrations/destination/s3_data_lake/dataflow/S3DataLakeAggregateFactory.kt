@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.write.S3DataLakeStreamState
 import jakarta.inject.Singleton
 
@@ -32,14 +31,14 @@ class S3DataLakeAggregateFactory(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.tableSchema.importType,
-                schema = state.schema
+                schema = state.schema,
             )
 
         return S3DataLakeAggregate(
             stream = stream,
             table = state.table,
             schema = state.schema,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
+            stagingBranchName = state.stagingBranchName,
             writer = writer,
             icebergUtil = icebergUtil,
         )

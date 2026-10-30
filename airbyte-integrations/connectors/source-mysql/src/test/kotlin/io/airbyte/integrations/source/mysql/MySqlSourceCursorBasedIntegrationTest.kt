@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -196,7 +196,8 @@ class MySqlSourceCursorBasedIntegrationTest {
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
-                    columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
+                    columns =
+                        listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
@@ -229,13 +230,14 @@ class MySqlSourceCursorBasedIntegrationTest {
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute(
-                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))"
+                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))",
                     )
                 }
             }
         }
 
         lateinit var viewName: String
+
         fun provisionView(targetConnectionFactory: JdbcConnectionFactory) {
             viewName = "$tableName-view"
             targetConnectionFactory.get().use { connection: Connection ->
@@ -246,6 +248,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             }
         }
     }
+
     val V1_STATE: String =
         """  
       {

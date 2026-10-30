@@ -77,7 +77,7 @@ open class DefaultDirectLoadTableSqlOperations(
         replace: Boolean,
     ) {
         handler.execute(
-            generator.createTable(stream, tableName, columnNameMapping, replace = replace)
+            generator.createTable(stream, tableName, columnNameMapping, replace = replace),
         )
     }
 
@@ -89,7 +89,7 @@ open class DefaultDirectLoadTableSqlOperations(
             generator.overwriteTable(
                 sourceTableName = sourceTableName,
                 targetTableName = targetTableName,
-            )
+            ),
         )
     }
 
@@ -103,7 +103,7 @@ open class DefaultDirectLoadTableSqlOperations(
                 columnNameMapping,
                 sourceTableName = sourceTableName,
                 targetTableName = targetTableName,
-            )
+            ),
         )
     }
 
@@ -119,7 +119,7 @@ open class DefaultDirectLoadTableSqlOperations(
                 columnNameMapping,
                 sourceTableName = sourceTableName,
                 targetTableName = targetTableName,
-            )
+            ),
         )
     }
 
