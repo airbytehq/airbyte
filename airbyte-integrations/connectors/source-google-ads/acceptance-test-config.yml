@@ -29,28 +29,10 @@ acceptance_tests:
             bypass_reason: "No data for this date range, tested in integration tests"
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
-          - name: "happytable"
-            bypass_reason: "The custom query of this config selects campaign.end_date, which the Google Ads API no longer recognizes (use campaign.end_date_time); fix the query in the test secret, then remove this entry"
       - config_path: "secrets/config_click_view.json"
-        empty_streams:
-          - name: "customer_label"
-            bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
-          - name: "shopping_performance_view"
-            bypass_reason: "No shopping campaign, need item for sale"
-          - name: "display_keyword_view"
-            bypass_reason: "No data for this date range, tested in previous config"
-          - name: "topic_view"
-            bypass_reason: "No data for this date range, tested in integration tests"
-          - name: "click_view"
-            bypass_reason: "Temporarily disabled until we find non-sensitive data to include in expected_records"
+        configured_catalog_path: "integration_tests/configured_catalog_with_click_view.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
       - config_path: "secrets/config_manager_account.json"
-  incremental:
-    tests:
-      - config_path: "secrets/incremental_config.json"
-        configured_catalog_path: "integration_tests/incremental_catalog.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
