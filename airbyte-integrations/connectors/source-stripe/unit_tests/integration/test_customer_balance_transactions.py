@@ -313,6 +313,23 @@ class CustomerBalanceTransactionsTest(TestCase):
         http_mocker.assert_number_of_calls(_child_request("synthetic-boundary"), 1)
         http_mocker.assert_number_of_calls(_child_request("synthetic-later"), 1)
 
+    def _assert_failed_walk_does_not_read_oldest_customer(self, status_code: int) -> None:
+        windows = _created_windows(_START_DATE, _NOW)
+        newest = ("synthetic-newest", windows[0][0] + timedelta(days=5))
+        oldest = ("synthetic-oldest", windows[0][0] + timedelta(days=1))
+        input_state = _state(_placeholder_state(_START_DATE))
+
+        with HttpMocker() as http_mocker:
+            http_mocker.get(_customer_request(*windows[0]), _customers_response([newest, oldest]).build())
+            http_mocker.get(_customer_request(*windows[1]), _status_response(status_code))
+            _register_events(http_mocker)
+            _register_children(http_mocker, ["synthetic-newest", "synthetic-oldest"])
+
+            attempt_a = _read(_config(), input_state, expecting_exception=True)
+
+            assert attempt_a.errors
+            http_mocker.assert_number_of_calls(_child_request("synthetic-oldest"), 0)
+
     def _assert_failed_walk_resumes_oldest_customer(self, status_code: int) -> None:
         windows = _created_windows(_START_DATE, _NOW)
         newest = ("synthetic-newest", windows[0][0] + timedelta(days=5))
@@ -339,12 +356,18 @@ class CustomerBalanceTransactionsTest(TestCase):
             assert not attempt_b.errors
             http_mocker.assert_number_of_calls(_child_request("synthetic-oldest"), 1)
 
+    def test_given_second_customer_window_returns_400_when_read_then_sync_fails(self) -> None:
+        self._assert_failed_walk_does_not_read_oldest_customer(400)
+
     @pytest.mark.xfail(
         strict=True,
         reason="requires airbyte-cdk with airbytehq/airbyte-python-cdk#1257",
     )
     def test_given_second_customer_window_returns_400_when_resume_then_oldest_customer_is_read(self) -> None:
         self._assert_failed_walk_resumes_oldest_customer(400)
+
+    def test_given_second_customer_window_returns_403_when_read_then_sync_fails(self) -> None:
+        self._assert_failed_walk_does_not_read_oldest_customer(403)
 
     @pytest.mark.xfail(
         strict=True,
