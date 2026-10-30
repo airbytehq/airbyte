@@ -317,12 +317,26 @@ function replaceConnectorConfigurationUnions(spec) {
       : /^Destination/i.test(name)
         ? "destination"
         : "source or destination";
+    const typeKey =
+      connectorType === "source"
+        ? "sourceType"
+        : connectorType === "destination"
+          ? "destinationType"
+          : null;
+    const connectorTypeGuidance = typeKey
+      ? ` When creating a ${connectorType}, identify the connector with \`definitionId\` or \`configuration.${typeKey}\`.`
+      : "";
     schemas[name] = {
       type: "object",
-      description:
-        `The configuration shape depends on the ${connectorType} connector type. ` +
-        "Use the lookup below for field details, or see the " +
-        "[connector documentation](/integrations) for connector-specific guidance.",
+      description: `Connector-specific settings. The fields depend on which ${connectorType} connector you're configuring, so the request sample shows placeholders instead of real fields.\n\nTo fill it in, choose your connector in the lookup below, then add each of its fields to \`configuration\`, using the **Property name** column as the key.${connectorTypeGuidance} For setup guidance, see the [connector documentation](/integrations).`,
+      example: {
+        ...(typeKey
+          ? {
+              [typeKey]: "<connector type, for example postgres>",
+            }
+          : {}),
+        "<property name>": "<value from the configuration lookup>",
+      },
     };
     replacedSchemas.push(name);
   }

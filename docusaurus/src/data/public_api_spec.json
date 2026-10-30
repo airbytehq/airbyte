@@ -6046,11 +6046,19 @@
       },
       "SourceConfiguration": {
         "type": "object",
-        "description": "The configuration shape depends on the source connector type. Use the lookup below for field details, or see the [connector documentation](/integrations) for connector-specific guidance."
+        "description": "Connector-specific settings. The fields depend on which source connector you're configuring, so the request sample shows placeholders instead of real fields.\n\nTo fill it in, choose your connector in the lookup below, then add each of its fields to `configuration`, using the **Property name** column as the key. When creating a source, identify the connector with `definitionId` or `configuration.sourceType`. For setup guidance, see the [connector documentation](/integrations).",
+        "example": {
+          "sourceType": "<connector type, for example postgres>",
+          "<property name>": "<value from the configuration lookup>"
+        }
       },
       "DestinationConfiguration": {
         "type": "object",
-        "description": "The configuration shape depends on the destination connector type. Use the lookup below for field details, or see the [connector documentation](/integrations) for connector-specific guidance."
+        "description": "Connector-specific settings. The fields depend on which destination connector you're configuring, so the request sample shows placeholders instead of real fields.\n\nTo fill it in, choose your connector in the lookup below, then add each of its fields to `configuration`, using the **Property name** column as the key. When creating a destination, identify the connector with `definitionId` or `configuration.destinationType`. For setup guidance, see the [connector documentation](/integrations).",
+        "example": {
+          "destinationType": "<connector type, for example postgres>",
+          "<property name>": "<value from the configuration lookup>"
+        }
       },
       "OAuthCredentialsConfiguration": {
         "description": "The values required to configure the source.",

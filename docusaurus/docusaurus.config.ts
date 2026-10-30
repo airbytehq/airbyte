@@ -307,6 +307,36 @@ const config: Config = {
         logoClass: "go",
         variant: "Native",
       },
+      {
+        language: "java",
+        highlight: "java",
+        logoClass: "java",
+      },
+      {
+        language: "ruby",
+        highlight: "ruby",
+        logoClass: "ruby",
+      },
+      {
+        language: "php",
+        highlight: "php",
+        logoClass: "php",
+      },
+      {
+        language: "csharp",
+        highlight: "csharp",
+        logoClass: "csharp",
+      },
+      {
+        language: "powershell",
+        highlight: "powershell",
+        logoClass: "powershell",
+      },
+      {
+        language: "rust",
+        highlight: "rust",
+        logoClass: "rust",
+      },
     ],
     mermaid: {
       theme: {

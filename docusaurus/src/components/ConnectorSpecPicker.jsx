@@ -245,7 +245,13 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
               <h2 className={styles.specName}>{selected.name}</h2>
             )}
           </div>
-          <p className={styles.specMeta}>
+          <p
+            className={
+              compact
+                ? `${styles.specMeta} ${styles.compactSpecMeta}`
+                : styles.specMeta
+            }
+          >
             <code>{selected.dockerRepository}</code>
             {selected.documentationUrl && (
               <>
@@ -256,6 +262,12 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
               </>
             )}
           </p>
+          {compact && (
+            <p className={styles.compactGuidance}>
+              Add these fields inside <code>configuration</code> in your request
+              body. Use the <strong>Property name</strong> column as the key.
+            </p>
+          )}
           {specError && (
             <p>
               The configuration fields for {selected.name} could not be loaded (

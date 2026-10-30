@@ -52,7 +52,7 @@ export default function SchemaItemWrapper(props) {
   }
 
   return (
-    <SchemaItem {...props}>
+    <SchemaItem {...props} schema={{ ...props.schema, example: undefined }}>
       {props.children}
       <ConnectorSpecLookup connectorType={connectorType} />
     </SchemaItem>
