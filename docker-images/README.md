@@ -2,6 +2,11 @@
 
 This directory contains the Dockerfile resources needed to build Docker connector images.
 
+Airbyte employees: the end-to-end lifecycle of a base image change — publishing a new version,
+adopting it in `source-declarative-manifest`, and rolling it out to the connectors — is documented
+in the internal runbook
+[Connector base images](https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/connector-base-images).
+
 ## About these files
 
 For each connector type, there are three files. Taking Java as the example:
@@ -152,4 +157,3 @@ The base images don't need to copy in any files from the host computer. That is 
 ### Where should I source the build args?
 
 The build args should be scraped from the connector's `metadata.yml` file.
-
