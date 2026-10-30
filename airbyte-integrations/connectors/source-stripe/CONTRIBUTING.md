@@ -39,11 +39,11 @@ The data returned in event payloads depends on the Stripe API version the object
 The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on most list endpoints. However, Stripe does NOT support `updated_at` filtering. Since most Stripe resources are mutable (customers, subscriptions, invoices, etc.), `created`-only filtering is insufficient for true incremental sync. The `events` stream is an exception — events are immutable point-in-time records where `created[gte]` is semantically correct. The connector currently has all streams as full-refresh.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | accounts | small | top-level parent | updated (set from created) | created_at_only | incremental | Connected accounts list; incremental reads /v1/accounts by created window, not events (account.updated is scoped to the connected account) |
-| application_fees | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
-| authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
+| application_fees | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
+| authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support | |
 | balance_transactions | xlarge | top-level parent | none | created_at_only | deferred_no_api_support | Effectively immutable; `created[gte]` filter available |
 | bank_accounts | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
 | cardholders | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
