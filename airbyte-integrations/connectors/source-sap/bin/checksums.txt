@@ -1,0 +1,10 @@
+# Pinned sha256 of the ERPL extension archives fetched from https://get.erpl.io.
+#
+# They are unsigned native code, so the build verifies them rather than trusting
+# the transport alone. When moving to a new ERPL or DuckDB version, re-run
+# `ERPL_ALLOW_UNPINNED=1 ./bin/fetch-extensions.sh <dir>` and paste the printed
+# digests here.
+#
+# <sha256>  <duckdb version>/<platform>/<artifact>
+96b0f3a04848c74c8998fc9be347879a94d49977ace19b1cacd7321025a6b556  v1.5.5/linux_amd64/erpl.duckdb_extension.gz
+243ed3b111aa26277e0bc9d0468ebf0da5a2b8a3e2652f7a5eb8e10d5639dc0d  v1.5.5/linux_amd64/erpl_web.duckdb_extension.gz
