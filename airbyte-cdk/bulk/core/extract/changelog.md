@@ -7,6 +7,14 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.3 — 2026-10-21
+
+[#89633](https://github.com/airbytehq/airbyte/pull/89633) — Fix the Docker Scout critical/high findings on the extract classpath. `extract-jdbc` moves BouncyCastle to `1.86` (`bcpkix`, `bcprov`; `bctls` `1.86.2`) in place of the `1.77`/`1.78.1` mix (CVE-2024-29857, CVE-2025-14813, CVE-2026-8763, CVE-2026-13506). `extract-cdc` adds published `api` constraints on the Debezium transitive chain: Kafka `4.1.2` (CVE-2026-33557, CVE-2026-35554), Jetty `12.0.40`, `org.lz4:lz4-java` `1.8.1` (CVE-2025-12183), `at.yawk.lz4:lz4-java` `1.12.0` (CVE-2026-106451 in the `1.10.1` that Kafka `4.1.2` depends on) and plexus-utils `3.6.2` (CVE-2025-67030); connectors pick them up by bumping `cdkVersion`, with no build change of their own. `bulk-cdk-core-base` is re-pinned to `1.0.8` (sshd-mina `2.20.0`, mina-core `2.0.31`, bcprov `1.86`).
+
+### 1.2.2 — 2026-10-21
+
+[#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.
+
 ### 1.2.1 — 2026-10-20
 
 [#89583](https://github.com/airbytehq/airbyte/pull/89583) — Declare the Debezium `3.4.3.Final` artifacts in `extract-cdc` with explicit versions instead of importing the Debezium BOM, whose Testcontainers 2.0.2 constraint made the test fixtures unpublishable (extract 1.2.0 was only partially published). The CDK no longer sets versions for connectors' Debezium artifacts, and the BOM's JUnit 6 and Jackson 2.19 constraints no longer reach connector classpaths.
