@@ -83,7 +83,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Authentication method")
     @get:JsonSchemaDescription("Determines the type of authentication that should be used.")
-    @get:JsonProperty("credentials")
+    @get:JsonProperty("credentials", required = true)
     @get:JsonSchemaInject(json = """{"group": "connection", "order":6}""")
     val credentials: CredentialsSpecification? = null
 
@@ -92,7 +92,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
     // default hard delete for backwards compatibility
-    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete", required = true)
     @get:JsonSchemaInject(
         json = """{"group": "sync_behavior", "order": 5, "always_show": true}""",
     )
@@ -122,7 +122,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription(
         """Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
     )
-    @get:JsonProperty("trim_space")
+    @get:JsonProperty("trim_space", required = true)
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")
     @Suppress("RedundantNullableReturnType")
     val trimSpace: Boolean? = true
@@ -150,7 +150,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     // Default FLOAT for backwards compatibility.
     // TODO: flip the default to NUMBER(38,9), see https://github.com/airbytehq/oncall/issues/13254
-    @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
+    @get:JsonProperty("number_data_type", defaultValue = "FLOAT", required = true)
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
     val numberDataTypeConversion: NumberDataType? = null
 }

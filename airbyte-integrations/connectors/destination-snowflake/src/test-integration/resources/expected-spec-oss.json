@@ -188,7 +188,7 @@
         "order" : 12
       }
     },
-    "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],
+    "required" : [ "host", "role", "warehouse", "database", "schema", "username", "credentials", "cdc_deletion_mode", "trim_space", "number_data_type" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
