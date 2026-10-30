@@ -30,7 +30,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.7.2
+  dockerImageTag: 1.7.3
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
@@ -72,4 +72,10 @@ data:
     - title: Asana Status
       url: https://status.asana.com/
       type: status_page
+    - title: API changelog
+      url: https://forum.asana.com/c/forum-en/api/api-changelog/204
+      type: api_release_history
+    - title: Deprecations
+      url: https://developers.asana.com/docs/deprecations
+      type: api_deprecations
 metadataSpecVersion: "1.0"
