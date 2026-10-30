@@ -6,10 +6,14 @@ package io.airbyte.integrations.source.redshift;
 
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcConstants;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.Date;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,6 +103,35 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
     }
     final OffsetDateTime timestamptz = REDSHIFT_OFFSET_DATETIME.parse(raw, OffsetDateTime::from);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
+  }
+
+  @Override
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    // Keep binding timestamptz cursors as java.sql.Timestamp instants, as before they were
+    // discovered as TIMESTAMP_WITH_TIMEZONE.
+    setTimestamp(preparedStatement, parameterIndex, value);
+  }
+
+  @Override
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
+    // The Redshift JDBC driver reports timestamptz columns as TIMESTAMP in DatabaseMetaData, even
+    // though their values carry a UTC offset (see copyToJsonField).
+    final JsonNode typeName = field.get(JdbcConstants.INTERNAL_COLUMN_TYPE_NAME);
+    if (typeName != null && "timestamptz".equalsIgnoreCase(typeName.asText())) {
+      return JDBCType.TIMESTAMP_WITH_TIMEZONE;
+    }
+    return super.getDatabaseFieldType(field);
+  }
+
+  @Override
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      default -> super.getAirbyteType(jdbcType);
+    };
   }
 
   @Override
