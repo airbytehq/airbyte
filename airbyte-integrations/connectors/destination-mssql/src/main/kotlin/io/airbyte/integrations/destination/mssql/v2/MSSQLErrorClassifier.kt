@@ -39,6 +39,21 @@ object MSSQLErrorClassifier {
                     "Record value exceeds the length of a destination table column.",
                     e,
                 )
+            codes.contains(40544) ||
+                messages.any { it.contains("has reached its size quota", ignoreCase = true) } ->
+                throw ConfigErrorException(
+                    "The destination database has reached its maximum size. Increase the database's max size or service tier, or free up space, then retry the sync.",
+                    e,
+                )
+            codes.contains(1105) ||
+                messages.any {
+                    it.contains("Could not allocate space for object", ignoreCase = true) &&
+                        it.contains("filegroup is full", ignoreCase = true)
+                } ->
+                throw ConfigErrorException(
+                    "The destination database filegroup is full. Add space or files, enable autogrowth, or free disk space, then retry the sync.",
+                    e,
+                )
             else -> throw e
         }
     }

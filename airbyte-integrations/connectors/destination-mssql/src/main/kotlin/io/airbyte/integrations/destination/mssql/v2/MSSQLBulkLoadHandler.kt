@@ -65,7 +65,7 @@ class MSSQLBulkLoadHandler(
             } catch (ex: SQLException) {
                 logger.error(ex) { "Error during bulk insert; rolling back. Cause: ${ex.message}" }
                 conn.rollback()
-                throw ex
+                MSSQLErrorClassifier.rethrowClassified(ex)
             }
         }
     }
@@ -134,7 +134,7 @@ class MSSQLBulkLoadHandler(
                     "Error during bulk load & upsert; rolling back. Cause: $ex.message"
                 }
                 conn.rollback()
-                throw ex
+                MSSQLErrorClassifier.rethrowClassified(ex)
             } finally {
                 try {
                     dropStagingTable(conn, stagingTableName)
