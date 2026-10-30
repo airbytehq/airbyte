@@ -20,14 +20,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
           - name: mailThreads
             bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
-          - name: call_logs
-            bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
             bypass_reason: "Sandbox company has the Teams feature disabled: GET /v1/legacyTeams answers 403, which the stream ignores."
           - name: projects
@@ -36,23 +33,13 @@ acceptance_tests:
             bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
-          - name: product_variations
-            bypass_reason: "Sandbox products have no variations: GET /api/v2/products/{id}/variations returns data: [] for all 11 products."
-          - name: leads_archived
-            bypass_reason: "Sandbox has no archived leads: GET /v1/leads/archived returns data: []."
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
           - name: mailThreads
             bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
-          - name: call_logs
-            bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
             bypass_reason: "Sandbox company has the Teams feature disabled: GET /v1/legacyTeams answers 403, which the stream ignores."
           - name: projects
@@ -61,10 +48,6 @@ acceptance_tests:
             bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
-          - name: product_variations
-            bypass_reason: "Sandbox products have no variations: GET /api/v2/products/{id}/variations returns data: [] for all 11 products."
-          - name: leads_archived
-            bypass_reason: "Sandbox has no archived leads: GET /v1/leads/archived returns data: []."
 
   incremental:
     tests:

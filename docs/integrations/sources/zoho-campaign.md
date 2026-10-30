@@ -35,6 +35,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.72 | 2026-10-27 | [90104](https://github.com/airbytehq/airbyte/pull/90104) | Update dependencies |
+| 0.0.71 | 2026-10-20 | [89479](https://github.com/airbytehq/airbyte/pull/89479) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88879](https://github.com/airbytehq/airbyte/pull/88879) | Update dependencies |
 | 0.0.69 | 2026-10-07 | [88274](https://github.com/airbytehq/airbyte/pull/88274) | Reuse the Zoho access token across streams and syncs to stop hitting Zoho's 10-refreshes-per-10-minutes limit; flatten `all_tags` records and add a `tag_id` primary key; fix the `jp` / `com.cn` data center values |
 | 0.0.68 | 2026-10-06 | [88095](https://github.com/airbytehq/airbyte/pull/88095) | Update dependencies |

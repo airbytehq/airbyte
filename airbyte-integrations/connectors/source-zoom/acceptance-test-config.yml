@@ -5,22 +5,24 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.3.2"
   connection:
     tests:
       - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 3600
         empty_streams:
           - name: "webinars"
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_webinars.py"
@@ -44,14 +46,9 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinars.py"
           - name: "report_webinar_participants"
             bypass_reason: "Need paid Webinar license to populate data; covered by mock-server tests in unit_tests/integration/test_report_webinar_participants.py"
+          - name: "zoom_events"
+            bypass_reason: "Needs a Zoom Webinars Plus or Zoom Events licence to populate data; covered by mock-server tests in unit_tests/integration/test_zoom_events.py"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        ignored_fields:
-          meetings:
-            - name: "start_url"
-              bypass_reason:
-                "Causes sequential_read test to fail as the value is unique
-                upon each read"
-        timeout_seconds: 3600

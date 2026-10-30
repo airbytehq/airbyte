@@ -31,6 +31,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.72 | 2026-10-27 | [89976](https://github.com/airbytehq/airbyte/pull/89976) | Update dependencies |
+| 0.0.71 | 2026-10-20 | [89288](https://github.com/airbytehq/airbyte/pull/89288) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88684](https://github.com/airbytehq/airbyte/pull/88684) | Update dependencies |
 | 0.0.69 | 2026-10-07 | [88194](https://github.com/airbytehq/airbyte/pull/88194) | Migrate from the deprecated Marketstack API v1 to v2 (`https://api.marketstack.com/v2/`) |
 | 0.0.68 | 2026-10-06 | [87920](https://github.com/airbytehq/airbyte/pull/87920) | Update dependencies |
