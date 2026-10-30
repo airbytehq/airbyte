@@ -17,9 +17,11 @@ Other errors (e.g. missing OAuth scopes, code 4700) must still fail the sync.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 from unittest import TestCase
+from unittest.mock import patch
 
+import freezegun
 import pytest
 
 from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
@@ -51,6 +53,10 @@ _TOKEN_REQUEST = HttpRequest(
 _USERS_REQUEST = HttpRequest(url=f"{_BASE_URL}/users", query_params={"page_size": "30"})
 _USERS_RESPONSE = HttpResponse(json.dumps({"users": [{"id": "u1"}, {"id": "u2"}], "next_page_token": ""}))
 _ONE_USER_RESPONSE = HttpResponse(json.dumps({"users": [{"id": "u1"}], "next_page_token": ""}))
+_REPORT_USER_MEETINGS_REQUEST = HttpRequest(
+    url=f"{_BASE_URL}/report/users/u1/meetings",
+    query_params=ANY_QUERY_PARAMS,
+)
 
 
 def _zoom_error(code: int, message: str, status_code: int = 400) -> HttpResponse:
@@ -61,8 +67,8 @@ def _user_meetings_request(user_id: str) -> HttpRequest:
     return HttpRequest(url=f"{_BASE_URL}/users/{user_id}/meetings", query_params={"page_size": "30"})
 
 
-def _read(stream_name: str) -> EntrypointOutput:
-    config = dict(_CONFIG)
+def _read(stream_name: str, config: Dict[str, Any] | None = None) -> EntrypointOutput:
+    config = config or dict(_CONFIG)
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     return read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
 
@@ -230,3 +236,77 @@ def test_missing_scope_4711_is_a_config_error(stream_name, mocks):
     assert any(
         error.trace.error.message.startswith("Zoom access token lacks a required scope ('Invalid access token") for error in output.errors
     )
+
+
+def _report_user_meetings_response() -> HttpResponse:
+    return HttpResponse(
+        json.dumps(
+            {
+                "meetings": [{"uuid": "meeting-session", "id": 1, "end_time": "2026-10-11T11:00:00Z", "type": 2}],
+                "next_page_token": "",
+            }
+        )
+    )
+
+
+def _mock_report_user_meetings(http_mocker: HttpMocker, responses: List[HttpResponse]) -> None:
+    _mock_token(http_mocker)
+    http_mocker.get(_USERS_REQUEST, _ONE_USER_RESPONSE)
+    http_mocker.get(_REPORT_USER_MEETINGS_REQUEST, responses)
+
+
+@patch("time.sleep")
+def test_report_user_meetings_retries_after_retry_after(sleep_mock):
+    rate_limited = HttpResponse(
+        json.dumps({"code": 429, "message": "Too many requests"}),
+        status_code=429,
+        headers={"Retry-After": "2"},
+    )
+
+    with freezegun.freeze_time("2026-10-02T12:00:00Z"):
+        with HttpMocker() as http_mocker:
+            _mock_report_user_meetings(http_mocker, [rate_limited, _report_user_meetings_response()])
+            output = _read("report_user_meetings", {**_CONFIG, "start_date": "2026-10-01T00:00:00Z"})
+            http_mocker.assert_number_of_calls(_REPORT_USER_MEETINGS_REQUEST, 2)
+
+    assert output.errors == []
+    assert output.get_stream_statuses("report_user_meetings")[-1] == AirbyteStreamStatus.COMPLETE
+    assert len(output.records) == 1
+    # The CDK adds a one-second safety margin to Retry-After before sleeping.
+    sleep_mock.assert_any_call(3)
+
+
+@patch("time.sleep")
+def test_report_user_meetings_fails_for_retry_after_over_ten_minutes(sleep_mock):
+    rate_limited = HttpResponse(
+        json.dumps({"code": 429, "message": "Too many requests"}),
+        status_code=429,
+        headers={"Retry-After": "3600"},
+    )
+
+    with freezegun.freeze_time("2026-10-02T12:00:00Z"):
+        with HttpMocker() as http_mocker:
+            _mock_report_user_meetings(http_mocker, [rate_limited])
+            output = _read("report_user_meetings", {**_CONFIG, "start_date": "2026-10-01T00:00:00Z"})
+            http_mocker.assert_number_of_calls(_REPORT_USER_MEETINGS_REQUEST, 1)
+
+    assert output.records == []
+    assert output.errors
+    assert AirbyteStreamStatus.COMPLETE not in output.get_stream_statuses("report_user_meetings")
+    sleep_mock.assert_not_called()
+
+
+@patch("time.sleep")
+def test_report_user_meetings_retries_without_retry_after(sleep_mock):
+    rate_limited = HttpResponse(json.dumps({"code": 429, "message": "Too many requests"}), status_code=429)
+
+    with freezegun.freeze_time("2026-10-02T12:00:00Z"):
+        with HttpMocker() as http_mocker:
+            _mock_report_user_meetings(http_mocker, [rate_limited, _report_user_meetings_response()])
+            output = _read("report_user_meetings", {**_CONFIG, "start_date": "2026-10-01T00:00:00Z"})
+            http_mocker.assert_number_of_calls(_REPORT_USER_MEETINGS_REQUEST, 2)
+
+    assert output.errors == []
+    assert output.get_stream_statuses("report_user_meetings")[-1] == AirbyteStreamStatus.COMPLETE
+    assert len(output.records) == 1
+    sleep_mock.assert_called()

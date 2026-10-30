@@ -53,6 +53,10 @@ definitions:
           - unsupported_grant_type
   zoom_error_handler:
     type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 600
     response_filters:
       - type: HttpResponseFilter
         predicate: "{{ response.code == 124 }}"

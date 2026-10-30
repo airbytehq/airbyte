@@ -52,7 +52,10 @@ data:
           Refresh the source schema. For Full Refresh | Overwrite streams, the next sync rebuilds
           the data. For Full Refresh | Append streams, back up first; retaining records leaves
           old rows with their previous types, while clearing permanently deletes history beyond
-          Zoom's retention (roughly six months for reports and one year for meetings). See the [Zoom 2.0.0 migration
+          Zoom's retention (roughly six months for reports and one year for meetings). Switch
+          report_meetings and report_meeting_participants to Incremental after upgrading: in
+          Full Refresh they request one Heavy-rate-limited report per meeting session for the last
+          six months. See the [Zoom 2.0.0 migration
           guide](https://docs.airbyte.com/integrations/sources/zoom-migrations#upgrading-to-200).
         upgradeDeadline: "2026-11-23"
         deadlineAction: auto_upgrade

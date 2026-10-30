@@ -44,8 +44,9 @@ Users syncing only `chat_channels`, `meeting_poll_results`, `report_user_meeting
 
 1. Add `report:read:user:admin` (or `report:read:admin`) to your Zoom app and, for OAuth, re-authenticate the source. Do this before upgrading if you sync `report_meetings` or `report_meeting_participants`.
 2. Upgrade the Zoom source to 2.0.0 and refresh the source schema.
-3. For **Full Refresh | Overwrite** streams, no other action is needed; the next sync rebuilds the stream with the new schema.
-4. For **Full Refresh | Append** streams, back up the destination first. Refresh the schema while retaining existing records, or leave the existing records in place and accept that old rows keep their previous types.
+3. Switch `report_meetings` and `report_meeting_participants` to Incremental. Auto-upgraded connections remain on Full Refresh; Full Refresh makes one Heavy-rate-limited report request per past meeting session for roughly six months.
+4. For **Full Refresh | Overwrite** streams, no other action is needed; the next sync rebuilds the stream with the new schema.
+5. For **Full Refresh | Append** streams, back up the destination first. Refresh the schema while retaining existing records, or leave the existing records in place and accept that old rows keep their previous types.
 
 :::note
 If you set `start_date` in source-zoom 1.5.0 for `report_user_meetings` or `report_daily`, `meetings` and `webinars` now include only records created on or after that date, including during Full Refresh. Clear `start_date` to keep everything Zoom still serves.

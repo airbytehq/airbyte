@@ -54,7 +54,7 @@ Zoom apps set up before version 1.5.0 may be missing report scopes for `report_u
 
 ### Performance considerations
 
-Most of the endpoints this connector access is restricted by standard Zoom [requests limitation](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limit-changes), with a few exceptions. For more info, please check zoom API documentation. We’ve added appropriate retries if we hit the rate-limiting threshold.
+The report endpoints used by `report_meetings`, `report_meeting_participants`, `report_user_meetings`, and related streams are in Zoom's [Heavy rate-limit category](https://developers.zoom.us/docs/api/rate-limits/), with a daily cap shared by all apps on your Zoom account. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited report request per past meeting session in the roughly six-month retention window, so use Incremental for these streams. On 429, the connector waits for Zoom's `Retry-After` header; if the wait is 10 minutes or more, the stream stops instead of waiting for hours. If the header is missing, the connector uses exponential backoff.
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -85,6 +85,8 @@ Existing Server-to-Server OAuth configurations are migrated automatically. If yo
 
 **Start Date** (optional, `start_date`): UTC date-time filter for `meetings` and `webinars`. These streams include only records created on or after this date, including in Full Refresh; leave it empty to sync everything Zoom still serves. `report_user_meetings`, `report_daily`, `report_meetings`, and `report_meeting_participants` start from this date and are limited to Zoom's roughly six months of report retention; `report_daily` starts at the beginning of that month. `report_webinars` and `report_webinar_participants` are not filtered by `start_date`.
 
+Incremental `meetings` and `webinars` syncs use `created_at` with a 30-day lookback. Edits to meetings or webinars created before that window—including reschedules, settings, and occurrences—are not re-read by incremental syncs. Run a Full Refresh or reset to pick them up. With Incremental | Append + Deduped, those rows remain as last synced.
+
 #### Scopes
 
 `user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:user:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
@@ -104,7 +106,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.0.0 | 2026-10-23 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports |
+| 2.0.0 | 2026-10-23 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |
