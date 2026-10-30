@@ -1,8 +1,8 @@
 ## 👋 Welcome to Airbyte!
 
-Thank you for your contribution from **{{ .repo_name }}**! We're excited to have you in the Airbyte community.
+Thank you for your contribution from **{{ .repo_name }}**! We're excited to have you in the Airbyte Community.
 
-If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
+If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 <details>
 <summary><b>💡 Show Tips and Tricks</b></summary>
@@ -21,6 +21,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
 - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
 - `/ai-create-docs-pr` - Creates a documentation PR for connector changes.
+- `/breaking-change-ready` - For breaking changes: checks that every breaking-change review conversation has a reply and is resolved, then pings the breaking-change reviewers in Slack for human review.
 - `/force-merge reason="<A_GOOD_REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
 
 ### Tips for Working with CI

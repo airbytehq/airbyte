@@ -83,6 +83,12 @@ airbyte:
             group: Configuration Error
             output: A selected view could not be queried because it is invalid or inaccessible. Please deselect the view or fix its definition in Snowflake.
 
+          - code: 904
+            # SQL compilation error: invalid identifier '<column>'. Seen when a view's definition references a column that was dropped or renamed in its base table, so every query on the view fails to compile.
+            error: config
+            group: Configuration Error
+            output: A selected table or view references a column that no longer exists. If it is a view, update or recreate it in Snowflake so that it only references existing columns, or deselect the stream. Then refresh the source schema.
+
           - code: 2003
             # SQL compilation error: ... object ... does not exist or not authorized.
             error: config

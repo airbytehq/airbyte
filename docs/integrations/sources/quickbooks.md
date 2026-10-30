@@ -37,7 +37,7 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
    - **Use the Airbyte OAuth App** — click **Authenticate your QuickBooks account** (production companies only).
    - **Use your own Intuit app** — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your app.
 5. **Start date** - The date starting from which you'd like to replicate data.
-6. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
+6. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 1,000, which is also the maximum).
 7. Click **Set up source**.
 
 :::note
@@ -60,7 +60,7 @@ Under **Authentication**, choose **Use your own Intuit app**.
 6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 7. **Start date** - The date starting from which you'd like to replicate data.
 8. **Sandbox** - Turn on to use Intuit's sandbox environment with your app's development keys.
-9. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
+9. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 1,000, which is also the maximum).
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -74,7 +74,7 @@ The Quickbooks Source connector supports the following [sync modes](https://docs
 
 The `company_info` and `preferences` streams are single-row entities and support Full Refresh only; all other streams support Incremental sync.
 
-Incremental streams use the record's `MetaData.LastUpdatedTime` as the cursor. The connector copies that value into a top-level `airbyte_cursor` field on each record and queries QuickBooks in 30-day windows starting from **Start Date**, so the first sync of a company with a long history can take a while. The `exchange_rates` stream returns one row per currency pair per day and can be very large if multi-currency is enabled.
+Incremental streams use the record's `MetaData.LastUpdatedTime` as the cursor. The connector copies that value into a top-level `airbyte_cursor` field on each record. The reference streams (`accounts`, `classes`, `departments`, `employees`, `payment_methods`, `tax_agencies`, `tax_codes`, `tax_rates`, and `terms`) query the whole range from **Start Date** (or the last synced cursor) to now in one window, paging through results. All other incremental streams query in 30-day windows starting from **Start Date**, so the first sync of a company with a long history can take a while. The `exchange_rates` stream returns one row per currency pair per day and can be very large if multi-currency is enabled.
 
 ## Supported Streams
 
@@ -150,6 +150,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1.2 | 2026-10-30 | [90260](https://github.com/airbytehq/airbyte/pull/90260) | Revert the 5.1.2-rc.1 change that read incremental streams in one query window once they had saved state; those streams use 30-day windows again. Reference streams (accounts, classes, departments, employees, payment methods, tax agencies, tax codes, tax rates, terms) still read their whole date range in one query window |
+| 5.1.2-rc.1 | 2026-10-29 | [90226](https://github.com/airbytehq/airbyte/pull/90226) | Reference streams read their whole date range in one query window, and the other incremental streams use 30-day windows only on a first sync or in full-refresh mode, so syncs send far fewer requests |
+| 5.1.1 | 2026-10-27 | [89393](https://github.com/airbytehq/airbyte/pull/89393) | Update dependencies |
+| 5.1.0 | 2026-10-26 | [89764](https://github.com/airbytehq/airbyte/pull/89764) | Page Size now defaults to 1,000 and sources still set to the old default of 200 are migrated to 1,000; incremental streams no longer send an extra empty request after the last page of each window |
 | 5.0.0 | 2026-10-13 | [88914](https://github.com/airbytehq/airbyte/pull/88914) | Breaking: authentication fields moved under `credentials`; existing sources fail until reconfigured — choose **Use the Airbyte OAuth App** and click Authenticate (production only), or **Use your own Intuit app** and re-enter credentials (required for sandbox) |
 | 4.2.2 | 2026-10-13 | [88915](https://github.com/airbytehq/airbyte/pull/88915) | Pin Airbyte Cloud to 4.0.4 and disable progressive rollout while the 4.2.x OAuth credential override is fixed |
 | 4.2.1 | 2026-10-13 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
