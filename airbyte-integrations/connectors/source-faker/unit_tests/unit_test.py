@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -182,6 +184,55 @@ def test_read_products_count():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == list(range(1, 11))
+
+
+@pytest.mark.parametrize(
+    "count,products_count,records_per_slice,expected_count",
+    [
+        (1000, 50, 20, 50),
+        (1000, 50, 7, 50),
+        (1000, 40, 20, 40),
+        (1000, 50, 100, 50),
+        (1000, 1, 20, 1),
+        (1000, 0, 20, 0),
+        (1000, 100, 30, 100),
+        (1000, 150, 30, 100),
+        (45, 50, 20, 45),
+        (0, 50, 20, 0),
+    ],
+)
+@pytest.mark.parametrize("sync_mode", ["full_refresh", "incremental"])
+def test_read_products_includes_partial_slice(
+    count: int, products_count: int, records_per_slice: int, expected_count: int, sync_mode: str
+) -> None:
+    source = SourceFaker()
+    config = {
+        "count": count,
+        "seed": 7,
+        "products_count": products_count,
+        "records_per_slice": records_per_slice,
+        "always_updated": True,
+        "parallelism": 4,
+    }
+    stream_dict = {
+        "stream": {
+            "name": "products",
+            "json_schema": {"type": "object", "properties": {}},
+            "supported_sync_modes": ["full_refresh", "incremental"],
+        },
+        "sync_mode": sync_mode,
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    records = [
+        row.record.data
+        for row in source.read(logging.getLogger(__name__), config, catalog, [])
+        if row.type is Type.RECORD and row.record is not None
+    ]
+
+    assert [record["id"] for record in records] == list(range(1, expected_count + 1))
+    assert all(record["updated_at"] for record in records)
 
 
 def test_read_big_random_data():
