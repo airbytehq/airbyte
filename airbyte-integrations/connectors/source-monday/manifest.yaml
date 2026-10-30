@@ -39,6 +39,10 @@ definitions:
           - credentials
           - refresh_token
 
+        refresh_token_policy:
+          writeback_required: always
+          description: "monday.com's OAuth 2.1 flow rotates refresh tokens: every refresh returns a new refresh token that replaces the old one."
+          policy_docs_url: https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['api_token'] }}"

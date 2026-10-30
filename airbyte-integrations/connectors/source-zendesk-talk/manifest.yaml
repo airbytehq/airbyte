@@ -549,6 +549,10 @@ definitions:
             - credentials
             - refresh_token
 
+          refresh_token_policy:
+            writeback_required: always
+            description: "Zendesk refresh tokens rotate: each refresh returns a new access and refresh token and invalidates the previous ones immediately."
+            policy_docs_url: https://developer.zendesk.com/documentation/authentication/refresh-token/
 streams:
   - $ref: "#/definitions/streams/addresses"
   - $ref: "#/definitions/streams/agents_activity"

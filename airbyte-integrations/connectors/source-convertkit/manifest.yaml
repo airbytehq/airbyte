@@ -752,6 +752,10 @@ definitions:
             token_expiry_date_config_path:
               - credentials
               - expires_at
+            refresh_token_policy:
+              writeback_required: always
+              description: "Kit (ConvertKit) refresh tokens are single-use; each refresh returns a new refresh token."
+              policy_docs_url: https://developers.kit.com/api-reference/oauth-refresh-token-flow
           token_refresh_endpoint: https://api.kit.com/oauth/token
       authenticator_selection_path:
         - credentials
