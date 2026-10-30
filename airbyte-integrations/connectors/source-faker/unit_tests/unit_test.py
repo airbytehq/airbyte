@@ -6,7 +6,16 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    TraceType,
+    Type,
+)
 
 
 class MockLogger:
@@ -293,3 +302,73 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+@pytest.mark.parametrize("count,records_per_slice,parallelism", [(10, 3, 1), (1000, 1000, 4)])
+def test_read_users_consecutive_syncs(count: int, records_per_slice: int, parallelism: int):
+    config = {
+        "count": count,
+        "seed": -1,
+        "records_per_slice": records_per_slice,
+        "always_updated": True,
+        "parallelism": parallelism,
+    }
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+        "primary_key": [["id"]],
+        "cursor_field": ["updated_at"],
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state: list[AirbyteStateMessage] = []
+
+    for _ in range(3):
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD]
+        assert [record["id"] for record in records] == list(range(1, count + 1))
+        estimates = [
+            message.trace.estimate for message in messages if message.type is Type.TRACE and message.trace.type is TraceType.ESTIMATE
+        ]
+        assert estimates[0].row_estimate == count
+        final_state = [message.state for message in messages if message.type is Type.STATE][-1]
+        serialized_state = AirbyteStateMessageSerializer.dump(final_state)
+        assert serialized_state["stream"]["stream_state"]["loop_offset"] == count
+        state = [AirbyteStateMessageSerializer.load(serialized_state)]
+
+
+@pytest.mark.parametrize(
+    "stream_state,always_updated,expected_ids",
+    [
+        ({"updated_at": "2024-01-01T00:00:00+00:00"}, True, list(range(1, 11))),
+        ({"updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 5}, True, list(range(6, 11))),
+        ({"updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10}, True, list(range(1, 11))),
+        ({"updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 20}, True, list(range(1, 11))),
+        ({"updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10}, False, []),
+    ],
+)
+def test_read_users_saved_state(stream_state: dict, always_updated: bool, expected_ids: list[int]):
+    config = {"count": 10, "records_per_slice": 3, "parallelism": 1, "always_updated": always_updated}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+        "primary_key": [["id"]],
+        "cursor_field": ["updated_at"],
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = [
+        AirbyteStateMessageSerializer.load(
+            {"type": "STREAM", "stream": {"stream_descriptor": {"name": "users"}, "stream_state": stream_state}}
+        )
+    ]
+
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    records = [message.record.data for message in messages if message.type is Type.RECORD]
+    assert [record["id"] for record in records] == expected_ids
+    assert all(record["updated_at"] > stream_state["updated_at"] for record in records)
+    if expected_ids:
+        estimates = [
+            message.trace.estimate for message in messages if message.type is Type.TRACE and message.trace.type is TraceType.ESTIMATE
+        ]
+        assert estimates[0].row_estimate == len(expected_ids)
