@@ -29,7 +29,7 @@ The SharePoint Lists source connector allows you to sync data from Microsoft Sha
 - **Dynamic Column Discovery**: Automatically detects and maps all column types for each list
 - **Incremental Sync Support**: Efficiently syncs only new and modified records
 - **Complex Column Type Support**: Handles Person/Group, Lookup, Managed Metadata, and Hyperlink columns
-- **User Information Table**: Provides a lookup table for Author/Editor resolution
+- **User Information Table**: Provides a lookup table for resolving Author, Editor, and Person/Group column IDs
 
 ## Prerequisites
 
@@ -121,22 +121,24 @@ Metadata about all SharePoint lists in the site.
 **Primary Key**: `id`  
 **Cursor Field**: `lastModifiedDateTime`
 
-#### `user_information`
+#### `site_users`
 
-Lookup table for SharePoint users (useful for resolving Author/Editor lookup IDs).
+Lookup table for SharePoint site users, read from the site's User Information List. Use it to resolve `authorlookupid`, `editorlookupid`, and single-select Person/Group column values to user details.
 
 | Property | Type | Description |
 | -------- | ---- | ----------- |
-| `user_lookup_id` | string | User lookup ID (matches AuthorLookupId/EditorLookupId) |
-| `user_title` | string | User display name |
-| `user_email` | string | User email address |
-| `user_login_name` | string | User login name |
-| `is_site_admin` | boolean | Whether user is a site admin |
+| `id` | string | User lookup ID (matches `authorlookupid`, `editorlookupid`, and single-select Person/Group column values) |
+| `user_id` | string | Same value as `id` |
+| `user_name` | string | User display name |
+| `email` | string | User email address |
 | `department` | string | User's department |
 | `job_title` | string | User's job title |
+| `user_principal_name` | string | User principal name (login) |
+| `sip_address` | string | SIP address |
+| `picture_url` | string | Profile picture URL |
 
 **Sync Mode**: Full Refresh only  
-**Primary Key**: `user_lookup_id`
+**Primary Key**: `id`
 
 ### Dynamic streams (list items)
 
@@ -181,8 +183,8 @@ The connector automatically handles the following SharePoint column types:
 | Date and Time | string | ISO 8601 format |
 | Yes/No | boolean | |
 | Choice | string | Single or multi-select |
-| Person or Group | string | Returns display name |
-| Lookup | string | Returns display value from referenced list |
+| Person or Group | string | Single-select: the user's lookup ID. Multi-select: semicolon-separated display names |
+| Lookup | string | Single-value: the referenced item's ID. Multi-value: semicolon-separated display values |
 | Managed Metadata (Term) | string | Returns the term label |
 | Hyperlink or Picture | string | URL stored in main field, description in `{field}_description` |
 | Calculated | string | |
@@ -192,14 +194,18 @@ The connector automatically handles the following SharePoint column types:
 
 #### Person/Group columns
 
-- Returns the user's display name as a string
+- Single-select person columns return the user's lookup ID as a string, because Microsoft Graph only returns the ID for these columns. Join on `site_users.id` to get the display name and email.
 - Multi-select person columns return semicolon-separated display names
-- Use the `user_information` stream to get additional user details via `authorlookupid`/`editorlookupid`
+- `authorlookupid` and `editorlookupid` also join to `site_users.id`
 
 #### Lookup columns
 
-- Returns the display value from the referenced list
-- Multi-value lookup columns return semicolon-separated values
+- Single-value lookup columns return the referenced item's ID as a string. Join on the referenced list's `_sharepoint_id` to get its values.
+- Multi-value lookup columns return semicolon-separated display values
+
+:::note
+Before version 0.1.1, single-select Person/Group and single-value Lookup columns synced as empty values. After upgrading, refresh the affected list streams to backfill these columns for existing records.
+:::
 
 #### Managed Metadata (Term) columns
 
@@ -233,7 +239,7 @@ The connector automatically handles the following SharePoint column types:
 
 ## Known limitations
 
-1. **12 Lookup Column Limit**: SharePoint limits the number of lookup-type columns (Person, Lookup, Managed Metadata) to 12 when listing multiple items. If a list has more than 12 lookup columns, some may not return values. The connector logs a warning when this is detected.
+1. **12 Lookup Column Limit**: SharePoint limits the number of lookup-type columns (Person, Lookup, Managed Metadata) to 12 when listing multiple items. If a list has more than 12 lookup columns, some may not return values.
 
 2. **Document Libraries**: By default, document libraries are skipped. Set `skip_document_libraries: false` to include them.
 
