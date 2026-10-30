@@ -72,6 +72,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
 - [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
 - [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
+- [channel_reach_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-basic) - Video thumbnail impressions and impressions click-through rate.
+- [channel_reach_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-combined) - Video thumbnail impressions and impressions click-through rate by traffic source, device type and operating system.
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
 - [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
 - [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
@@ -135,6 +137,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.6.0 | 2026-10-29 | [89627](https://github.com/airbytehq/airbyte/pull/89627) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
 | 1.5.0 | 2026-10-21 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
 | 1.4.7 | 2026-10-27 | [90075](https://github.com/airbytehq/airbyte/pull/90075) | Update dependencies |
 | 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
