@@ -120,6 +120,8 @@ jobs:
               - '!**/poe_tasks.toml'
               - '!airbyte-integrations/connectors/*/README.md'
               - '!airbyte-integrations/connectors/*/CONTRIBUTING.md'
+              - '!airbyte-integrations/connectors/*/AGENTS.md'
+              - '!airbyte-integrations/connectors/*/CLAUDE.md'
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
