@@ -238,7 +238,7 @@ def test_check_connection_invalid_shop_returns_clear_error(config) -> None:
     succeeded, message = source.check_connection(logger_mock, config)
     assert succeeded is False
     assert "Shopify Store" in message
-    assert "https://test-store.myshopify.com/admin" in message
+    assert "without paths" in message
 
 
 def test_read_records(config, mocker) -> None:

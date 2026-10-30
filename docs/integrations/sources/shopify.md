@@ -339,6 +339,17 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 ### Troubleshooting
 
+- **Connection test returns 401**: The Shopify access token is invalid or revoked.
+  Re-authenticate the source for OAuth, or regenerate the custom app's Admin API access token.
+- **Connection test returns 403**: Grant the app the required access scopes, then
+  re-authorize the source or regenerate its Admin API access token. When Shopify names
+  a scope in the response, the connection test includes it in the error message.
+  For example, products require `read_products` and orders require `read_orders`.
+  The connection test reads shop metadata; it does not validate access to every stream.
+- **Invalid Shopify Store**: Enter `mystore`, `mystore.myshopify.com`, or
+  `https://mystore.myshopify.com`. These normalize to `mystore`. Remove paths such as
+  `/admin`, credentials, query strings, and fragments from pasted URLs.
+
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
@@ -353,8 +364,9 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| :----------- | :----------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| :------ | :--- | :----------- | :------ |
 | 4.4.0 | 2026-10-30 | [90233](https://github.com/airbytehq/airbyte/pull/90233) | Declare the sections of the stepped setup form (Connect account, Review & set up) in the spec and make CHECK section-aware through the `check-section` config key |
+| 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
 | 4.3.1 | 2026-10-26 | [89760](https://github.com/airbytehq/airbyte/pull/89760) | Fix `deleted_products` incremental syncs skipping product deletions recorded in the same second as the saved cursor on Shopify API 2026-10 |
 | 4.3.0 | 2026-10-20 | [88902](https://github.com/airbytehq/airbyte/pull/88902) | Add the Shopify product taxonomy `category` field to the `products` stream; refresh the `products` stream to populate it for existing products |
 | 4.2.7 | 2026-10-20 | [78958](https://github.com/airbytehq/airbyte/pull/78958) | Update dependencies |
