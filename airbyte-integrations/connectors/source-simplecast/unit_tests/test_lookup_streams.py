@@ -12,6 +12,15 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 _CONFIG = {"api_token": "test_token"}
 _CATEGORIES_REQUEST = HttpRequest("https://api.simplecast.com/categories")
 _DISTRIBUTION_CHANNELS_REQUEST = HttpRequest("https://api.simplecast.com/distribution_channels")
+_PODCAST_FIRST_PAGE_REQUEST = HttpRequest(
+    "https://api.simplecast.com/podcasts/", query_params={"offset": "0"}
+)
+_PODCAST_SECOND_PAGE_REQUEST = HttpRequest(
+    "https://api.simplecast.com/podcasts/", query_params={"offset": "1"}
+)
+_ANALYTICS_REQUEST = HttpRequest(
+    "https://api.simplecast.com/analytics", query_params={"podcast": "p1"}
+)
 _TIMEZONES_REQUEST = HttpRequest("https://api.simplecast.com/timezones")
 
 
@@ -48,6 +57,24 @@ class LookupStreamsTest(TestCase):
         assert len(records) == 5
         assert len({record["id"] for record in records}) == 5
         http_mocker.assert_number_of_calls(_DISTRIBUTION_CHANNELS_REQUEST, 1)
+
+    @HttpMocker()
+    def test_analytics_reads_each_podcast_once(self, http_mocker: HttpMocker):
+        http_mocker.get(_PODCAST_FIRST_PAGE_REQUEST, _response([{"id": "p1"}]))
+        http_mocker.get(_PODCAST_SECOND_PAGE_REQUEST, _response([]))
+        analytics_record = {
+            "href": "https://api.simplecast.com/analytics/p1",
+            "downloads": {"href": "https://api.simplecast.com/analytics/p1/downloads"},
+        }
+        http_mocker.get(
+            _ANALYTICS_REQUEST,
+            HttpResponse(body=json.dumps(analytics_record), status_code=200),
+        )
+
+        records = _read_stream("analytics")
+
+        assert records == [analytics_record]
+        http_mocker.assert_number_of_calls(_ANALYTICS_REQUEST, 1)
 
     @HttpMocker()
     def test_timezones_reads_the_lookup_once(self, http_mocker: HttpMocker):
