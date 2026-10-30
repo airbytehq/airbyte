@@ -292,6 +292,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 - If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
 - Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+- If the connection check or schema discovery fails with `Failed to find output files from connector within timeout of 9 minute(s)`, and the sync logs show repeated `Rate limit exceeded (HTTP 503)` retries before it, Google is likely having trouble serving the spreadsheet itself. This usually isn't caused by the API rate limits above. During check and discovery, the connector reads the header row of every sheet in the spreadsheet, including sheets you don't sync, and it keeps retrying the `503` responses until Airbyte stops it at the 9-minute limit. Syncs can fail for days and then succeed without any change on the Airbyte side. To reduce the load on the spreadsheet:
+  - Remove inactive accounts from the spreadsheet's sharing settings. A spreadsheet that has reached Google's limit on the number of accounts it can be shared with can fail to load.
+  - Consolidate or remove heavy formulas, such as `IMPORTRANGE`, `QUERY`, `ARRAYFORMULA`, and volatile functions like `NOW` or `INDIRECT`.
+  - Delete or archive sheets you don't need, or move the sheets you sync into a separate, smaller spreadsheet. Copying data in with `IMPORTRANGE` adds formula load to that spreadsheet, so plain values work better.
 - Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
