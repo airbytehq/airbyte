@@ -197,6 +197,161 @@ def test_hubspot_rename_properties_transformation(components_module):
     assert dynamic_properties_record["properties"] == expected_properties["properties"]
 
 
+def test_deal_pipelines_v1_shape_transformation(components_module):
+    pipeline = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "id": "9567448",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "id": "9567449",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+        ],
+        "createdAt": "2021-01-14T14:52:53.956Z",
+        "updatedAt": "2023-04-04T14:59:14.263Z",
+        "archived": False,
+    }
+    expected = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "pipelineId": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "stageId": "9567448",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "stageId": "9567449",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+        ],
+        "createdAt": 1610635973956,
+        "updatedAt": 1680620354263,
+        "active": True,
+        "objectType": "DEAL",
+        "objectTypeId": "0-3",
+        "default": False,
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline == expected
+
+
+@pytest.mark.parametrize(
+    "pipeline_id, is_default",
+    [
+        ("default", True),
+        ("b9152945-a594-4835-9676-a6f405fecd71", False),
+    ],
+)
+def test_deal_pipelines_default_pipeline_and_epoch_dates(components_module, pipeline_id, is_default):
+    pipeline = {
+        "id": pipeline_id,
+        "createdAt": "1970-01-01T00:00:00Z",
+        "updatedAt": "1970-01-01T00:00:00Z",
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["default"] is is_default
+    assert pipeline["createdAt"] == 0
+    assert pipeline["updatedAt"] == 0
+
+
+def test_deal_pipelines_archived_flags_and_null_dates(components_module):
+    pipeline = {
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "createdAt": None,
+        "updatedAt": 123,
+        "archived": True,
+        "stages": [
+            {
+                "id": "stage",
+                "createdAt": 0,
+                "updatedAt": None,
+                "archived": True,
+            }
+        ],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["active"] is False
+    assert pipeline["createdAt"] is None
+    assert pipeline["updatedAt"] == 123
+    assert pipeline["stages"][0]["active"] is False
+    assert pipeline["stages"][0]["createdAt"] == 0
+    assert pipeline["stages"][0]["updatedAt"] is None
+
+
+@pytest.mark.parametrize(
+    "timestamp, expected",
+    [
+        ("2021-01-14T14:52:53Z", 1610635973000),
+        ("2021-01-14T14:52:53+00:00", 1610635973000),
+        ("2021-01-14T09:52:53-05:00", 1610635973000),
+    ],
+)
+def test_deal_pipelines_iso_dates_with_timezone_offsets(components_module, timestamp, expected):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": timestamp,
+        "updatedAt": timestamp,
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["createdAt"] == expected
+    assert pipeline["updatedAt"] == expected
+
+
+def test_deal_pipelines_invalid_timestamp_raises_value_error(components_module):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": "not-a-date",
+        "updatedAt": None,
+        "archived": False,
+        "stages": [],
+    }
+
+    with pytest.raises(ValueError, match="createdAt.*not-a-date"):
+        components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+
 def test_property_history_extractor(components_module):
     expected_records = [
         {
