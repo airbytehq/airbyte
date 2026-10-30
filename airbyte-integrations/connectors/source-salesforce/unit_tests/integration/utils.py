@@ -61,6 +61,24 @@ def given_authentication(
     )
 
 
+def given_client_credentials_authentication(
+    http_mocker: HttpMocker,
+    domain_url: str,
+    client_id: str,
+    client_secret: str,
+    instance_url: str,
+    access_token: str = "any_access_token",
+) -> None:
+    http_mocker.post(
+        HttpRequest(
+            f"{domain_url.rstrip('/')}/services/oauth2/token",
+            query_params=ANY_QUERY_PARAMS,
+            body=f"grant_type=client_credentials&client_id={client_id}&client_secret={client_secret}",
+        ),
+        HttpResponse(json.dumps({"access_token": access_token, "instance_url": instance_url})),
+    )
+
+
 def given_stream(http_mocker: HttpMocker, base_url: str, stream_name: str, schema_builder: SalesforceDescribeResponseBuilder) -> None:
     http_mocker.get(
         HttpRequest(f"{base_url}/sobjects"),
