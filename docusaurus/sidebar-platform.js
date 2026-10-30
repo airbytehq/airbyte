@@ -479,7 +479,7 @@ module.exports = {
             type: "doc",
             id: "context-layer/readme",
           },
-          items: ["context-layer/manage-access"],
+          items: ["context-layer/manage-access", "context-layer/search"],
         },
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
