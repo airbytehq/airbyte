@@ -137,9 +137,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         schema = super().schema(*args, **kwargs)
 
         schema.setdefault("required", []).extend(
-            field
-            for field in ("delivery_method", "exclude_trashed_files")
-            if field not in schema.get("required", [])
+            field for field in ("delivery_method", "exclude_trashed_files") if field not in schema.get("required", [])
         )
 
         # Remove legacy settings
