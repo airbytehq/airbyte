@@ -18,6 +18,8 @@
 }
 
 .panel {
+  min-width: 0;
+  max-width: 100%;
   margin-top: 12px;
   padding: 16px;
   border: 1px solid var(--ifm-color-emphasis-300);

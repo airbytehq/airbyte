@@ -293,6 +293,7 @@ const config: Config = {
         highlight: "python",
         logoClass: "python",
         variant: "Requests",
+        variants: ["Requests", "HTTP.Client"],
       },
       {
         language: "nodejs",

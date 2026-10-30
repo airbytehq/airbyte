@@ -424,6 +424,14 @@ h1.openapi__heading {
   margin-bottom: 1.5rem !important;
 }
 
+.openapi-tabs__code-list-container:not(.openapi-tabs__code-container-inner)
+  > .openapi-tabs__code-item {
+  flex: 0 0 48px;
+  min-width: 0;
+  margin-right: 0.125rem;
+  padding: 0.25rem 0 !important;
+}
+
 li.api-method > .menu__link {
   display: flex;
   align-items: flex-start;

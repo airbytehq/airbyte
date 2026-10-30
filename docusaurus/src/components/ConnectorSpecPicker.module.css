@@ -102,7 +102,23 @@
 }
 
 .spec {
+  min-width: 0;
+  max-width: 100%;
   margin-top: 24px;
+  overflow-x: auto;
+}
+
+.spec :global(h3 + div) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.spec :global(h3 + div > *) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .spec :global(h3) {
