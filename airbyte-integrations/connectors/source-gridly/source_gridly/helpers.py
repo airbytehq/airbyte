@@ -6,8 +6,7 @@ from typing import Any, Dict
 
 import requests
 
-from airbyte_cdk.models import AirbyteStream
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
@@ -115,7 +114,6 @@ class Helpers(object):
             name=view_name,
             json_schema=json_schema,
             supported_sync_modes=[SyncMode.full_refresh],
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
         )
 
     @staticmethod
