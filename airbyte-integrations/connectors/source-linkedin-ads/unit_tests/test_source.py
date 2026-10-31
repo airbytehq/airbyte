@@ -324,7 +324,7 @@ class TestAllStreams:
             (
                 403,
                 ConnectionStatus.FAILED,
-                "Stream accounts is not available: HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource.",
+                "LinkedIn ad account access is denied. Re-authenticate with the r_ads scope and ensure the authorized member has access to the ad account.",
             ),
             (200, ConnectionStatus.SUCCEEDED, None),
         ),
