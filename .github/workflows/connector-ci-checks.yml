@@ -475,7 +475,11 @@ jobs:
       # With a pinned CDK before 7.36 the suite reads every discovered stream for every config;
       # the timeout keeps a connector whose full read is too long for CI from holding the job
       # (such a connector bounds that read in its own integration_tests/standard_tests.py).
+      # When the pinned CDK predates the suite, the step sets `docker-read-fallback=true` (see
+      # `pytest-standard-tests` in poe-tasks/poetry-connector-tasks.toml) and "Container Tests"
+      # turns on the Docker read instead.
       - name: Run Standard Tests (in-process) ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
+        id: standard-tests
         if: matrix.connector && steps.connector-test-policy.outputs.language == 'python'
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         timeout-minutes: 45
@@ -487,10 +491,17 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: airbyte-cdk image build
 
+      # The Docker read (`test_docker_image_build_and_read`) is off by default: every other source
+      # already reads in process. It is turned on only for a Python source whose in-process standard
+      # tests did not run because its pinned CDK predates them, so each source reads once
+      # (airbytehq/airbyte-internal-issues#17137). `airbyte-cdk image test` has no pytest
+      # passthrough, so the option goes through PYTEST_ADDOPTS.
       - name: Container Tests
         if: matrix.connector
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          PYTEST_ADDOPTS: ${{ steps.standard-tests.outputs.docker-read-fallback == 'true' && '--read-from-streams=default' || '' }}
         run: |
           airbyte-cdk image test
 
