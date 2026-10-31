@@ -181,6 +181,19 @@ def test_discover_declares_primary_keys_cursors_and_sync_modes():
         ("messages_lookback_days", 181, False),
         ("messages_lookback_days", "30", False),
         ("messages_lookback_days", None, False),
+        ("activities_lookback_days", 1, True),
+        ("activities_lookback_days", 7, True),
+        ("activities_lookback_days", 30, True),
+        ("activities_lookback_days", 0, False),
+        ("activities_lookback_days", 31, False),
+        ("activities_lookback_days", "7", False),
+        ("activities_lookback_days", None, False),
+        ("num_workers", 2, True),
+        ("num_workers", 10, True),
+        ("num_workers", 1, False),
+        ("num_workers", 0, False),
+        ("num_workers", 11, False),
+        ("num_workers", "3", False),
         ("esp_suppression_domains", [], True),
         ("esp_suppression_domains", _DOMAINS, True),
         ("esp_suppression_domains", ["xn--bcher-kva.example"], True),
@@ -205,6 +218,16 @@ def test_spec_accepts_only_valid_values_of_the_optional_fields(field, value, val
     else:
         with pytest.raises(AirbyteTracedException):
             check_config_against_spec_or_exit(config, spec)
+
+
+def test_spec_defaults_of_the_tuning_fields():
+    """The form pre-fills the same values the manifest falls back to when a field is absent."""
+    properties = get_source(_BASE_CONFIG).spec(logging.getLogger("airbyte")).connectionSpecification["properties"]
+    assert {name: properties[name]["default"] for name in ("messages_lookback_days", "activities_lookback_days", "num_workers")} == {
+        "messages_lookback_days": 30,
+        "activities_lookback_days": 7,
+        "num_workers": 3,
+    }
 
 
 @pytest.mark.parametrize("stream_name", ["messages", "activities", "people", "segment_memberships", "esp_suppressions"])
@@ -462,19 +485,26 @@ def test_activities_drops_activities_before_start_date_and_stops_at_the_first_pa
     assert mocker.call_count == 2
 
 
-def test_activities_resume_stops_at_the_first_page_with_no_activity_in_the_lookback_window():
-    """Activities come newest first (live), so the read ends at the first page with none at or after the saved cursor minus one
-    hour. A single older activity does not end it: a2 follows a1. The state moves to the newest timestamp."""
+@pytest.mark.parametrize("lookback_days", [None, 1, 30], ids=["default_7", "1", "30"])
+def test_activities_resume_stops_at_the_first_page_with_no_activity_in_the_lookback_window(lookback_days):
+    """An activity recorded with a time up to `activities_lookback_days` (default 7) below the saved cursor is emitted, one
+    second older is not. Activities come newest first (live), so the read ends at the first page with none in the window; a
+    single older activity does not end it: a2 follows a1. The state moves to the newest timestamp."""
+    lookback = (lookback_days or 7) * _DAY
     pages = [
         {"activities": [_activity("a5", _PRIOR_CURSOR + 10), _activity("a4", _PRIOR_CURSOR)], "next": "900000000000000016"},
-        {"activities": [_activity("a3", _PRIOR_CURSOR - 3600), _activity("a1", _PRIOR_CURSOR - 3601)], "next": "900000000000000014"},
-        {"activities": [_activity("a2", _PRIOR_CURSOR - 1800)], "next": "900000000000000013"},
-        {"activities": [_activity("a0", _PRIOR_CURSOR - 7200)], "next": "900000000000000012"},
+        {
+            "activities": [_activity("a3", _PRIOR_CURSOR - lookback), _activity("a1", _PRIOR_CURSOR - lookback - 1)],
+            "next": "900000000000000014",
+        },
+        {"activities": [_activity("a2", _PRIOR_CURSOR - lookback // 2)], "next": "900000000000000013"},
+        {"activities": [_activity("a0", _PRIOR_CURSOR - lookback - _DAY)], "next": "900000000000000012"},
     ]
+    config = _BASE_CONFIG if lookback_days is None else {**_BASE_CONFIG, "activities_lookback_days": lookback_days}
     state = StateBuilder().with_stream_state("activities", {"timestamp": str(_PRIOR_CURSOR)}).build()
     with requests_mock.Mocker() as mocker:
         _serve_activities(mocker, pages)
-        output = _read("activities", _BASE_CONFIG, SyncMode.incremental, state)
+        output = _read("activities", config, SyncMode.incremental, state)
 
     assert _ids(output) == ["a5", "a4", "a3", "a2"]
     assert mocker.call_count == 4

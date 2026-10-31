@@ -320,15 +320,15 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     fun testDefaultHandleNonstandardFields() {
         val inputSchema =
             """
-                    {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "description": "foo",
-                      "some_random_other_property": "lol, lmao, isn't jsonschema great"
-                    }
-                """
+            {
+              "type": [
+                "string",
+                "integer"
+              ],
+              "description": "foo",
+              "some_random_other_property": "lol, lmao, isn't jsonschema great"
+            }
+            """
                 .trimIndent()
                 .deserializeToNode() as ObjectNode
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(inputSchema)
@@ -339,21 +339,21 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     fun testLegacyHandleNonstandardFields() {
         val inputSchema =
             """
-                    {
-                      "type": [
-                        "string",
-                        "integer"
-                      ],
-                      "description": "foo",
-                      "some_random_other_property": "lol, lmao, isn't jsonschema great"
-                    }
-                """
+            {
+              "type": [
+                "string",
+                "integer"
+              ],
+              "description": "foo",
+              "some_random_other_property": "lol, lmao, isn't jsonschema great"
+            }
+            """
                 .trimIndent()
                 .deserializeToNode() as ObjectNode
         val airbyteType = legacyJsonSchemaToAirbyteType.convert(inputSchema)
         Assertions.assertEquals(
             UnionType.of(StringType, IntegerType, isLegacyUnion = true),
-            airbyteType
+            airbyteType,
         )
     }
 
@@ -386,21 +386,22 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode =
             Jsons.readTree(
                 """
-                    {
-                      "type": "object",
-                      "properties": {
-                          "foo": "bar"
-                      }
-                    }
-                """.trimIndent()
+                {
+                  "type": "object",
+                  "properties": {
+                      "foo": "bar"
+                  }
+                }
+                """
+                    .trimIndent(),
             )
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         assertEquals(
             ObjectType(
                 linkedMapOf(
-                    "foo" to FieldType(UnknownType(Jsons.readTree("\"bar\"")), nullable = true)
+                    "foo" to FieldType(UnknownType(Jsons.readTree("\"bar\"")), nullable = true),
                 ),
-                additionalProperties = false
+                additionalProperties = false,
             ),
             airbyteType,
         )
@@ -444,7 +445,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                     UnknownType(Jsons.readTree("""{"type": "foo"}""")),
                     UnknownType(Jsons.readTree("""{"type": "bar"}""")),
                 ),
-                isLegacyUnion = false
+                isLegacyUnion = false,
             ),
             airbyteType,
         )
@@ -471,7 +472,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         assertEquals(
             ObjectType(
                 linkedMapOf("foo" to FieldType(UnknownType(Jsons.readTree("{}")), nullable = true)),
-                additionalProperties = false
+                additionalProperties = false,
             ),
             airbyteType,
         )

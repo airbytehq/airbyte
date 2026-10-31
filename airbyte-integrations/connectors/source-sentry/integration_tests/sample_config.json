@@ -2,5 +2,5 @@
   "auth_token": "token",
   "hostname": "sentry.io",
   "organization": "organization",
-  "project": "project"
+  "project": ["project"]
 }

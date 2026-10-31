@@ -28,7 +28,7 @@ private const val EXTRACTED_AT_INDEX_PREFIX = "idx_extracted_at_"
 @Singleton
 class PostgresDirectLoadSqlGenerator(
     private val columnManager: PostgresColumnManager,
-    private val postgresConfiguration: PostgresConfiguration
+    private val postgresConfiguration: PostgresConfiguration,
 ) {
 
     private val dropTableSuffix: String =
@@ -88,27 +88,26 @@ class PostgresDirectLoadSqlGenerator(
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,
-        replace: Boolean
+        replace: Boolean,
     ): Pair<String, String> {
         val metaColumns = columnManager.getMetaColumns()
         val userColumns = getUserColumns(stream)
 
         // Build column declarations from the meta columns and user schema
-        val columnDeclarations =
-            buildList {
-                    // Add Airbyte meta columns from the column manager
-                    metaColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
+        val columnDeclarations = buildList {
+            // Add Airbyte meta columns from the column manager
+            metaColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+            }
 
-                    // Add user columns from the mapped schema
-                    userColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
-                }
-                .joinToString(",\n")
+            // Add user columns from the mapped schema
+            userColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+            }
+        }
+            .joinToString(",\n")
 
         val dropTableIfExistsStatement =
             if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
@@ -188,12 +187,12 @@ class PostgresDirectLoadSqlGenerator(
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,
-        tableName: TableName
+        tableName: TableName,
     ): String {
         val dropPrimaryKeyIndexStatement =
             dropIndex(
                 indexName = getPrimaryKeyIndexName(tableName),
-                schema = getNamespace(tableName)
+                schema = getNamespace(tableName),
             )
 
         val primaryKeyIndexStatement =
@@ -207,14 +206,13 @@ class PostgresDirectLoadSqlGenerator(
 
     private fun createPrimaryKeyIndexStatement(
         primaryKeyColumnNames: List<String>,
-        tableName: TableName
+        tableName: TableName,
     ): String {
         return primaryKeyColumnNames
             .takeIf { it.isNotEmpty() }
             ?.let {
                 "CREATE INDEX IF NOT EXISTS ${quoteIdentifier(getPrimaryKeyIndexName(tableName))} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
-            }
-            ?: ""
+            } ?: ""
     }
 
     internal fun recreateCursorIndex(cursorColumnName: String?, tableName: TableName): String {
@@ -230,12 +228,11 @@ class PostgresDirectLoadSqlGenerator(
 
     private fun createCursorIndexStatement(
         cursorColumnName: String?,
-        tableName: TableName
+        tableName: TableName,
     ): String {
         return cursorColumnName?.let {
             "CREATE INDEX IF NOT EXISTS ${quoteIdentifier(getCursorIndexName(tableName))} ON ${getFullyQualifiedName(tableName)} ($it);"
-        }
-            ?: ""
+        } ?: ""
     }
 
     internal fun getPrimaryKeyIndexName(tableName: TableName): String =
@@ -266,7 +263,7 @@ class PostgresDirectLoadSqlGenerator(
     fun copyTable(
         columnNames: List<String>,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): String {
         val quotedColumnNames = columnNames.joinToString(",") { quoteIdentifier(it) }
         return """
@@ -283,20 +280,20 @@ class PostgresDirectLoadSqlGenerator(
      * The generated SQL performs the following operations in a single statement:
      * 1. **Deduplication CTE**: Deduplicates the source data based on primary keys
      * 2. **CDC Delete CTE**: If CDC hard delete is enabled and the stream contains CDC deleted
-     * records,
+     *    records,
      * ```
      *    this CTE deletes rows from the target table.
      * ```
      * 3. **Update CTE**: Updates existing rows in the target table with newer data from the source
      * 4. **Insert Statement**: Inserts new rows from the source that don't exist in the target
-     * table.
+     *    table.
      *
      * @throws IllegalArgumentException if the stream's import type does not contain a primary key.
      */
     fun upsertTable(
         stream: DestinationStream,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): String {
         val importType = stream.tableSchema.importType as Dedupe
 
@@ -313,7 +310,7 @@ class PostgresDirectLoadSqlGenerator(
                 primaryKeyTargetColumns,
                 cursorTargetColumn,
                 allTargetColumns,
-                sourceTableName
+                sourceTableName,
             )
 
         val cdcHardDeleteEnabled =
@@ -326,7 +323,7 @@ class PostgresDirectLoadSqlGenerator(
                 cursorTargetColumn,
                 targetTableName,
                 primaryKeyTargetColumns,
-                cdcHardDeleteEnabled
+                cdcHardDeleteEnabled,
             )
 
         val updateExistingRowsQuery =
@@ -336,7 +333,7 @@ class PostgresDirectLoadSqlGenerator(
                 allTargetColumns,
                 primaryKeyTargetColumns,
                 cursorTargetColumn,
-                cdcHardDeleteEnabled
+                cdcHardDeleteEnabled,
             )
 
         val insertNewRowsQuery =
@@ -345,7 +342,7 @@ class PostgresDirectLoadSqlGenerator(
                 targetTableName,
                 allTargetColumns,
                 primaryKeyTargetColumns,
-                cdcHardDeleteEnabled
+                cdcHardDeleteEnabled,
             )
 
         return """
@@ -375,7 +372,7 @@ class PostgresDirectLoadSqlGenerator(
         targetTableName: TableName,
         allTargetColumns: List<String>,
         primaryKeyTargetColumns: List<String>,
-        cdcHardDeleteEnabled: Boolean
+        cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysConditions =
             primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
@@ -416,7 +413,7 @@ class PostgresDirectLoadSqlGenerator(
         allTargetColumns: List<String>,
         primaryKeyTargetColumns: List<String>,
         cursorTargetColumn: String?,
-        cdcHardDeleteEnabled: Boolean
+        cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysMatches =
             primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
@@ -455,7 +452,7 @@ class PostgresDirectLoadSqlGenerator(
         cursorTargetColumn: String?,
         targetTableName: TableName,
         primaryKeyTargetColumns: List<String>,
-        cdcHardDeleteEnabled: Boolean
+        cdcHardDeleteEnabled: Boolean,
     ): String {
         if (!cdcHardDeleteEnabled) {
             return ""
@@ -495,7 +492,7 @@ class PostgresDirectLoadSqlGenerator(
     private fun buildCursorComparison(
         cursorTargetColumn: String?,
         targetTableName: TableName,
-        dedupTableAlias: String
+        dedupTableAlias: String,
     ): String {
         return if (cursorTargetColumn != null) {
             val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
@@ -522,7 +519,7 @@ class PostgresDirectLoadSqlGenerator(
         primaryKeyTargetColumns: List<String>,
         cursorTargetColumn: String?,
         allTargetColumns: List<String>,
-        sourceTableName: TableName
+        sourceTableName: TableName,
     ): String {
         val cursorOrderClause = cursorTargetColumn?.let { "$it DESC NULLS LAST," } ?: ""
 
@@ -578,7 +575,7 @@ class PostgresDirectLoadSqlGenerator(
     fun getPrimaryKeyIndexColumns(tableName: TableName): String =
         getIndexColumns(
             indexName = getPrimaryKeyIndexName(tableName),
-            namespace = tableName.namespace
+            namespace = tableName.namespace,
         )
 
     /**
@@ -617,12 +614,11 @@ class PostgresDirectLoadSqlGenerator(
         columns: Map<String, ColumnType>,
     ): String {
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
-        val clauses =
-            columns.map { (name, columnType) ->
-                // Note: we intentionally don't set NOT NULL.
-                // We're adding a new column, and preexisting records have no value for it.
-                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN IF NOT EXISTS ${quoteIdentifier(name)} ${columnType.type};"
-            }
+        val clauses = columns.map { (name, columnType) ->
+            // Note: we intentionally don't set NOT NULL.
+            // We're adding a new column, and preexisting records have no value for it.
+            "ALTER TABLE $fullyQualifiedTableName ADD COLUMN IF NOT EXISTS ${quoteIdentifier(name)} ${columnType.type};"
+        }
 
         return """
             BEGIN TRANSACTION;
@@ -638,7 +634,7 @@ class PostgresDirectLoadSqlGenerator(
         recreatePrimaryKeyIndex: Boolean,
         primaryKeyColumnNames: List<String>,
         recreateCursorIndex: Boolean,
-        cursorColumnName: String?
+        cursorColumnName: String?,
     ): String {
         val clauses = mutableSetOf<String>()
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
@@ -648,7 +644,7 @@ class PostgresDirectLoadSqlGenerator(
             // We're adding a new column, and we don't know what constitutes a reasonable
             // default value for preexisting records.
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};"
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};",
             )
         }
 
@@ -659,7 +655,7 @@ class PostgresDirectLoadSqlGenerator(
 
             val usingClause = buildUsingClause(quotedName, oldType, newType)
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN $quotedName TYPE $newType $usingClause;"
+                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN $quotedName TYPE $newType $usingClause;",
             )
         }
 

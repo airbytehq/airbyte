@@ -13,7 +13,7 @@ import org.apache.commons.csv.CSVParser
 
 class CsvDecoder(
     private val csvFormat: CSVFormat =
-        CSVFormat.Builder.create().setRecordSeparator("\n").setHeader().build()
+        CSVFormat.Builder.create().setRecordSeparator("\n").setHeader().build(),
 ) {
     fun decode(input: InputStream): Stream<Map<String, String>> {
         val parser = CSVParser(InputStreamReader(input, StandardCharsets.UTF_8), csvFormat)

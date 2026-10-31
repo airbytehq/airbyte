@@ -48,7 +48,7 @@ configurations.configureEach {
 //}
 
 dependencies {
-    implementation("com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.10.2.jre11")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
     implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
@@ -56,7 +56,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
-    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

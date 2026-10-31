@@ -18,6 +18,6 @@ interface DestinationV1V2Migrator {
     fun migrateIfNecessary(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     )
 }

@@ -76,7 +76,7 @@ GRAPHQL
     response="$(gh api graphql "${api_args[@]}")"
     page_threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
     all_threads="$(jq -cn --argjson all "$all_threads" --argjson page "$page_threads" '$all + $page')"
-    has_next="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
+    has_next="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
     [[ "$has_next" == true ]] || break
     cursor="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor | select(type == "string" and length > 0)' <<<"$response")"
   done
@@ -190,7 +190,7 @@ elif [[ "$failing_count" != 0 ]]; then
 
 $bullets
 
-Reply in each one, resolve it, then run /ai-breaking-change-ready again."
+Reply in each one, resolve it, then run /breaking-change-ready again."
   printf 'Gate result: %s of %s recommendation conversations are not ready.\n%s\n' \
     "$failing_count" "$conversation_count" "$status_body"
 else

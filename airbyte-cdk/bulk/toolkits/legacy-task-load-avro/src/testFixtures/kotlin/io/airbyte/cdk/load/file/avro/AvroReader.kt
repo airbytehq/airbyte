@@ -15,7 +15,7 @@ import org.apache.avro.generic.GenericRecord
 
 class AvroReader(
     private val dataFileReader: DataFileReader<GenericRecord>,
-    private val tmpFile: java.io.File
+    private val tmpFile: java.io.File,
 ) : Closeable {
     private fun read(): GenericRecord? {
         return if (dataFileReader.hasNext()) {

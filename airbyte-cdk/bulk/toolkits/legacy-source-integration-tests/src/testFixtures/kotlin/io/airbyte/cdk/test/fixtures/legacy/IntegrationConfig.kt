@@ -12,7 +12,7 @@ private constructor(
     val command: Command,
     private val configPath: Path?,
     private val catalogPath: Path?,
-    private val statePath: Path?
+    private val statePath: Path?,
 ) {
     fun getConfigPath(): Path? {
         Preconditions.checkState(command != Command.SPEC)
