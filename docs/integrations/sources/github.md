@@ -328,6 +328,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.3 | 2026-10-31 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | Restore `per_page=100` for `review_comments`, which was lost after 2.8.2 and caused HTTP 500 errors on very large repositories |
 | 2.8.2 | 2026-10-28 | [90165](https://github.com/airbytehq/airbyte/pull/90165) | Request `review_comments` with `per_page=100` to avoid GitHub timeouts on very large repositories |
 | 2.8.1 | 2026-10-27 | [89848](https://github.com/airbytehq/airbyte/pull/89848) | Update dependencies |
 | 2.8.0 | 2026-10-21 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add the `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt of each run |
