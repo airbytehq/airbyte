@@ -54,7 +54,7 @@ class DatabricksDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#numbers"
+        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#numbers",
     )
     override fun `handle number values`(
         inputValue: AirbyteValue,
@@ -66,7 +66,7 @@ class DatabricksDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#timestampTz"
+        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#timestampTz",
     )
     override fun `handle timestamptz values`(
         inputValue: AirbyteValue,
@@ -78,7 +78,7 @@ class DatabricksDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#timestampNtz"
+        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#timestampNtz",
     )
     override fun `handle timestampntz values`(
         inputValue: AirbyteValue,
@@ -108,7 +108,7 @@ class DatabricksDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#date"
+        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#date",
     )
     override fun `handle date values`(
         inputValue: AirbyteValue,
@@ -125,7 +125,7 @@ class DatabricksDataCoercionTest(
 
     @ParameterizedTest
     @MethodSource(
-        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#strings"
+        "io.airbyte.integrations.destination.databricks.component.DatabricksDataCoercionTest#strings",
     )
     override fun `handle string values`(
         inputValue: AirbyteValue,
@@ -234,7 +234,7 @@ class DatabricksDataCoercionTest(
                 .map { fixture ->
                     val scaled =
                         fixture.copy(
-                            outputValue = (fixture.outputValue as BigDecimal?)?.setScale(10)
+                            outputValue = (fixture.outputValue as BigDecimal?)?.setScale(10),
                         )
                     when (fixture.name) {
                         DataCoercionNumberFixtures.POSITIVE_HIGH_PRECISION_FLOAT,

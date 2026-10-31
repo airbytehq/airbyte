@@ -129,7 +129,7 @@ class JdbcMetadataQuerier(
                                     schema = rs.getString("TABLE_SCHEM"),
                                     name = tableName,
                                     type = rs.getString("TABLE_TYPE") ?: "",
-                                )
+                                ),
                             )
                         }
                     }
@@ -164,12 +164,14 @@ class JdbcMetadataQuerier(
         }
     }
 
-    fun findTableName(streamID: StreamIdentifier): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
+    fun findTableName(streamID: StreamIdentifier): TableName? = memoizedTableNames.find {
+        it.name == streamID.name && it.namespace() == streamID.namespace
+    }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
         log.info { "Querying column names for catalog discovery." }
         try {
@@ -178,7 +180,7 @@ class JdbcMetadataQuerier(
                 catalog: String?,
                 schema: String?,
                 tablePattern: String?,
-                isPseudoColumn: Boolean
+                isPseudoColumn: Boolean,
             ) {
                 val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
                 rsMethod(catalog, schema, tablePattern, null).use { rs: ResultSet ->
@@ -452,7 +454,7 @@ class JdbcMetadataQuerier(
                 selectQueryGenerator,
                 fieldTypeMapper,
                 checkQueries,
-                jdbcConnectionFactory
+                jdbcConnectionFactory,
             )
         }
     }

@@ -55,7 +55,7 @@ class DataChannelBeanFactory {
     @Named("dataChannelMedium")
     fun dataChannelMedium(
         @Value("\${airbyte.destination.core.data-channel.medium}")
-        dataChannelMedium: DataChannelMedium
+        dataChannelMedium: DataChannelMedium,
     ): DataChannelMedium {
         log.info { "Using data channel medium $dataChannelMedium" }
         return dataChannelMedium
@@ -64,7 +64,7 @@ class DataChannelBeanFactory {
     @Singleton
     @Named("dataChannelSocketPaths")
     fun dataChannelSocketPaths(
-        @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>
+        @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>,
     ): List<String> {
         log.info { "Using socket paths $socketPaths" }
         return socketPaths
@@ -74,7 +74,7 @@ class DataChannelBeanFactory {
     @Named("dataChannelFormat")
     fun dataChannelFormat(
         @Value("\${airbyte.destination.core.data-channel.format}")
-        dataChannelFormat: DataChannelFormat
+        dataChannelFormat: DataChannelFormat,
     ): DataChannelFormat {
         log.info { "Using data channel format $dataChannelFormat" }
         return dataChannelFormat
@@ -107,7 +107,7 @@ class DataChannelBeanFactory {
     @Named("numDataChannels")
     fun numDataChannels(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-        @Named("numInputPartitions") numInputPartitions: Int
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> 1
@@ -118,7 +118,7 @@ class DataChannelBeanFactory {
     @Singleton
     @Named("markEndOfStreamAtEndOfSync")
     fun markEndOfStreamAtEndOfSync(
-        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ): Boolean {
         // For STDIO, we mark the end of stream when we get the message.
         // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
@@ -132,7 +132,7 @@ class DataChannelBeanFactory {
     @Named("logPerNRecords")
     fun logPerNRecords(
         @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
-        logPerNRecords: Long
+        logPerNRecords: Long,
     ): Long {
         log.info { "Logging every $logPerNRecords records" }
         return logPerNRecords
@@ -141,13 +141,13 @@ class DataChannelBeanFactory {
     /**
      * Because sockets uses multiple threads, state must be kept coherent by
      * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
-     * `additionalProperties['partition_id']`)
+     *   `additionalProperties['partition_id']`)
      * - ordering AirbyteStateMessages by CheckpointIndex (from `additionalProperties['id']`)
      */
     @Singleton
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     fun requireCheckpointIdOnRecord(
-        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
@@ -165,7 +165,7 @@ class DataChannelBeanFactory {
         @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineInputEvent> {
         return StrictPartitionedQueue(
-            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) },
         )
     }
 
@@ -198,7 +198,7 @@ class DataChannelBeanFactory {
             }
             else ->
                 throw IllegalArgumentException(
-                    "Unsupported data channel format: $dataChannelFormat"
+                    "Unsupported data channel format: $dataChannelFormat",
                 )
         }
 
@@ -245,7 +245,7 @@ class DataChannelBeanFactory {
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
                             queueMemoryManager,
-                            logPerNRecords
+                            logPerNRecords,
                         )
                     }
                     .toTypedArray()
@@ -273,7 +273,7 @@ class DataChannelBeanFactory {
             inputFlow,
             pipelineInputQueue,
             partitioner,
-            pipelineEventBookkeepingRouter
+            pipelineEventBookkeepingRouter,
         )
     }
 
@@ -299,7 +299,7 @@ class DataChannelBeanFactory {
     fun namespaceMapper(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
         @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
-        namespaceMappingConfigPath: String
+        namespaceMappingConfigPath: String,
     ): NamespaceMapper {
         when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -319,7 +319,7 @@ class DataChannelBeanFactory {
                 return NamespaceMapper(
                     namespaceDefinitionType = config.namespaceDefinitionType,
                     namespaceFormat = config.namespaceFormat,
-                    streamPrefix = config.streamPrefix
+                    streamPrefix = config.streamPrefix,
                 )
             }
         }

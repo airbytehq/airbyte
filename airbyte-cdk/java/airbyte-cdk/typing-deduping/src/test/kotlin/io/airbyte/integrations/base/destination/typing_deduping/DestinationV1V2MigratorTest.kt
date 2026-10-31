@@ -32,52 +32,52 @@ class DestinationV1V2MigratorTest {
                     makeMockMigrator(true, false, v2SchemaMatches, true, true),
                     42L,
                     42L,
-                    false
+                    false,
                 ), // Doesn't migrate because v2 table already exists
                 Arguments.of(
                     ImportType.APPEND,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
                     42L,
                     0L,
-                    false
+                    false,
                 ),
                 Arguments.of(
                     ImportType.DEDUPE,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
                     42L,
                     0L,
-                    false
+                    false,
                 ), // Doesn't migrate because no valid v1 raw table exists
                 Arguments.of(
                     ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
                     42L,
                     0L,
-                    false
+                    false,
                 ),
                 Arguments.of(
                     ImportType.DEDUPE,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
                     42L,
                     0L,
-                    false
+                    false,
                 ),
                 Arguments.of(
                     ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
                     42L,
                     0L,
-                    false
+                    false,
                 ),
                 Arguments.of(
                     ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
                     42L,
                     0L,
-                    false
+                    false,
                 ), // Migrates
                 Arguments.of(ImportType.APPEND, noIssuesMigrator(), 42L, 0L, true),
-                Arguments.of(ImportType.DEDUPE, noIssuesMigrator(), 42L, 0L, true)
+                Arguments.of(ImportType.DEDUPE, noIssuesMigrator(), 42L, 0L, true),
             )
         }
     }
@@ -90,7 +90,7 @@ class DestinationV1V2MigratorTest {
         migrator: BaseDestinationV1V2Migrator<*>,
         generationId: Long,
         minimumGenerationId: Long,
-        expected: Boolean
+        expected: Boolean,
     ) {
         val config =
             StreamConfig(
@@ -101,7 +101,7 @@ class DestinationV1V2MigratorTest {
                 mock(),
                 generationId,
                 minimumGenerationId,
-                0
+                0,
             )
         val actual = migrator.shouldMigrate(config)
         Assertions.assertEquals(expected, actual)
@@ -128,7 +128,7 @@ class DestinationV1V2MigratorTest {
             }
         Assertions.assertEquals(
             "Destination V2 Raw Table does not match expected Schema",
-            exception.message
+            exception.message,
         )
     }
 
@@ -161,7 +161,7 @@ class DestinationV1V2MigratorTest {
             }
         Assertions.assertEquals(
             "Attempted and failed to migrate stream final_table",
-            exception.message
+            exception.message,
         )
     }
 
@@ -174,7 +174,7 @@ class DestinationV1V2MigratorTest {
             v2TableExists: Boolean,
             v2RawSchemaMatches: Boolean,
             v1RawTableExists: Boolean,
-            v1RawTableSchemaMatches: Boolean
+            v1RawTableSchemaMatches: Boolean,
         ): BaseDestinationV1V2Migrator<*> {
             val migrator: BaseDestinationV1V2Migrator<String> = spy()
             Mockito.`when`(migrator.doesAirbyteInternalNamespaceExist(any()))
@@ -185,15 +185,15 @@ class DestinationV1V2MigratorTest {
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v2_raw",
-                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
-                    )
+                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+                    ),
                 )
                 .thenReturn(false)
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v2_raw",
-                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META
-                    )
+                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META,
+                    ),
                 )
                 .thenReturn(v2RawSchemaMatches)
 
@@ -206,8 +206,8 @@ class DestinationV1V2MigratorTest {
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v1_raw",
-                        JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
-                    )
+                        JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS,
+                    ),
                 )
                 .thenReturn(v1RawTableSchemaMatches)
             return migrator
@@ -220,7 +220,7 @@ class DestinationV1V2MigratorTest {
                 v2TableExists = false,
                 v2RawSchemaMatches = true,
                 v1RawTableExists = true,
-                v1RawTableSchemaMatches = true
+                v1RawTableSchemaMatches = true,
             )
         }
     }

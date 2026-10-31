@@ -40,7 +40,7 @@ These limitations only apply to those using the Plus plan. If you upgrade to Pro
 
 Organizations on capacity-based plans (Pro, Enterprise Flex) have a contracted number of data workers. When all data workers are in use, additional syncs are queued until capacity becomes available. This is not a hard limit on the number of connections or syncs you can create, but a limit on concurrent sync execution.
 
-You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Monitor data worker usage](./manage-data-workers.md) for details.
+You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Manage and monitor data workers](./manage-data-workers.md) for details.
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support

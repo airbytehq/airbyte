@@ -77,7 +77,7 @@ class PostgresSourceDebeziumOperations(
         const val LSN_COMMIT = "lsn_commit"
 
         internal fun deserializeStateUnvalidated(
-            opaqueStateValue: OpaqueStateValue
+            opaqueStateValue: OpaqueStateValue,
         ): DebeziumOffset {
             // {
             //     "state": {
@@ -126,8 +126,10 @@ class PostgresSourceDebeziumOperations(
             .with("converters", "datetime")
             .with("datetime.type", PostgresCustomConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
-            // TODO: This will eventually be deprecated in favor of lsn.flush.mode
-            .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
+            // Debezium 3.4 maps the deprecated `flush.lsn.source` true/false to these two modes.
+            // Neither lets the pgjdbc keep-alive advance the slot, so an idle database relies on
+            // `heartbeat.action.query` to prevent WAL growth.
+            .with("lsn.flush.mode", if (cdcConfig.debeziumCommitsLsn) "connector" else "manual")
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
@@ -188,7 +190,7 @@ class PostgresSourceDebeziumOperations(
             } catch (e: Exception) {
                 log.error(e) { "Error deserializing incumbent state value." }
                 return AbortDebeziumWarmStartState(
-                    "Error deserializing incumbent state value: ${e.message}"
+                    "Error deserializing incumbent state value: ${e.message}",
                 )
             }
         return ValidDebeziumWarmStartState(debeziumOffset, null)
@@ -219,7 +221,7 @@ class PostgresSourceDebeziumOperations(
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
-        stream: Stream
+        stream: Stream,
     ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
@@ -234,8 +236,12 @@ class PostgresSourceDebeziumOperations(
             var mappedValue: JsonNode?
             if (field.type is ArrayFieldType<*>) {
                 val rawArray = data[field.id]
+                // on the socket/protobuf path a field missing from the payload leaves the reused
+                // protobuf builder's slot untouched, i.e. holding the previous record's value.
+                // A NULL array and an array whose key is absent from the Debezium image, must both
+                // map to an explicit null.
                 mappedValue =
-                    if (rawArray == null || rawArray is NullNode) null
+                    if (rawArray == null || rawArray is NullNode) NullNode.getInstance()
                     else {
                         Jsons.arrayNode().also { arr ->
                             (rawArray as ArrayNode).forEach {
@@ -258,48 +264,41 @@ class PostgresSourceDebeziumOperations(
                 }
             }
 
-            if (mappedValue != null) {
-                when (mappedValue) {
-                    is NullNode -> {
-                        resultRow[field.id] = FieldValueEncoder(null, NullCodec)
-                    }
-                    else -> {
-                        if (field.type is ArrayFieldType<*>) {
-                            // ArrayEncoder needs a List<T>; decode the JSON array using the
-                            // element type's decoder before passing to the encoder.
-                            val elementDecoder =
-                                (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
-                                    as JsonDecoder<Any?>
-                            val arrayDecoder = ArrayDecoder(elementDecoder)
-                            var decoded: List<Any?>? = null
-                            try {
-                                decoded = arrayDecoder.decode(mappedValue)
-                            } catch (_: Exception) {
-                                changes[EmittedField(field.id, field.type)] =
-                                    FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                            }
-                            resultRow[field.id] =
-                                FieldValueEncoder(
-                                    decoded,
-                                    field.type.jsonEncoder as JsonEncoder<Any?>
-                                )
-                        } else {
-                            val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
-                            var decoded: Any? = null
-                            try {
-                                decoded = decoder.decode(mappedValue)
-                            } catch (_: Exception) {
-                                changes[EmittedField(field.id, field.type)] =
-                                    FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                            }
-                            resultRow[field.id] =
-                                FieldValueEncoder(
-                                    decoded,
-                                    decoder as JsonEncoder<Any?>,
-                                )
-                        }
-                    }
+            if (mappedValue == null || mappedValue is NullNode) {
+                // `null` means the column key was absent from the image, or that mapValue()
+                // failed. `NullNode` means SQL NULL. Both must be written into resultRow,
+                // never skipped, for the reason given above.
+                resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+            } else if (field.type is ArrayFieldType<*>) {
+                // ArrayEncoder needs a List<T>; decode the JSON array using the
+                // element type's decoder before passing to the encoder.
+                val elementDecoder =
+                    (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
+                        as JsonDecoder<Any?>
+                val arrayDecoder = ArrayDecoder(elementDecoder)
+                var decoded: List<Any?>? = null
+                try {
+                    decoded = arrayDecoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
                 }
+                resultRow[field.id] =
+                    FieldValueEncoder(decoded, field.type.jsonEncoder as JsonEncoder<Any?>)
+            } else {
+                val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
+                var decoded: Any? = null
+                try {
+                    decoded = decoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
+                }
+                resultRow[field.id] =
+                    FieldValueEncoder(
+                        decoded,
+                        decoder as JsonEncoder<Any?>,
+                    )
             }
         }
 
@@ -378,7 +377,7 @@ class PostgresSourceDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue {
         // We want:
         // {
@@ -402,7 +401,7 @@ class PostgresSourceDebeziumOperations(
         val sequence =
             Jsons.readValue(
                 source["sequence"].toString(),
-                object : TypeReference<List<String>>() {}
+                object : TypeReference<List<String>>() {},
             )
         val lsnCommit = sequence?.get(0)?.toLong()
         return PostgresSourceCdcPosition(

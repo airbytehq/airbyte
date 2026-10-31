@@ -12,5 +12,5 @@ data class HttpRequester(
     @JsonProperty("type") val type: String = "HttpRequester",
     @JsonProperty("url") val url: String,
     @JsonProperty("method") val method: HttpMethod,
-    @JsonProperty("authenticator") val authenticator: Authenticator? = null
+    @JsonProperty("authenticator") val authenticator: Authenticator? = null,
 )
