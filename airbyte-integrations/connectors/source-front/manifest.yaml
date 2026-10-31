@@ -1286,7 +1286,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: contact_groups
+          path: contact_lists
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -1463,7 +1463,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: teammates/{{ stream_partition.teammate_id }}/contact_groups
+          path: teammates/{{ stream_partition.teammate_id }}/contact_lists
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -1512,7 +1512,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: teams/{{ stream_partition.team_id }}/contact_groups
+          path: teams/{{ stream_partition.team_id }}/contact_lists
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
