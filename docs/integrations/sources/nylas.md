@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.76 | 2026-10-31 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Make `end_date` optional so incremental streams such as `events` keep syncing new records when it is not set |
+| 0.0.76 | 2026-10-31 | [90298](https://github.com/airbytehq/airbyte/pull/90298) | Make `end_date` optional so incremental streams such as `events` keep syncing new records when it is not set |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
 | 0.0.74 | 2026-10-20 | [89326](https://github.com/airbytehq/airbyte/pull/89326) | Update dependencies |
 | 0.0.73 | 2026-10-13 | [88725](https://github.com/airbytehq/airbyte/pull/88725) | Update dependencies |
