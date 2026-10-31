@@ -227,6 +227,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.0.4 | 2026-09-23 | [86946](https://github.com/airbytehq/airbyte/pull/86946) | Retry when Linear returns an incomplete or unparsable response instead of failing the stream |
 | 1.0.3 | 2026-09-15 | [85560](https://github.com/airbytehq/airbyte/pull/85560) | Update dependencies |
 | 1.0.2 | 2026-09-10 | [85793](https://github.com/airbytehq/airbyte/pull/85793) | Promote to certified support level |
 | 1.0.1 | 2026-09-09 | [85789](https://github.com/airbytehq/airbyte/pull/85789) | Fix bug in config migration that prevented rotated refresh tokens from being persisted |
