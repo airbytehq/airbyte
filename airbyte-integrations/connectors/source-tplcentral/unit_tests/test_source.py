@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest.mock import MagicMock
 
 from pytest import fixture
@@ -36,6 +37,24 @@ def test_check_connection(requests_mock, config):
         },
     )
     assert source.check_connection(logger_mock, config) == (True, None)
+
+
+def test_authenticator_fetches_client_credentials_token_once(requests_mock, config):
+    token_endpoint = f"{config['url_base']}AuthServer/api/Token"
+    requests_mock.post(
+        token_endpoint,
+        json={"access_token": "the_token", "token_type": "Bearer", "expires_in": 3600},
+    )
+
+    auth = SourceTplcentral()._auth(config)
+
+    assert auth.get_auth_header() == {"Authorization": "Bearer the_token"}
+    assert auth.get_auth_header() == {"Authorization": "Bearer the_token"}
+    assert requests_mock.call_count == 1
+    request = requests_mock.request_history[0]
+    assert json.loads(request.text) == {"grant_type": "client_credentials", "user_login_id": 123}
+    assert request.headers["Authorization"] == "Basic eHh4Onl5eQ=="
+    assert auth.token_has_expired() is False
 
 
 def test_streams(config):
