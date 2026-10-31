@@ -1,6 +1,86 @@
 # Airbyte Cloud release notes
 
+## October 30, 2026
+
+Connections
+
+- Notes, tips, and warnings in a connector's setup guide now display correctly when they have a title or appear inside a numbered or bulleted step. Previously, some of these callouts showed up as plain text or broke the layout of the step they were in.
+
+Platform
+
+- When several informational notices appear at the top of Airbyte, you can now collapse them with a single toggle and expand them again with **Show more**. Airbyte remembers your choice, and warnings and errors always stay visible. If a new notice appears, the group expands so you see it.
+- If SCIM provisioning with Microsoft Entra ID is enabled for your organization, Airbyte now accepts user provisioning requests that include Entra ID's enterprise user extension. Previously, Airbyte rejected these requests, so Entra ID couldn't create or update those users.
+
+## October 29, 2026
+
+Connections
+
+- Your connection's schema table now labels the **Primary key** and **Cursor** columns and includes tooltips explaining how each is used, making it easier to configure your streams.
+- You can now load available dbt Cloud jobs without an error when your workspace already has saved dbt Cloud credentials.
+
+Platform
+
+- On Pro and Enterprise Flex plans, when you compare your organization's Data Worker usage with the previous period, the chart's date labels now stay within your selected current period, even when the previous period is longer.
+
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
+
+## October 28, 2026
+
+Platform
+
+- The **Billing** and **Plan** pages in your organization settings now fill the width of large windows, like the other organization settings pages. Previously, they stopped at a fixed width and left empty space on the right.
+
+## October 27, 2026
+
+Connections
+
+- When you set up a source or destination, the buttons are now labeled **Save & Test** and **Save as a draft**. **Save & Test** stays disabled until you fill in every required field, and its tooltip lists the fields you still need to complete. You can still save an incomplete setup as a draft.
+- The buttons at the bottom of source and destination setup forms now stay visible while you scroll through the form.
+- Settings in source and destination setup forms that offer two to four options, such as choosing an authentication method, now appear as side-by-side buttons instead of a dropdown, so you can see every option at once.
+- While a new source or destination setup form loads, you now see the Airbyte logo animation. A message with a link to support appears only if loading takes more than 10 seconds.
+- The **Status** tab of a connection again shows the records and bytes from each stream's latest sync. Previously, these values could show as `-` for every stream.
+- Schema discovery and syncs no longer fail for sources with very wide schemas or large saved sync state. If Airbyte rejects a schema or sync result, the error message now explains why instead of showing a generic internal error.
+
+Platform
+
+- The **Install MCP** link in the sidebar now shows a **New** badge instead of a **Beta** badge.
+
+## October 26, 2026
+
+Connections
+
+- Source and destination setup forms are easier to scan. All of a connector's settings now appear together in a single card, and the collapsible section that holds optional settings is now called **Advanced** instead of **Optional fields**.
+
+Platform
+
+- If you belong to more than one organization, the **Members** page and the invite dialog now show the correct pending invitations right after you switch organizations or workspaces. Previously, they could briefly show pending invitations from the organization or workspace you just left.
+
+## October 23, 2026
+
+Connections
+
+- Saving a source no longer fails in some cases where Airbyte couldn't read a previously stored credential for that source.
+
+Connector Builder
+
+- The Connector Builder loads again for workspaces that have a custom connector forked from a connector without an icon. Previously, the Builder page could fail to load with an error.
+- When a test read fails because of a problem with your connector's configuration, such as an invalid date value, the Connector Builder now shows a clear message describing the problem instead of a generic error ID.
+
+Platform
+
+- Every Airbyte Cloud organization can now open the **Install MCP** page from the sidebar to connect AI tools to Airbyte through the Airbyte MCP server. Previously, this page was only available to organizations enrolled in or eligible for Airbyte Agents.
+- On Cloud Pro and Enterprise Flex plans, data worker usage charts now show the "DW" unit once as the y-axis title, and the y-axis values are plain numbers.
+
+## October 22, 2026
+
+Connections
+
+- When you set up a new source or destination, the setup form now shows the connector's icon and name at the top. From this header, you can invite teammates to your workspace if you can manage workspace access, and for sources, you can fork or edit the connector in the Connector Builder. The **Copy JSON** button no longer appears on source and destination forms.
+- The refresh dialog for connections and streams is simpler and easier to read. The two refresh options are now called **Backfill missing or updated records** and **Overwrite existing data**, and the dialog links to the refresh documentation so you can learn more before you start.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, when you turn on **Compare to previous period** on a data worker usage chart, the chart now shows a loading indicator until the comparison data finishes loading. Previously, the chart could show only the current period while the previous period was still loading.
 
 ## October 21, 2026
 

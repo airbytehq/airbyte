@@ -244,7 +244,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Data replication platform",
+      label: "Platform",
       link: {
         type: "doc",
         id: "readme",
@@ -260,10 +260,6 @@ module.exports = {
         {
           type: "doc",
           id: "using-airbyte/core-concepts/readme",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/getting-started/academy",
         },
         sectionHeader("Move and manage data"),
         {
@@ -475,6 +471,7 @@ module.exports = {
             "airbyte-mcp/self-managed",
           ],
         },
+        "airbyte-knowledge-mcp",
         {
           type: "category",
           label: "Context layer",
