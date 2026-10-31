@@ -4,6 +4,7 @@
 
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from requests import Response
@@ -11,6 +12,7 @@ from requests import Response
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
@@ -80,6 +82,33 @@ def test_threads_stream_slices(requests_mock, authenticator, token_config, start
     assert len(slices) == len(expected_result)
     for s in slices:
         assert s in expected_result
+
+
+@pytest.mark.parametrize("stream_name", ("channel_messages", "threads"))
+def test_archived_non_member_channels_are_not_partitioned(token_config, requests_mock, stream_name):
+    config = {**token_config, "include_archived_channels": True, "join_channels": True}
+    config.pop("channel_filter")
+    requests_mock.get(
+        "https://slack.com/api/conversations.list",
+        json={
+            "ok": True,
+            "channels": [
+                {"id": "C_ACTIVE", "name": "active", "is_member": True, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED", "name": "archived", "is_member": False, "is_archived": True},
+            ],
+        },
+    )
+    history_request = requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    join_request = requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build()
+    state = StateBuilder().build()
+
+    read(get_source(config, stream_name, state), config=config, catalog=catalog, state=state)
+
+    requested_channels = {parse_qs(urlparse(request.url).query)["channel"][0] for request in history_request.request_history}
+    assert requested_channels == {"C_ACTIVE", "C_ARCHIVED_MEMBER"}
+    assert not join_request.called
 
 
 @pytest.mark.parametrize(

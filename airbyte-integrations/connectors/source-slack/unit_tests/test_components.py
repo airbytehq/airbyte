@@ -162,6 +162,74 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
+@pytest.mark.parametrize(
+    "threads_stream_state",
+    (
+        {
+            "use_global_cursor": False,
+            "state": {"float_ts": "1761800000"},
+            "lookback_window": 604800,
+            "states": [
+                {
+                    "partition": {"float_ts": "1761700000.000100", "parent_slice": {"channel": "C1", "parent_slice": {}}},
+                    "cursor": {"float_ts": "1761800000"},
+                }
+            ],
+            "parent_state": {
+                "channel_messages": {
+                    "use_global_cursor": False,
+                    "state": {"float_ts": "1761800000.5"},
+                    "lookback_window": 0,
+                    "states": [
+                        {"partition": {"channel": "C1", "parent_slice": {}}, "cursor": {"float_ts": "1761800000.5"}},
+                        {"partition": {"channel": "C2", "parent_slice": {}}, "cursor": {"float_ts": "1761600000.5"}},
+                    ],
+                }
+            },
+        },
+        {
+            "use_global_cursor": True,
+            "state": {"float_ts": "1761800000"},
+            "lookback_window": 604800,
+            "parent_state": {
+                "channel_messages": {
+                    "use_global_cursor": False,
+                    "state": {"float_ts": "1761800000.5"},
+                    "lookback_window": 0,
+                    "states": [
+                        {"partition": {"channel": "C1", "parent_slice": {}}, "cursor": {"float_ts": "1761800000.5"}},
+                        {"partition": {"channel": "C2", "parent_slice": {}}, "cursor": {"float_ts": "1761600000.5"}},
+                    ],
+                }
+            },
+        },
+    ),
+    ids=["per_partition_threads_state", "global_cursor_threads_state"],
+)
+def test_threads_state_migration_preserves_existing_parent_state(token_config, threads_stream_state):
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
+
+    parent = stream.cursor.state["parent_state"]["channel_messages"]
+    per_channel_cursors = {state["partition"]["channel"]: float(state["cursor"]["float_ts"]) for state in parent["states"]}
+    assert per_channel_cursors == {"C1": 1761800000.5, "C2": 1761600000.5}
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    (
+        ({}, False),
+        ({"float_ts": 1.0}, True),
+        ({"states": [{"cursor": {"float_ts": 1.0}}]}, True),
+        ({"parent_state": {"channel_messages": {"float_ts": 1.0}}}, False),
+    ),
+    ids=["empty", "legacy_cursor", "partitioned_cursor", "has_parent_state"],
+)
+def test_threads_state_migration_should_migrate(token_config, components_module, stream_state, expected):
+    migration = components_module.ThreadsStateMigration(config=token_config)
+
+    assert migration.should_migrate(stream_state) is expected
+
+
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
     """
     The retriever itself does not filter by membership. Filtering for streams that

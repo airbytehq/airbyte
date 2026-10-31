@@ -176,7 +176,8 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State written since 3.0.0 already carries per-channel parent cursors; re-migrating it would collapse them.
+        return bool(stream_state) and "parent_state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
