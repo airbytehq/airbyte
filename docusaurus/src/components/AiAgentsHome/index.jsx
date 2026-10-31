@@ -1,1 +1,0 @@
-export { QuickInstall } from "./QuickInstall";

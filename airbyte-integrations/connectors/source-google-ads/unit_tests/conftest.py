@@ -3,6 +3,8 @@
 #
 
 
+import copy
+import json
 import sys
 from pathlib import Path
 
@@ -12,10 +14,34 @@ from source_google_ads.models import CustomerModel
 
 from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+
+
+@pytest.fixture(autouse=True, scope="session")
+def cache_pre_processed_manifest():
+    """
+    Resolve the manifest's references once per session instead of once per source.
+
+    Most tests build a new source from the ~8k-line manifest, and resolving its `$ref`s and propagating
+    its parameters takes most of each test's run time. The result depends only on the manifest, so it is
+    cached by the manifest's contents and every source gets its own deep copy.
+    """
+    pre_process = ConcurrentDeclarativeSource._pre_process_manifest
+    cache = {}
+
+    def cached_pre_process(self, manifest):
+        key = json.dumps(manifest, sort_keys=True, default=str)
+        if key not in cache:
+            cache[key] = pre_process(self, manifest)
+        return copy.deepcopy(cache[key])
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(ConcurrentDeclarativeSource, "_pre_process_manifest", cached_pre_process)
+        yield
 
 
 def _get_manifest_path() -> Path:
