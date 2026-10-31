@@ -5,9 +5,8 @@ HttpMocker tests for source-quickbooks manifest.yaml.
 
 Each of the 34 streams is read against a mocked Intuit Accounting API: the query
 endpoint returns a single entity record, and the OAuth token endpoint returns a
-rotated token in case the authenticator refreshes. One extra test feeds the
-legacy pre-4.0.0 nested config shape to prove the manifest's config migration
-makes it readable end to end.
+rotated token in case the authenticator refreshes. Authentication fields are
+supplied under `credentials`, with tests for sandbox and production routing.
 """
 
 import datetime
@@ -19,13 +18,17 @@ import yaml
 from freezegun import freeze_time
 
 from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
+    StreamDescriptor,
     SyncMode,
     TraceType,
     Type,
@@ -42,6 +45,7 @@ MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 REALM_ID = "4620816365288779920"
 TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 QUERY_URL = f"https://sandbox-quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
+PRODUCTION_QUERY_URL = f"https://quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
 
 STREAM_ENTITY = {
     "accounts": "Account",
@@ -80,28 +84,34 @@ STREAM_ENTITY = {
     "vendors": "Vendor",
 }
 
+REFERENCE_STREAMS = {
+    "accounts": "Account",
+    "classes": "Class",
+    "departments": "Department",
+    "employees": "Employee",
+    "payment_methods": "PaymentMethod",
+    "tax_agencies": "TaxAgency",
+    "tax_codes": "TaxCode",
+    "tax_rates": "TaxRate",
+    "terms": "Term",
+}
+
 FULL_REFRESH_STREAMS = {"company_info", "preferences"}
 
 
-def _flat_config() -> dict:
+def _credentials_config(auth_type: str = "client_credentials", sandbox: bool = True) -> dict:
     return {
-        "client_id": "test-client-id",
-        "client_secret": "test-client-secret",
-        "refresh_token": "test-refresh-token",
-        "realm_id": REALM_ID,
         "start_date": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "sandbox": True,
-        "access_token": "test-access-token",
-        "token_expiry_date": "2124-01-01T00:00:00Z",
-    }
-
-
-def _nested_config() -> dict:
-    flat = _flat_config()
-    return {
-        "sandbox": flat["sandbox"],
-        "start_date": flat["start_date"],
-        "credentials": flat,
+        "credentials": {
+            "auth_type": auth_type,
+            "client_id": "test-client-id",
+            "client_secret": "test-client-secret",
+            "refresh_token": "test-refresh-token",
+            "realm_id": REALM_ID,
+            "sandbox": sandbox,
+            "access_token": "test-access-token",
+            "token_expiry_date": "2124-01-01T00:00:00Z",
+        },
     }
 
 
@@ -141,16 +151,20 @@ def manifest() -> dict:
     return yaml.safe_load(MANIFEST_PATH.read_text())
 
 
-def _source(config: dict, manifest: dict) -> ConcurrentDeclarativeSource:
+def _source(
+    config: dict,
+    manifest: dict,
+    state: list[AirbyteStateMessage] | None = None,
+) -> ConcurrentDeclarativeSource:
     return ConcurrentDeclarativeSource(
         source_config=manifest,
         config=config,
         catalog=None,
-        state=None,
+        state=state,
     )
 
 
-def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
+def _mock_intuit(http_mocker: HttpMocker, entity: str, query_url: str = QUERY_URL) -> None:
     now = datetime.datetime.now(datetime.timezone.utc)
     create_time = (now - datetime.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
     update_time = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
@@ -197,14 +211,14 @@ def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
     )
     # First 30-day slice returns the record; any later slices get empty pages.
     http_mocker.get(
-        HttpRequest(QUERY_URL, query_params="any query_parameters"),
+        HttpRequest(query_url, query_params="any query_parameters"),
         [record_page] + [empty_page] * 10,
     )
 
 
 @pytest.mark.parametrize("stream_name,entity", STREAM_ENTITY.items())
 def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
-    config = _flat_config()
+    config = _credentials_config()
     with HttpMocker() as http_mocker:
         _mock_intuit(http_mocker, entity)
 
@@ -233,11 +247,10 @@ def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
         assert any(message.type == Type.STATE for message in output._messages)
 
 
-def test_nested_legacy_config_is_migrated_and_read(manifest):
-    """Pre-4.0.0 `credentials.*` configs are flattened by the manifest migration before spec validation."""
-    config = _nested_config()
+def test_oauth_credentials_use_production_when_sandbox_is_true(manifest):
+    config = _credentials_config(auth_type="oauth2.0")
     with HttpMocker() as http_mocker:
-        _mock_intuit(http_mocker, "Account")
+        _mock_intuit(http_mocker, "Account", query_url=PRODUCTION_QUERY_URL)
 
         output = read(
             _source(config, manifest),
@@ -257,18 +270,34 @@ WINDOW_END = "2026-03-15T12:00:00+00:00"
 
 
 def _frozen_config(**overrides) -> dict:
-    config = _flat_config()
+    config = _credentials_config()
     config["start_date"] = "2026-03-14T00:00:00Z"
-    config.update(overrides)
+    for key, value in overrides.items():
+        if key in {"start_date", "max_results"}:
+            config[key] = value
+        else:
+            config["credentials"][key] = value
     return config
 
 
-def _incremental_query(entity: str, start_position: int, max_results: int = 200) -> str:
+def _incremental_query(entity: str, start_position: int, max_results: int = 1000) -> str:
+    return _query(entity, WINDOW_START, WINDOW_END, start_position, max_results)
+
+
+def _query(
+    entity: str,
+    lower: str,
+    upper: str,
+    start_position: int = 1,
+    max_results: int = 1000,
+    include_active: bool = True,
+) -> str:
+    active_filter = "AND Active IN (true, false) " if include_active else ""
     return (
         f"SELECT * FROM {entity} "
-        f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
-        f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
-        "AND Active IN (true, false) "
+        f"WHERE Metadata.LastUpdatedTime > '{lower}' "
+        f"AND Metadata.LastUpdatedTime <= '{upper}' "
+        f"{active_filter}"
         "ORDER BY Metadata.LastUpdatedTime ASC "
         f"STARTPOSITION {start_position} MAXRESULTS {max_results}"
     )
@@ -292,12 +321,123 @@ def _page(entity: str, first_id: int, count: int) -> HttpResponse:
 
 
 @freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", REFERENCE_STREAMS.items())
+def test_reference_streams_read_the_whole_range_in_one_window(stream_name: str, entity: str, manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                entity,
+                "2020-01-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+                include_active=stream_name != "tax_agencies",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page(entity, 1, 3))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog(stream_name),
+            state=None,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
+def test_reference_stream_incremental_read_starts_from_state(manifest):
+    config = _frozen_config(start_date="2020-01-01T00:00:00Z")
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="accounts"),
+                stream_state=AirbyteStateBlob(airbyte_cursor="2025-06-01T00:00:00+00:00"),
+            ),
+        )
+    ]
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Account",
+                "2025-06-01T00:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 2))
+
+        output = read(
+            _source(config, manifest, state=state),
+            config=config,
+            catalog=_catalog("accounts"),
+            state=state,
+        )
+
+        final_state = output.most_recent_state.stream_state
+        final_state_data = vars(final_state)
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert set(final_state_data) == {"airbyte_cursor"}
+    assert datetime.datetime.fromisoformat(final_state_data["airbyte_cursor"]).astimezone(
+        datetime.timezone.utc
+    ) == datetime.datetime.fromisoformat("2026-03-14T10:00:00+00:00")
+    assert output.errors == []
+    assert len(output.records) == 2
+
+
+@freeze_time(FROZEN_NOW)
+def test_transaction_streams_keep_30_day_windows(manifest):
+    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+    windows = [
+        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
+        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
+        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+    ]
+    requests = [
+        HttpRequest(
+            QUERY_URL,
+            query_params={"query": _query("Invoice", lower, upper, include_active=False)},
+        )
+        for lower, upper in windows
+    ]
+
+    with HttpMocker() as http_mocker:
+        for position, request in enumerate(requests, start=1):
+            http_mocker.get(request, _page("Invoice", position, 1))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog("invoices"),
+            state=None,
+        )
+
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
 def test_incremental_stream_paginates_with_explicit_queries(manifest):
-    """5 + 5 + 2 records over three pages: STARTPOSITION advances by the page size and the read stops on the short page."""
-    config = _frozen_config()
-    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
-    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6)})
-    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11)})
+    """5 + 5 + 2 records at a page size of 5: STARTPOSITION advances by the page size and the read stops on the short page."""
+    config = _frozen_config(max_results=5)
+    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=5)})
+    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6, max_results=5)})
+    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11, max_results=5)})
 
     with HttpMocker() as http_mocker:
         http_mocker.get(first, _page("Account", 1, 5))
@@ -316,18 +456,76 @@ def test_incremental_stream_paginates_with_explicit_queries(manifest):
 
 
 @freeze_time(FROZEN_NOW)
-def test_max_results_is_configurable(manifest):
-    config = _frozen_config(max_results=1000)
-    request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=1000)})
+@pytest.mark.parametrize("max_results,record_count", [(None, 50), (None, 999), (300, 50), (300, 299)])
+def test_window_shorter_than_page_size_makes_one_request(max_results, record_count, manifest):
+    """A page with fewer records than MAXRESULTS is the last one, so no empty follow-up request is sent."""
+    config = _frozen_config() if max_results is None else _frozen_config(max_results=max_results)
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={"query": _incremental_query("Account", 1, max_results=max_results or 1000)},
+    )
 
     with HttpMocker() as http_mocker:
-        http_mocker.get(request, _page("Account", 1, 2))
+        http_mocker.get(request, _page("Account", 1, record_count))
 
         output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
 
         http_mocker.assert_number_of_calls(request, 1)
 
+    assert output.errors == []
+    assert len(output.records) == record_count
+
+
+@freeze_time(FROZEN_NOW)
+def test_window_that_is_an_exact_multiple_of_page_size_stops_on_the_empty_page(manifest):
+    config = _frozen_config(max_results=5)
+    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=5)})
+    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6, max_results=5)})
+    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11, max_results=5)})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(first, _page("Account", 1, 5))
+        http_mocker.get(second, _page("Account", 6, 5))
+        http_mocker.get(third, _page("Account", 11, 0))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(first, 1)
+        http_mocker.assert_number_of_calls(second, 1)
+        http_mocker.assert_number_of_calls(third, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 10
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stored,expected", [(200, 1000), ("200", 1000), (300, 300), (1000, 1000)])
+def test_page_size_of_200_is_migrated_to_1000(stored, expected, manifest, capsys):
+    """200 was the default before 5.1.0, so a stored 200 is raised to the new default; other values are kept."""
+    config = _frozen_config(max_results=stored)
+    request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=expected)})
+
+    source = _source(config, manifest)
+    control_lines = [line for line in capsys.readouterr().out.splitlines() if '"CONNECTOR_CONFIG"' in line]
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 2))
+
+        output = read(source, config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
     assert len(output.records) == 2
+    if stored == expected:
+        assert control_lines == []
+    else:
+        assert len(control_lines) == 1
+        assert json.loads(control_lines[0])["control"]["connectorConfig"]["config"]["max_results"] == expected
+
+
+def test_page_size_defaults_to_1000(manifest):
+    assert manifest["spec"]["connection_specification"]["properties"]["max_results"]["default"] == 1000
 
 
 @freeze_time(FROZEN_NOW)
@@ -361,7 +559,7 @@ def test_streams_without_active_field_omit_the_active_clause(stream_name: str, e
         f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
         f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
         "ORDER BY Metadata.LastUpdatedTime ASC "
-        "STARTPOSITION 1 MAXRESULTS 200"
+        "STARTPOSITION 1 MAXRESULTS 1000"
     )
     request = HttpRequest(QUERY_URL, query_params={"query": query})
 
@@ -384,9 +582,9 @@ def test_expired_access_token_is_refreshed_and_rotation_is_persisted(manifest):
         TOKEN_URL,
         body=(
             "grant_type=refresh_token"
-            f"&client_id={config['client_id']}"
-            f"&client_secret={config['client_secret']}"
-            f"&refresh_token={config['refresh_token']}"
+            f"&client_id={config['credentials']['client_id']}"
+            f"&client_secret={config['credentials']['client_secret']}"
+            f"&refresh_token={config['credentials']['refresh_token']}"
         ),
     )
     query_request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
@@ -419,5 +617,5 @@ def test_expired_access_token_is_refreshed_and_rotation_is_persisted(manifest):
     controls = [message.control for message in output._messages if message.type == Type.CONTROL]
     assert controls, "the rotated refresh token was not emitted as a CONNECTOR_CONFIG control message"
     emitted = controls[-1].connectorConfig.config
-    assert emitted["refresh_token"] == "rotated-refresh-token"
-    assert emitted["access_token"] == "rotated-access-token"
+    assert emitted["credentials"]["refresh_token"] == "rotated-refresh-token"
+    assert emitted["credentials"]["access_token"] == "rotated-access-token"

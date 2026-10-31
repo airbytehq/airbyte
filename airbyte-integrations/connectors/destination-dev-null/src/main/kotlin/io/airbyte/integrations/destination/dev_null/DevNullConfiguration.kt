@@ -26,8 +26,7 @@ data class Failing(val numMessages: Int) : DevNullType
 
 data class Throttled(val millisPerRecord: Long) : DevNullType
 
-data class DevNullConfiguration(val type: DevNullType, val ackRatePerRecord: Int = 10_000) :
-    DestinationConfiguration()
+data class DevNullConfiguration(val type: DevNullType) : DestinationConfiguration()
 
 /**
  * This factory is injected into the initialization code and used to map from the client-provided
@@ -66,7 +65,7 @@ class DevNullConfigurationFactory :
                                                     .toInt(),
                                             logEvery =
                                                 pojo.testDestination.loggingConfig.nthEntryToLog,
-                                        )
+                                        ),
                                 )
                             }
                             is RandomSamplingConfig -> {
@@ -78,8 +77,9 @@ class DevNullConfigurationFactory :
                                                     .toInt(),
                                             sampleRate =
                                                 pojo.testDestination.loggingConfig.samplingRatio,
-                                            seed = pojo.testDestination.loggingConfig.seed?.toLong()
-                                        )
+                                            seed =
+                                                pojo.testDestination.loggingConfig.seed?.toLong(),
+                                        ),
                                 )
                             }
                         }

@@ -153,6 +153,9 @@ Airbyte uses Snowflake's
 [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)
 to load data.
 
+Airbyte creates its internal stages in the internal schema (`raw_data_schema`, default
+`airbyte_internal`), so the role needs `CREATE STAGE` on that schema only, not on the output schemas.
+
 Make sure the database and schema have the `USAGE` privilege.
 
 ### Step 5: Set up Snowflake as a destination in Airbyte
@@ -367,7 +370,9 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.1           | 2026-10-12 | [88476](https://github.com/airbytehq/airbyte/pull/88476) | Fix sync failures at initialization when another table in the schema matches the stream's table name via `_`/`%` wildcards or differs only in case (e.g. `V6/JOBS` vs `V6_JOBS`). |
+| 5.2.3           | 2026-10-31 | [88476](https://github.com/airbytehq/airbyte/pull/88476) | Fix sync failures at initialization when another table in the schema matches the stream's table name via `_`/`%` wildcards or differs only in case (e.g. `V6/JOBS` vs `V6_JOBS`). |
+| 5.2.2           | 2026-10-30 | [90225](https://github.com/airbytehq/airbyte/pull/90225) | Create internal stages in the internal (`raw_data_schema`) schema instead of each output schema, so the role only needs CREATE STAGE on the internal schema. |
+| 5.2.1           | 2026-10-22 | [89645](https://github.com/airbytehq/airbyte/pull/89645) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; pin jsoup 1.23.2. |
 | 5.2.0           | 2026-10-09 | [88417](https://github.com/airbytehq/airbyte/pull/88417) | Add Programmatic Access Token as an authorization method. The token is passed to Snowflake in place of a password. |
 | 5.1.2           | 2026-10-05 | [87720](https://github.com/airbytehq/airbyte/pull/87720) | Allow custom domains in destination connections, consistent with Snowflake sources. |
 | 5.1.1           | 2026-10-06 | [88143](https://github.com/airbytehq/airbyte/pull/88143)   | Fix `HikariPool` "Connection is not available" failures during the final flush by restoring bounded concurrency for Snowflake PUT/COPY operations.                                     |
@@ -387,6 +392,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 4.0.42          | 2026-05-14 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
 | 4.0.41          | 2026-05-07 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
 | 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
+| 4.0.40 | 2026-05-01 | [77673](https://github.com/airbytehq/airbyte/pull/77673) | Update the CDK to a version with default timestamp parsing |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
 | 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |
 | 4.0.37          | 2026-02-04 | [72854](https://github.com/airbytehq/airbyte/pull/72854)   | Internal interface changes                                                                                                                                                             |

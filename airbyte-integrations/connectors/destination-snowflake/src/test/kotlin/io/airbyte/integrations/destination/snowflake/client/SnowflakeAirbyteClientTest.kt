@@ -57,7 +57,13 @@ internal class SnowflakeAirbyteClientTest {
             mockk(relaxed = true) { every { database } returns "test_database" }
         columnManager = mockk(relaxed = true)
         client =
-            SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration, columnManager)
+            SnowflakeAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                snowflakeConfiguration,
+                columnManager,
+                metaColumnRepairEnabled = false,
+            )
     }
 
     private fun mockTableRows(vararg names: String): ResultSet = mockk {
@@ -890,7 +896,7 @@ internal class SnowflakeAirbyteClientTest {
                     "but current role has no privileges on it. " +
                     "If this is unexpected and you cannot resolve this problem, " +
                     "contact your system administrator. " +
-                    "ACCOUNTADMIN role may be required to manage the privileges on the object."
+                    "ACCOUNTADMIN role may be required to manage the privileges on the object.",
             )
         every { connection.close() } just Runs
 
@@ -948,7 +954,7 @@ internal class SnowflakeAirbyteClientTest {
             mockk<Statement> {
                 every { executeQuery(any()) } throws
                     SnowflakeSQLException(
-                        "Schema 'TEST_NAMESPACE' already exists, but current role has no privileges on it"
+                        "Schema 'TEST_NAMESPACE' already exists, but current role has no privileges on it",
                     )
                 every { close() } just Runs
             }
@@ -1006,7 +1012,7 @@ internal class SnowflakeAirbyteClientTest {
                     abRawId to "VARCHAR(16777216)",
                     abExtractedAt to "TIMESTAMP_TZ(9)",
                     "USER_COL" to "TEXT",
-                )
+                ),
             )
         val statement =
             mockk<Statement> {
@@ -1078,7 +1084,7 @@ internal class SnowflakeAirbyteClientTest {
                     abMeta to "VARIANT",
                     abGenerationId to "NUMBER(38,0)",
                     "USER_COL" to "TEXT",
-                )
+                ),
             )
         val statement =
             mockk<Statement> {
@@ -1134,7 +1140,7 @@ internal class SnowflakeAirbyteClientTest {
                     abExtractedAt.lowercase() to "TIMESTAMP_TZ(9)",
                     abMeta.lowercase() to "VARIANT",
                     abGenerationId.lowercase() to "NUMBER(38,0)",
-                )
+                ),
             )
         val statement =
             mockk<Statement> {
@@ -1181,7 +1187,7 @@ internal class SnowflakeAirbyteClientTest {
                 mapOf(
                     COLUMN_NAME_AB_RAW_ID to "VARCHAR(16777216)",
                     COLUMN_NAME_AB_EXTRACTED_AT to "TIMESTAMP_TZ(9)",
-                )
+                ),
             )
         val statement =
             mockk<Statement> {
@@ -1245,7 +1251,7 @@ internal class SnowflakeAirbyteClientTest {
                 mapOf(
                     COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName() to "VARCHAR(16777216)",
                     COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName() to "TIMESTAMP_TZ(9)",
-                )
+                ),
             )
         val statement =
             mockk<Statement> {

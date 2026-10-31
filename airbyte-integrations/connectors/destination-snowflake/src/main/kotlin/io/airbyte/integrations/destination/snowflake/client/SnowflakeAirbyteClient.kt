@@ -52,7 +52,7 @@ class SnowflakeAirbyteClient(
      * `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR=true`.
      */
     @Value("\${airbyte.destination.snowflake.meta-column-repair:false}")
-    private val metaColumnRepairEnabled: Boolean = false,
+    private val metaColumnRepairEnabled: Boolean,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
     private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
@@ -84,7 +84,8 @@ class SnowflakeAirbyteClient(
                     show tables
                     like ?
                     in schema "$databaseName"."${table.namespace}"
-                    """.trimIndent()
+                    """
+                            .trimIndent(),
                     )
                     .use { statement ->
                         statement.setString(1, rawName)
@@ -124,7 +125,8 @@ class SnowflakeAirbyteClient(
                         SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
                         FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
                         WHERE SCHEMA_NAME = ?
-                    """.andLog()
+                    """
+                        .andLog(),
                 )
 
             // When querying information_schema, snowflake needs the "true" schema name,
@@ -163,7 +165,7 @@ class SnowflakeAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
         execute(sqlGenerator.createSnowflakeStage(tableName))
@@ -200,7 +202,7 @@ class SnowflakeAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
@@ -217,7 +219,7 @@ class SnowflakeAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
@@ -229,7 +231,7 @@ class SnowflakeAirbyteClient(
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
         execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
@@ -285,7 +287,7 @@ class SnowflakeAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -319,7 +321,7 @@ class SnowflakeAirbyteClient(
             val sql =
                 sqlGenerator.describeTable(
                     schemaName = tableName.namespace,
-                    tableName = tableName.name
+                    tableName = tableName.name,
                 )
             dataSource.connection.use { connection ->
                 val statement = connection.createStatement()

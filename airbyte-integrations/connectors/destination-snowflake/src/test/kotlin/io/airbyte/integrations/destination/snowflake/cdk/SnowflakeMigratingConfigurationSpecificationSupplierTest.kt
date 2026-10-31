@@ -39,7 +39,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 "account.proxy.example.com",
                 "proxy.example.org",
                 "a.b.c.d.e.f.example.net",
-            ]
+            ],
     )
     fun testHostDomains(host: String) {
         val supplier = SnowflakeMigratingConfigurationSpecificationSupplier()
@@ -63,7 +63,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 val spec = ValidatedJsonUtils.parseOne(SnowflakeSpecification::class.java, migrated)
                 assertEquals(
                     endpoint,
-                    SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec).host
+                    SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec).host,
                 )
             }
         }
@@ -80,7 +80,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 "proxy.example.com/path",
                 "proxy.example.com?query=value",
                 "proxy.example.com#fragment",
-            ]
+            ],
     )
     fun testInvalidHost(host: String) {
         val json =
@@ -90,7 +90,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
         assertThrows<ConfigErrorException> {
             ValidatedJsonUtils.parseOne(
                 SnowflakeSpecification::class.java,
-                Jsons.writeValueAsString(configuration)
+                Jsons.writeValueAsString(configuration),
             )
         }
     }
@@ -106,11 +106,11 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(
                 "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
+                ((spec.credentials) as UsernamePasswordAuthSpecification).password,
             )
         }
     }
@@ -121,7 +121,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             unprettyPrintJson(
                 this.javaClass
                     .getResource("/config_without_credentials_auth_type.json")!!
-                    .readText()
+                    .readText(),
             )
 
         val supplier =
@@ -130,11 +130,11 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(
                 "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
+                ((spec.credentials) as UsernamePasswordAuthSpecification).password,
             )
         }
     }
@@ -153,7 +153,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             assertEquals(CredentialsSpecification.Type.PRIVATE_KEY, spec.credentials?.auth_type)
             assertEquals(
                 "test-private-key",
-                ((spec.credentials) as KeyPairAuthSpecification).privateKey
+                ((spec.credentials) as KeyPairAuthSpecification).privateKey,
             )
         }
     }
@@ -164,7 +164,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             unprettyPrintJson(
                 this.javaClass
                     .getResource("/config_without_credentials_auth_type_key_pair.json")!!
-                    .readText()
+                    .readText(),
             )
 
         val supplier =
@@ -174,7 +174,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             assertEquals(CredentialsSpecification.Type.PRIVATE_KEY, spec.credentials?.auth_type)
             assertEquals(
                 "test-private-key",
-                ((spec.credentials) as KeyPairAuthSpecification).privateKey
+                ((spec.credentials) as KeyPairAuthSpecification).privateKey,
             )
         }
     }
@@ -189,12 +189,12 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(UsernamePasswordAuthSpecification::class.java, spec.credentials?.javaClass)
             assertEquals(
                 "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
+                ((spec.credentials) as UsernamePasswordAuthSpecification).password,
             )
         }
     }
@@ -203,7 +203,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     fun testCredentialsWithTopLevelPasswordFlat() {
         val json =
             unprettyPrintJson(
-                this.javaClass.getResource("/config_with_top_level_password.json")!!.readText()
+                this.javaClass.getResource("/config_with_top_level_password.json")!!.readText(),
             )
 
         val supplier =
@@ -212,12 +212,12 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(UsernamePasswordAuthSpecification::class.java, spec.credentials?.javaClass)
             assertEquals(
                 "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
+                ((spec.credentials) as UsernamePasswordAuthSpecification).password,
             )
         }
     }
@@ -233,11 +233,11 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(
                 "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
+                ((spec.credentials) as UsernamePasswordAuthSpecification).password,
             )
         }
     }
@@ -256,7 +256,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             assertEquals(CredentialsSpecification.Type.PRIVATE_KEY, spec.credentials?.auth_type)
             assertEquals(
                 "test-private-key",
-                ((spec.credentials) as KeyPairAuthSpecification).privateKey
+                ((spec.credentials) as KeyPairAuthSpecification).privateKey,
             )
         }
     }
@@ -272,22 +272,22 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.PROGRAMMATIC_ACCESS_TOKEN,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(
                 ProgrammaticAccessTokenAuthSpecification::class.java,
-                spec.credentials?.javaClass
+                spec.credentials?.javaClass,
             )
             assertEquals(
                 "test-programmatic-access-token",
                 ((spec.credentials) as ProgrammaticAccessTokenAuthSpecification)
-                    .programmaticAccessToken
+                    .programmaticAccessToken,
             )
 
             val config = SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec)
             assertEquals(
                 ProgrammaticAccessTokenAuthConfiguration("test-programmatic-access-token"),
-                config.authType
+                config.authType,
             )
         }
     }
@@ -298,7 +298,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             unprettyPrintJson(
                 this.javaClass
                     .getResource("/config_with_credentials_auth_type_pat.json")!!
-                    .readText()
+                    .readText(),
             )
 
         val supplier =
@@ -307,12 +307,12 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.PROGRAMMATIC_ACCESS_TOKEN,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
             assertEquals(
                 "test-programmatic-access-token",
                 ((spec.credentials) as ProgrammaticAccessTokenAuthSpecification)
-                    .programmaticAccessToken
+                    .programmaticAccessToken,
             )
         }
     }
@@ -321,7 +321,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     fun testCredentialsWithAuthTypeFlat() {
         val json =
             unprettyPrintJson(
-                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
+                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText(),
             )
 
         val supplier =
@@ -330,7 +330,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             val spec = supplier.get()
             assertEquals(
                 CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+                spec.credentials?.auth_type,
             )
         }
     }
@@ -340,7 +340,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
         // Missing `number_data_type` parses as null and defaults to FLOAT.
         val json =
             unprettyPrintJson(
-                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
+                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText(),
             )
 
         val supplier =
@@ -356,7 +356,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     fun testNumberDataTypeParsedFromConfig() {
         val json =
             unprettyPrintJson(
-                this.javaClass.getResource("/config_with_number_data_type.json")!!.readText()
+                this.javaClass.getResource("/config_with_number_data_type.json")!!.readText(),
             )
 
         val supplier =

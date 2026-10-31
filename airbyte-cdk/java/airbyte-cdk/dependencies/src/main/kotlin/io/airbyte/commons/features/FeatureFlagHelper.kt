@@ -13,13 +13,13 @@ private val log = KotlinLogging.logger {}
 object FeatureFlagHelper {
     fun isFieldSelectionEnabledForWorkspace(
         featureFlags: FeatureFlags,
-        workspaceId: UUID?
+        workspaceId: UUID?,
     ): Boolean {
         return (isWorkspaceIncludedInFlag(
             featureFlags,
             { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
             workspaceId,
-            "field selection"
+            "field selection",
         ) || featureFlags.applyFieldSelection())
     }
 
@@ -28,7 +28,7 @@ object FeatureFlagHelper {
         featureFlags: FeatureFlags,
         flagRetriever: Function<FeatureFlags, String?>,
         workspaceId: UUID?,
-        context: String?
+        context: String?,
     ): Boolean {
         val workspaceIdsString = flagRetriever.apply(featureFlags)
         val workspaceIds: MutableSet<UUID> = HashSet()
