@@ -1045,9 +1045,13 @@ def test_threads_resume_uses_per_channel_parent_cursors(requests_mock, token_con
     channel_cursors = {"airbyte-for-beginners": 1700000000.5, "good-reads": 1710000000.5}
     for channel, cursor in channel_cursors.items():
         requests_mock.register_uri(
-            "GET", f"https://slack.com/api/conversations.history?channel={channel}", json={"messages": [{"ts": str(cursor), "reply_count": 1}]}
+            "GET",
+            f"https://slack.com/api/conversations.history?channel={channel}",
+            json={"messages": [{"ts": str(cursor), "reply_count": 1}]},
         )
-        requests_mock.register_uri("GET", f"https://slack.com/api/conversations.replies?channel={channel}", json={"messages": [{"ts": str(cursor)}]})
+        requests_mock.register_uri(
+            "GET", f"https://slack.com/api/conversations.replies?channel={channel}", json={"messages": [{"ts": str(cursor)}]}
+        )
     # Threads state after the per-partition cursor switched to a global cursor (no `states` key).
     state = (
         StateBuilder()
