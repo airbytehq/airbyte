@@ -62,4 +62,13 @@ data:
     - title: Atlassian Status
       url: https://status.atlassian.com/
       type: status_page
+    - title: Confluence Cloud changelog
+      url: https://developer.atlassian.com/cloud/confluence/changelog/
+      type: api_release_history
+    - title: Atlassian developer changelog
+      url: https://developer.atlassian.com/changelog/
+      type: api_release_history
+    - title: Atlassian OAuth 2.0 changelog
+      url: https://developer.atlassian.com/cloud/oauth/changelog/
+      type: api_release_history
 metadataSpecVersion: "1.0"
