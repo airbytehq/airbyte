@@ -12,7 +12,7 @@ from jsonschema import ValidationError, validate
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
+from unit_tests.conftest import get_analytics_columns, get_source, get_stream_by_name, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -97,6 +97,40 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     expected_record = {"metric": 1}
 
     assert records[0] == expected_record
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        "advertiser_targeting_report",
+        "campaign_targeting_report",
+        "ad_group_targeting_report",
+        "pin_promotion_targeting_report",
+        "product_group_targeting_report",
+    ],
+)
+def test_targeting_reports_declare_targeting_columns_without_requesting_them(requests_mock, test_config, stream_name):
+    # Pinterest rejects TARGETING_* in the request columns with a 400 but adds them to
+    # targeting-level report rows on its own, so the schema has to declare them.
+    report_download_url = "https://download.report"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    targeting_row = {"CAMPAIGN_ID": 1, "IMPRESSION_2": 1.0, "TARGETING_TYPE": "FEED_TYPE", "TARGETING_VALUE": "TWOCOLUMN_FEED"}
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    creation = requests_mock.post(report_request_url, json={"report_status": "IN_PROGRESS", "token": "token", "message": ""})
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"1": [targeting_row]})
+
+    state = StateBuilder().with_stream_state(stream_name, {"DATE": "2022-11-15"}).build()
+    records = [record.record.data for record in read_from_stream(test_config, stream_name, SyncMode.incremental, state=state).records]
+
+    assert records == [targeting_row]
+    requested_columns = creation.last_request.json()["columns"]
+    assert not [column for column in requested_columns if column.startswith("TARGETING_")]
+    schema_properties = get_stream_by_name(stream_name, test_config).get_json_schema()["properties"]
+    assert schema_properties["TARGETING_TYPE"]["type"] == ["null", "string"]
+    assert schema_properties["TARGETING_VALUE"]["type"] == ["null", "string"]
 
 
 def test_streams(test_config):
