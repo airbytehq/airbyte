@@ -7,7 +7,7 @@
     "title": "Destination Typesense",
     "type": "object",
     "required": ["api_key", "host"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_key": {
         "title": "API Key",
