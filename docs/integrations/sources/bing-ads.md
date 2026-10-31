@@ -321,7 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.18 | 2026-10-31 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Report expired file download URLs for report and bulk streams as transient errors instead of config errors |
+| 3.0.18 | 2026-10-31 | [90308](https://github.com/airbytehq/airbyte/pull/90308) | Report expired file download URLs for report and bulk streams as transient errors instead of config errors |
 | 3.0.17 | 2026-10-27 | [89793](https://github.com/airbytehq/airbyte/pull/89793) | Update dependencies |
 | 3.0.16 | 2026-10-21 | [89609](https://github.com/airbytehq/airbyte/pull/89609) | Classify expired file download URL errors as transient with a clearer error message |
 | 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
