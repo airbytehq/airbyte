@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1180b5a7-8658-4510-ba65-611191333ba8
-  dockerImageTag: 0.0.72
+  dockerImageTag: 0.0.73-rc.1
   dockerRepository: airbyte/source-mention
   githubIssueLabel: source-mention
   icon: icon.svg
@@ -25,11 +25,17 @@ data:
   name: Mention
   releaseDate: 2024-10-12
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: manual
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/mention
   tags:
     - language:manifest-only
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
   ab_internal:
     ql: 100
     sl: 100
