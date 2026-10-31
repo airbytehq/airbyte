@@ -3,6 +3,7 @@
 #
 from __future__ import annotations
 
+import csv
 import logging
 import traceback
 from typing import Optional, Tuple
@@ -17,6 +18,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import (
 from airbyte_cdk.sources.file_based.exceptions import (
     CheckAvailabilityError,
     FileBasedSourceError,
+    RecordParseError,
 )
 from airbyte_cdk.sources.file_based.file_types.parquet_parser import ParquetParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -65,12 +67,18 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
             return super()._check_parse_record(stream, file, logger)
         except Exception as exc:
             self._raise_aws_error(exc)
-            if isinstance(exc, CheckAvailabilityError) and isinstance(exc.__cause__, Exception):
+            error = exc.__cause__ if isinstance(exc, CheckAvailabilityError) and isinstance(exc.__cause__, Exception) else exc
+            if isinstance(error, RecordParseError) and isinstance(error.__cause__, Exception):
+                if not isinstance(error.__cause__, (ValueError, EOFError)):
+                    raise error.__cause__
+            if isinstance(error, (RecordParseError, UnicodeError, csv.Error)):
                 raise AirbyteTracedException(
                     message="S3 file cannot be parsed with the configured format. Check the file format, encoding, and stream format options.",
                     internal_message=str(exc),
                     failure_type=FailureType.config_error,
                 ) from exc
+            if error is not exc:
+                raise error
             raise
 
     def check_availability_and_parsability(

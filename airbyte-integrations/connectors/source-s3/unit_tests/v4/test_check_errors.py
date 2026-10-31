@@ -14,7 +14,7 @@ from source_s3.v4.source import SourceS3
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
 from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -54,17 +54,55 @@ def test_aws_check_errors(error, hint, phase):
     assert "private.example" not in raised.value.message
 
 
-def test_parse_error_is_not_reported_as_connection_error():
+@pytest.mark.parametrize(
+    "error",
+    [
+        RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD),
+        RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_COLUMNS),
+        RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_ROWS),
+        UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid encoding"),
+    ],
+)
+@pytest.mark.parametrize("cause", [None, ValueError("sensitive file contents"), EOFError("invalid file header")])
+def test_parse_error_is_not_reported_as_connection_error(error, cause):
     stream = MagicMock()
     stream.get_files.return_value = [MagicMock()]
     stream.get_parser.return_value.check_config.return_value = (True, None)
-    stream.get_parser.return_value.parse_records.side_effect = ValueError("sensitive file contents")
+    error.__cause__ = cause
+    stream.get_parser.return_value.parse_records.side_effect = error
     strategy = SourceS3AvailabilityStrategy(MagicMock())
     with pytest.raises(AirbyteTracedException) as raised:
         strategy.check_availability_and_parsability(stream, logging.getLogger(), None)
     assert raised.value.failure_type == FailureType.config_error
     assert "configured format" in raised.value.message
     assert "sensitive" not in raised.value.message
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ClientError({"Error": {"Code": "SlowDown", "Message": "Reduce the request rate"}}, "GetObject"),
+        ClientError({"Error": {"Code": "ExpiredToken"}}, "GetObject"),
+        ClientError({"Error": {"Code": "NoSuchKey"}}, "GetObject"),
+        RuntimeError("unexpected error"),
+        FileNotFoundError("object no longer exists"),
+        TimeoutError("request timed out"),
+        AirbyteTracedException(message="Retry later.", failure_type=FailureType.transient_error),
+    ],
+)
+@pytest.mark.parametrize("wrapped_by_parser", [False, True])
+def test_non_parse_errors_propagate_unchanged(error, wrapped_by_parser):
+    stream = MagicMock()
+    stream.get_files.return_value = [MagicMock()]
+    stream.get_parser.return_value.check_config.return_value = (True, None)
+    parser_error = RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
+    parser_error.__cause__ = error
+    stream.get_parser.return_value.parse_records.side_effect = parser_error if wrapped_by_parser else error
+    strategy = SourceS3AvailabilityStrategy(MagicMock())
+    with pytest.raises(type(error)) as raised:
+        strategy.check_availability_and_parsability(stream, logging.getLogger(), None)
+    assert raised.value is error
+    assert "cannot be parsed" not in str(raised.value)
 
 
 def test_empty_stream_already_fails_check():
