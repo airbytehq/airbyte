@@ -24,7 +24,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path: ["bookings"]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -243,7 +243,7 @@ streams:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path: ["bookings"]
     schema_loader:
       type: InlineSchemaLoader
       schema:

@@ -65,6 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.2.25 | 2026-10-31 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Fix `booking` stream to emit one record per booking instead of a single record containing the full API response |
 | 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59925](https://github.com/airbytehq/airbyte/pull/59925) | Update dependencies |
