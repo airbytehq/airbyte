@@ -418,3 +418,30 @@ def test_threads_restart_preserves_parent_checkpoint(token_config, use_global_cu
         del state["states"]
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", state).build())
     assert stream.cursor.state["parent_state"]["channel_messages"] == parent_checkpoint
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        ({}, True),
+        ({"float_ts": 7270247822.0}, True),
+        ({"states": [{"partition": {"float_ts": "1683104542.931169"}, "cursor": {"float_ts": "1753263869"}}]}, True),
+        ({"states": [], "parent_state": {}}, True),
+        ({"states": [], "parent_state": {"channel_messages": {}}}, True),
+        ({"states": [], "parent_state": {"channel_messages": {"float_ts": 1753177470.0}}}, False),
+        (
+            {
+                "state": {"float_ts": "1753263870"},
+                "use_global_cursor": True,
+                "parent_state": {
+                    "channel_messages": {"states": [{"partition": {"channel": "good-reads"}, "cursor": {"float_ts": 1753177470.0}}]}
+                },
+            },
+            False,
+        ),
+    ],
+    ids=["empty", "old_format", "per_thread_states", "empty_parent_state", "empty_channel_messages", "global_parent", "per_channel_parent"],
+)
+def test_threads_state_migration_skips_state_with_parent_checkpoint(token_config, components_module, stream_state, expected):
+    migration = components_module.ThreadsStateMigration(config=token_config)
+    assert migration.should_migrate(stream_state) is expected
