@@ -272,6 +272,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.18 | 2026-10-22 | [85921](https://github.com/airbytehq/airbyte/pull/85921) | Classify invalid aggregationType errors as configuration errors and stop applying that message to unrelated HTTP 400 responses |
 | 2.1.17 | 2026-10-13 | [88645](https://github.com/airbytehq/airbyte/pull/88645) | Update dependencies |
 | 2.1.16 | 2026-10-06 | [87882](https://github.com/airbytehq/airbyte/pull/87882) | Update dependencies |
 | 2.1.15 | 2026-09-29 | [87207](https://github.com/airbytehq/airbyte/pull/87207) | Update dependencies |
