@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.1.52 | 2026-10-31 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Refresh the expired access token mid-sync and save rotated OAuth tokens to the config |
+| 1.1.52 | 2026-10-31 | [90294](https://github.com/airbytehq/airbyte/pull/90294) | Refresh the expired access token mid-sync and save rotated OAuth tokens to the config |
 | 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
 | 1.1.50 | 2026-10-20 | [89080](https://github.com/airbytehq/airbyte/pull/89080) | Save rotated OAuth tokens and refresh the access token on 401 |
 | 1.1.49 | 2026-10-20 | [89347](https://github.com/airbytehq/airbyte/pull/89347) | Update dependencies |
