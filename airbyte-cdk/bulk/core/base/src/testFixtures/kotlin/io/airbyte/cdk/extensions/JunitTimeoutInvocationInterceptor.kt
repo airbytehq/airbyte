@@ -30,7 +30,7 @@ class JunitTimeoutInvocationInterceptor : InvocationInterceptor {
     override fun interceptTestMethod(
         invocation: InvocationInterceptor.Invocation<Void>,
         context: ReflectiveInvocationContext<Method>,
-        extensionContext: ExtensionContext
+        extensionContext: ExtensionContext,
     ) {
         assertTimeoutPreemptively<Void>(
             getTimeout(),
@@ -46,7 +46,7 @@ class JunitTimeoutInvocationInterceptor : InvocationInterceptor {
         private val PATTERN: Pattern =
             Pattern.compile(
                 "([1-9]\\d*) *((?:[nμm]?s)|m|h|d)?",
-                Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE
+                Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE,
             )
         private val UNITS_BY_ABBREVIATION: MutableMap<String, TimeUnit>
 
@@ -76,7 +76,7 @@ class JunitTimeoutInvocationInterceptor : InvocationInterceptor {
             throw DateTimeParseException(
                 "Timeout duration is not in the expected format (<number> [ns|μs|ms|s|m|h|d])",
                 text,
-                0
+                0,
             )
         }
 

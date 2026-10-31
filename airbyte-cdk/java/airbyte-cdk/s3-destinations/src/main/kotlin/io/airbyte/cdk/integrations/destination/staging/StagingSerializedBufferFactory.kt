@@ -21,7 +21,7 @@ object StagingSerializedBufferFactory {
 
     fun initializeBuffer(
         fileUploadFormat: FileUploadFormat,
-        destinationColumns: JavaBaseConstants.DestinationColumns
+        destinationColumns: JavaBaseConstants.DestinationColumns,
     ): SerializableBuffer {
         when (fileUploadFormat) {
             FileUploadFormat.CSV -> {

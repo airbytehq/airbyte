@@ -157,8 +157,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # fetch all files in this folder (1000 is the max page size)
             # supportsAllDrives and includeItemsFromAllDrives are required to access files in shared drives
             # ref https://developers.google.com/workspace/drive/api/reference/rest/v3/files#File
+            q = f"'{folder_id}' in parents"
+            if self.config.exclude_trashed_files:
+                q += " and trashed = false"
             request = service.files().list(
-                q=f"'{folder_id}' in parents",
+                q=q,
                 pageSize=1000,
                 fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId, createdTime)",
                 supportsAllDrives=True,

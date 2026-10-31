@@ -1,58 +1,39 @@
 > NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
 
-# source-mysql: Contributor notes
+# source-mysql: Unique Connector Behaviors
 
-## Performance tests
+## 1. Saved CDC positions are validated against available binlog history
 
-Run performance tests from the repository root:
+At CDC startup, the connector validates saved GTID or binlog state against the server's executed and purged GTID sets and the available binlog files. If the saved position is no longer usable, `invalid_cdc_cursor_position_behavior` determines whether the sync fails or resets; its default is `Fail sync`.
 
-```bash
-./gradlew :airbyte-integrations:connectors:source-mysql:performanceTest [--cpulimit=cpulimit/<limit>] [--memorylimit=memorylimit/<limit>]
-```
+**Why this matters:** A reset may reread data, while continuing from a purged position cannot recover the missing change history. Preserve the configured fail-versus-reset behavior when changing offset validation.
 
-In a pull request, trigger performance tests with:
+## 2. Zero dates and times have distinct CDC conversions
 
-```text
-/test-performance connector=connectors/source-mysql [--cpulimit=cpulimit/<limit>] [--memorylimit=memorylimit/<limit>]
-```
+The CDC converter turns zero `DATE` and `DATETIME` values into `null`, and those fields are made nullable. A zero `TIMESTAMP` instead becomes the Unix epoch, while midnight `TIME` remains a valid time value.
 
-Parameters:
+**Why this matters:** These MySQL zero values are not interchangeable. Collapsing the cases can change schemas or turn legitimate midnight values into nulls.
 
-- `cpulimit`: maximum CPU count. The minimum is `2`, for example `--cpulimit=cpulimit/2`.
-- `memorylimit`: maximum memory. Include a unit such as `MB` or `GB`. The minimum is `6MB`, for example `--memorylimit=memorylimit/4GB`.
+## 3. TINYINT(1) defaults to boolean in CDC
 
-If neither limit is provided, the performance tests run without CPU or memory limits. Available resources are bound by `ResourceRequirements.java`.
+Unless `treat_tinyint1_as_integer` is enabled, the Debezium boolean converter maps `TINYINT(1)` values to booleans. Enabling the option disables that converter so CDC emits integers.
 
-## Benchmark database setup
+**Why this matters:** This setting changes the output type for existing columns. Keep the JDBC and CDC behavior aligned when changing how the option is applied.
 
-Use `src/test-performance/sql/create_mysql_benchmarks.sql` to create a benchmark database.
+## 4. TLS settings are translated for JDBC and Debezium
 
-1. Create a database.
-2. Update the TODOs in `create_mysql_benchmarks.sql` to set the table count and the record count for each size.
-3. Run the script:
+The configured SSL mode and certificate material are mapped into JDBC properties and separately into Debezium's `database.ssl.*` properties. The Debezium binlog client does not use the JDBC driver's SSL properties, so CDC depends on the second property set.
 
-   ```bash
-   cd airbyte-integrations/connectors/source-mysql
-   mysql -h hostname -u user database < src/test-performance/sql/create_mysql_benchmarks.sql
-   ```
+**Why this matters:** A JDBC-only TLS change can leave the binlog connection using different security settings. Preserve both mappings when changing TLS behavior.
 
-The script creates the configured number of tables with names from `test_0` through `test_<table count minus 1>`.
+## 5. Only specific binlog EOF errors are transient
 
-## Reproducing bugs locally
+`application.yml` classifies several specific binlog EOF message patterns as transient. This is a narrow set of recognized messages, not a catch-all rule for EOF or other connection failures.
 
-Use the generic
-[`source-mysql-e2e-tests`](.agents/skills/source-mysql-e2e-tests/SKILL.md)
-skill for standard local sweeps and the
-[`source-mysql-e2e-cdc-tests`](.agents/skills/source-mysql-e2e-cdc-tests/SKILL.md)
-skill for binlog CDC cases. Both delegate orchestration to
-[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/); the CDC skill
-reuses the generic backend, which is already binlog and GTID ready.
+**Why this matters:** Broadening the classification can make permanent failures retry indefinitely, while narrowing it can fail syncs for the known transient binlog cases.
 
-```bash
-GENERIC=airbyte-integrations/connectors/source-mysql/.agents/skills/source-mysql-e2e-tests
-CDC=airbyte-integrations/connectors/source-mysql/.agents/skills/source-mysql-e2e-cdc-tests
+## Reproducing bugs and testing
 
-"$GENERIC/scripts/start-backend.sh"
-"$CDC/cases/initial-load.sh"
-"$CDC/cases/incremental-replay.sh"
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md#reproducing-bugs-locally) for the local harness and the
+[source-mysql-e2e-tests](.agents/skills/source-mysql-e2e-tests/SKILL.md) and
+[source-mysql-e2e-cdc-tests](.agents/skills/source-mysql-e2e-cdc-tests/SKILL.md) skills.

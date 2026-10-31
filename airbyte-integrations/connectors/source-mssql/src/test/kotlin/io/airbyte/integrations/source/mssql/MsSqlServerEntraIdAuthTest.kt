@@ -13,14 +13,15 @@ import org.junit.jupiter.api.Test
  *
  * Covers:
  * - [MsSqlServerAuthentication.toJdbcProperties] — the canonical auth-mode → mssql-jdbc properties
- * translation (used by the JDBC session path).
+ *   translation (used by the JDBC session path).
  * - [MsSqlServerAuthentication.toDebeziumDatabaseProperties] — the subset forwarded to Debezium
- * under the `database.*` prefix (auth identity: user, password).
+ *   under the `database.*` prefix (auth identity: user, password).
  * - [MsSqlServerAuthentication.toDebeziumDriverProperties] — the subset forwarded to Debezium under
- * the `driver.*` pass-through (the `authentication` mode and any other mssql-jdbc connection
- * property), which is how Debezium 3.5+ wires Microsoft Entra authentication.
+ *   the `driver.*` pass-through (the `authentication` mode and any other mssql-jdbc connection
+ *   property), which is how Debezium 3.5+ wires Microsoft Entra authentication.
  * - [MsSqlServerSourceConfigurationFactory] resolving the auth mode, rejecting invalid combinations
- * (Entra ID + unencrypted; missing legacy credentials), and populating `jdbcProperties` correctly.
+ *   (Entra ID + unencrypted; missing legacy credentials), and populating `jdbcProperties`
+ *   correctly.
  */
 class MsSqlServerEntraIdAuthTest {
 
