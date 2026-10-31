@@ -131,15 +131,17 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             error_code, error_message = self._extract_error_code_and_message(response)
+            if error_code == "API_DISABLED_FOR_ORG" or "api is not enabled for this organization" in error_message.lower():
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    AUTHENTICATION_ERROR_MESSAGE_MAPPING["API_DISABLED_FOR_ORG"],
+                )
             if self._is_login_request(response):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    (
-                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                        else f"An error occurred: {response.content.decode()}"
-                    ),
+                    self._login_error_message(error_code, error_message),
                 )
 
             if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
@@ -183,6 +185,19 @@ class SalesforceErrorHandler(ErrorHandler):
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
         )
+
+    @staticmethod
+    def _login_error_message(error_code: Optional[str], error_message: str) -> str:
+        description = error_message.lower()
+        if error_code == "LOGIN_MUST_USE_SECURITY_TOKEN" or any(
+            marker in description for marker in ("ip restricted", "restricted ip", "login_must_use_security_token")
+        ):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["ip_restricted"]
+        if error_code in ("invalid_client_id", "invalid_client"):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["invalid_client"]
+        if error_code == "invalid_grant" or "authentication failure" in description or "expired access/refresh token" in description:
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
+        return "Salesforce login failed. Re-authenticate the source and check the Connected App credentials and is_sandbox setting."
 
     def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
         """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
@@ -279,8 +294,8 @@ class SalesforceErrorHandler(ErrorHandler):
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
             )
 
-            if "error" in response.json() and "error_description" in response.json():
-                return response.json()["error"], response.json()["error_description"]
+            if "error" in response.json():
+                return response.json()["error"], response.json().get("error_description") or ""
 
         return None, f"Unknown error on response `{response.content}`"
 

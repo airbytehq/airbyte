@@ -1,6 +1,34 @@
 # Airbyte Cloud release notes
 
+## October 30, 2026
+
+Connections
+
+- Notes, tips, and warnings in a connector's setup guide now display correctly when they have a title or appear inside a numbered or bulleted step. Previously, some of these callouts showed up as plain text or broke the layout of the step they were in.
+
+Platform
+
+- When several informational notices appear at the top of Airbyte, you can now collapse them with a single toggle and expand them again with **Show more**. Airbyte remembers your choice, and warnings and errors always stay visible. If a new notice appears, the group expands so you see it.
+- If SCIM provisioning with Microsoft Entra ID is enabled for your organization, Airbyte now accepts user provisioning requests that include Entra ID's enterprise user extension. Previously, Airbyte rejected these requests, so Entra ID couldn't create or update those users.
+
+## October 29, 2026
+
+Connections
+
+- Your connection's schema table now labels the **Primary key** and **Cursor** columns and includes tooltips explaining how each is used, making it easier to configure your streams.
+- You can now load available dbt Cloud jobs without an error when your workspace already has saved dbt Cloud credentials.
+
+Platform
+
+- On Pro and Enterprise Flex plans, when you compare your organization's Data Worker usage with the previous period, the chart's date labels now stay within your selected current period, even when the previous period is longer.
+
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
+
+## October 28, 2026
+
+Platform
+
+- The **Billing** and **Plan** pages in your organization settings now fill the width of large windows, like the other organization settings pages. Previously, they stopped at a fixed width and left empty space on the right.
 
 ## October 27, 2026
 
