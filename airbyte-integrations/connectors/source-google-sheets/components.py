@@ -51,8 +51,8 @@ class ValidateGoogleSheetsConfig:
                     match = re.fullmatch(r"/spreadsheets/(?:u/\d+/)?d/([\w-]+)(?:/.*)?", url.path, flags=re.ASCII)
                     if url.netloc == "docs.google.com" and match:
                         spreadsheet_id = match.group(1)
-                except ValueError:
-                    pass
+                except ValueError as exc:
+                    logger.debug("Failed to parse spreadsheet URL '%s': %s", value, exc)
         if not spreadsheet_id:
             message = "Spreadsheet Link is invalid. Enter a spreadsheet ID or a https://docs.google.com/spreadsheets/d/<id>/ URL."
             raise AirbyteTracedException(
