@@ -306,6 +306,35 @@ class TestBaseInsightsStream:
         assert stream.state[account_id]["slices"] == []
 
     @freeze_time("2026-09-30")
+    def test_interrupted_attempts_do_not_widen_lookback_window(self, mocker, api, some_config, async_job_mock):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        end_date = date(2026, 9, 29)
+        start_date = cursor - timedelta(days=30)
+        previous_state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+        expected_starts = {start_date + timedelta(days=offset) for offset in range((end_date - start_date).days + 1)}
+
+        for _ in range(3):
+            stream = AdsInsights(
+                api=api,
+                account_ids=[account_id],
+                start_date=datetime(2026, 1, 1),
+                end_date=datetime.combine(end_date, datetime.min.time()),
+                insights_lookback_window=30,
+            )
+            stream.state = previous_state
+
+            generated_jobs = list(stream._generate_async_jobs(params={}, account_id=account_id))
+            assert {job["interval"].start for job in generated_jobs} == expected_starts
+
+            for interval_start in sorted(expected_starts)[:8]:
+                _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+            assert stream.state[account_id]["date_start"] == cursor.isoformat()
+            assert stream.state[account_id]["slices"] == []
+            previous_state = stream.state
+
+    @freeze_time("2026-09-30")
     def test_completed_slices_past_gap_remain_in_state(self, mocker, api, some_config):
         account_id = some_config["account_ids"][0]
         cursor = date(2026, 9, 20)

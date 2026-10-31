@@ -130,7 +130,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.action_attribution_windows = windows
 
         # state
-        self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
+        self._cursor_values: Optional[MutableMapping[str, date]] = None  # latest period that was read for each account
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
@@ -263,8 +263,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
-            self._advance_cursor(account_id)
+        self._advance_cursor(account_id)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -276,7 +275,11 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor = self._cursor_values.get(account_id)
+                slices = self._completed_slices[account_id]
+                if cursor is not None:
+                    slices = {slice_start for slice_start in slices if slice_start > cursor}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in slices}))
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -322,6 +325,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
             for account_id in self._account_ids
         }
+        for account_id, cursor in self._cursor_values.items():
+            if cursor is not None:
+                self._completed_slices[account_id] = {
+                    slice_start for slice_start in self._completed_slices[account_id] if slice_start > cursor
+                }
 
         self._next_cursor_values = self._get_start_date()
 
@@ -417,10 +425,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            if self._cursor_values is None:
+                self._cursor_values = {}
+            existing_cursor = self._cursor_values.get(account_id)
+            self._cursor_values[account_id] = max(existing_cursor, ts_start) if existing_cursor is not None else ts_start
+        else:
+            self._next_cursor_values[account_id] = self._get_end_date_for_account(account_id) + timedelta(days=1)
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
