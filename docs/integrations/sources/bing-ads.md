@@ -321,6 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.18 | 2026-10-31 | [Pending](https://github.com/airbytehq/airbyte/pulls) | Report expired report and bulk download URLs as transient errors instead of credential errors. |
 | 3.0.17 | 2026-10-27 | [89793](https://github.com/airbytehq/airbyte/pull/89793) | Update dependencies |
 | 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
 | 3.0.14 | 2026-10-13 | [88521](https://github.com/airbytehq/airbyte/pull/88521) | Update dependencies |

@@ -10,18 +10,22 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
+from xml.etree import ElementTree
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -571,6 +575,27 @@ class BingAdsGzipCsvDecoder(Decoder):
         csv_reader = csv.DictReader(text_stream)
         for row in csv_reader:
             yield row
+
+
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 403:
+            try:
+                error = ElementTree.fromstring(response_or_exception.content)
+            except ElementTree.ParseError:
+                return super().interpret_response(response_or_exception)
+
+            if error.findtext("{*}Code") == "AuthenticationFailed" and "Signature not valid in the specified time frame" in (
+                error.findtext("{*}AuthenticationErrorDetail") or ""
+            ):
+                # Retrying the same signed URL cannot renew it; let the next sync attempt create a new job.
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Bing Ads file download URL is outside its validity window.",
+                )
+
+        return super().interpret_response(response_or_exception)
 
 
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"

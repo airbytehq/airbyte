@@ -13,3 +13,11 @@ When the connector is configured with `account_names` predicates (e.g., filter a
 Bing Ads bulk report streams download files from Azure Blob Storage URLs. These files are expected to be gzip-compressed CSV, but the `BingAdsGzipCsvDecoder` includes fallback logic to handle cases where the file arrives uncompressed despite the expected gzip format. The decoder attempts gzip decompression first and falls back to reading the raw content if decompression fails.
 
 **Why this matters:** If you assume all bulk downloads are properly gzip-compressed, you will encounter intermittent failures. Azure Blob Storage does not always apply compression consistently, so the decoder must handle both compressed and uncompressed responses for the same stream.
+
+## 3. Signed Download URL Expiration Is Transient
+
+Report and bulk downloads use Azure signed URLs with a limited validity window. `BingAdsDownloadErrorHandler` treats HTTP 403 as transient only when the XML code is `AuthenticationFailed` and `AuthenticationErrorDetail` contains `Signature not valid in the specified time frame`. Other 403 responses, including `AuthorizationPermissionMismatch`, retain their configuration-error classification.
+
+The handler fails the expired request without retrying the same URL, allowing a subsequent sync attempt to create a new job. It inspects response bodies only on HTTP 403; body-based declarative filters can consume successful streamed downloads before the ZIP/gzip decoders read them.
+
+**Why this matters:** Expired download URLs do not imply invalid credentials. Broadly retrying or reclassifying all 403 responses would hide genuine permission problems, and reading successful response bodies in the error handler can break file decoding.
