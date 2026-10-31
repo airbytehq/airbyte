@@ -5,13 +5,15 @@
 import json
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Iterable
 from unittest.mock import Mock
 
 import pytest
 import requests
-from components import GoogleSheetsOAuthAuthenticator, ValidateGoogleSheetsConfig
+from components import GoogleSheetsOAuthAuthenticator, ValidateGoogleSheetsConfig, ValidateServiceAccountCredentials
 
+from airbyte_cdk.cli.source_declarative_manifest._run import handle_local_manifest_command
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -83,8 +85,9 @@ def test_preserves_released_manifest_id_extraction(value: str) -> None:
     ],
 )
 def test_rejects_malformed_link_before_requests(value: str) -> None:
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config={"spreadsheet_id": value, "credentials": oauth_credentials})
     with pytest.raises(AirbyteTracedException) as error:
-        YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config={"spreadsheet_id": value, "credentials": oauth_credentials})
+        source.streams(config={"spreadsheet_id": value, "credentials": oauth_credentials})
     assert error.value.failure_type == FailureType.config_error
     assert "Enter a spreadsheet ID" in error.value.message
     assert "do-not-echo" not in error.value.message
@@ -93,21 +96,79 @@ def test_rejects_malformed_link_before_requests(value: str) -> None:
 @pytest.mark.parametrize("value", ["not-json", "{}", "[]", "null", '{"private_key": "secret"}'])
 def test_invalid_service_account_json(value: str) -> None:
     config = {"spreadsheet_id": "a_spreadsheet_id", "credentials": {"auth_type": "Service", "service_account_info": value}}
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=config)
     with pytest.raises(AirbyteTracedException) as error:
-        YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=config)
+        source.streams(config=config)
     assert error.value.failure_type == FailureType.config_error
     assert "complete service-account JSON key" in error.value.message
     assert "secret" not in error.value.message
 
 
+@pytest.mark.parametrize("command", ["check", "discover", "read"])
+@pytest.mark.parametrize(
+    "config,hint",
+    [
+        ({"spreadsheet_id": "not a valid link!", "credentials": oauth_credentials}, "Spreadsheet Link is invalid"),
+        (
+            {"spreadsheet_id": "https://docs.google.com/spreadsheets/d/", "credentials": oauth_credentials},
+            "Spreadsheet Link is invalid",
+        ),
+        (
+            {"spreadsheet_id": "a_spreadsheet_id", "credentials": {"auth_type": "Service", "service_account_info": "not-json"}},
+            "Service account credentials are invalid",
+        ),
+        (
+            {
+                "spreadsheet_id": "a_spreadsheet_id",
+                "credentials": {
+                    "auth_type": "Service",
+                    "service_account_info": json.dumps(
+                        {"private_key": "bad-key", "client_email": "test@example.com", "token_uri": "https://oauth2.googleapis.com/token"}
+                    ),
+                },
+            },
+            "Service account credentials are invalid",
+        ),
+    ],
+)
+def test_entrypoint_invalid_config(
+    command: str, config: dict, hint: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    args = [command, "--config", str(config_path)]
+    if command == "read":
+        catalog_path = tmp_path / "catalog.json"
+        catalog_path.write_text(json.dumps({"streams": []}))
+        args.extend(["--catalog", str(catalog_path)])
+    monkeypatch.chdir(_YAML_FILE_PATH.parent)
+    with HttpMocker():
+        if command == "check":
+            handle_local_manifest_command(args)
+        else:
+            with pytest.raises(AirbyteTracedException) as error:
+                handle_local_manifest_command(args)
+            assert error.value.failure_type == FailureType.config_error
+            assert hint in error.value.message
+    output = capsys.readouterr().out
+    assert "contact Support" not in output
+    if command != "check":
+        return
+    messages = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
+    failed_status = any(message.get("connectionStatus", {}).get("status") == "FAILED" for message in messages)
+    config_error = any(message.get("trace", {}).get("error", {}).get("failure_type") == "config_error" for message in messages)
+    assert failed_status or config_error
+    assert hint in output
+
+
 def test_valid_service_account_and_invalid_private_key() -> None:
     config = {"spreadsheet_id": "a_spreadsheet_id", "credentials": deepcopy(service_account_credentials)}
-    ValidateGoogleSheetsConfig().transform(config)
+    ValidateServiceAccountCredentials().validate(config["credentials"])
     account = json.loads(config["credentials"]["service_account_info"])
     account["private_key"] = "secret-invalid-key"
     config["credentials"]["service_account_info"] = json.dumps(account)
     with pytest.raises(AirbyteTracedException) as error:
-        ValidateGoogleSheetsConfig().transform(config)
+        ValidateServiceAccountCredentials().validate(config["credentials"])
     assert error.value.failure_type == FailureType.config_error
     assert "secret-invalid-key" not in error.value.message
 

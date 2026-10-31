@@ -454,6 +454,17 @@ spec:
     transformations:
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.ValidateGoogleSheetsConfig
+    validations:
+      - type: DpathValidator
+        field_path: [spreadsheet_id]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateSpreadsheetLink
+      - type: DpathValidator
+        field_path: [credentials]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateServiceAccountCredentials
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: Google Sheets Source Spec

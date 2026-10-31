@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
@@ -37,7 +38,12 @@ class ValidateGoogleSheetsConfig:
     def transform(self, config: MutableMapping[str, Any]) -> None:
         if "spreadsheet_id" not in config:
             return
-        value = config["spreadsheet_id"]
+        spreadsheet_id = self.extract_spreadsheet_id(config["spreadsheet_id"])
+        if spreadsheet_id:
+            config["spreadsheet_id"] = spreadsheet_id
+
+    @staticmethod
+    def extract_spreadsheet_id(value: Any) -> str:
         value = value.strip() if isinstance(value, str) else ""
         match = re.fullmatch(r"([A-Za-z0-9_-]+)/?", value)
         spreadsheet_id = match.group(1) if match else ""
@@ -51,15 +57,22 @@ class ValidateGoogleSheetsConfig:
                     match = re.fullmatch(r"/spreadsheets/(?:u/\d+/)?d/([\w-]+)(?:/.*)?", url.path, flags=re.ASCII)
                     if url.netloc == "docs.google.com" and match:
                         spreadsheet_id = match.group(1)
-                except ValueError as exc:
-                    logger.debug("Failed to parse spreadsheet URL '%s': %s", value, exc)
-        if not spreadsheet_id:
+                except ValueError:
+                    return ""
+        return spreadsheet_id
+
+
+class ValidateSpreadsheetLink(ValidationStrategy):
+    def validate(self, value: Any) -> None:
+        if not ValidateGoogleSheetsConfig.extract_spreadsheet_id(value):
             message = "Spreadsheet Link is invalid. Enter a spreadsheet ID or a https://docs.google.com/spreadsheets/d/<id>/ URL."
             raise AirbyteTracedException(
                 message=message, internal_message="Invalid Spreadsheet Link format.", failure_type=FailureType.config_error
             )
-        config["spreadsheet_id"] = spreadsheet_id
-        credentials = config.get("credentials", {})
+
+
+class ValidateServiceAccountCredentials(ValidationStrategy):
+    def validate(self, credentials: Mapping[str, Any]) -> None:
         if credentials.get("auth_type") == "Service":
             try:
                 account = json.loads(credentials.get("service_account_info", ""))
