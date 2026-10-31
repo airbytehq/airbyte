@@ -117,6 +117,7 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          wait-for-stopped-status: true
           start-message: |
             **AI PR Review** starting...
 
@@ -126,3 +127,27 @@ jobs:
             ai-oncall
             pr-review
             airbyte-pr-${{ inputs.pr }}
+
+      # Signal the Hydra v2 handoff workflow that this stage has finished so it
+      # can re-read state and decide the next action. Fires regardless of the
+      # Devin session's outcome — hydra assess looks up the session's decision
+      # from Devin's tag index and routes appropriately (review APPROVE at HEAD
+      # → ready, FAIL/CHANGES_REQUESTED → fix rework or escalate). The
+      # handoff's own pre-flight exits early for PRs without `hyd-chain-v2`,
+      # so this is a no-op during the parallel soak for PRs owned by the old
+      # workflow.
+      - name: Signal handoff v2 (repository_dispatch)
+        if: always() && inputs.pr != ''
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          jq -n \
+            --arg pr "$PR_NUMBER" \
+            --arg head "$HEAD_SHA" \
+            --arg stage "review" \
+            '{event_type: "handoff", client_payload: {pr: $pr, head_sha: $head, source_stage: $stage}}' \
+            | gh api -X POST "repos/${{ github.repository }}/dispatches" --input -
+          echo "::notice::Signalled handoff v2 for PR #$PR_NUMBER (head ${HEAD_SHA:0:12}, source review)"
