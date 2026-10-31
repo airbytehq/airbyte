@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from datetime import date, datetime, timedelta
 
 import pytest
@@ -43,9 +45,9 @@ def test_interrupted_attempt_does_not_rewind_checkpoint(mocker):
     resumed.state = checkpoint
     assert checkpoint["b"]["date_start"] == "2026-09-20"
     assert checkpoint["a"]["date_start"] == "2026-09-20"
-    assert resumed._next_cursor_values["a"] == initial_start, (
-        f"checkpoint={checkpoint['a']['date_start']}, first start={initial_start}, resumed start={resumed._next_cursor_values['a']}"
-    )
+    assert (
+        resumed._next_cursor_values["a"] == initial_start
+    ), f"checkpoint={checkpoint['a']['date_start']}, first start={initial_start}, resumed start={resumed._next_cursor_values['a']}"
 
 
 @freeze_time("2026-10-10")
