@@ -290,6 +290,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 ### Troubleshooting
 
+- **Invalid Spreadsheet Link:** Enter a bare spreadsheet ID (an optional trailing `/` is accepted) or a full spreadsheet URL. Supported forms include `https://docs.google.com/spreadsheets/d/<id>/...`, `https://docs.google.com/spreadsheets/u/0/d/<id>/...`, and `https://sheets.googleapis.com/v4/spreadsheets/<id>/...`. Existing HTTPS links with an extractable ID remain supported; access is checked through the Google Sheets API.
+- **Spreadsheet not found or access denied:** Check that the spreadsheet exists and the link is correct. Share the spreadsheet with the service account's `client_email` from its JSON key, or with the Google user authorized for the source.
+- **Google API disabled:** In the Google Cloud project associated with your credentials, enable both the Google Sheets API and Google Drive API. Allow a few minutes for the change to take effect, then retry.
+- **Authentication failed:** Re-authenticate the source if OAuth authorization has expired or been revoked. For service accounts, supply the complete JSON key downloaded from Google Cloud; create a new key if the existing key is invalid or revoked.
 - If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
 - Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
 - If the connection check or schema discovery fails with `Failed to find output files from connector within timeout of 9 minute(s)` after repeated `Rate limit exceeded (HTTP 503)` retries in the logs, Google is likely having trouble serving the spreadsheet. The connector logs every retry as `Rate limit exceeded`, but a `503` means the Sheets API is unavailable or finds the request or spreadsheet too complex, so the API rate limits above usually aren't the cause. During check and discovery, the connector reads the header row of every sheet in the spreadsheet, including hidden sheets and sheets you don't sync. It retries each `503` up to five times with growing waits, and across all those requests the waits can pass the 9-minute limit. If one request runs out of retries first, the error is `Exhausted available request attempts` instead. Airbyte checks the source before sync attempts, so syncs can fail for days and then succeed without any change on the Airbyte side. To reduce the load, follow Google's [suggestions for `503` errors](https://developers.google.com/workspace/sheets/api/troubleshoot-api-errors#503-service-unavailable), such as:
@@ -312,7 +316,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| ------------ | ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| :------ | :--- | :----------- | :------ |
+| 0.12.46 | 2026-10-30 | [90255](https://github.com/airbytehq/airbyte/pull/90255) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
 | 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
 | 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |
