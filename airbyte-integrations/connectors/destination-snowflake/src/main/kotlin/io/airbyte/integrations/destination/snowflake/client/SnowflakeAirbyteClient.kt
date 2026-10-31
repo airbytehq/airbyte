@@ -112,7 +112,7 @@ class SnowflakeAirbyteClient(
         connection.createStatement().use { statement ->
             val resultSet =
                 statement.executeQuery(
-                    "SHOW PARAMETERS LIKE 'QUOTED_IDENTIFIERS_IGNORE_CASE' IN SESSION"
+                    "SHOW PARAMETERS LIKE 'QUOTED_IDENTIFIERS_IGNORE_CASE' IN SESSION",
                 )
             resultSet.next() && resultSet.getString("value").equals("true", ignoreCase = true)
         }
