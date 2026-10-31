@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2707d529-3c04-46eb-9c7e-40d4038df6f7
-  dockerImageTag: 0.2.26
+  dockerImageTag: 0.2.27-rc.1
   dockerRepository: airbyte/source-mailersend
   githubIssueLabel: source-mailersend
   icon: mailersend.svg
@@ -18,6 +18,9 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailersend
   tags:
     - cdk:low-code

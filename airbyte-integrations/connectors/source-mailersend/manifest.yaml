@@ -45,6 +45,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: created_at
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
           - "%s"
         datetime_format: "%s"
         start_datetime:
@@ -54,6 +56,10 @@ definitions:
         start_time_option:
           type: RequestOption
           field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
