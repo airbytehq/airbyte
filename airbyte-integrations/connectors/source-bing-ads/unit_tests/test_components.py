@@ -7,6 +7,7 @@ import pytest
 import requests
 import requests_mock as rm
 
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION
 
@@ -1147,15 +1148,7 @@ def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
 # --- Manifest-level integration test (P1) ---
 
 
-def test_manifest_instantiates_custom_download_requester(config):
-    """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
-
-    This test builds the full source from manifest.yaml via YamlDeclarativeSource,
-    finds a report stream, and asserts that:
-    1. The download requester is an instance of BingAdsReportDownloadRequester.
-    2. stream_response is True (derived from decoder in __post_init__).
-    3. The report_poll_authenticator is resolved and has get_auth_header().
-    """
+def _get_download_requester(stream_name, config):
     from pathlib import Path
 
     from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -1167,45 +1160,98 @@ def test_manifest_instantiates_custom_download_requester(config):
     state = StateBuilder().build()
     source = YamlDeclarativeSource(path_to_yaml=str(yaml_path), catalog=catalog, config=config, state=state)
 
-    # Find a report stream that uses the async retriever with download_requester
-    target_stream = None
-    for stream in source.streams(config=config):
-        if stream.name == "account_performance_report_daily":
-            target_stream = stream
-            break
-    assert target_stream is not None, "account_performance_report_daily stream not found"
+    target_stream = next((stream for stream in source.streams(config=config) if stream.name == stream_name), None)
+    assert target_stream is not None, f"{stream_name} stream not found"
 
-    # Navigate to the AsyncJobPartitionRouter (stream_slicer).
-    # The CDK may wrap the stream as a concurrent DefaultStream or leave it as a
-    # DeclarativeStream depending on config/version, so handle both paths.
     if hasattr(target_stream, "retriever"):
-        # DeclarativeStream path (non-concurrent)
         slicer = target_stream.retriever.stream_slicer
     else:
-        # DefaultStream path (concurrent wrapper)
         slicer = target_stream._stream_partition_generator._stream_slicer
 
     factory_fn = slicer._job_orchestrator_factory
-    job_repository = None
-    for var_name, cell in zip(factory_fn.__code__.co_freevars, factory_fn.__closure__):
-        if var_name == "job_repository":
-            job_repository = cell.cell_contents
-            break
+    job_repository = next(
+        (
+            cell.cell_contents
+            for var_name, cell in zip(factory_fn.__code__.co_freevars, factory_fn.__closure__)
+            if var_name == "job_repository"
+        ),
+        None,
+    )
     assert job_repository is not None, "Could not find job_repository in factory closure"
 
-    download_requester = job_repository.download_retriever.requester
+    return job_repository.download_retriever.requester
 
-    # Assert the requester is our custom class (not plain HttpRequester)
+
+def test_manifest_instantiates_custom_download_requester(config):
+    """Verify the custom report download requester is correctly wired."""
+    download_requester = _get_download_requester("account_performance_report_daily", config)
+
     import components as components_mod
 
     assert isinstance(download_requester, components_mod.BingAdsReportDownloadRequester)
-
-    # Assert stream_response is True (critical for streaming decoders)
     assert download_requester.stream_response is True
-
-    # Assert report_poll_authenticator is resolved and usable
     assert download_requester.report_poll_authenticator is not None
     assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")
+
+
+@pytest.mark.parametrize("stream_name", ["account_performance_report_daily", "budget"], ids=["report", "bulk"])
+@pytest.mark.parametrize(
+    "response_body,expected_failure_type,expected_error_message",
+    [
+        pytest.param(
+            "<Error><Code>AuthenticationFailed</Code><Message>Server failed to authenticate the request.</Message>"
+            "<AuthenticationErrorDetail>Signature not valid in the specified time frame: Start "
+            "[2024-01-01T00:00:00Z] - Expiry [2024-01-01T00:10:00Z] - Current "
+            "[2024-01-01T00:11:00Z]</AuthenticationErrorDetail></Error>",
+            "transient_error",
+            "Bing Ads file download URL is expired.",
+            id="expired-sas",
+        ),
+        pytest.param(
+            "<Error><Code>AuthorizationPermissionMismatch</Code><Message>This request is not authorized to perform "
+            "this operation using this permission.</Message></Error>",
+            "config_error",
+            None,
+            id="permission-mismatch",
+        ),
+        pytest.param(
+            "<Error><Code>AuthenticationFailed</Code><Message>Server failed to authenticate the request.</Message>"
+            "<AuthenticationErrorDetail>Signature did not match.</AuthenticationErrorDetail></Error>",
+            "config_error",
+            None,
+            id="signature-mismatch",
+        ),
+    ],
+)
+def test_download_error_handler_classifies_download_responses(
+    stream_name, response_body, expected_failure_type, expected_error_message, config
+):
+    import components as components_mod
+
+    download_requester = _get_download_requester(stream_name, config)
+    error_handler = download_requester.error_handler
+
+    assert isinstance(error_handler, components_mod.BingAdsDownloadErrorHandler)
+    assert len(error_handler.response_filters) == 1
+    assert all(isinstance(response_filter, HttpResponseFilter) for response_filter in error_handler.response_filters)
+
+    response = requests.Response()
+    response.status_code = 403
+    response._content = response_body.encode()
+    response.headers["Content-Type"] = "application/xml"
+    resolution = error_handler.interpret_response(response)
+
+    assert resolution.response_action.name == "FAIL"
+    assert getattr(resolution.failure_type, "value", resolution.failure_type) == expected_failure_type
+    if expected_error_message:
+        assert resolution.error_message == expected_error_message
+
+    success_response = requests.Response()
+    success_response.status_code = 200
+    success_response.raw = io.BytesIO(b"data")
+
+    assert error_handler.interpret_response(success_response) == SUCCESS_RESOLUTION
+    assert success_response.raw.read() == b"data"
 
 
 def test_download_error_handler_does_not_consume_success_response_body(components_module):

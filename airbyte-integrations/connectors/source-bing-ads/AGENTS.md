@@ -13,3 +13,7 @@ When the connector is configured with `account_names` predicates (e.g., filter a
 Bing Ads bulk report streams download files from Azure Blob Storage URLs. These files are expected to be gzip-compressed CSV, but the `BingAdsGzipCsvDecoder` includes fallback logic to handle cases where the file arrives uncompressed despite the expected gzip format. The decoder attempts gzip decompression first and falls back to reading the raw content if decompression fails.
 
 **Why this matters:** If you assume all bulk downloads are properly gzip-compressed, you will encounter intermittent failures. Azure Blob Storage does not always apply compression consistently, so the decoder must handle both compressed and uncompressed responses for the same stream.
+
+## 3. File Download Errors Must Not Consume Streamed Bodies
+
+Report and bulk file downloads use `BingAdsDownloadErrorHandler`, which returns success for 2xx responses before response filters can read the streamed body. Expired Bing-signed Azure Blob SAS URLs are transient errors, not user-credential failures; genuine permission errors remain configuration errors.
