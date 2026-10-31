@@ -26,6 +26,13 @@ object MsSqlServerContainerFactory {
         }
     }
 
+    /** Runs SQL Server Agent, which hosts the CDC capture job */
+    data object WithAgent : MsSqlServerContainerModifier {
+        override fun modify(container: MSSQLServerContainer<*>) {
+            container.withEnv("MSSQL_AGENT_ENABLED", "true")
+        }
+    }
+
     data object WithTestDatabase : MsSqlServerContainerModifier {
         override fun modify(container: MSSQLServerContainer<*>) {
             container.start()
