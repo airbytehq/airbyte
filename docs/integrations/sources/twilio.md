@@ -167,6 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.9 | 2026-10-30 | [88133](https://github.com/airbytehq/airbyte/pull/88133) | Move RFC2822 datetime normalization to a declarative manifest transformation; synced data is unchanged |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |
 | 1.1.6 | 2026-10-13 | [88836](https://github.com/airbytehq/airbyte/pull/88836) | Update dependencies |
