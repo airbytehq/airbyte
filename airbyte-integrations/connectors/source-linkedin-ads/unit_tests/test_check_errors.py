@@ -63,8 +63,17 @@ def test_check_non_json_errors(requests_mock: Any, status: int) -> None:
 def test_check_zero_accounts(requests_mock: Any, account_ids: list[int]) -> None:
     config = {**_CONFIG, "account_ids": account_ids}
     requests_mock.get(_URL, json={"elements": []})
-    _assert_check_failure(config, "no access to any ad account")
-    assert "Campaign Manager" in get_source(config).check(_LOGGER, config).message
+    assert get_source(config).check(_LOGGER, config).status == Status.SUCCEEDED
+
+
+@pytest.mark.parametrize("account_ids", [[], [123]])
+def test_read_zero_accounts(requests_mock: Any, account_ids: list[int]) -> None:
+    config = {**_CONFIG, "account_ids": account_ids}
+    requests_mock.get(_URL, json={"elements": []})
+    source = get_source(config)
+    assert source.check(_LOGGER, config).status == Status.SUCCEEDED
+    accounts = next(stream for stream in source.streams(config) if stream.name == "accounts")
+    assert run_read(accounts) == []
 
 
 def test_check_accessible_accounts(requests_mock: Any) -> None:
@@ -74,13 +83,14 @@ def test_check_accessible_accounts(requests_mock: Any) -> None:
 
 def test_accounts_extractor_allows_empty_final_page(components_module: Any, requests_mock: Any) -> None:
     requests_mock.get(_URL, [{"json": {"elements": [{"id": 1}]}}, {"json": {"elements": []}}])
-    extractor = components_module.LinkedInAdsAccountsExtractor()
+    extractor = components_module.LinkedInAdsRecordExtractor()
     assert list(extractor.extract_records(requests.get(_URL))) == [{"id": 1}]
     assert list(extractor.extract_records(requests.get(_URL))) == []
 
 
 @pytest.mark.parametrize("has_accounts", [True, False])
-def test_check_follows_empty_page(requests_mock: Any, has_accounts: bool) -> None:
+@pytest.mark.parametrize("operation", ["check", "read"])
+def test_check_and_read_follow_empty_page(requests_mock: Any, has_accounts: bool, operation: str) -> None:
     requests_mock.get(
         _URL,
         [
@@ -88,7 +98,9 @@ def test_check_follows_empty_page(requests_mock: Any, has_accounts: bool) -> Non
             {"json": {"elements": [{"id": 1}] if has_accounts else []}},
         ],
     )
-    if has_accounts:
-        assert get_source(_CONFIG).check(_LOGGER, _CONFIG).status == Status.SUCCEEDED
+    source = get_source(_CONFIG)
+    if operation == "check":
+        assert source.check(_LOGGER, _CONFIG).status == Status.SUCCEEDED
     else:
-        _assert_check_failure(_CONFIG, "no access to any ad account")
+        accounts = next(stream for stream in source.streams(_CONFIG) if stream.name == "accounts")
+        assert [record.data["id"] for record in run_read(accounts)] == ([1] if has_accounts else [])

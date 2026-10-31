@@ -56,7 +56,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.LinkedInAdsAccountsExtractor
+            class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
           record_filter:
             condition: "{{ record['id'] in config['account_ids'] if config.get('account_ids') else True }}"
         paginator:
