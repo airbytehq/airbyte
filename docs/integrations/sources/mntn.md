@@ -51,6 +51,7 @@ The streams fall into two groups:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2026-10-27 | [89296](https://github.com/airbytehq/airbyte/pull/89296) | Update dependencies |
 | 0.0.12 | 2026-10-13 | [88719](https://github.com/airbytehq/airbyte/pull/88719) | Update dependencies |
 | 0.0.11 | 2026-10-06 | [87917](https://github.com/airbytehq/airbyte/pull/87917) | Update dependencies |
 | 0.0.10 | 2026-09-29 | [87263](https://github.com/airbytehq/airbyte/pull/87263) | Update dependencies |
