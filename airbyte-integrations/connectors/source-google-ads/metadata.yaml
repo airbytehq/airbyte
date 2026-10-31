@@ -128,11 +128,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE-ADS_INCREMENTAL__CREDS
-          fileName: incremental_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-GOOGLE-ADS_MANAGER_ACCOUNT_CREDS
           fileName: config_manager_account.json
           secretStore:
@@ -147,11 +142,6 @@ data:
       testSecrets:
         - name: SECRET_SOURCE-GOOGLE-ADS_CLICK_VIEW__CREDS
           fileName: config_click_view.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE-ADS_INCREMENTAL__CREDS
-          fileName: incremental_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

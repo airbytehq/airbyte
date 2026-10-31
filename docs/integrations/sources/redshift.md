@@ -1,56 +1,75 @@
 # Redshift
 
-## Overview
+<HideInUI>
 
-The Redshift source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+This connector replicates data from Amazon Redshift to your destination using JDBC. It supports both full refresh and cursor-based incremental syncs.
 
-This Redshift source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html).
+</HideInUI>
 
-### Sync overview
+## Features
 
-#### Resulting schema
+| Feature                       | Supported | Notes                                                                                  |
+| :---------------------------- | :-------- | :------------------------------------------------------------------------------------- |
+| Full Refresh Sync             | Yes       |                                                                                        |
+| Incremental Sync              | Yes       | Cursor-based, using `ORDER BY` on a user-defined cursor column                         |
+| Replicate Incremental Deletes | No        |                                                                                        |
+| Logical Replication (WAL)     | No        |                                                                                        |
+| SSL Support                   | Yes       | Enabled by default on all connections                                                  |
+| SSH Tunnel Connection         | No        |                                                                                        |
+| Namespaces                    | Yes       | Enabled by default                                                                     |
+| Schema Selection              | Yes       | Multiple schemas may be used at one time; leave empty to replicate all schemas          |
 
 The Redshift source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-### Features
+### Incremental sync
 
-| Feature                       | Supported                 | Notes                                                                                   |
-| :---------------------------- | :------------------------ | :-------------------------------------------------------------------------------------- |
-| Full Refresh Sync             | Yes                       |                                                                                         |
-| Incremental Sync              | Yes                       | Cursor-based, using `ORDER BY` on a user-defined cursor column                          |
-| Replicate Incremental Deletes | Not supported in Redshift |                                                                                         |
-| Logical Replication \(WAL\)   | Not supported in Redshift |                                                                                         |
-| SSL Support                   | Yes                       |                                                                                         |
-| SSH Tunnel Connection         | No                        |                                                                                         |
-| Namespaces                    | Yes                       | Enabled by default                                                                      |
-| Schema Selection              | Yes                       | Multiple schemas may be used at one time. Keep empty to process all of existing schemas |
+The Redshift source connector supports incremental syncs using a [user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector uses this column to track which rows have changed since the previous sync.
 
-#### Incremental Sync
+To run [incremental + dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) syncs, you also need to configure a primary key for the stream.
 
-The Redshift source connector supports incremental syncs. To setup an incremental sync for a table in Redshift in the Airbyte UI, you must setup a [user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector relies on this column to know which records were updated since the last sync it ran. See the [incremental sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+## Prerequisites
 
-Defining a cursor field allows you to run incremental-append syncs. To run [incremental-dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) syncs, you'll need to tell the connector which column(s) to use as a primary key. See the [incremental-dedupe sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+1. An active Amazon Redshift cluster.
+2. A database user with `SELECT` permission on the tables you want to replicate. Creating a dedicated read-only user is recommended.
+3. Network access from Airbyte to your Redshift cluster (if they are in separate VPCs). See [Authorizing access to your cluster](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-authorize-cluster-access.html) in the AWS docs.
 
-## Getting started
+## Setup guide
 
-### Requirements
+### 1. Verify cluster accessibility
 
-1. Active Redshift cluster
-2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
+The easiest way to confirm that Airbyte can reach your Redshift cluster is to use the **Test Connection** button in the Airbyte UI. If the connection fails, review your VPC security groups and subnet routing.
 
-### Setup guide
+### 2. Configure the source
 
-#### 1. Make sure your cluster is active and accessible from the machine running Airbyte
+Provide the following connection details in the Airbyte UI:
 
-This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Redshift cluster is via the check connection tool in the UI. You can check AWS Redshift documentation with a tutorial on how to properly configure your cluster's access [here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-authorize-cluster-access.html)
+| Field              | Description                                                                                                                                                                                                                                                   |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Host**           | The endpoint of your Redshift cluster, without the port or database name. This typically includes the cluster ID, region, and ends with `.redshift.amazonaws.com`. Find it on the cluster details page under [Connection string](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html#rs-gsg-how-to-get-connection-string). |
+| **Port**           | The port your cluster listens on. The default is `5439`.                                                                                                                                                                                                      |
+| **Database**       | The name of the database to connect to.                                                                                                                                                                                                                       |
+| **Username**       | The database user to authenticate as.                                                                                                                                                                                                                         |
+| **Password**       | The password for the database user.                                                                                                                                                                                                                           |
+| **Schemas**        | (Optional) A list of schemas to replicate. Schema names are case-sensitive. Leave empty to replicate all schemas the user has access to.                                                                                                                      |
+| **JDBC URL Params** | (Optional) Additional JDBC connection properties, formatted as `key=value` pairs separated by `&` (for example, `loginTimeout=30&tcpKeepAlive=true`).                                                                                                        |
 
-#### 2. Fill up connection info
+### Encryption
 
-Next is to provide the necessary information on how to connect to your cluster such as the `host` whcih is part of the connection string or Endpoint accessible [here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html#rs-gsg-how-to-get-connection-string) without the `port` and `database` name \(it typically includes the cluster-id, region and end with `.redshift.amazonaws.com`\).
+All connections use SSL by default. No additional configuration is required.
 
-## Encryption
+## Data type handling
 
-All Redshift connections are encrypted using SSL
+The connector maps Redshift data types to Airbyte types automatically. A few behaviors to be aware of:
+
+- **`timestamp`** and **`timestamptz`** columns are read as raw server-rendered strings and parsed by the connector, bypassing the JDBC driver's timezone conversion. This avoids a known JDBC driver behavior where timestamps can shift by an hour during daylight saving time transitions.
+- **`timestamptz`** values are stored in Redshift as UTC. The connector preserves the UTC instant when serializing these values.
+- If you use a `timestamptz` column as a cursor for incremental syncs, the connector handles both timezone-aware and timezone-naive cursor formats.
+
+## Limitations
+
+- Change Data Capture (CDC) is not supported. Only cursor-based incremental replication is available.
+- SSH tunnel connections are not supported.
+- IAM-based authentication is not supported; you must authenticate with a database username and password.
 
 ## IP allow list
 
@@ -63,8 +82,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.5.5 | 2026-06-03 | [74769](https://github.com/airbytehq/airbyte/pull/74769) | Handle timezone-aware timestamps in cursor parsing and fix DST offset in `timestamptz` reads |
-| 0.5.4 | 2025-07-10 | [62922](https://github.com/airbytehq/airbyte/pull/62922) | Convert to new gradle build flow |
+| 0.5.5 | 2026-06-04 | [74769](https://github.com/airbytehq/airbyte/pull/74769) | Handle timezone-aware timestamps in cursor parsing and fix DST offset in `timestamptz` reads |
+| 0.5.4 | 2025-07-16 | [62922](https://github.com/airbytehq/airbyte/pull/62922) | Convert to new gradle build flow |
 | 0.5.3 | 2024-12-18 | [49893](https://github.com/airbytehq/airbyte/pull/49893) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.5.2 | 2024-02-13 | [35223](https://github.com/airbytehq/airbyte/pull/35223) | Adopt CDK 0.20.4 |
 | 0.5.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |

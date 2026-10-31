@@ -23,6 +23,12 @@ _PROJECT = "test-project"
 _AUTH_TOKEN = "test_token_abc123"
 
 
+def _project_cursor(output, project: str) -> dict:
+    """The stream keeps one bookmark per configured project; return that project's cursor."""
+    stream_state = output.most_recent_state.stream_state.__dict__
+    return next(entry["cursor"] for entry in stream_state["states"] if entry["partition"]["project"] == project)
+
+
 @freezegun.freeze_time(_NOW.isoformat())
 class TestIssuesStream(TestCase):
     """Tests for issues stream"""
@@ -85,8 +91,12 @@ class TestIssuesStream(TestCase):
 
         # Mock returns issues (lastSeen = 2024-01-20, after state 01-01)
         # Issues stream lacks record_filter, so all records are emitted
+        # The query starts from a bookmark saved before 1.1.0 ({"lastSeen": ...}, no per-project entries)
         http_mocker.get(
-            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(), create_response("issues", has_next=False)
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params({"query": f"lastSeen:>{previous_state_date}"})
+            .build(),
+            create_response("issues", has_next=False),
         )
 
         # ACT - Pass state to get_source() for proper state management
@@ -105,7 +115,7 @@ class TestIssuesStream(TestCase):
 
         # ASSERT - State message with latest lastSeen
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        new_state = output.most_recent_state.stream_state.__dict__
+        new_state = _project_cursor(output, _PROJECT)
         # State should be updated to the latest record (01-20)
         assert new_state["lastSeen"].startswith("2024-01-20T15:00:00"), f"Expected state to advance to latest record, got {new_state}"
 
@@ -139,7 +149,7 @@ class TestIssuesStream(TestCase):
 
         # ASSERT - State message emitted with cursor value (KEY VALIDATION)
         assert len(output.state_messages) > 0, "Expected state messages to be emitted on first sync"
-        state = output.most_recent_state.stream_state.__dict__
+        state = _project_cursor(output, _PROJECT)
         # State should be set to the latest record's lastSeen
         assert state["lastSeen"] is not None, "Expected state to have lastSeen cursor"
         assert state["lastSeen"].startswith("2024-01-20T15:00:00"), f"Expected state cursor to be latest record's lastSeen, got {state}"
@@ -216,7 +226,7 @@ class TestIssuesStream(TestCase):
 
         # ASSERT - State updated to latest record
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        new_state = output.most_recent_state.stream_state.__dict__
+        new_state = _project_cursor(output, _PROJECT)
         assert new_state["lastSeen"].startswith("2024-01-18T12:00:00"), f"Expected state updated to latest, got {new_state}"
 
     @HttpMocker()
@@ -296,5 +306,44 @@ class TestIssuesStream(TestCase):
 
         # ASSERT - State updated to latest record (from Page 1)
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        new_state = output.most_recent_state.stream_state.__dict__
+        new_state = _project_cursor(output, _PROJECT)
         assert new_state["lastSeen"].startswith("2024-01-20T12:00:00"), f"Expected state updated to latest (Page 1), got {new_state}"
+
+    @HttpMocker()
+    def test_multiple_projects(self, http_mocker: HttpMocker):
+        """Configured project list syncs each project partition."""
+        second_project = "other-project"
+        config = ConfigBuilder().with_projects([_PROJECT, second_project]).build()
+
+        http_mocker.get(
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("issues", has_next=False),
+        )
+        http_mocker.get(
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, second_project, _AUTH_TOKEN).build(),
+            create_response("issues", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2, f"Expected one issues page per project, got {len(output.records)}"
+
+    @HttpMocker()
+    def test_start_date_does_not_change_lastseen_query(self, http_mocker: HttpMocker):
+        """The start date only applies to events, so the first issues sync still asks for every issue."""
+        config = ConfigBuilder().with_start_date("2024-01-10T00:00:00Z").build()
+
+        http_mocker.get(
+            SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params({"query": "lastSeen:>1900-01-01T00:00:00.000000Z"})
+            .build(),
+            create_response("issues", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1

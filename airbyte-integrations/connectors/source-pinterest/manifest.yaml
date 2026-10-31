@@ -336,6 +336,7 @@ definitions:
       start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-913, format='%Y-%m-%d') else day_delta(-913, format='%Y-%m-%d') }}"
       cursor_granularity: "P1D"
       step: "P185D"
+      lookback_window: "P{{ config.get('attribution_window') or 0 }}D"
 
   analytics_tagreting_report_base_stream:
     $ref: "#/definitions/analytics_report_base_stream"
@@ -517,6 +518,7 @@ definitions:
       start_datetime: "template_value"
       cursor_granularity: "P1D"
       step: "template_value"
+      lookback_window: "P{{ config.get('attribution_window') or 0 }}D"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.CustomReportStatusChunkStateMigration
@@ -858,6 +860,7 @@ definitions:
       start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-91, format='%Y-%m-%d') else day_delta(-91, format='%Y-%m-%d') }}"
       cursor_granularity: "P1D"
       step: "P31D"
+      lookback_window: "P{{ config.get('attribution_window') or 0 }}D"
 
   campaign_targeting_report_stream:
     $ref: "#/definitions/analytics_tagreting_report_base_stream"
@@ -929,6 +932,7 @@ definitions:
       start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-89, format='%Y-%m-%d') else day_delta(-89, format='%Y-%m-%d') }}"
       cursor_granularity: "P1D"
       step: "P30D"
+      lookback_window: "P{{ config.get('attribution_window') or 0 }}D"
       start_time_option:
         type: RequestOption
         field_name: "start_date"
@@ -4812,6 +4816,13 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         pattern_descriptor: "YYYY-MM-DD"
         examples: ["2022-07-28"]
+      attribution_window:
+        type: integer
+        title: "Attribution Window"
+        description: "Number of days before the last synced date to read again on each incremental sync of the report and analytics streams. Pinterest updates metrics for past days during the attribution window, so set this to match the longest click, engagement, or view window in your reports. Set to 0 to read only new days."
+        minimum: 0
+        maximum: 60
+        default: 0
       status:
         title: "Status"
         description: "For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED."
