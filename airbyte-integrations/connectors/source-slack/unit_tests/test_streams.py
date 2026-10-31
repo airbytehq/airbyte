@@ -1022,3 +1022,81 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _threads_incremental_catalog():
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "threads", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+def test_threads_resume_uses_per_channel_parent_cursors(requests_mock, token_config):
+    token_config["start_date"] = "2021-01-01T00:00:00Z"
+    token_config.pop("end_date")
+    token_config["lookback_window"] = 7
+    channel_cursors = {"airbyte-for-beginners": 1700000000.5, "good-reads": 1710000000.5}
+    for channel, cursor in channel_cursors.items():
+        requests_mock.register_uri(
+            "GET", f"https://slack.com/api/conversations.history?channel={channel}", json={"messages": [{"ts": str(cursor), "reply_count": 1}]}
+        )
+        requests_mock.register_uri("GET", f"https://slack.com/api/conversations.replies?channel={channel}", json={"messages": [{"ts": str(cursor)}]})
+    # Threads state after the per-partition cursor switched to a global cursor (no `states` key).
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "threads",
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": "1710000000"},
+                "lookback_window": 1,
+                "parent_state": {
+                    "channel_messages": {
+                        "use_global_cursor": False,
+                        "states": [
+                            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
+                            for channel, cursor in channel_cursors.items()
+                        ],
+                        "state": {"float_ts": "1710000000.5"},
+                        "lookback_window": 1,
+                        "parent_state": {},
+                    }
+                },
+            },
+        )
+        .build()
+    )
+
+    read(get_source(token_config, "threads", state), config=token_config, catalog=_threads_incremental_catalog(), state=state)
+
+    lookback_seconds = 7 * 24 * 60 * 60
+    for channel, cursor in channel_cursors.items():
+        history_requests = [r for r in requests_mock.request_history if "conversations.history" in r.url and r.qs["channel"] == [channel]]
+        assert history_requests
+        assert min(float(r.qs["oldest"][0]) for r in history_requests) == cursor - lookback_seconds
+
+
+def test_threads_skip_archived_channels_bot_cannot_join(requests_mock, token_config):
+    token_config["channel_filter"] = []
+    channels = [
+        {"id": "member-channel", "name": "member-channel", "is_member": True, "is_archived": False},
+        {"id": "joinable-channel", "name": "joinable-channel", "is_member": False, "is_archived": False},
+        {"id": "archived-member", "name": "archived-member", "is_member": True, "is_archived": True},
+        {"id": "archived-non-member", "name": "archived-non-member", "is_member": False, "is_archived": True},
+    ]
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.list", json={"channels": channels})
+    requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json={"messages": []})
+
+    stream = get_stream_by_name("threads", token_config)
+    list(stream.generate_partitions())
+
+    requested_channels = {r.qs["channel"][0] for r in requests_mock.request_history if "conversations.history" in r.url}
+    assert requested_channels == {"member-channel", "joinable-channel", "archived-member"}

@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.28 | 2026-10-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `threads` incremental syncs restarting from `start_date` on resume and skip archived channels the bot cannot join |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
 | 3.2.24 | 2026-09-22 | [86814](https://github.com/airbytehq/airbyte/pull/86814) | Update dependencies |

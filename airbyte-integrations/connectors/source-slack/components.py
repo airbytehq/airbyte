@@ -176,7 +176,10 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State emitted by the current per-partition cursor already carries per-channel parent cursors;
+        # rewriting it would replace them with a single global value (or start_date when the threads
+        # cursor has switched to a global cursor and has no `states`).
+        return not (stream_state.get("parent_state") or {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

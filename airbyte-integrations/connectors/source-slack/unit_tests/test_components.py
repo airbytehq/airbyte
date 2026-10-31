@@ -396,3 +396,51 @@ def test_api_budget_auth_path(token_config, oauth_config, config_fixture, expect
         assert isinstance(api_budget._policies[0], UnlimitedCallRatePolicy)
     else:
         assert api_budget is None or len(api_budget._policies) == 0
+
+
+_PER_CHANNEL_PARENT_STATE = {
+    "channel_messages": {
+        "use_global_cursor": False,
+        "states": [
+            {"partition": {"channel": "airbyte-for-beginners", "parent_slice": {}}, "cursor": {"float_ts": "1700000000.5"}},
+            {"partition": {"channel": "good-reads", "parent_slice": {}}, "cursor": {"float_ts": "1710000000.5"}},
+        ],
+        "state": {"float_ts": "1710000000.5"},
+        "lookback_window": 1,
+        "parent_state": {},
+    }
+}
+
+
+@pytest.mark.parametrize(
+    "threads_stream_state",
+    (
+        pytest.param(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"float_ts": "1700000000.5", "parent_slice": {"channel": "airbyte-for-beginners", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1700000000"},
+                    }
+                ],
+                "state": {"float_ts": "1700000000"},
+                "lookback_window": 1,
+                "parent_state": _PER_CHANNEL_PARENT_STATE,
+            },
+            id="per_partition_threads_state",
+        ),
+        pytest.param(
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": "1710000000"},
+                "lookback_window": 1,
+                "parent_state": _PER_CHANNEL_PARENT_STATE,
+            },
+            id="global_cursor_threads_state",
+        ),
+    ),
+)
+def test_threads_state_migration_keeps_per_channel_parent_state(token_config, threads_stream_state):
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
+    assert stream.cursor.state["parent_state"]["channel_messages"]["states"] == _PER_CHANNEL_PARENT_STATE["channel_messages"]["states"]
