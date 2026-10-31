@@ -182,6 +182,42 @@ def test_null_primary_key_handling(monkeypatch) -> None:
     assert "record_with_null_pk_2" in names, "Expected to find the latest null primary key record (record_with_null_pk_2)"
 
 
+def test_duckdb_table_reflection_returns_existing_columns(tmp_path) -> None:
+    schema_name = "test_schema"
+    stream_name = "test_reflection"
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=stream_name,
+            json_schema={
+                "type": "object",
+                "properties": {
+                    "id": {"type": ["null", "string"]},
+                    "name": {"type": ["null", "string"]},
+                },
+            },
+            supported_sync_modes=[SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    processor = DestinationMotherDuck()._get_sql_processor(
+        configured_catalog=ConfiguredAirbyteCatalog(streams=[configured_stream]),
+        schema_name=schema_name,
+        db_path=str(tmp_path / "test_reflection.duckdb"),
+    )
+
+    processor._setup()
+    processor._ensure_schema_exists()
+    processor._create_table_if_not_exists(
+        table_name=stream_name,
+        column_definition_str='"id" VARCHAR, "name" VARCHAR',
+    )
+    processor._ensure_compatible_table_schema(stream_name=stream_name, table_name=stream_name)
+    reflected_table = processor._get_table_by_name(stream_name, force_refresh=True)
+
+    assert {"id", "name"} <= set(reflected_table.columns.keys())
+
+
 def test_interleaved_multi_stream_write_does_not_drop_buffered_records(monkeypatch) -> None:
     """Records from a stream buffered while another stream's STATE flushes must not be dropped.
 
