@@ -604,8 +604,7 @@ def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it
 @pytest.mark.parametrize(
     "stream, status_code",
     [
-        ("legacy_teams", 404),
-        ("legacy_teams", 410),
+        ("legacy_teams", 415),
         ("projects", 402),
         ("projects", 415),
         ("deal_installments", 402),
@@ -613,7 +612,7 @@ def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it
     ],
 )
 def test_plan_responses_with_an_html_body_are_still_skipped(stream, status_code) -> None:
-    # Plan statuses and the API v1 404s of legacy_teams and permission_set_assignments stay skipped whatever the
+    # Plan statuses and the documented API v1 404 of permission_set_assignments stay skipped whatever the
     # body. An HTML 404 from an API v2 route fails instead (see the next test).
     html = HttpResponse(body="<html><body>Not available</body></html>", status_code=status_code, headers={"Content-Type": "text/html"})
     with HttpMocker() as http_mocker:
@@ -786,8 +785,8 @@ _HANDLER_KINDS = {
         "json": {402: "config", 404: "system", 410: "system", 415: "config"},
     },
     "legacy_teams": {
-        "html": {402: "config", 404: "skip", 410: "skip", 415: "skip"},
-        "json": {402: "config", 404: "skip", 410: "skip", 415: "skip"},
+        "html": {402: "config", 404: "system", 410: "system", 415: "skip"},
+        "json": {402: "config", 404: "system", 410: "system", 415: "skip"},
     },
     "projects": {
         "html": {402: "skip", 404: "guard", 410: "system", 415: "skip"},

@@ -110,7 +110,7 @@ gain new scopes.
   data changes. The sandbox's daily token budget is small (`x-daily-ratelimit-token-limit` has read
   30,000 and 99,999 on different days) and is shared by every API token, OAuth app and CI run in the
   company, so do not run several full reads in parallel.
-- The sandbox has no mail connection, phone integration, Projects suite, legacy Teams, installments,
-  product variations or archived leads; those streams are declared empty with reasons and covered by
-  mock-server tests.
+- The sandbox has no mail connection, Projects suite, legacy Teams or installments; those streams are
+  declared empty with reasons and covered by mock-server tests. `call_logs`, `product_variations` and
+  `leads_archived` return a few records (2026-10-28) and are read by the standard tests.
 - Custom field keys are account-specific; don't hard-code hash keys in tests or schemas.
