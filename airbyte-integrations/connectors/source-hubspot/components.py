@@ -43,6 +43,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -399,12 +400,26 @@ class DealPipelinesV1ShapeTransformation(RecordTransformation):
         if value is None or (isinstance(value, int) and not isinstance(value, bool)):
             return value
         if not isinstance(value, str):
-            raise ValueError(f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.")
+            raise AirbyteTracedException(
+                message=(
+                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
+                    "so the record can't be read. Contact Airbyte support."
+                ),
+                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
+                failure_type=FailureType.system_error,
+            )
 
         try:
             parsed_datetime = ab_datetime_parse(value)
         except (ValueError, TypeError, OverflowError) as exception:
-            raise ValueError(f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.") from exception
+            raise AirbyteTracedException(
+                message=(
+                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
+                    "so the record can't be read. Contact Airbyte support."
+                ),
+                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
+                failure_type=FailureType.system_error,
+            ) from exception
 
         if parsed_datetime.tzinfo is None:
             parsed_datetime = parsed_datetime.replace(tzinfo=timezone.utc)

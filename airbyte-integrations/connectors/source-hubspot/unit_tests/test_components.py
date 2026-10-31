@@ -339,7 +339,7 @@ def test_deal_pipelines_iso_dates_with_timezone_offsets(components_module, times
     assert pipeline["updatedAt"] == expected
 
 
-def test_deal_pipelines_invalid_timestamp_raises_value_error(components_module):
+def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_module):
     pipeline = {
         "id": "pipeline",
         "createdAt": "not-a-date",
@@ -348,8 +348,12 @@ def test_deal_pipelines_invalid_timestamp_raises_value_error(components_module):
         "stages": [],
     }
 
-    with pytest.raises(ValueError, match="createdAt.*not-a-date"):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert "createdAt" in exc_info.value.internal_message
+    assert "not-a-date" in exc_info.value.internal_message
 
 
 def test_property_history_extractor(components_module):
