@@ -232,6 +232,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.13 | 2026-10-28 | [79107](https://github.com/airbytehq/airbyte/pull/79107) | Added error handler that classifies 'startDate must be equal to or after report type data retention start date' errors as config errors. |
 | 9.2.12 | 2026-10-27 | [89801](https://github.com/airbytehq/airbyte/pull/89801) | Update dependencies |
 | 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
 | 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
