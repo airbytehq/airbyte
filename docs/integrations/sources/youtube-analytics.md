@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the YouTube Ana
 
 The Google account you authorize must own or manage a YouTube channel. An account without an associated channel cannot access YouTube Reporting API data.
 
-For Airbyte Open Source, you need a Google Cloud project with the YouTube Reporting API enabled and an OAuth 2.0 **Client ID**, **Client Secret**, and **Refresh Token** with the `https://www.googleapis.com/auth/yt-analytics.readonly` scope. See [Set up YouTube Analytics](#set-up-youtube-analytics) for instructions. Airbyte Cloud users authenticate with OAuth in the setup flow and do not need to provide these credentials.
+For Airbyte Open Source, you need a Google Cloud project with the YouTube Reporting API enabled and an OAuth 2.0 **Client ID**, **Client Secret**, and **Refresh Token** with the `https://www.googleapis.com/auth/yt-analytics.readonly` scope. See [Set up YouTube Analytics](#set-up-youtube-analytics) for instructions. Airbyte Cloud users authenticate with OAuth in the setup flow and do not need to provide these credentials. The Airbyte Cloud consent screen requests both the `yt-analytics.readonly` and `yt-analytics-monetary.readonly` scopes.
 
 YouTube partners may also provide a **Content Owner ID** to retrieve data on behalf of that content owner.
 
@@ -14,7 +14,7 @@ YouTube partners may also provide a **Content Owner ID** to retrieve data on beh
 
 Follow these steps to prepare YouTube access and then add the source in Airbyte.
 
-## Set up YouTube Analytics
+### Set up YouTube Analytics
 
 Airbyte Cloud users can authorize their Google account during source setup. For Airbyte Open Source, create OAuth credentials for the Google account that owns or manages your YouTube channel:
 
@@ -25,9 +25,9 @@ Airbyte Cloud users can authorize their Google account during source setup. For 
 
 See Google's [YouTube Reporting API authorization guide](https://developers.google.com/youtube/reporting/guides/authorization) for more information.
 
-## Set up the YouTube Analytics connector in Airbyte
+### Set up the YouTube Analytics connector in Airbyte
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log in to Airbyte Cloud](https://cloud.airbyte.com/workspaces).
 2. In the left navigation bar, select **Sources**, then select **+ new source**.
@@ -35,7 +35,7 @@ See Google's [YouTube Reporting API authorization guide](https://developers.goog
 4. Select **Authenticate your account**, sign in with the Google account that owns or manages the channel, and authorize access.
 5. Select **Set up source**.
 
-### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. In the left navigation bar, select **Sources**, then select **+ new source**.
 2. Enter a name for the source and select **YouTube Analytics** from the source type list.
@@ -72,6 +72,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
 - [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
 - [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
+- [channel_reach_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-basic) - Video thumbnail impressions and impressions click-through rate.
+- [channel_reach_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#reach-combined) - Video thumbnail impressions and impressions click-through rate by traffic source, device type and operating system.
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
 - [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
 - [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
@@ -102,7 +104,7 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 ## Rate limits and quotas
 
-The connector limits its requests to 60 per minute. YouTube may also return a rate-limit error. The connector retries these requests automatically after about a minute; repeated rate-limit errors fail the sync. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
+The connector limits its requests to 60 per minute. YouTube may also return a rate-limit error. The connector retries rate-limited requests and Google server errors (HTTP 5xx) automatically after 30 seconds; repeated rate-limit errors fail the sync. If your project's daily YouTube API quota is exhausted, the sync stops with **Daily YouTube API project quota is exhausted.** Try again after quota becomes available.
 
 Airbyte Cloud uses an Airbyte Google Cloud project whose YouTube API quota is shared across Cloud connections. Airbyte Open Source uses the quota of the Google Cloud project configured for the source. Check your [project's quota page in Google Cloud](https://console.cloud.google.com/iam-admin/quotas) for current limits.
 
@@ -136,7 +138,8 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
 | 2.0.0 | 2026-10-29 | [89628](https://github.com/airbytehq/airbyte/pull/89628) | Correct the declared types of report metric fields to match YouTube's metric definitions |
-| 1.5.0 | 2026-10-21 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
+| 1.6.0 | 2026-10-30 | [89627](https://github.com/airbytehq/airbyte/pull/89627) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
+| 1.5.0 | 2026-10-27 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
 | 1.4.7 | 2026-10-27 | [90075](https://github.com/airbytehq/airbyte/pull/90075) | Update dependencies |
 | 1.4.6 | 2026-10-20 | [89472](https://github.com/airbytehq/airbyte/pull/89472) | Update dependencies |
 | 1.4.5 | 2026-10-13 | [88882](https://github.com/airbytehq/airbyte/pull/88882) | Update dependencies |
@@ -144,13 +147,13 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 | 1.4.3 | 2026-09-29 | [87431](https://github.com/airbytehq/airbyte/pull/87431) | Update dependencies |
 | 1.4.2 | 2026-09-22 | [86879](https://github.com/airbytehq/airbyte/pull/86879) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86309](https://github.com/airbytehq/airbyte/pull/86309) | Update dependencies |
-| 1.4.0 | 2026-09-09 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams, including reports that YouTube re-issues with corrected data |
+| 1.4.0 | 2026-09-10 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams, including reports that YouTube re-issues with corrected data |
 | 1.3.4 | 2026-09-08 | [85727](https://github.com/airbytehq/airbyte/pull/85727) | Update dependencies |
-| 1.3.3 | 2026-08-21 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
+| 1.3.3 | 2026-08-26 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
 | 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
-| 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
-| 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
+| 1.3.0 | 2026-08-04 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
+| 1.2.12 | 2026-07-30 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
 | 1.2.9 | 2026-06-23 | [80732](https://github.com/airbytehq/airbyte/pull/80732) | Update dependencies |
@@ -160,7 +163,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 | 1.2.5 | 2026-04-28 | [77489](https://github.com/airbytehq/airbyte/pull/77489) | Update dependencies |
 | 1.2.4 | 2026-04-21 | [74693](https://github.com/airbytehq/airbyte/pull/74693) | Update dependencies |
 | 1.2.3 | 2026-02-24 | [73149](https://github.com/airbytehq/airbyte/pull/73149) | Update dependencies |
-| 1.2.2 | 2026-02-03 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |
+| 1.2.2 | 2026-02-06 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |
 | 1.2.1 | 2026-01-20 | [72048](https://github.com/airbytehq/airbyte/pull/72048) | Update dependencies |
 | 1.2.0 | 2026-01-14 | [71377](https://github.com/airbytehq/airbyte/pull/71377) | Promoting release candidate 1.2.0-rc.2 to a main version. |
 | 1.2.0-rc.2 | 2026-01-09 | [71244](https://github.com/airbytehq/airbyte/pull/71244) | Fix incorrect report_id key and remove additional error message |
@@ -168,16 +171,16 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 | 1.1.2 | 2025-12-18 | [70715](https://github.com/airbytehq/airbyte/pull/70715) | Update dependencies |
 | 1.1.1 | 2025-12-02 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
 | 1.1.0 | 2025-11-17 | [69352](https://github.com/airbytehq/airbyte/pull/69352) | Promoting release candidate 1.1.0-rc.1 to a main version. |
-| 1.1.0-rc.1 | 2025-11-02 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only |
+| 1.1.0-rc.1 | 2025-11-10 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only |
 | 1.0.0 | 2025-10-30 | [66558](https://github.com/airbytehq/airbyte/pull/66558) | Update deprecated channel and playlist BULK reports |
-| 0.2.0 | 2025-02-07 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
-| 0.1.7 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
+| 0.2.0 | 2025-05-29 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
+| 0.1.7 | 2025-02-27 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
 | 0.1.6 | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0 |
-| 0.1.5 | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
-| 0.1.4 | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |
-| 0.1.3 | 2022-09-30 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic |
+| 0.1.5 | 2024-06-13 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
+| 0.1.4 | 2023-05-26 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |
+| 0.1.3 | 2022-10-07 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic |
 | 0.1.2 | 2022-09-29 | [17399](https://github.com/airbytehq/airbyte/pull/17399) | Fixed `403` error while `check connection` |
-| 0.1.1 | 2022-08-18 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
-| 0.1.0 | 2021-11-01 | [7407](https://github.com/airbytehq/airbyte/pull/7407) | Initial Release |
+| 0.1.1 | 2022-08-22 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
+| 0.1.0 | 2021-11-19 | [7407](https://github.com/airbytehq/airbyte/pull/7407) | Initial Release |
 
 </details>

@@ -511,7 +511,7 @@ class SnowflakeDirectLoadSqlGenerator(
             parts =
                 listOf(
                     getDatabaseName(),
-                    tableName.namespace,
+                    config.internalTableSchema,
                     "$STAGE_NAME_PREFIX$currentTableName",
                 ),
             escape = escape,
