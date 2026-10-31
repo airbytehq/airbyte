@@ -51,7 +51,7 @@ def _get_source(args: List[str]):
 def run():
     _args = sys.argv[1:]
     source = _get_source(_args)
-    # need to verify that we can run this migration script after instantiating the source
-    AsanaConfigMigration.migrate(sys.argv[1:], source)
+    AsanaConfigMigration.migrate(_args, source)
+    source = _get_source(_args)
     if source:
         launch(source, _args)
