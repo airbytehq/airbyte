@@ -110,13 +110,21 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Troubleshooting
+
+- **Invalid or expired access token (401):** Re-authenticate the source to obtain a valid LinkedIn access token.
+- **Organization access denied (403):** Re-authenticate with the scope named in the error. If LinkedIn does not name a scope, authorize `r_organization_social` and `rw_organization_admin`, and ensure the authorized member has the `ADMINISTRATOR` role on the configured organization.
+- **Organization not found or inaccessible (404):** Verify the Organization ID, that the page is active, the member's admin role, and the app's API access. The connection check requests this single organization by ID; it does not list the member's organizations.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| :------ | :--- | :----------- | :------ |
+| 1.2.1 | 2026-10-30 | [90259](https://github.com/airbytehq/airbyte/pull/90259) | Explain missing LinkedIn scopes and organization access failures in connection checks without echoing raw API errors |
+| 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
 | 1.1.26 | 2026-09-14 | [85905](https://github.com/airbytehq/airbyte/pull/85905) | Update LinkedIn Marketing API version from 202503 to 202608 |
 | 1.1.25 | 2025-05-24 | [60685](https://github.com/airbytehq/airbyte/pull/60685) | Update dependencies |
