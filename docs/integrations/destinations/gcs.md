@@ -1,11 +1,204 @@
 # Google Cloud Storage (GCS)
 
-## Overview
+This page guides you through setting up the Google Cloud Storage (GCS) destination connector.
 
-The Google Cloud Storage (GCS) destination writes each stream as one or more objects in a GCS
-bucket. By default, each stream has its own directory under the configured bucket path.
+The GCS destination writes each stream to one or more objects in a GCS bucket. You choose the
+output format (Avro, CSV, JSON Lines, or Parquet), and you can control the directory layout and the
+object names with path templates. The connector authenticates with an HMAC key and uses the
+[GCS XML API](https://cloud.google.com/storage/docs/xml-api/overview), which is compatible with
+the Amazon S3 API.
 
-## Supported sync modes
+:::info
+This page covers the **Google Cloud Storage** destination, which writes plain files. If you want an
+Apache Iceberg lakehouse on GCS, use the separate
+[GCS Data Lake](gcs-data-lake.md) destination instead.
+:::
+
+## Prerequisites
+
+- A GCS bucket. [Create a bucket](https://cloud.google.com/storage/docs/creating-buckets) or
+  choose an existing one. Bucket retention policies and object holds must allow Airbyte to delete the
+  objects it creates (see [Permissions](#permissions)).
+- A Google Cloud service account with an
+  [HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys). If your
+  organization uses the `constraints/storage.restrictAuthTypes` organization policy, it must allow
+  HMAC authentication.
+- Network access from the Airbyte deployment to `https://storage.googleapis.com`.
+
+## Setup guide
+
+### Step 1: Create a service account and HMAC key
+
+1. In the Google Cloud console, create a dedicated service account for Airbyte.
+2. [Create an HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys)
+   for that service account. Copy the **Access ID** and the **Secret** immediately. Google Cloud
+   doesn't display the secret again.
+
+### Step 2: Grant permissions {#permissions}
+
+Grant the service account the **Storage Object User** role (`roles/storage.objectUser`) on the
+bucket. If you prefer a custom role, it must include at least these permissions:
+
+```text
+storage.objects.create
+storage.objects.get
+storage.objects.list
+storage.objects.delete
+storage.multipartUploads.create
+storage.multipartUploads.abort
+```
+
+Why each permission is needed:
+
+| Permission | Used for |
+| :--- | :--- |
+| `storage.objects.create`, `storage.multipartUploads.create` | Writing output objects. Objects are uploaded as multipart uploads. |
+| `storage.multipartUploads.abort` | Cleaning up a multipart upload that fails part-way. |
+| `storage.objects.list`, `storage.objects.get` | Discovering existing objects and reading their generation metadata so Full Refresh - Overwrite can remove stale data. |
+| `storage.objects.delete` | Deleting the connection-check probe object and stale objects in Full Refresh - Overwrite syncs. |
+
+### Step 3: Set up the destination in Airbyte
+
+1. In the Airbyte UI, go to **Destinations**, click **New destination**, and select
+   **Google Cloud Storage (GCS)**.
+2. Enter a **Destination name**.
+3. Fill in the fields described in [Configuration](#configuration).
+4. Click **Set up destination**. Airbyte runs a connection check that uploads a small probe object
+   under the bucket path, lists it, and deletes it.
+
+## Configuration
+
+| Field | Required | Default | Description |
+| :--- | :---: | :--- | :--- |
+| **GCS Bucket Name** | Yes | | Name of the bucket that receives the data. |
+| **GCS Bucket Path** | Yes | | Prefix inside the bucket under which all objects are written. A trailing `/` is optional. |
+| **GCS Bucket Region** | No | `us` | Location of the bucket. See [GCS locations](https://cloud.google.com/storage/docs/locations). |
+| **Authentication** → **HMAC Access ID** | Yes | | Access ID of the service account's HMAC key. |
+| **Authentication** → **HMAC Secret** | Yes | | Secret of the HMAC key. |
+| **Output Format** | Yes | | One of Avro, CSV, JSON Lines, or Parquet, with format-specific options. See [Output formats](#output-formats). |
+| **GCS Path Format** | No | `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_` | Template for the object key below the bucket path. See [GCS Path Format](#gcs-path-format). |
+| **File Name Pattern** | No | `{part_number}{format_extension}` | Template for the final file name. See [File Name Pattern](#file-name-pattern). |
+
+### Authentication
+
+The connector supports
+[HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys) only.
+Service account JSON keys, OAuth, and Application Default Credentials aren't supported by this
+connector. Because the connector talks to the GCS XML API through an S3-compatible client, error
+messages from Google Cloud are reported in S3 terminology (for example `AccessDenied` or
+`SignatureDoesNotMatch`). See [Troubleshooting](#troubleshooting).
+
+### Encryption
+
+Both Google-managed and customer-managed encryption keys (CMEK) are supported. The connector doesn't
+set an encryption key itself; it uses the bucket's default encryption, which you can review in the
+**Configuration** tab of the bucket under **Encryption type**.
+
+## Output layout
+
+Every object key is built from the bucket path, the resolved **GCS Path Format**, and the resolved
+**File Name Pattern**:
+
+```text
+<bucket-name>/<bucket-path>/<resolved GCS Path Format><resolved File Name Pattern>
+```
+
+Note that the path format and the file name are concatenated directly. If the path format doesn't end
+with `/`, its last segment becomes a prefix of the file name. With the default settings, a sync of
+the `users` stream in the `public` namespace produces objects such as:
+
+```text
+my-bucket/landing/public/users/2026_10_30_1761820800000_0.csv.gz
+↑         ↑       ↑      ↑     ↑          ↑             ↑ ↑
+|         |       |      |     |          |             | format extension
+|         |       |      |     |          |             part number
+|         |       |      |     |          epoch milliseconds of the sync
+|         |       |      |     sync date (YYYY_MM_DD)
+|         |       |      stream name
+|         |       namespace (omitted when the stream has none)
+|         bucket path
+bucket name
+```
+
+A sync writes one or more part files per stream. Files roll over at roughly 200 MB compressed,
+so large streams produce several part numbers from the same sync.
+
+### GCS Path Format
+
+**GCS Path Format** is a template for the directory structure under the bucket path. Variables use
+the `${VARIABLE}` syntax and are substituted at the start of the sync. Consecutive `/` characters are
+collapsed, so an empty `${NAMESPACE}` doesn't create an empty directory.
+
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `${NAMESPACE}` | Namespace of the stream (empty if none) | `public` |
+| `${STREAM_NAME}` | Name of the stream | `users` |
+| `${YEAR}` | Year of the sync (UTC, four digits) | `2026` |
+| `${MONTH}` | Month of the sync (UTC, zero-padded) | `10` |
+| `${DAY}` | Day of the sync (UTC, zero-padded) | `30` |
+| `${HOUR}` | Hour of the sync (UTC, zero-padded) | `09` |
+| `${MINUTE}` | Minute of the sync (UTC, zero-padded) | `30` |
+| `${SECOND}` | Second of the sync (UTC, zero-padded) | `45` |
+| `${MILLISECOND}` | Millisecond of the sync (UTC) | `0123` |
+| `${EPOCH}` | Milliseconds since the Unix epoch at the start of the sync | `1761820800000` |
+| `${UUID}` | Random UUID | `a1b2c3d4-e5f6-...` |
+| `${SYNC_ID}` | Unique ID of the sync | `101` |
+
+If you leave the field empty, the default template is used. Multiple syncs of the same stream never
+overwrite each other's files because `${EPOCH}` (default template) or the part number differs.
+
+#### Example: Hive-style partitions
+
+To lay out each stream as a partitioned table that Hive, Spark, BigQuery external tables, and
+similar engines can read, end the template with `/` so that each sync lands in its own partition
+directory:
+
+```text
+${STREAM_NAME}/dt=${YEAR}-${MONTH}-${DAY}/
+```
+
+With the default **File Name Pattern**, this produces:
+
+```text
+my-bucket/landing/users/dt=2026-10-30/0.parquet
+my-bucket/landing/users/dt=2026-10-30/1.parquet
+```
+
+Because the file name no longer includes a timestamp, add `{timestamp}` or `{sync_id}` to the
+**File Name Pattern** if you run the stream more than once a day in an append mode:
+
+```text
+{sync_id}_{part_number}{format_extension}
+```
+
+#### Example: flat layout without the stream name
+
+To write all files for a stream directly under the bucket path, use a template that contains no
+directory separators, for example `${YEAR}_${MONTH}_${DAY}_`. You need one connection (or one bucket
+path) per stream in this layout; otherwise streams share the same directory.
+
+### File Name Pattern
+
+**File Name Pattern** is a template for the file name. Variables use the `{variable}` syntax.
+
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{date}` | Date of the sync in `yyyy_MM_dd` format | `2026_10_30` |
+| `{date:yyyy_MM}` | Date of the sync in `yyyy_MM` format | `2026_10` |
+| `{timestamp}` | Wall-clock time in milliseconds when the file is created | `1761820845123` |
+| `{part_number}` | Part number of the file within the sync (0, 1, 2, ...) | `0` |
+| `{sync_id}` | Unique ID of the sync | `101` |
+| `{format_extension}` | File extension including the compression suffix | `.csv.gz` |
+
+Always include `{part_number}` so that part files from the same sync get distinct names, and
+`{format_extension}` so that the extension matches the configured format. If you leave the field
+empty, the default pattern is used.
+
+:::note
+Path format variables use `${VARIABLE}`; file name variables use `{variable}`.
+:::
+
+## Sync modes
 
 | Sync mode | Supported? |
 | :--- | :--- |
@@ -15,217 +208,74 @@ bucket. By default, each stream has its own directory under the configured bucke
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
-## Getting started
+Each stream's directory holds the complete data set for that stream. Think of the directory as the
+equivalent of a table.
 
-### Requirements
-
-- A GCS bucket.
-- A Google Cloud service account with an active HMAC key.
-- Network access from the Airbyte deployment to `https://storage.googleapis.com`.
-
-### Setup guide
-
-1. [Create a GCS bucket](https://cloud.google.com/storage/docs/creating-buckets), or select an
-   existing bucket. The connection check writes, lists, and deletes a probe object. Ensure that
-   retention policies and object holds permit this deletion.
-2. Create a dedicated service account for Airbyte and
-   [create an HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) for
-   it. If your organization uses the `constraints/storage.restrictAuthTypes` organization policy,
-   it must allow HMAC authentication. Save the HMAC secret when you create the key because Google
-   Cloud doesn't provide it again.
-3. Grant the service account the **Storage Object User** role (`roles/storage.objectUser`) on the
-   bucket. If you use a custom role, include these permissions:
-
-   ```text
-   storage.multipartUploads.abort
-   storage.multipartUploads.create
-   storage.objects.create
-   storage.objects.delete
-   storage.objects.list
-   ```
-
-   Delete access is required because the connection check deletes its probe object and Full Refresh
-   - Overwrite syncs delete existing objects under the stream's output prefix.
-4. In Airbyte, enter the bucket name, bucket path, bucket region, HMAC access key, HMAC secret, and
-   output format.
-5. Test the connection. If your deployment restricts outbound network traffic, allow access to the
-   GCS XML API endpoint at `https://storage.googleapis.com`.
-
-## Configuration
-
-| Parameter | Type | Required | Notes |
-| :--- | :---: | :---: | :--- |
-| GCS Bucket Name | string | Yes | Name of the bucket to sync data into. |
-| GCS Bucket Path | string | Yes | Path within the bucket where the connector writes data. |
-| GCS Bucket Region | string | No | Bucket region. Defaults to `us`. See [GCS locations](https://cloud.google.com/storage/docs/locations). |
-| HMAC Access Key | string | Yes | Access ID from the service account's HMAC key. |
-| HMAC Secret | string | Yes | Secret associated with the HMAC access key. |
-| Output Format | object | Yes | Format-specific configuration. See [Output Schema](#output-schema). |
-| GCS Path Format | string | No | Directory layout under the bucket path. Defaults to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`. See [GCS Path Format](#gcs-path-format). |
-| File Name Pattern | string | No | Output file naming pattern. Defaults to `{part_number}{format_extension}`. See [File Name Pattern](#file-name-pattern). |
-
-The connector supports only
-[HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys), using
-the GCS S3-compatible XML API.
-
-Both Google-managed and customer-managed encryption keys (CMEK) are supported. You can view the encryption setting under
-the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
+- **Append modes** add new files containing only the new data.
+- **Full Refresh - Overwrite** writes the new files first and, after the sync completes successfully,
+  deletes the stream's objects from earlier generations. Objects are matched by the resolved path
+  template (including any `${...}` variables) and by the Airbyte generation ID stored in object
+  metadata, so stale files are removed even when the path contains date variables.
 
 :::warning
-Full Refresh - Overwrite syncs delete existing objects under each stream's output prefix before
-writing new objects. Use a dedicated bucket or bucket path and verify your path configuration to
+Full Refresh - Overwrite deletes objects that match the stream's path template under the bucket
+path. Use a dedicated bucket or bucket path for Airbyte and double-check your path configuration to
 avoid deleting unrelated data.
 :::
 
-The full path of the output data is:
+Objects written by connector versions before 1.0.0 carry no generation metadata and are never
+deleted by Full Refresh - Overwrite. Remove them manually after upgrading. See the
+[migration guide](gcs-migrations.md).
 
-```text
-<bucket-name>/<bucket-path>/<source-namespace-if-exists>/<stream-name>/<upload-date>_<upload-millis>_<partition-id>.<format-extension>
-```
+## Output formats
 
-For example:
+All formats include these Airbyte metadata fields in every record:
 
-```text
-testing_bucket/data_output_path/public/users/2021_01_01_1609541171643_0.csv.gz
-↑              ↑                ↑      ↑     ↑          ↑             ↑ ↑
-|              |                |      |     |          |             | format extension
-|              |                |      |     |          |             partition id
-|              |                |      |     |          upload time in millis
-|              |                |      |     upload date in YYYY_MM_DD
-|              |                |      stream name
-|              |                source namespace (if it exists)
-|              bucket path
-bucket name
-```
-
-Please note that the stream name may contain a prefix, if it is configured on the connection.
-
-The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data output files can be sorted by upload time. 3. The upload time composes of a date part and millis part so that it is both readable and unique.
-
-A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
-
-### GCS Path Format
-
-The **GCS Path Format** field controls the directory structure under the bucket path. The default value is:
-
-```text
-${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_
-```
-
-The following variables are available for path format:
-
-| Variable         | Description                                           | Example             |
-|:-----------------|:------------------------------------------------------|:--------------------|
-| `${NAMESPACE}`   | Namespace of the stream (empty if none is configured) | `public`            |
-| `${STREAM_NAME}` | Name of the stream                                    | `users`             |
-| `${YEAR}`        | Year of the sync (UTC, 4-digit)                       | `2026`              |
-| `${MONTH}`       | Month of the sync (UTC, zero-padded)                  | `07`                |
-| `${DAY}`         | Day of the sync (UTC, zero-padded)                    | `14`                |
-| `${HOUR}`        | Hour of the sync (UTC, zero-padded)                   | `09`                |
-| `${MINUTE}`      | Minute of the sync (UTC, zero-padded)                 | `30`                |
-| `${SECOND}`      | Second of the sync (UTC, zero-padded)                 | `45`                |
-| `${MILLISECOND}` | Millisecond of the day (UTC)                          | `0123`              |
-| `${EPOCH}`       | Milliseconds since Unix epoch                         | `1752489045000`     |
-| `${UUID}`        | Random UUID                                           | `a1b2c3d4-e5f6-...` |
-| `${SYNC_ID}`     | Unique ID of the sync                                 | `101`               |
-
-### File Name Pattern
-
-The **File Name Pattern** field controls the name of each output file. The default value is:
-
-```text
-{part_number}{format_extension}
-```
-
-The following variables are available for file name pattern:
-
-| Variable             | Description                                  | Example         |
-|:---------------------|:---------------------------------------------|:----------------|
-| `{date}`             | Date of the sync in `yyyy_MM_dd` format      | `2026_07_14`    |
-| `{date:yyyy_MM}`     | Date of the sync in `yyyy_MM` format         | `2026_07`       |
-| `{timestamp}`        | Current wall-clock timestamp in milliseconds | `1752489045123` |
-| `{part_number}`      | File part number (0, 1, 2, ...)              | `0`             |
-| `{sync_id}`          | Unique ID of the sync                        | `101`           |
-| `{format_extension}` | File extension including compression suffix  | `.csv.gz`       |
-
-:::note
-Path format variables use the `${VARIABLE}` syntax, while file name pattern variables use the `{variable}` syntax.
-Multiple `/` characters in the resolved path are collapsed into a single `/`.
-:::
-
-## Output Schema
-
-Each stream will be outputted to its dedicated directory according to the configuration. The complete datastore of each stream includes all the output files under that directory. You can think of the directory as equivalent of a Table in the database world.
-
-- Under Full Refresh - Overwrite mode, old output files are deleted before new files are created.
-- Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
+| Field | Description |
+| :--- | :--- |
+| `_airbyte_raw_id` | UUID assigned by Airbyte to the record. |
+| `_airbyte_extracted_at` | Time the record was extracted from the source, in Unix epoch milliseconds. |
+| `_airbyte_meta` | Record metadata: `sync_id` and a `changes` array describing any modifications Airbyte made to the record (for example a field set to `NULLED` because it didn't match the declared type). |
+| `_airbyte_generation_id` | Generation of the stream the record belongs to. Full Refresh - Overwrite starts a new generation. |
 
 ### Avro
 
-[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte GCS Avro
-connector always uses the [binary encoding](https://avro.apache.org/docs/1.12.0/specification/#binary-encoding), and
-assumes that all data records follow the same schema.
+[Apache Avro](https://avro.apache.org/) is a compact binary format with an embedded schema. The
+connector writes
+[binary-encoded](https://avro.apache.org/docs/1.12.0/specification/#binary-encoding) Avro object
+container files and derives the Avro schema from the stream's JSON schema. Learn how Airbyte maps
+JSON types to Avro, and the current limitations, in
+[JSON to Avro conversion](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
-#### Configuration
+Available compression codecs:
 
-Here is the available compression codecs:
-
-- No compression
-- `deflate`
-  - Compression level
-    - Range `[0, 9]`. Default to 0.
-    - Level 0: no compression & fastest.
-    - Level 9: best compression & slowest.
-- `bzip2`
-- `xz`
-  - Compression level
-    - Range `[0, 9]`. Default to 6.
-    - Level 0-3 are fast with medium compression.
-    - Level 4-6 are fairly slow with high compression.
-    - Level 7-9 are like level 6 but use bigger dictionaries and have higher memory requirements. Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of memory to use the presets 7, 8, or 9, respectively.
-- `zstandard`
-  - Compression level
-    - Range `[-5, 22]`. Default to 3.
-    - Negative levels are 'fast' modes akin to `lz4` or `snappy`.
-    - Levels above 9 are generally for archival purposes.
-    - Levels above 18 use a lot of memory.
-  - Include checksum
-    - If set to `true`, a checksum will be included in each data block.
-- `snappy`
-
-#### Data schema
-
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+| Codec | Options |
+| :--- | :--- |
+| No compression | |
+| `deflate` | Compression level `0`–`9` (default `0`). `0` is fastest with no compression, `9` is smallest and slowest. |
+| `bzip2` | |
+| `xz` | Compression level `0`–`9` (default `6`). `0`–`3` are fast with medium compression; `4`–`6` are slower with high compression; `7`–`9` use larger dictionaries and more memory and only help for files above 8, 16, or 32 MiB respectively. |
+| `zstandard` | Compression level `-5`–`22` (default `3`). Negative levels are fast modes similar to `lz4`/`snappy`; levels above `9` are for archival use and levels above `18` use a lot of memory. Optionally include a checksum in each data block. |
+| `snappy` | |
 
 ### CSV
 
-With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
+CSV output supports two flattening modes:
 
-| Column | Condition | Description |
+- **No flattening**: the source record is serialized as a JSON string in the `_airbyte_data` column.
+- **Root level flattening**: each top-level field of the source record becomes its own column.
+  Nested objects and arrays are serialized as JSON strings.
+
+| Column | Present when | Description |
 | :--- | :--- | :--- |
-| `_airbyte_raw_id` | Always exists. | UUID assigned by Airbyte to the record. |
-| `_airbyte_extracted_at` | Always exists. | Time the record was extracted, in Unix epoch milliseconds. |
-| `_airbyte_meta` | Always exists. | Record metadata serialized as a JSON object. |
-| `_airbyte_generation_id` | Always exists. | Stream generation identifier associated with the record. |
-| `_airbyte_data` | Exists with no flattening. | Source record serialized as a JSON object. |
-| Source fields | Exist with root-level flattening. | Top-level source fields are expanded into individual columns. |
+| `_airbyte_raw_id` | Always | See [Output formats](#output-formats). |
+| `_airbyte_extracted_at` | Always | |
+| `_airbyte_meta` | Always | Serialized as a JSON string. |
+| `_airbyte_generation_id` | Always | |
+| `_airbyte_data` | No flattening | Source record serialized as a JSON string. |
+| Source fields | Root level flattening | One column per top-level source field. |
 
-The schema for `_airbyte_meta` is:
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `sync_id` | integer | Identifier of the sync job. |
-| `changes` | array | Changes Airbyte made to the record while processing it. |
-
-The schema for a change object is:
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `field` | string | Name of the field that changed. |
-| `change` | string | Change applied to the field, such as `NULLED` or `TRUNCATED`. |
-| `reason` | string | Reason for the change, including whether it originated in the source, destination, or platform. |
-
-For example, given the following json object from a source:
+For example, this source record:
 
 ```json
 {
@@ -237,97 +287,108 @@ For example, given the following json object from a source:
 }
 ```
 
-With no normalization, the output CSV is:
+With no flattening:
 
 | `_airbyte_raw_id` | `_airbyte_extracted_at` | `_airbyte_meta` | `_airbyte_generation_id` | `_airbyte_data` |
 | :--- | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | `{"sync_id":10111,"changes":[]}` | 11 | `{"user_id":123,"name":{"first":"John","last":"Doe"}}` |
 
-With root level normalization, the output CSV is:
+With root level flattening:
 
 | `_airbyte_raw_id` | `_airbyte_extracted_at` | `_airbyte_meta` | `_airbyte_generation_id` | `user_id` | `name` |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | `{"sync_id":10111,"changes":[]}` | 11 | 123 | `{"first":"John","last":"Doe"}` |
 
-Output files can be compressed. In v1.0.0 and later, CSV output is **GZIP-compressed by default** (`.csv.gz`). Set
-`format.compression.compression_type = "No Compression"` for uncompressed `.csv` output.
+CSV files are **GZIP-compressed by default** (`.csv.gz`). Choose **No Compression** in the format
+options to write plain `.csv` files.
 
-### JSON Lines \(JSONL\)
+### JSON Lines (JSONL)
 
-[JSON Lines](https://jsonlines.org/) is a text format with one JSON object per line. Like CSV, JSONL
-supports `"No flattening"` and `"Root level flattening"`. With no flattening, source fields are
-nested under `_airbyte_data`. With root-level flattening, source fields appear alongside the
-Airbyte metadata fields.
+[JSON Lines](https://jsonlines.org/) writes one JSON object per line. It supports the same
+**No flattening** and **Root level flattening** options as CSV. With no flattening, the source
+record is nested under `_airbyte_data`; with root level flattening, the source fields appear next to
+the Airbyte metadata fields.
 
-For example, given the following two JSON objects from a source:
-
-```json
-[
-  {
-    "user_id": 123,
-    "name": {
-      "first": "John",
-      "last": "Doe"
-    }
-  },
-  {
-    "user_id": 456,
-    "name": {
-      "first": "Jane",
-      "last": "Roe"
-    }
-  }
-]
-```
-
-With no flattening, the output file contains:
+Example output with no flattening for two source records:
 
 ```json
 {"_airbyte_raw_id":"26d73cde-7eb1-4e1e-b7db-a4c03b4cf206","_airbyte_extracted_at":1622135805000,"_airbyte_meta":{"sync_id":10111,"changes":[]},"_airbyte_generation_id":11,"_airbyte_data":{"user_id":123,"name":{"first":"John","last":"Doe"}}}
 {"_airbyte_raw_id":"0a61de1b-9cdd-4455-a739-93572c9a5f20","_airbyte_extracted_at":1631948170000,"_airbyte_meta":{"sync_id":10112,"changes":[]},"_airbyte_generation_id":12,"_airbyte_data":{"user_id":456,"name":{"first":"Jane","last":"Roe"}}}
 ```
 
-Output files can be compressed. In v1.0.0 and later, JSONL output is **GZIP-compressed by default** (`.jsonl.gz`). Set
-`format.compression.compression_type = "No Compression"` for uncompressed `.jsonl` output.
+JSONL files are **GZIP-compressed by default** (`.jsonl.gz`). Choose **No Compression** to write
+plain `.jsonl` files.
+
+Fields that are absent from a source record are absent from the output record as well; the
+connector doesn't backfill them with `null`.
 
 ### Parquet
 
-#### Configuration
+[Apache Parquet](https://parquet.apache.org/) is a columnar format. Records are first converted
+to Avro using the same mapping as the [Avro](#avro) format, then written as Parquet.
 
-The following configuration is available to configure the Parquet output:
+| Option | Type | Default | Description |
+| :--- | :---: | :---: | :--- |
+| **Compression Codec** | enum | `UNCOMPRESSED` | One of `UNCOMPRESSED`, `SNAPPY`, `GZIP`, `LZO`, `BROTLI`, `LZ4`, `ZSTD`. |
+| **Block Size (Row Group Size)** | integer (MB) | `128` | Size of a row group buffered in memory. Larger values improve read performance but use more memory while writing. |
+| **Max Padding Size** | integer (MB) | `8` | Maximum padding used to align row groups; also the minimum row group size. |
+| **Page Size** | integer (KB) | `1024` | Size of a data page, the smallest unit that must be read to access a record. Very small pages reduce compression efficiency. |
+| **Dictionary Page Size** | integer (KB) | `1024` | Size of the dictionary page per column per row group when dictionary encoding is on. |
+| **Dictionary Encoding** | boolean | `true` | Whether to use dictionary encoding. |
 
-| Parameter                 |  Type   |    Default     | Description                                                                                                                                                                                                                       |
-| :------------------------ | :-----: | :------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compression_codec`       |  enum   | `UNCOMPRESSED` | **Compression algorithm**. Available candidates are: `UNCOMPRESSED`, `SNAPPY`, `GZIP`, `LZO`, `BROTLI`, `LZ4`, and `ZSTD`.                                                                                                        |
-| `block_size_mb`           | integer |   128 \(MB\)   | **Block size \(row group size\)** in MB. This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. |
-| `max_padding_size_mb`     | integer |    8 \(MB\)    | **Max padding size** in MB. This is the maximum size allowed as padding to align row groups. This is also the minimum size of a row group.                                                                                        |
-| `page_size_kb`            | integer |  1024 \(KB\)   | **Page size** in KB. The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. |
-| `dictionary_page_size_kb` | integer |  1024 \(KB\)   | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary.                                     |
-| `dictionary_encoding`     | boolean |     `true`     | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on.                                                                                                                                        |
-
-These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
-
-#### Data schema
-
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+These options map to Parquet's
+[`ParquetOutputFormat`](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html)
+settings. See the
+[Parquet configuration guide](https://parquet.apache.org/docs/file-format/configurations) for
+recommended values.
 
 ## Namespace support
 
-This destination uses [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) as part of
-the output directory structure. The stream namespace is included as a path component via the `${NAMESPACE}` variable in
-the [GCS Path Format](#gcs-path-format). If a stream has no namespace configured, the namespace segment is omitted from
-the path.
+This destination uses [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces)
+through the `${NAMESPACE}` variable in **GCS Path Format**. If a stream has no namespace, the
+variable resolves to an empty string and the directory segment is omitted. Stream and namespace
+names are sanitized to characters that are safe in object keys.
+
+## Troubleshooting
+
+### Connection check fails with `AccessDenied`
+
+The connector reports Google Cloud errors in S3 terminology because it uses the S3-compatible XML
+API. `AccessDenied` means the HMAC key's service account is missing one of the
+[required permissions](#permissions) on the bucket, most often `storage.multipartUploads.create` or
+`storage.objects.delete`. Grant **Storage Object User** on the bucket or add the missing permissions
+to your custom role.
+
+### Connection check fails with `SignatureDoesNotMatch` or `InvalidAccessKeyId`
+
+The HMAC access ID or secret is incorrect, or the key belongs to a different project. Make sure you
+copied the secret exactly and that the key is active. If your organization restricts authentication
+types, confirm that HMAC keys are allowed by the `constraints/storage.restrictAuthTypes` policy.
+
+### Output objects are written directly under the bucket path with no directory
+
+The **GCS Path Format** doesn't end with `/` and contains no `/` at all, so its resolved value is
+used as a file name prefix. Add `/` where you want a directory boundary, or clear the field to use the
+default template. In connector versions before 1.0.2, clearing the field could also produce this
+layout; upgrade to 1.0.2 or later.
+
+### Old files remain after a Full Refresh - Overwrite sync
+
+Only objects that match the stream's current path template and carry generation metadata are
+deleted. Files written by connector versions before 1.0.0, or written under a different
+**GCS Path Format**, are left in place. Remove them manually.
 
 ## Upgrading to 1.0.0
 
-See the [GCS Migration Guide](gcs-migrations.md) for detailed upgrade instructions.
+Version 1.0.0 is a rewrite on the Bulk Load CDK and changes the default compression and output
+layout. See the [GCS migration guide](gcs-migrations.md) before upgrading.
 
 ## Performance
 
 The connector uses tuned object-storage pipeline defaults and exposes no performance-tuning
-settings, matching the other Bulk-CDK object-storage destinations. Throughput scales with the
-destination pod's CPU/memory and — for SOCKET-mode syncs — with the source's read concurrency and
-the number of streams synced in parallel. In SOCKET mode the CDK sizes the socket count, part size,
+settings, matching the other Bulk CDK object-storage destinations. Throughput scales with the
+destination pod's CPU and memory and, for socket-mode syncs, with the source's read concurrency and
+the number of streams synced in parallel. In socket mode the CDK sizes the socket count, part size,
 and upload parallelism from the negotiated CPU limits automatically.
 
 ## Changelog
