@@ -4,7 +4,7 @@
 
 import logging
 from dataclasses import InitVar, dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
@@ -43,6 +43,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -363,6 +364,67 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
 
         record.clear()
         record.update(transformed_record)
+
+
+@dataclass
+class DealPipelinesV1ShapeTransformation(RecordTransformation):
+    """Converts 2026-09 pipeline records to the legacy V1 shape."""
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        pipeline_id = record.pop("id", None)
+        record["pipelineId"] = pipeline_id
+        archived = record.pop("archived", None)
+        record["active"] = not archived if archived is not None else None
+        record["createdAt"] = self._to_epoch_milliseconds(record.get("createdAt"), "createdAt")
+        record["updatedAt"] = self._to_epoch_milliseconds(record.get("updatedAt"), "updatedAt")
+        record["objectType"] = "DEAL"
+        record["objectTypeId"] = "0-3"
+        record["default"] = pipeline_id == "default"
+
+        for stage in record.get("stages", []):
+            stage_id = stage.pop("id", None)
+            stage["stageId"] = stage_id
+            archived = stage.pop("archived", None)
+            stage["active"] = not archived if archived is not None else None
+            stage["createdAt"] = self._to_epoch_milliseconds(stage.get("createdAt"), "createdAt")
+            stage["updatedAt"] = self._to_epoch_milliseconds(stage.get("updatedAt"), "updatedAt")
+
+    @staticmethod
+    def _to_epoch_milliseconds(value: Any, field_name: str) -> Optional[int]:
+        if value is None or (isinstance(value, int) and not isinstance(value, bool)):
+            return value
+        if not isinstance(value, str):
+            raise AirbyteTracedException(
+                message=(
+                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
+                    "so the record can't be read. Contact Airbyte support."
+                ),
+                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
+                failure_type=FailureType.system_error,
+            )
+
+        try:
+            parsed_datetime = ab_datetime_parse(value)
+        except (ValueError, TypeError, OverflowError) as exception:
+            raise AirbyteTracedException(
+                message=(
+                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
+                    "so the record can't be read. Contact Airbyte support."
+                ),
+                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
+                failure_type=FailureType.system_error,
+            ) from exception
+
+        if parsed_datetime.tzinfo is None:
+            parsed_datetime = parsed_datetime.replace(tzinfo=timezone.utc)
+        epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        return (parsed_datetime - epoch) // timedelta(milliseconds=1)
 
 
 class EngagementsHttpRequester(HttpRequester):
