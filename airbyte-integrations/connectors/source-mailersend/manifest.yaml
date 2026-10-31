@@ -20,8 +20,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /activity/{{ config['domain_id'] }}
           http_method: GET
-          request_parameters:
-            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -37,14 +35,18 @@ definitions:
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page_size
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
           - "%s"
         datetime_format: "%s"
         start_datetime:
@@ -54,6 +56,10 @@ definitions:
         start_time_option:
           type: RequestOption
           field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
