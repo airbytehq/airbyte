@@ -307,10 +307,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -353,7 +350,13 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {

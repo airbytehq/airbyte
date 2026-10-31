@@ -263,7 +263,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
+        if job.interval.start == next(self._date_intervals(account_id), None):
             self._advance_cursor(account_id)
 
     @property
@@ -276,7 +276,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = self._cursor_values.get(account_id)
+                new_state[account_id]["slices"] = sorted(
+                    d.isoformat() for d in self._completed_slices[account_id] if cursor_value is None or d > cursor_value
+                )
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -284,7 +287,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+                new_state[account_id]["slices"] = sorted(
+                    d.isoformat() for d in self._completed_slices[account_id] if cursor_value is None or d > cursor_value
+                )
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -418,7 +424,8 @@ class AdsInsights(FBMarketingIncrementalStream):
                 break
             self._completed_slices[account_id].remove(ts_start)
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                cursor_value = self._cursor_values.get(account_id)
+                self._cursor_values[account_id] = max(cursor_value, ts_start) if cursor_value else ts_start
             else:
                 self._cursor_values = {account_id: ts_start}
 
