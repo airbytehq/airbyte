@@ -361,6 +361,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.3 | 2026-10-31 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix incremental `transactions` syncs missing offsite payment transactions (e.g. Klarna) created before their order |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
 | 4.3.1 | 2026-10-26 | [89760](https://github.com/airbytehq/airbyte/pull/89760) | Fix `deleted_products` incremental syncs skipping product deletions recorded in the same second as the saved cursor on Shopify API 2026-10 |
 | 4.3.0 | 2026-10-20 | [88902](https://github.com/airbytehq/airbyte/pull/88902) | Add the Shopify product taxonomy `category` field to the `products` stream; refresh the `products` stream to populate it for existing products |

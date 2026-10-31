@@ -179,6 +179,8 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = 250
+    # When False, records whose cursor is older than the state are still emitted; the parent query's filter bounds the window.
+    drop_records_older_than_state: bool = True
 
     def __init__(self, config: Dict):
         super().__init__(config)
@@ -283,7 +285,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     filter_record_value = record.get(self.filter_field) if self.filter_field else None
                     self.track_checkpoint_cursor(record_value, filter_record_value)
                     if record_value:
-                        if record_value >= state_value:
+                        if record_value >= state_value or not self.drop_records_older_than_state:
                             yield record
                         else:
                             if self.should_checkpoint(index):

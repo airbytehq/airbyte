@@ -749,7 +749,11 @@ def test_bulk_stream_parse_response(
     # parsing result from completed job
     test_records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
     expected_result = request.getfixturevalue(expected)
-    if isinstance(expected_result, dict):
+    if isinstance(stream, TransactionsGraphql):
+        expected_transaction_ids = {expected_result["id"], 5721170968765}
+        assert {record["id"] for record in test_records} == expected_transaction_ids
+        assert next(record for record in test_records if record["id"] == expected_result["id"]) == expected_result
+    elif isinstance(expected_result, dict):
         assert test_records == [expected_result]
     elif isinstance(expected_result, list):
         assert test_records == expected_result

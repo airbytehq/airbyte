@@ -424,6 +424,9 @@ class Transactions(IncrementalShopifySubstream):
     slice_key = "order_id"
     data_field = "transactions"
     cursor_field = "created_at"
+    # Offsite payments (e.g. Klarna) create transactions before their order, so created_at can predate state.
+    # The orders updated_at filter already bounds the sync window.
+    drop_records_older_than_state = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
@@ -433,6 +436,9 @@ class Transactions(IncrementalShopifySubstream):
 class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Transaction = Transaction
     cursor_field = "created_at"
+    # Offsite payments (e.g. Klarna) create transactions before their order, so created_at can predate state.
+    # The orders updated_at filter already bounds the sync window.
+    drop_records_older_than_state = False
 
     @property
     def name(self) -> str:

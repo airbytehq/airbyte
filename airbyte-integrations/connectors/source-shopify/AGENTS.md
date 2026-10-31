@@ -12,6 +12,10 @@ The Shopify REST API supports `updated_at_min` filtering on most resource endpoi
 
 **Analysis status:** Pure Python CDK connector with comprehensive incremental patterns. Full stream-by-stream analysis requires Python code review.
 
+### Transactions are not filtered by their own cursor
+
+The `transactions` stream selects orders using the orders `updated_at` filter, but offsite payments such as Klarna can create a transaction before Shopify creates its order, making the transaction's `created_at` older than the saved transaction state. Transactions from those updated orders must still be emitted because the parent order filter bounds the sync window. Re-emitted transactions of updated orders are expected duplicates and are handled by destination deduplication.
+
 ### Discount code streams re-sync every code of an updated discount
 
 `discount_codes` (bulk) and `discount_codes_sync` (synchronous) are incremental only at the discount level. Shopify's `DiscountRedeemCode` has no `updatedAt`, so both streams filter discounts by `updated_at` and then emit **every** code of each matched discount. For discounts with many codes, an incremental sync can behave much like a full refresh. This is documented as a user-facing warning in `docs/integrations/sources/shopify.md` ([#88422](https://github.com/airbytehq/airbyte/pull/88422), oncall [#13626](https://github.com/airbytehq/oncall/issues/13626)).
