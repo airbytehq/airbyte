@@ -11,7 +11,7 @@ plugins {
     id 'com.github.spotbugs' version '6.5.13'
     id 'org.jetbrains.kotlin.jvm' version '2.4.21'
     // Not 2.3.12+: it changed effectiveJavaModifiers and breaks micronaut-inject-kotlin < 5.3.
-    id 'com.google.devtools.ksp' version '2.3.10'
+    id 'com.google.devtools.ksp' version '2.3.12'
 }
 
 allprojects {
