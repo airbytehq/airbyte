@@ -14,7 +14,12 @@ import org.junit.jupiter.api.Test
 class DevNullAggregateTest {
     private val stream = DestinationStream.Descriptor("ns", "users")
     private val record =
-        RecordDTO(fields = emptyMap(), partitionKey = PartitionKey("p"), sizeBytes = 1L, emittedAtMs = 0L)
+        RecordDTO(
+            fields = emptyMap(),
+            partitionKey = PartitionKey("p"),
+            sizeBytes = 1L,
+            emittedAtMs = 0L,
+        )
 
     @Test
     fun `logging counters continue across aggregates of the same stream`() {
