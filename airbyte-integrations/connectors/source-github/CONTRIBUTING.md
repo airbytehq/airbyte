@@ -11,3 +11,9 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 **Connector type:** manifest-only — every stream in `manifest.yaml`, plus `components.py` for the custom components
 
 **Analysis status:** Every stream is in the manifest; the stream-by-stream table is in `AGENTS.md`.
+
+## Unique behaviors (summary)
+
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
+
+1. **Review comment page size** — Review comments use larger pages to avoid persistent server errors on large repositories. Other streams retain their existing page sizes.

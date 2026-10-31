@@ -17,10 +17,13 @@ budget is re-asserted here.
 """
 
 import logging
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+from requests_mock import Mocker
+from requests_mock.request import _RequestObjectProxy
+from requests_mock.response import _Context
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -254,10 +257,8 @@ def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rat
     ],
 )
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
-    """All three were `large_stream = True`, so their `per_page` is
-    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the full-refresh
-    group sends.
+def test_page_size_is_stream_specific(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
+    """`review_comments` uses 100 to avoid small-page server errors; the other two keep 10.
 
     The deprecated `page_size_for_large_streams` no longer changes it. The key left the spec in
     1.0.1, so a config still carrying it was set through the API or Terraform, and a null there
@@ -269,7 +270,58 @@ def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_siz
     _, _, _, error = _read(config, stream_name)
 
     assert error is None
-    assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [["10"]]
+    expected_page_size = "100" if stream_name == "review_comments" else "10"
+    assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [[expected_page_size]]
+
+
+@pytest.mark.parametrize("resume", [False, True], ids=["first_sync", "resumed_sync"])
+@patch("time.sleep")
+def test_review_comments_avoids_small_page_server_errors(
+    sleep_mock: MagicMock, resume: bool, rate_limit_mock_response: None, requests_mock: Mocker
+) -> None:
+    config = _config("example/monorepo", "example/service", start_date="2026-01-01T00:00:00Z")
+    since = "2026-02-01T00:00:00Z" if resume else config["start_date"]
+    state = _legacy_state("review_comments", **{repository: since for repository in config["repositories"]}) if resume else None
+    _mock_repository_resolution(requests_mock, *config["repositories"])
+    cursor = "opaque+cursor=="
+
+    def first_page(request: _RequestObjectProxy, context: _Context) -> dict[str, str] | list[dict[str, str | int]]:
+        if request.qs["per_page"] == ["10"]:
+            context.status_code = 500
+            return {"message": "Server Error"}
+        assert parse_qs(urlparse(request.url).query) == {"per_page": ["100"], "since": [since]}
+        context.headers.update(_next_link(f"{request.url}&page=2&after=opaque%2Bcursor%3D%3D"))
+        return [{"id": 1, "updated_at": "2026-03-01T00:00:00Z"}]
+
+    def second_page(request: _RequestObjectProxy, context: _Context) -> list[dict[str, str | int]]:
+        assert parse_qs(urlparse(request.url).query) == {
+            "per_page": ["100"],
+            "since": [since],
+            "page": ["2"],
+            "after": [cursor],
+        }
+        return [{"id": 2, "updated_at": "2026-03-02T00:00:00Z"}]
+
+    for repository in config["repositories"]:
+        url = f"https://api.github.com/repos/{repository}/pulls/comments"
+        requests_mock.get(url, json=first_page)
+        requests_mock.get(f"{url}?page=2&after=opaque%2Bcursor%3D%3D", json=second_page)
+
+    records, statuses, states, error = _read(config, "review_comments", state=state)
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert sorted((record["repository"], record["id"]) for record in records) == [
+        ("example/monorepo", 1),
+        ("example/monorepo", 2),
+        ("example/service", 1),
+        ("example/service", 2),
+    ]
+    assert len(_listings(requests_mock, "pulls/comments")) == 4
+    assert sorted(states[-1].stream.stream_state.states, key=lambda entry: entry["partition"]["repository"]) == [
+        {"partition": {"repository": repository}, "cursor": {"updated_at": "2026-03-02T00:00:00Z"}} for repository in config["repositories"]
+    ]
+    sleep_mock.assert_not_called()
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
@@ -306,9 +358,10 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
     The whole next URL must be followed, with `after` decoded exactly once."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
+    page_size = 100 if stream_name == "review_comments" else 10
     next_url = (
         f"https://api.github.com/repositories/1/{endpoint}"
-        "?per_page=10&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
+        f"?per_page={page_size}&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
         "&page={page}&after={cursor}"
     )
     after_cursors = {
@@ -356,7 +409,7 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
         assert set(query["state"]) == {"all"}
         assert set(query["sort"]) == {"updated"}
         assert set(query["direction"]) == {"asc"}
-        assert set(query["per_page"]) == {"10"}
+        assert set(query["per_page"]) == {str(page_size)}
 
 
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):

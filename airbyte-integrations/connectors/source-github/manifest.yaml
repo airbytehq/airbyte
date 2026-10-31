@@ -23,9 +23,7 @@ definitions:
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
-  # `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` — the per-page size of the four REST streams
-  # the legacy code marked `large_stream = True`: `pull_requests`, `comments`, `issues` and
-  # `review_comments`. Every other REST stream sends `constants.DEFAULT_PAGE_SIZE` (100).
+  # Legacy per-page size for `pull_requests`, `comments` and `issues`; `review_comments` uses 100.
   #
   # The value is written out rather than read from `page_size_for_large_streams`, which was
   # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
@@ -129,9 +127,6 @@ definitions:
     $ref: "#/definitions/requester_base"
     http_method: GET
     request_parameters:
-      # constants.DEFAULT_PAGE_SIZE — none of these streams was a `large_stream`, so the
-      # reduced page size never applied to them. See `large_stream_page_size` for the streams
-      # that did carry it.
       per_page: "100"
     error_handler:
       $ref: "#/definitions/skip_inaccessible_error_handler"
@@ -7485,7 +7480,7 @@ definitions:
     retriever:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
-        $ref: "#/definitions/large_stream_repository_scoped_requester"
+        $ref: "#/definitions/repository_scoped_requester"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
         path: "repos/{{ stream_partition.repository }}/pulls/comments"
         # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`

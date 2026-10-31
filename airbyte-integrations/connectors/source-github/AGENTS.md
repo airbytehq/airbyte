@@ -289,6 +289,15 @@ sibling keys, so a property copied from a schema file as `{$ref: user.json, desc
 collapses to the literal string `"user.json"`. Shared sub-schemas belong in `definitions`
 (`github_user_schema`) and are referenced with `#/definitions/...`.
 
+## 1. Review comment page size
+
+`review_comments` uses `repository_scoped_requester` with `per_page=100`, unlike
+`pull_requests`, `comments`, and `issues`, which retain 10. Large repositories can return
+persistent HTTP 500 responses for the smaller page size. Keep the same endpoint, `since`
+cursor, and link-header pagination so this workaround does not change the records synced.
+
+**Why this matters:** Reusing the smaller-page requester can reintroduce retry exhaustion.
+
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
