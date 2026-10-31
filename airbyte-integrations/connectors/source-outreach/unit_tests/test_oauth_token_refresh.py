@@ -228,3 +228,56 @@ def test_every_stream_uses_the_shared_requester(connector_path):
         assert requester["$ref"] == "#/definitions/base_requester", name
         assert "authenticator" not in requester, name
         assert "error_handler" not in requester, name
+
+
+def test_expired_access_token_mid_sync_on_mailings_refreshes_and_continues(requests_mock, get_source, capsys):
+    mailings_url = "https://api.outreach.io/api/v2/mailings"
+    token_requests = _register_token_endpoint(requests_mock)
+    sent_auth_headers = []
+
+    def mailings_page(mailing_id, next_cursor=None):
+        return {
+            "data": [
+                {
+                    "type": "mailing",
+                    "id": mailing_id,
+                    "attributes": {"updatedAt": "2026-09-01T00:00:00.000Z"},
+                    "relationships": {},
+                }
+            ],
+            "links": {"next": f"{mailings_url}?page[after]={next_cursor}"} if next_cursor else {},
+        }
+
+    def mailings_callback(request, context):
+        sent_auth_headers.append(request.headers["Authorization"])
+        cursor = request.qs.get("page[after]", [None])[0]
+        if cursor is None:
+            return mailings_page(1, next_cursor="2")
+        if cursor == "2" and request.headers["Authorization"] == "Bearer token-1":
+            context.status_code = 401
+            return {
+                "errors": [
+                    {
+                        "id": "expiredAccessToken",
+                        "title": "Expired Access Token",
+                        "detail": "Please get a new access token and try again.",
+                    }
+                ]
+            }
+        if cursor == "2":
+            return mailings_page(2)
+        return {"data": [], "links": {}}
+
+    requests_mock.get(mailings_url, json=mailings_callback)
+    catalog = CatalogBuilder().with_stream("mailings", SyncMode.incremental).build()
+
+    output = read(get_source(CONFIG), config=CONFIG, catalog=catalog)
+
+    assert [parse_qs(request.text) for request in token_requests] == [
+        _refresh_request_body("test-refresh-token"),
+        _refresh_request_body("refresh-token-1"),
+    ]
+    assert sent_auth_headers == ["Bearer token-1", "Bearer token-1", "Bearer token-2"]
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1, 2]
+    assert _saved_configs(capsys)[-1]["refresh_token"] == "refresh-token-2"
