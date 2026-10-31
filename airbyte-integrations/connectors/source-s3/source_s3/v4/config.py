@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from typing import Any, Dict, List, Literal, Mapping, Optional, Union
+from urllib.parse import urlsplit
 
 import dpath.util
-from pydantic.v1 import AnyUrl, BaseModel, Field, root_validator
+from pydantic.v1 import AnyUrl, BaseModel, Field, root_validator, validator
 from pydantic.v1.error_wrappers import ValidationError
 
-from airbyte_cdk import OneOfOptionConfig, is_cloud_environment
+from airbyte_cdk import AirbyteTracedException, FailureType, OneOfOptionConfig, is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
@@ -92,6 +94,30 @@ class Config(AbstractFileBasedSpec):
     )
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=1)
+
+    @validator("bucket", pre=True)
+    def normalize_bucket(cls, value: str) -> str:
+        message = "S3 bucket must contain only a bucket name. Move any path into the stream glob or path prefix."
+        bucket = value.strip() if isinstance(value, str) else ""
+        virtual_host = r"([a-z0-9][a-z0-9._-]*)\.s3(?:[.-](?:dualstack\.)?[a-z0-9-]+)?\.amazonaws\.com"
+        if re.fullmatch(virtual_host, bucket):
+            bucket = f"https://{bucket}"
+        if "://" in bucket:
+            try:
+                url = urlsplit(bucket)
+                if url.path not in ("", "/") or url.query or url.fragment or url.username or url.password or url.port:
+                    raise ValueError()
+                if url.scheme == "s3":
+                    bucket = url.netloc
+                elif url.scheme == "https" and url.hostname and (match := re.fullmatch(virtual_host, url.hostname)):
+                    bucket = match.group(1)
+                else:
+                    raise ValueError()
+            except ValueError:
+                raise AirbyteTracedException(message=message, internal_message="Invalid bucket URL.", failure_type=FailureType.config_error)
+        if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9._-]{0,254}", bucket):
+            raise AirbyteTracedException(message=message, internal_message="Invalid bucket name.", failure_type=FailureType.config_error)
+        return bucket
 
     # Use the extended stream config type but keep parent field metadata via schema patching.
     streams: List[S3FileBasedStreamConfig]
