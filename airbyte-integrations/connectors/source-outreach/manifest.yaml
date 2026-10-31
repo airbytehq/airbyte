@@ -820,7 +820,7 @@ definitions:
       response_filters:
         - type: HttpResponseFilter
           action: REFRESH_TOKEN_THEN_RETRY
-          predicate: "{{ 'expiredAccessToken' in (response | string) }}"
+          predicate: "{{ 'data' not in response and 'expiredAccessToken' in (response | string) }}"
         - type: HttpResponseFilter
           action: FAIL
           failure_type: config_error
