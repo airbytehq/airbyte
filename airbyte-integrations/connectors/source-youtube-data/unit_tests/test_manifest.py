@@ -23,7 +23,7 @@ from unittest import TestCase, mock
 
 import yaml
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -244,6 +244,70 @@ class TestVideosFromUploadsPlaylist(TestCase):
         assert video_ids == {"video-1", "video-2"}
         http_mocker.assert_number_of_calls(first_playlist_request, 1)
         http_mocker.assert_number_of_calls(second_playlist_request, 1)
+
+
+class TestPlaylistNotFound(TestCase):
+    @HttpMocker()
+    def test_playlist_not_found_fails_with_specific_system_error(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "id": "UC-test",
+                                "contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}},
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+        playlist_request = HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters")
+        http_mocker.get(
+            playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "error": {
+                            "code": 404,
+                            "message": "The playlist identified with the request's <code>playlistId</code> parameter cannot be found.",
+                            "errors": [
+                                {
+                                    "domain": "youtube.playlistItem",
+                                    "reason": "playlistNotFound",
+                                    "message": "The playlist identified with the request's <code>playlistId</code> parameter cannot be found.",
+                                    "locationType": "parameter",
+                                    "location": "playlistId",
+                                }
+                            ],
+                        }
+                    }
+                ),
+                status_code=404,
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("videos", SyncMode.full_refresh).build()
+        with mock.patch.object(time, "sleep"):
+            output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert not output.records
+        trace_errors = [message.trace.error for message in output.errors if message.trace.error]
+        matching_errors = [
+            error
+            for error in trace_errors
+            if error.message == "YouTube could not find the uploads playlist for one of the configured channels (playlistNotFound)."
+            and error.failure_type == FailureType.system_error
+        ]
+        assert matching_errors, output.get_formatted_error_message()
+        assert all("The requested resource was not found on the server" not in error.message for error in trace_errors)
+        http_mocker.assert_number_of_calls(playlist_request, 1)
 
 
 class TestVideoChildrenFromUploadsPlaylist(TestCase):
