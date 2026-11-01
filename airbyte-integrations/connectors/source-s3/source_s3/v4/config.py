@@ -2,15 +2,64 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 from typing import Any, Dict, List, Literal, Mapping, Optional, Union
 
 import dpath.util
 from pydantic.v1 import AnyUrl, BaseModel, Field, root_validator
-from pydantic.v1.error_wrappers import ValidationError
 
 from airbyte_cdk import OneOfOptionConfig, is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+
+
+# Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the groups it
+# shows, in form order. Properties opt into a group with `group="<id>"`. A section with `"check": True` is checked when
+# the user completes it: the platform sends a CHECK whose config carries a top-level `check-section` key, and the
+# connector validates the configuration up to that section only (see the CDK's airbyte_cdk.sources.utils.check_section
+# and SourceS3.check_section_connection). The review section has no check of its own: the full check the platform runs
+# before creating the source covers it.
+GROUP_BUCKET = "bucket"
+GROUP_ENDPOINT = "endpoint"
+GROUP_FILES = "files"
+GROUP_START_DATE = "start_date"
+
+SECTION_BUCKET = "bucket"
+SECTION_FILES = "files"
+SECTION_REVIEW = "review"
+
+GROUPS: List[Dict[str, Any]] = [
+    {"id": GROUP_BUCKET},
+    {"id": GROUP_ENDPOINT, "title": "More options"},
+    {"id": GROUP_FILES},
+    {"id": GROUP_START_DATE, "title": "Start date"},
+]
+
+SECTIONS: List[Dict[str, Any]] = [
+    {
+        "id": SECTION_BUCKET,
+        "title": "Connect bucket",
+        "order": 0,
+        "description": "Which bucket to read from, and how Airbyte gets access.",
+        "groups": [GROUP_BUCKET, GROUP_ENDPOINT],
+        "check": True,
+    },
+    {
+        "id": SECTION_FILES,
+        "title": "Choose files",
+        "order": 1,
+        "description": "How files are delivered, and which files become streams.",
+        "groups": [GROUP_FILES, GROUP_START_DATE],
+        "check": True,
+    },
+    {
+        "id": SECTION_REVIEW,
+        "title": "Review & set up",
+        "order": 2,
+        "description": "Name your source and check the optional settings.",
+        "groups": [],
+    },
+]
 
 
 class IAMUserCredentials(BaseModel):
@@ -88,10 +137,11 @@ class Config(AbstractFileBasedSpec):
         description="Credentials for connecting to S3.",
         discriminator="auth_type",
         type="object",
-        order=0,
+        order=1,
+        group=GROUP_BUCKET,
     )
 
-    bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=1)
+    bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0, group=GROUP_BUCKET)
 
     # Use the extended stream config type but keep parent field metadata via schema patching.
     streams: List[S3FileBasedStreamConfig]
@@ -101,23 +151,25 @@ class Config(AbstractFileBasedSpec):
         title="Endpoint",
         description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
         examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
-        order=4,
+        order=2,
+        group=GROUP_ENDPOINT,
     )
 
     region_name: Optional[str] = Field(
         title="AWS Region",
         default=None,
         description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
-        order=5,
+        order=3,
+        group=GROUP_ENDPOINT,
     )
 
     delivery_method: DeliverRecords | DeliverRawFiles = Field(
         title="Delivery Method",
         discriminator="delivery_type",
         type="object",
-        order=7,
+        order=4,
         display_type="radio",
-        group="advanced",
+        group=GROUP_FILES,
         default="use_records_transfer",
     )
 
@@ -127,7 +179,9 @@ class Config(AbstractFileBasedSpec):
             endpoint = values.get("endpoint")
             if endpoint:
                 if endpoint.startswith("http://"):  # ignore-https-check
-                    raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+                    # A ValueError is what pydantic wraps into a readable ValidationError; passing a bare string to
+                    # ValidationError builds one whose message cannot be rendered.
+                    raise ValueError("The endpoint must be a secure HTTPS endpoint.")
 
         return values
 
@@ -162,13 +216,18 @@ class Config(AbstractFileBasedSpec):
         """
         schema = super().schema(*args, **kwargs)
 
-        schema["properties"]["start_date"]["order"] = 3
+        schema["groups"] = copy.deepcopy(GROUPS)
+        schema["sections"] = copy.deepcopy(SECTIONS)
+
+        schema["properties"]["start_date"]["order"] = 6
+        schema["properties"]["start_date"]["group"] = GROUP_START_DATE
 
         # Keep parent streams metadata to avoid drift, then inject the S3-specific flag.
         parent_schema = AbstractFileBasedSpec.schema()
         schema["properties"]["streams"] = parent_schema["properties"]["streams"]
         schema["properties"]["streams"]["title"] = "Streams"
-        schema["properties"]["streams"]["order"] = 2
+        schema["properties"]["streams"]["order"] = 5
+        schema["properties"]["streams"]["group"] = GROUP_FILES
 
         s3_stream_schema = S3FileBasedStreamConfig.schema(*args, **kwargs)
         skip_prop = s3_stream_schema["properties"]["skip_full_check_for_parquet"]
