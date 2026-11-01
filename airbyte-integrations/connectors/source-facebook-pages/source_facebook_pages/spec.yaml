@@ -27,6 +27,73 @@ connectionSpecification:
       minimum: 1
       maximum: 100
       order: 2
+    page_insights_metrics:
+      type: array
+      title: Page Insights Metrics
+      description: >-
+        Metrics requested by the page_insights stream. Leave empty to use the connector defaults. See
+        https://developers.facebook.com/docs/graph-api/reference/insights/ for valid metrics. Facebook
+        rejects the whole request if any metric is invalid or deprecated.
+      items:
+        type: string
+      examples:
+        - [
+            "page_post_engagements",
+            "page_views_total",
+            "page_actions_post_reactions_like_total",
+          ]
+      order: 3
+    post_insights_metrics:
+      type: array
+      title: Post Insights Metrics
+      description: >-
+        Metrics requested by the post_insights stream. Leave empty to use the connector defaults.
+      items:
+        type: string
+      examples:
+        - ["post_media_view", "post_clicks"]
+      order: 4
+    video_insights_metrics:
+      type: array
+      title: Video Insights Metrics
+      description: >-
+        Lifetime metrics requested for each Page video by the video_insights stream. Leave empty to use
+        the connector defaults. See https://developers.facebook.com/docs/graph-api/reference/video/video_insights/
+      items:
+        type: string
+      examples:
+        - ["total_video_views", "total_video_complete_views"]
+      order: 5
+    reel_insights_metrics:
+      type: array
+      title: Reel Insights Metrics
+      description: >-
+        Lifetime metrics requested for each Page reel by the reel_insights stream. Leave empty to use the
+        connector defaults. See https://developers.facebook.com/docs/graph-api/reference/video/video_insights/#reels-metrics
+      items:
+        type: string
+      examples:
+        - ["blue_reels_play_count", "fb_reels_total_plays"]
+      order: 6
+    page_insights_period:
+      type: string
+      title: Page Insights Period
+      description: >-
+        Aggregation period for the page_insights stream. Leave empty to keep the current behavior, where
+        Facebook returns every period it supports for each metric (usually day, week and days_28), which
+        is about three times more data than a single period.
+      enum: ["day", "week", "days_28", "month", "lifetime", "total_over_range"]
+      order: 7
+    start_date:
+      type: string
+      title: Start Date
+      description: >-
+        Only used when the post stream runs in Incremental mode. Posts created before this date are not
+        synced. Leave empty to sync the full post history on the first incremental sync.
+      format: date-time
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      examples: ["2024-01-01T00:00:00Z"]
+      order: 8
 advanced_auth:
   auth_flow_type: oauth2.0
   oauth_config_specification:
