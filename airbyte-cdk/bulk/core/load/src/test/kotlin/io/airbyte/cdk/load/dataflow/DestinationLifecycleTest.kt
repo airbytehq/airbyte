@@ -50,6 +50,8 @@ class DestinationLifecycleTest {
         every { completionTracker.allStreamsComplete() } returns true
         every { stream1.mappedDescriptor } returns stream1Descriptor
         every { stream2.mappedDescriptor } returns stream2Descriptor
+        every { streamLoader1.stream } returns stream1
+        every { streamLoader2.stream } returns stream2
         every { completionTracker.isStreamComplete(stream1Descriptor) } returns true
         every { completionTracker.isStreamComplete(stream2Descriptor) } returns true
         every { destinationCatalog.streams } returns listOf(stream1, stream2)
@@ -84,6 +86,8 @@ class DestinationLifecycleTest {
         every { completionTracker.allStreamsComplete() } returns false
         every { stream1.mappedDescriptor } returns stream1Descriptor
         every { stream2.mappedDescriptor } returns stream2Descriptor
+        every { streamLoader1.stream } returns stream1
+        every { streamLoader2.stream } returns stream2
         every { completionTracker.isStreamComplete(stream1Descriptor) } returns true
         every { completionTracker.isStreamComplete(stream2Descriptor) } returns false
         every { destinationCatalog.streams } returns listOf(stream1, stream2)
