@@ -9,7 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 ### 1.1.10 — 2026-11-01
 
-Fix Iceberg schema conversion to make nested `_airbyte_meta` fields optional and relax existing tables in place while preserving field IDs. Downgrading the CDK does not restore requiredness on tables already relaxed.
+Fix Iceberg schema conversion to make nested `_airbyte_meta` fields optional and relax existing tables in place while preserving field IDs. Downgrading the CDK does not restore requiredness on tables already relaxed. Stream loaders can opt into per-stream teardown completion so a failed stream no longer blocks committing completed streams.
 
 ### 1.1.9 — 2026-10-21
 
