@@ -243,13 +243,19 @@ Keep in mind the following limitations:
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Troubleshooting
+
+- **Invalid or expired access token (401):** Re-authenticate the source to obtain a valid LinkedIn access token.
+- **Ad account access denied (403):** Authorize the `r_ads` scope to read ad accounts and confirm that the authorized member has access in Campaign Manager. If LinkedIn names a different missing scope, such as `rw_ads`, grant that scope and re-authenticate.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 6.2.7 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
 | 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
 | 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
 | 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream failing on Message Ads (Sponsored InMail) creatives and on creatives with a null `content.reference` |
