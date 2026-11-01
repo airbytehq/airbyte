@@ -35,8 +35,6 @@ class S3DataLakeStreamLoader(
     private val mainBranchName: String,
     private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : StreamLoader {
-    override val teardownOnStreamCompletion = true
-
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
     private var stagingBranchCreated = false
