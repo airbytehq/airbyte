@@ -91,7 +91,7 @@ These tools read data directly from sources and destinations. They only work aft
 | Tool | Description |
 | :--- | :--- |
 | `get_agent_skill_docs` | Get a connector skill: the entities, actions, and parameters a source or destination supports for direct reads. Your agent reads this before it reads data. |
-| `execute_external_api_query` | Read live records from a source's API. Supports the `list` and `get` actions. |
+| `execute_external_api_query` | Read live records from a source's API. Supports `list`, `get`, and `search` when the connector offers them. |
 | `execute_external_sql_query` | Run a read-only SQL query on a Snowflake or BigQuery destination. Only `SELECT` statements and `SHOW TABLES` are allowed. |
 
 ### Connector skills
@@ -104,8 +104,21 @@ Every connector's API is different. A connector skill is a short document that t
 | :--- | :--- | :--- |
 | `list` | Return a page of records for an entity, with optional filters. | List open Zendesk tickets. |
 | `get` | Return one record by its ID. | Get the HubSpot contact with ID `123`. |
+| `search` | Search with the connector's own API, when supported. This isn't context layer search. | Search a source's API for contacts by email. |
 
 Direct reads can't create, update, or delete records.
+
+## Search
+
+These tools work with the [context layer search index](../context-layer/search.md) in Airbyte Cloud. An organization administrator must enable **Semantic search**, and the connection must have search enabled. Unlike a direct read's `search` action, context layer search queries indexed synced data rather than a connector's API.
+
+| Tool | Description |
+| :--- | :--- |
+| `execute_external_search_query` | Search a source or destination's indexed data by keyword, meaning, or both. Hybrid is the default. Searches are read-only. |
+| `get_cloud_search_status` | Check indexed streams and backfill progress for a source or destination. |
+| `request_cloud_search_index_backfill` | Request indexing of data already in a connection's destination. Supports Snowflake and BigQuery; uses destination compute. |
+
+Searches count toward the same monthly usage limit as direct reads. For parameters, examples, and setup, see [Search your data](../context-layer/search.md).
 
 ## Connector registry and documentation
 

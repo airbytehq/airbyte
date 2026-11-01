@@ -12,6 +12,7 @@ With the Airbyte MCP, your agent can:
 - **Troubleshoot and maintain pipelines**: check sync status, read job logs, check connector configurations, and explain failures.
 - **Read data directly from sources and destinations**: when your organization enables the [context layer](../context-layer/readme.md), your agent can read live data from supported sources and query supported destinations without waiting for a sync.
 - **Learn how each connector works**: connector skills describe the entities, actions, and parameters each connector supports, so your agent knows how to request data correctly.
+- **Search synced data**: find records by keyword, meaning, or both using [context layer search](../context-layer/search.md) in Airbyte Cloud.
 - **Answer questions about Airbyte**: your agent can search Airbyte's documentation, website, API specifications, YouTube videos, and GitHub content to answer questions about how Airbyte works. If you use Airbyte Cloud, you don't need the separate [Airbyte knowledge MCP server](/platform/airbyte-knowledge-mcp).
 
 To start, [connect the Airbyte MCP to your agent](install.md). For a complete list of what your agent can do, see [Airbyte MCP tools](tools.md). To limit which tools your agent can use, see [Advanced configuration](advanced-configuration.md).
@@ -28,14 +29,14 @@ After you connect the Airbyte MCP, ask your agent to do things in plain language
 
 ## Usage limits
 
-Each organization can make up to 100,000 direct reads per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
+Each organization can make up to 100,000 direct reads and searches combined per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
 
 Direct reads also count toward the API rate limits of the source you read from, and can incur compute costs from your destination.
 
 ## Limitations
 
 - The hosted Airbyte MCP server works with all editions of Airbyte Cloud and Airbyte Flex. You can [run the Airbyte MCP locally with self-managed Airbyte Core](self-managed.md), but there are known issues with local deployments.
-- Direct reads are read-only. Your agent can list and get records, but it can't create, update, or delete records in a source or destination through direct reads.
+- Direct reads and searches are read-only. Your agent can retrieve records, but it can't create, update, or delete records in a source or destination through these tools.
 - Direct reads only work with [supported connectors](../context-layer/readme.md#supported-connectors), and only after an organization admin [enables the context layer](../context-layer/manage-access.md).
 - Direct reads will not work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).
 
@@ -86,11 +87,13 @@ When your agent reads directly from a source or destination, Airbyte uses the cr
 <details>
 <summary>What connectors do</summary>
 
-A connector is the component Airbyte uses to talk to a third-party system. A connector can have one or both of these capabilities:
+A connector is the component Airbyte uses to talk to a third-party system. It can be a data replication connector, an agent connector, or both:
 
-- **Data replication**: extract data from a source or load data into a destination. This powers connections and syncs.
-- **Agent access**: call the source or destination in real time and return only the records an agent asks for. This powers direct reads.
+- **Data replication connectors** extract data from sources or load data into destinations. They power connections and syncs.
+- **Agent connectors** support agent access for direct reads and search through the context layer.
 
-When the context layer is on, a single connector you configured in Airbyte can do both: sync data through a connection, and directly call the source or destination from your agent. Airbyte uses the same stored credentials for both actions. To learn more, see [Sources, destinations, and connectors](../move-data/sources-destinations-connectors.md).
+In Airbyte Cloud, when a source or destination supports both connector types, agent access uses the same stored credentials as data replication. Direct reads call the source or destination in real time and return the records your agent requests. To learn more, see [Sources, destinations, and connectors](../move-data/sources-destinations-connectors.md).
+
+A connection can also feed the context layer search index when both the source and destination are agent connectors. Search finds records in indexed synced data rather than calling a connector's API in real time.
 
 </details>
