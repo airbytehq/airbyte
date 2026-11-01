@@ -21,7 +21,7 @@ on:
 
 jobs:
   prune-temp-images:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Prune temporary GHCR images
         uses: snok/container-retention-policy@4f22ef80902ad409ed55a99dc5133cc1250a0d03 # v3.0.0

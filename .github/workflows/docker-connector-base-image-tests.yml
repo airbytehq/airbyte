@@ -24,7 +24,7 @@ permissions:
 jobs:
   detect-changes:
     name: Detect Changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -49,7 +49,7 @@ jobs:
 
   build-java-base-image:
     name: Build Java Base Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: detect-changes
     environment:
       name: ghcr.io/airbytehq/java-connector-base
@@ -96,7 +96,7 @@ jobs:
 
   build-python-base-image:
     name: Build Python Base Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: detect-changes
     environment:
       name: ghcr.io/airbytehq/python-connector-base
@@ -142,7 +142,7 @@ jobs:
       python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
 
   test-java-connector-image-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [detect-changes, build-java-base-image]
     if: needs.detect-changes.outputs.java-images == 'true'
     strategy:
@@ -250,7 +250,7 @@ jobs:
           fail-build: false
 
   test-python-connector-image-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [detect-changes, build-python-base-image]
     if: needs.detect-changes.outputs.python-images == 'true'
     strategy:
@@ -338,7 +338,7 @@ jobs:
           fail-build: false
 
   test-manifest-only-connector-image-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [detect-changes]
     if: needs.detect-changes.outputs.manifest-only == 'true'
     strategy:

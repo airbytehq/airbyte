@@ -43,7 +43,7 @@ on:
 jobs:
   build-and-publish-base-image:
     name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event.inputs.image-type == 'base' }}
     environment:
       name: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}

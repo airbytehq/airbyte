@@ -117,7 +117,7 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
       && needs.detect-changes.outputs.changed == 'true'
       && needs.detect-changes.outputs.changelog-only != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # This workflow deploys preview builds to Vercel on pull requests.
     # Pull requests from forks are ignored.
     env:

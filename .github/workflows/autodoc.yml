@@ -24,7 +24,7 @@ on:
 jobs:
   update-connector-documentation:
     name: Update connector documentation with AI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Only run for human authors, exclude bot accounts
     if: |
       !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.actor) &&

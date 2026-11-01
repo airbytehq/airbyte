@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   ai-release-watch:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
         id: job-vars
