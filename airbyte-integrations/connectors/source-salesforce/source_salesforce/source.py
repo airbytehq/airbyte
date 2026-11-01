@@ -64,6 +64,8 @@ from .streams import (
 
 _DEFAULT_CONCURRENCY = 20
 _MAX_CONCURRENCY = 50
+# The section of spec.yaml which declares `check: true`; see `SourceSalesforce.check_section_connection`.
+SECTION_ACCOUNT = "account"
 logger = logging.getLogger("airbyte")
 
 
@@ -188,6 +190,25 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         salesforce = self._get_sf_object(config)
         salesforce.describe()
         return True, None
+
+    def check_section_connection(self, logger: logging.Logger, section: str, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+        """
+        Section check for the stepped setup form, see the `sections` declared in spec.yaml and the CDK's
+        `airbyte_cdk.sources.utils.check_section`. `config` only holds the fields collected up to `section`.
+
+        - `account`: the environment, the OAuth credentials and the data filters (dates, object filters, "NA" values).
+          That is everything the connector validates against Salesforce: the credentials must log in and the user must
+          be allowed to describe the objects. So this is the full check, with the review section's tuning fields
+          (Bulk API, slice step, lookback window) at their defaults.
+        - `review` is the last section, so the CDK runs the full check for it.
+        """
+        if section == SECTION_ACCOUNT:
+            logger.info(f"Section '{section}' holds every field the connector validates, running the full config check.")
+            return self.check_connection(logger, config)
+        raise AirbyteTracedException(
+            message=f"Section '{section}' has no section check.",
+            failure_type=FailureType.config_error,
+        )
 
     @classmethod
     def _get_api_type(cls, stream_name: str, json_schema: Mapping[str, Any], force_use_bulk_api: bool) -> str:
