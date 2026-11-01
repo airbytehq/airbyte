@@ -119,6 +119,34 @@ def _mock_tenant_info(payload=_TENANT_INFO_RESPONSE):
             False,
             id="oauth_agile_v1_gateway_route",
         ),
+        pytest.param(
+            {
+                "auth_type": "API Token",
+                "api_token": "token",
+                "email": "email@email.com",
+            },
+            "board_issues",
+            "https://airbyteio.atlassian.net/rest/software/1.0/",
+            "BasicHttpAuthenticator",
+            "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu",
+            False,
+            id="api_token_software_v1_domain_route",
+        ),
+        pytest.param(
+            {
+                "auth_type": "OAuth2.0",
+                "client_id": "client-id",
+                "client_secret": "client-secret",
+                "refresh_token": "refresh-token",
+                "cloud_id": CLOUD_ID,
+            },
+            "board_issues",
+            f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/software/1.0/",
+            "JiraOAuthAuthenticator",
+            None,
+            False,
+            id="oauth_software_v1_gateway_route",
+        ),
     ],
 )
 def test_url_routing_by_credential_type(

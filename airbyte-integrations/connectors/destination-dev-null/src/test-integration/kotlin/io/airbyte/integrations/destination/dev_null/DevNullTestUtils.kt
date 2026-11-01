@@ -25,7 +25,9 @@ object DevNullTestUtils {
      */
     val loggingConfigPath: Path = Path.of("test_configs/logging.json")
     val silentConfigPath: Path = Path.of("test_configs/silent.json")
+
     fun configContents(configPath: Path): String = Files.readString(configPath, Charsets.UTF_8)
+
     val loggingConfig: DevNullSpecification =
         ValidatedJsonUtils.parseOne(
             DevNullSpecificationOss::class.java,

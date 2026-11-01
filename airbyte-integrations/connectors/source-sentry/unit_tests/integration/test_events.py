@@ -24,6 +24,12 @@ _PROJECT = "test-project"
 _AUTH_TOKEN = "test_token_abc123"
 
 
+def _project_cursor(output, project: str) -> dict:
+    """The stream keeps one bookmark per configured project; return that project's cursor."""
+    stream_state = output.most_recent_state.stream_state.__dict__
+    return next(entry["cursor"] for entry in stream_state["states"] if entry["partition"]["project"] == project)
+
+
 @freezegun.freeze_time(_NOW.isoformat())
 class TestEventsStream(TestCase):
     """Comprehensive tests for events stream"""
@@ -160,7 +166,7 @@ class TestEventsStream(TestCase):
 
         # ASSERT - State message with latest dateCreated
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        state = output.most_recent_state.stream_state.__dict__
+        state = _project_cursor(output, _PROJECT)
         # State format has microseconds, record doesn't - just verify it starts with the date
         assert state["dateCreated"].startswith("2024-01-16T12:30:00"), f"Expected state cursor to be latest record date, got {state}"
 
@@ -172,6 +178,7 @@ class TestEventsStream(TestCase):
         This tests:
         - Connector uses state cursor as start date in API request (API-side filtering!)
         - URL params include start=<state_date> (not default 1900-01-01)
+        - A bookmark saved before 1.1.0 ({"dateCreated": ...}, no per-project entries) still sets the start
         - Only records after the state date are returned
         - New state message is emitted with latest record's dateCreated
         """
@@ -211,8 +218,100 @@ class TestEventsStream(TestCase):
 
         # ASSERT - State message with latest dateCreated
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        new_state = output.most_recent_state.stream_state.__dict__
+        new_state = _project_cursor(output, _PROJECT)
         # New state should be 01-16 (advanced from input state 01-15)
         assert new_state["dateCreated"].startswith(
             "2024-01-16T12:30:00"
         ), f"Expected state to advance to latest record date, got {new_state}"
+
+    @HttpMocker()
+    def test_incremental_sync_uses_config_start_date(self, http_mocker: HttpMocker):
+        """The start date setting becomes Sentry's `start` query parameter on the first sync."""
+        config = (
+            ConfigBuilder()
+            .with_organization(_ORGANIZATION)
+            .with_project(_PROJECT)
+            .with_auth_token(_AUTH_TOKEN)
+            .with_start_date("2024-01-01T00:00:00Z")
+            .build()
+        )
+
+        http_mocker.get(
+            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params(
+                {
+                    "full": "true",
+                    "start": "2024-01-01T00:00:00.000000Z",
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                }
+            )
+            .build(),
+            create_response("events", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_project_added_later_starts_from_newest_bookmark(self, http_mocker: HttpMocker):
+        """
+        A project added to a connection that already has per-project state has no cursor of its
+        own, so it starts from the connection's newest bookmark, not from the start date. The docs
+        tell users to refresh `events` after adding a project; if this test starts failing, update them.
+        """
+        bookmark = "2024-01-15T10:00:00.000000Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                    "state": {"dateCreated": bookmark},
+                    "states": [{"partition": {"project": _PROJECT}, "cursor": {"dateCreated": bookmark}}],
+                },
+            )
+            .build()
+        )
+        config = (
+            ConfigBuilder()
+            .with_organization(_ORGANIZATION)
+            .with_projects([_PROJECT, "added-project"])
+            .with_auth_token(_AUTH_TOKEN)
+            .with_start_date("2024-01-01T00:00:00Z")
+            .build()
+        )
+        for project in (_PROJECT, "added-project"):
+            http_mocker.get(
+                SentryRequestBuilder.events_endpoint(_ORGANIZATION, project, _AUTH_TOKEN)
+                .with_query_params({"full": "true", "start": bookmark, "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+                .build(),
+                create_response("events_incremental", has_next=False),
+            )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_events_full_payload_false_omits_full_parameter(self, http_mocker: HttpMocker):
+        """With events_full_payload off, the request has no `full` parameter, so Sentry returns summary events."""
+        config = {**self._config(), "events_full_payload": False}
+
+        http_mocker.get(
+            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
+            .with_query_params({"start": "1900-01-01T00:00:00.000000Z", "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+            .build(),
+            create_response("events", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 2

@@ -14,18 +14,19 @@ class MsSqlServerStateMigrationTest {
     fun `should parse new format state correctly`() {
         val newState =
             """
-        {
-            "cursor": "2024-01-01T00:00:00",
-            "version": 3,
-            "state_type": "cursor_based",
-            "stream_name": "users",
-            "cursor_field": ["created_at"],
-            "stream_namespace": "dataset_1tb",
-            "cursor_record_count": 0
-        }
-        """.trimIndent()
+            {
+                "cursor": "2024-01-01T00:00:00",
+                "version": 3,
+                "state_type": "cursor_based",
+                "stream_name": "users",
+                "cursor_field": ["created_at"],
+                "stream_namespace": "dataset_1tb",
+                "cursor_record_count": 0
+            }
+            """
+                .trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))!!
 
         assertEquals("2024-01-01T00:00:00", parsed.cursor?.asText())
         assertEquals("cursor_based", parsed.stateType)
@@ -38,25 +39,26 @@ class MsSqlServerStateMigrationTest {
     fun `should migrate legacy OrderedColumnLoadStatus state correctly`() {
         val legacyOrderedColumnState =
             """
-        {
-            "version": 2,
-            "state_type": "ordered_column",
-            "ordered_col": "id",
-            "ordered_col_val": "12345",
-            "incremental_state": {
+            {
                 "version": 2,
-                "state_type": "cursor_based",
-                "stream_name": "users",
-                "stream_namespace": "dataset_1tb",
-                "cursor_field": ["created_at"],
-                "cursor": "2024-01-01T00:00:00",
-                "cursor_record_count": 0
+                "state_type": "ordered_column",
+                "ordered_col": "id",
+                "ordered_col_val": "12345",
+                "incremental_state": {
+                    "version": 2,
+                    "state_type": "cursor_based",
+                    "stream_name": "users",
+                    "stream_namespace": "dataset_1tb",
+                    "cursor_field": ["created_at"],
+                    "cursor": "2024-01-01T00:00:00",
+                    "cursor_record_count": 0
+                }
             }
-        }
-        """.trimIndent()
+            """
+                .trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
         // Should be converted to primary_key state
         assertEquals("primary_key", parsed.stateType)
@@ -78,18 +80,19 @@ class MsSqlServerStateMigrationTest {
     fun `should migrate legacy CursorBasedStatus state correctly`() {
         val legacyCursorState =
             """
-        {
-            "version": 2,
-            "state_type": "cursor_based",
-            "stream_name": "users",
-            "stream_namespace": "dataset_1tb",
-            "cursor_field": ["created_at"],
-            "cursor": "2024-01-01T00:00:00",
-            "cursor_record_count": 1
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "state_type": "cursor_based",
+                "stream_name": "users",
+                "stream_namespace": "dataset_1tb",
+                "cursor_field": ["created_at"],
+                "cursor": "2024-01-01T00:00:00",
+                "cursor_record_count": 1
+            }
+            """
+                .trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name and namespace are not tracked in the state value
@@ -103,15 +106,16 @@ class MsSqlServerStateMigrationTest {
     fun `should detect OrderedColumnLoadStatus by field presence`() {
         val legacyStateWithoutStateType =
             """
-        {
-            "version": 2,
-            "ordered_col": "id",
-            "ordered_col_val": "12345"
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "ordered_col": "id",
+                "ordered_col_val": "12345"
+            }
+            """
+                .trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
         assertEquals("primary_key", parsed.stateType)
         assertEquals("id", parsed.pkName)
@@ -123,16 +127,17 @@ class MsSqlServerStateMigrationTest {
     fun `should detect CursorBasedStatus by field presence`() {
         val legacyStateWithoutStateType =
             """
-        {
-            "version": 2,
-            "stream_name": "users",
-            "cursor_field": ["created_at"],
-            "cursor": "2024-01-01T00:00:00"
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "stream_name": "users",
+                "cursor_field": ["created_at"],
+                "cursor": "2024-01-01T00:00:00"
+            }
+            """
+                .trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
@@ -145,33 +150,40 @@ class MsSqlServerStateMigrationTest {
     fun `should handle unknown state format gracefully`() {
         val unknownState =
             """
-        {
-            "unknown_field": "unknown_value"
-        }
-        """.trimIndent()
+            {
+                "unknown_field": "unknown_value"
+            }
+            """
+                .trimIndent()
 
         val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(unknownState))
 
-        // Should return default state
-        assertEquals("cursor_based", parsed.stateType)
-        assertNull(parsed.cursor)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
+        // Unknown formats have no recognizable resume point: null signals a cold start
+        assertNull(parsed)
+    }
+
+    @Test
+    fun `should return null for empty object state`() {
+        // An empty {} state (e.g. produced when the platform clears a stream's state)
+        // has no recognizable resume point.
+        assertNull(MsSqlServerStateMigration.parseStateValue(Jsons.objectNode()))
     }
 
     @Test
     fun `should migrate ordered column state without incremental_state`() {
         val legacyOrderedColumnState =
             """
-        {
-            "version": 2,
-            "state_type": "ordered_column",
-            "ordered_col": "id",
-            "ordered_col_val": "12345"
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "state_type": "ordered_column",
+                "ordered_col": "id",
+                "ordered_col_val": "12345"
+            }
+            """
+                .trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
         assertEquals("primary_key", parsed.stateType)
         assertEquals("id", parsed.pkName)
@@ -184,16 +196,18 @@ class MsSqlServerStateMigrationTest {
     fun `should handle null values in legacy state`() {
         val legacyStateWithNulls =
             """
-        {
-            "version": 2,
-            "state_type": "cursor_based",
-            "stream_name": null,
-            "cursor_field": null,
-            "cursor": null
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "state_type": "cursor_based",
+                "stream_name": null,
+                "cursor_field": null,
+                "cursor": null
+            }
+            """
+                .trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))
+        val parsed =
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
@@ -209,19 +223,20 @@ class MsSqlServerStateMigrationTest {
         // incremental_state is explicitly set to null (JSON null, not missing field)
         val legacyOrderedColumnStateWithNullIncremental =
             """
-        {
-            "version": 2,
-            "state_type": "ordered_column",
-            "ordered_col": "id",
-            "ordered_col_val": "23",
-            "incremental_state": null
-        }
-        """.trimIndent()
+            {
+                "version": 2,
+                "state_type": "ordered_column",
+                "ordered_col": "id",
+                "ordered_col_val": "23",
+                "incremental_state": null
+            }
+            """
+                .trimIndent()
 
         val parsed =
             MsSqlServerStateMigration.parseStateValue(
-                Jsons.readTree(legacyOrderedColumnStateWithNullIncremental)
-            )
+                Jsons.readTree(legacyOrderedColumnStateWithNullIncremental),
+            )!!
 
         // Should successfully migrate without NPE
         assertEquals("primary_key", parsed.stateType)

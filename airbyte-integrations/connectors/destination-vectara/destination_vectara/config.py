@@ -23,8 +23,12 @@ class OAuth2(BaseModel):
 
 class VectaraConfig(BaseModel):
     oauth2: OAuth2
-    customer_id: str = Field(
-        ..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2, group="account"
+    customer_id: Optional[str] = Field(
+        default=None,
+        title="Customer ID",
+        description="Your Vectara customer id. No longer required: API v2 authenticates with the OAuth2.0 client credentials only",
+        order=2,
+        group="account",
     )
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3, group="account")
 

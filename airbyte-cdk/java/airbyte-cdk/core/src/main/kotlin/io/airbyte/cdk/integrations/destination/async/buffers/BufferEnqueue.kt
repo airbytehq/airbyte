@@ -92,7 +92,7 @@ class BufferEnqueue(
 
     companion object {
         private fun extractStreamDescriptorFromRecord(
-            message: PartialAirbyteMessage
+            message: PartialAirbyteMessage,
         ): StreamDescriptor {
             return StreamDescriptor()
                 .withNamespace(message.record?.namespace)

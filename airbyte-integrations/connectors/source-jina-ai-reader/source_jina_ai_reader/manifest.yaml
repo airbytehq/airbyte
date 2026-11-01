@@ -16,14 +16,14 @@ definitions:
       paginator:
         type: NoPagination
       requester:
-        type: CustomRequester
-        class_name: source_jina_ai_reader.components.JinaAiHttpRequester
+        type: HttpRequester
         url_base: "https://r.jina.ai/{{ config['read_prompt'] }}"
         http_method: "GET"
         path: "/"
         authenticator:
           type: NoAuth
         request_headers:
+          Authorization: "{{ 'Bearer ' ~ config['api_key'] if config.get('api_key') else '' }}"
           Accept: application/json
           X-With-Links-Summary: "{{ config['gather_links'] }}"
           X-With-Images-Summary: "{{ config['gather_images'] }}"
@@ -42,14 +42,14 @@ definitions:
       paginator:
         type: NoPagination
       requester:
-        type: CustomRequester
-        class_name: source_jina_ai_reader.components.JinaAiHttpRequester
+        type: HttpRequester
         url_base: "https://s.jina.ai/{{ config['search_prompt'] }}"
         http_method: "GET"
         path: "/"
         authenticator:
           type: NoAuth
         request_headers:
+          Authorization: "{{ 'Bearer ' ~ config['api_key'] if config.get('api_key') else '' }}"
           Accept: application/json
           X-With-Links-Summary: "{{ config['gather_links']}}"
           X-With-Images-Summary: "{{ config['gather_images']}}"

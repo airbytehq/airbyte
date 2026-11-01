@@ -98,7 +98,7 @@ class DatabricksTestTableOperationsClient(
                                             readColumn(rs, i, meta.getColumnTypeName(i).uppercase())
                                         if (value != null) put(meta.getColumnName(i), value)
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -118,7 +118,8 @@ class DatabricksTestTableOperationsClient(
                         WHERE table_catalog = '${config.database}'
                           AND table_schema = '${table.namespace}'
                           AND table_name = '${table.name}'
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                     .use { rs ->
                         return buildMap {
@@ -193,7 +194,15 @@ class DatabricksTestTableOperationsClient(
                     ?.toInstant()
                     ?.atOffset(ZoneOffset.UTC)
                     ?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            "TIMESTAMP_NTZ" -> rs.getTimestamp(index)?.toLocalDateTime()?.toString()
+            // Go through the instant: Timestamp.toLocalDateTime() uses the Julian calendar before
+            // 1582 (0001-01-01 becomes 0001-01-03), and LocalDateTime.toString() drops zero
+            // seconds.
+            "TIMESTAMP_NTZ" ->
+                rs.getTimestamp(index)
+                    ?.toInstant()
+                    ?.atOffset(ZoneOffset.UTC)
+                    ?.toLocalDateTime()
+                    ?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             "DATE" -> rs.getDate(index)?.toString()
             "LONG",
             "BIGINT",
