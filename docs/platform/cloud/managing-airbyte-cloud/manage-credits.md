@@ -113,22 +113,36 @@ You can view more details about an individual invoice by clicking **View Invoice
 
 ## Billing notifications
 
-By default, all customers automatically review upcoming invoice notifications 3 and 7 days before the invoice is finalized. All billing notifications are sent to the billing email on file.
+Airbyte sends two kinds of billing emails: upcoming invoice reminders, which all subscribed organizations receive, and billing alerts, which you configure.
 
-You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices.
+### Upcoming invoice reminders
 
-Airbyte can notify you when:
+Airbyte emails your billing email 7 days and 3 days before your billing period ends. The email shows your estimated invoice amount and the payment method Airbyte will charge. You don't need to set anything up to receive these reminders.
 
-- A sync consumes over $__
+### Billing alerts
 
-- Your upcoming invoice has increased __%
+Billing alerts email you when your usage or upcoming invoice crosses a limit you set. Airbyte highly recommends setting up billing alerts so you aren't surprised by your invoice.
 
-- Notify me when my upcoming invoice is over $___
+Billing alerts are available to organizations on the Standard and Plus plans that have a payment method on file. You need the [organization admin](../../access-management/rbac.md) role to manage them. Pro and Enterprise Flex organizations don't have billing alerts.
 
-To enroll in or modify your existing billing notifications:
+You can set up either or both of these alerts:
 
-1. From the Billing page, click **Set up billing alerts**.
+- **Single sync usage**: Airbyte emails you when a single sync uses more than the number of credits you set. Airbyte estimates each sync's credits from the rows or data volume it synced, using the rates in [What are credits?](#what-are-credits). This alert applies to every connection in your organization.
 
-2. Submit the form with the thresholds you want to use for alerts.
+- **Upcoming invoice amount**: Airbyte emails you when your estimated invoice for the current billing period is more than the amount you set, in U.S. dollars. You receive this alert at most once per billing period.
 
-To unenroll, [email the Billing team](mailto:billing@airbyte.io) with your request.
+Alerts can take up to a day to arrive after a threshold is crossed.
+
+#### Set up or change billing alerts
+
+1. Click **Organization settings** in the navigation bar, then click **Billing**. You can also click **Set up billing alerts** on the **Usage** page or the workspace **Notifications** settings page.
+
+2. In the **Billing alerts** section, enter the **Email** address that should receive alerts. To send alerts to more than one person, use a distribution list.
+
+3. Turn on the alerts you want, and enter a threshold for each one. Thresholds must be whole numbers greater than 0.
+
+4. Click **Save changes**.
+
+Airbyte sends a confirmation email to the address you entered.
+
+To stop an alert, turn it off and click **Save changes**.

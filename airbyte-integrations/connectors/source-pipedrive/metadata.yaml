@@ -5,6 +5,8 @@ data:
   allowedHosts:
     hosts:
       - api.pipedrive.com
+      - oauth.pipedrive.com
+      - "${credentials.api_domain}"
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 4.1.1
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -27,6 +29,26 @@ data:
   name: Pipedrive
   releases:
     breakingChanges:
+      "5.0.0":
+        upgradeDeadline: "2026-11-15"
+        deadlineAction: "disable"
+        message: >-
+          Version 5.0.0 types the remaining date and time fields and corrects declared shapes to match Pipedrive's API reference. Timestamps and dates on projects, tasks, mailThreads, call_logs, legacy_teams, deal_installments, deal_flow, goals and filters change from string to timestamp or date; the goals owner, assignee, pipeline and activity type ids change from number to integer; label_ids on leads and leads_archived, mailThreads.drafts_parties and deal_fields.show_in_pipelines get typed items or properties. If you sync any of these streams, refresh the source schema and run a sync; warehouses convert the columns in place, but on Postgres and Redshift drop views that select these columns first. On ClickHouse, clear projects, tasks, mailThreads and call_logs if they are in Full refresh | Append mode. On S3 Data Lake and GCS Data Lake, clear the affected streams that are not in Full refresh | Overwrite mode first. Clearing removes rows for records deleted in Pipedrive and earlier Append snapshots. See https://docs.airbyte.com/integrations/sources/pipedrive-migrations#upgrading-to-500.
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - projects
+              - tasks
+              - mailThreads
+              - call_logs
+              - legacy_teams
+              - deal_installments
+              - deal_flow
+              - goals
+              - filters
+              - leads
+              - leads_archived
+              - deal_fields
       "4.0.0":
         upgradeDeadline: "2026-10-20"
         deadlineAction: "disable"
@@ -112,7 +134,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   externalDocumentationUrls:
     - title: Pipedrive API reference
       url: https://developers.pipedrive.com/docs/api/v1

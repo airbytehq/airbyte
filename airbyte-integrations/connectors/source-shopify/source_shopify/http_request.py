@@ -1,12 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import re
 from typing import Optional, Union
 
 import requests
 from requests import exceptions
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -24,6 +25,26 @@ TRANSIENT_EXCEPTIONS = (
 ) + RESPONSE_CONSUMPTION_EXCEPTIONS
 
 _NO_ERROR_RESOLUTION = ErrorResolution(ResponseAction.SUCCESS, None, None)
+
+
+class ShopifyConnectionCheckErrorHandler(HttpStatusErrorHandler):
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response, requests.Response):
+            if response.status_code == 401:
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    "Shopify authentication failed: the access token is invalid or revoked. Re-authenticate the source or regenerate the Admin API access token.",
+                )
+            if response.status_code == 403:
+                scopes = sorted(set(re.findall(r"\b(?:read|write)_[a-z_]+\b", response.text)))
+                required = f" ({', '.join(scopes)})" if scopes else ""
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    f"Shopify access is denied. Grant the app the required access scopes{required}, then re-authorize the source or regenerate the Admin API access token.",
+                )
+        return super().interpret_response(response)
 
 
 class ShopifyErrorHandler(ErrorHandler):
