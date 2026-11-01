@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
@@ -35,6 +36,7 @@ import java.util.LinkedHashMap
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -120,6 +122,7 @@ class IcebergUtil(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
         schema: Schema,
+        partitionSpec: PartitionSpec = PartitionSpec.unpartitioned(),
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -127,6 +130,7 @@ class IcebergUtil(
             catalog
                 .buildTable(tableIdentifier, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .withPartitionSpec(partitionSpec)
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
@@ -171,7 +175,10 @@ class IcebergUtil(
         return record
     }
 
-    fun toIcebergSchema(stream: DestinationStream): Schema {
+    fun toIcebergSchema(
+        stream: DestinationStream,
+        timeColumnType: TimeColumnType = TimeColumnType.TIME,
+    ): Schema {
         val importType = stream.tableSchema.importType
         val primaryKeys =
             when (importType) {
@@ -179,7 +186,7 @@ class IcebergUtil(
                 else -> emptyList()
             }
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys, timeColumnType)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {

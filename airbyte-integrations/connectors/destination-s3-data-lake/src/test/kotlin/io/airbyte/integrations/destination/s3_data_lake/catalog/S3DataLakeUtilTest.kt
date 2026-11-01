@@ -105,6 +105,7 @@ internal class S3DataLakeUtilTest {
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(any()) } returns this
+            every { withPartitionSpec(any()) } returns this
             every {
                 withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
@@ -145,6 +146,7 @@ internal class S3DataLakeUtilTest {
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(any()) } returns this
+            every { withPartitionSpec(any()) } returns this
             every {
                 withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,

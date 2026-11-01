@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.0 — 2026-11-01
+
+Add authenticated REST catalog configuration and configurable TIME/STRING columns. Add Iceberg partition transforms, partition-spec evolution, partitioned fanout writers, and remove partition fields when their source columns are deleted.
+
 ### 1.1.10 — 2026-11-01
 
 Fix Iceberg schema conversion to make nested `_airbyte_meta` fields optional and relax existing tables in place while preserving field IDs. Downgrading the CDK does not restore requiredness on tables already relaxed. Stream finalization now uses per-stream completion, so a failed stream no longer blocks finalizing (committing, swapping or overwriting) completed streams.

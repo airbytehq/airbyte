@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.data.iceberg.parquet
 
+import io.airbyte.cdk.load.command.iceberg.parquet.TimeColumnType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -28,7 +29,9 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 
-class AirbyteTypeToIcebergSchema {
+class AirbyteTypeToIcebergSchema(
+    private val timeColumnType: TimeColumnType = TimeColumnType.TIME,
+) {
 
     /**
      * @param forceOptionalFields relax all nested fields for metadata structs and array elements.
@@ -80,7 +83,9 @@ class AirbyteTypeToIcebergSchema {
             is ObjectTypeWithoutSchema -> Types.StringType.get()
             is StringType -> Types.StringType.get()
             is TimeTypeWithTimezone,
-            is TimeTypeWithoutTimezone -> Types.TimeType.get()
+            is TimeTypeWithoutTimezone ->
+                if (timeColumnType == TimeColumnType.STRING) Types.StringType.get()
+                else Types.TimeType.get()
             is TimestampTypeWithTimezone -> Types.TimestampType.withZone()
             is TimestampTypeWithoutTimezone -> Types.TimestampType.withoutZone()
             is UnionType -> {
@@ -105,11 +110,14 @@ class AirbyteTypeToIcebergSchema {
     }
 }
 
-fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
+fun ObjectType.toIcebergSchema(
+    primaryKeys: List<List<String>>,
+    timeColumnType: TimeColumnType = TimeColumnType.TIME,
+): Schema {
     val fields = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
-    val icebergTypeConverter = AirbyteTypeToIcebergSchema()
+    val icebergTypeConverter = AirbyteTypeToIcebergSchema(timeColumnType)
     this.properties.entries.forEach { (name, field) ->
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)
