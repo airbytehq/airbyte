@@ -61,13 +61,19 @@ class LinkedInAdsRequestBuilder:
         return builder
 
     @classmethod
-    def lead_form_responses_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
+    def lead_form_responses_endpoint(
+        cls, account_id: int, submitted_at_start: Optional[int] = None, submitted_at_end: Optional[int] = None
+    ) -> "LinkedInAdsRequestBuilder":
         # The lead_form_responses endpoint has the owner embedded in the path with URL encoding
         # Path format: leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&leadType=(leadType:SPONSORED)&q=owner&count=500
         # Note: We include all query params in the path since HttpRequest doesn't allow both
-        builder = cls(
-            f"/leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&leadType=(leadType:SPONSORED)&q=owner&count=500"
-        )
+        path = f"/leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&leadType=(leadType:SPONSORED)"
+        if submitted_at_start is not None and submitted_at_end is not None:
+            # submittedAtTimeRange is a Rest.li composite param sent unencoded in the path,
+            # matching the manifest's conditional path for incremental syncs resuming from state
+            path += f"&submittedAtTimeRange=(start:{submitted_at_start},end:{submitted_at_end})"
+        path += "&q=owner&count=500"
+        builder = cls(path)
         builder._query_params_in_url = True
         return builder
 
