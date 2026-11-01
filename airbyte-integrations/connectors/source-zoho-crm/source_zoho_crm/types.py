@@ -6,7 +6,7 @@ import copy
 import dataclasses
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, MutableMapping, Optional
 
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 
@@ -119,12 +119,6 @@ class FieldMeta(FromDictMixin):
     def _default_type_kwargs(self) -> Dict[str, str]:
         return {"title": self.display_label}
 
-    def _picklist_items(self) -> Iterable[Union[str, None]]:
-        default_list = [None]
-        if not self.pick_list_values:
-            return default_list
-        return default_list + [pick_item.display_value for pick_item in self.pick_list_values]
-
     def _boolean_field(self) -> FieldType:
         return {"type": ["null", "boolean"], **self._default_type_kwargs()}
 
@@ -159,8 +153,8 @@ class FieldMeta(FromDictMixin):
                 typedef["format"] = "string"
             else:
                 typedef["airbyte_type"] = "big_integer"
-        elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
-            typedef["enum"] = self._picklist_items()
+        # Picklist values are not declared as an `enum`: Zoho keeps a value on existing records after
+        # it is removed from the picklist, so those records would not match the schema.
         return typedef
 
     def _jsonarray_field(self) -> FieldType:
@@ -190,10 +184,8 @@ class FieldMeta(FromDictMixin):
         if self.data_type == ZohoDataType.multiselectpicklist:
             typedef["minItems"] = 1
             typedef["uniqueItems"] = True
-            items = {"type": ["null", "string"]}
-            if self.pick_list_values:
-                items["enum"] = self._picklist_items()
-            typedef["items"] = items
+            # No `enum` from the picklist values, as for `picklist` fields.
+            typedef["items"] = {"type": ["null", "string"]}
         return typedef
 
     def _jsonobject_field(self) -> FieldType:
