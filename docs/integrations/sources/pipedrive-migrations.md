@@ -31,7 +31,7 @@ If you don't sync any of the streams above, you don't need to take any action.
 
 To upgrade:
 
-1. On Postgres or Redshift, drop any view or materialized view that selects a retyped column; the first 5.0.0 sync changes the column type, which a dependent view blocks. Recreate the views after that sync.
+1. If you sync to Postgres or Redshift, drop any view or materialized view that selects a retyped column; the first 5.0.0 sync changes the column type, which a dependent view blocks. Recreate the views after that sync.
 2. Open the connection, go to **Schema** and click **Refresh source schema**.
 3. Clear only where your destination needs it:
    - **BigQuery, Snowflake, Redshift, Postgres, Databricks, MSSQL:** no clear. The first sync after the schema refresh converts the existing columns in place. `leads`, `leads_archived`, `deal_fields` and the nested `goals` fields are stored as JSON on these destinations, so their columns don't change.
