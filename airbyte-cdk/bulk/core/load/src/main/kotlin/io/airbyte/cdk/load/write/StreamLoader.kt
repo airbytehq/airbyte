@@ -17,7 +17,19 @@ import io.airbyte.cdk.load.command.DestinationStream
 interface StreamLoader {
     val stream: DestinationStream
 
+    /**
+     * If true, [teardown] receives whether this stream completed rather than whether all streams
+     * completed.
+     */
+    val teardownOnStreamCompletion: Boolean
+        get() = false
+
     suspend fun start() {}
 
+    /**
+     * [completedSuccessfully] indicates whether all streams completed, unless
+     * [teardownOnStreamCompletion] is true, in which case it indicates whether this stream
+     * completed.
+     */
     suspend fun teardown(completedSuccessfully: Boolean) {}
 }

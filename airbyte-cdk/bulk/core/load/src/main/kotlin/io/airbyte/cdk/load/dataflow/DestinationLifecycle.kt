@@ -93,7 +93,13 @@ class DestinationLifecycle(
                         log.info {
                             "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
-                        it.teardown(completionTracker.allStreamsComplete())
+                        it.teardown(
+                            if (it.teardownOnStreamCompletion) {
+                                completionTracker.isStreamComplete(it.stream.mappedDescriptor)
+                            } else {
+                                completionTracker.allStreamsComplete()
+                            },
+                        )
                         log.info {
                             "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
