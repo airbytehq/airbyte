@@ -7,7 +7,7 @@
     "title": "Destination Rabbitmq",
     "type": "object",
     "required": ["host", "routing_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "ssl": {
         "type": "boolean",

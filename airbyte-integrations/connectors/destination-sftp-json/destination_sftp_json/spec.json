@@ -7,7 +7,7 @@
     "title": "Destination SFTP JSON",
     "type": "object",
     "required": ["host", "username", "password", "destination_path"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
