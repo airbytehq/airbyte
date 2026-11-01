@@ -52,6 +52,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.ManageSnapshots
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -972,6 +973,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val table: Table = mockk {
             every { schema() } returns existingSchema
+            every { spec() } returns PartitionSpec.unpartitioned()
             every { sortOrder() } returns SortOrder.unsorted()
             every { updateSchema().allowIncompatibleChanges() } returns updateSchema
             every { manageSnapshots() } returns manageSnapshots
