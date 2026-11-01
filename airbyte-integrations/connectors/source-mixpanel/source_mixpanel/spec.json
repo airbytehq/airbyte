@@ -45,7 +45,8 @@
           },
           {
             "type": "object",
-            "title": "Project Secret",
+            "title": "Project Secret (Deprecated)",
+            "description": "Deprecated: Mixpanel will retire Project Secret authentication on March 3, 2027, and newly created Mixpanel projects no longer have a Project Secret. Use Service Account instead.",
             "required": ["api_secret"],
             "properties": {
               "option_title": {
@@ -57,7 +58,7 @@
                 "order": 1,
                 "title": "Project Secret",
                 "type": "string",
-                "description": "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\">docs</a> for more information on how to obtain this.",
+                "description": "Mixpanel project secret. Deprecated by Mixpanel and retired on March 3, 2027; switch to Service Account authentication. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\">docs</a> for more information.",
                 "airbyte_secret": true
               }
             }
