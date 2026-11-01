@@ -10,6 +10,8 @@ Stripe's Events API only retains events for 30 days. If the connector's state fa
 
 **Why this matters:** What looks like a simple entity read is actually two completely different data paths depending on whether state exists and how old it is. Adding a new entity stream requires defining both the direct-read retriever AND the events-based retriever with the correct event type filter strings. If the event type strings are wrong, incremental syncs will silently miss updates.
 
+`accounts` is the one exception. For a Connect platform, Stripe files a connected account's `account.updated` and `account.external_account.*` events in that connected account's own event feed, so the platform's `/v1/events` never contains them and an events-based `incremental_stream` returns nothing. Its `incremental_stream` therefore reads `/v1/accounts` with a `created[gte]`/`created[lte]` window (`entity_stream`), which picks up new connected accounts but not changes to existing ones, and it has no `api_retention_period` because it doesn't depend on the 30-day events window.
+
 Creation events use a cursor one second earlier than their event timestamp so update events win same-second ties and the newer payload is retained.
 
 ## 2. Silent 403/400/404 Error Ignoring
@@ -42,7 +44,7 @@ The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on 
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| accounts | small | top-level parent | none | none | deferred_no_api_support | Connected accounts list; no date filter |
+| accounts | small | top-level parent | updated (set from created) | created_at_only | incremental | Connected accounts list; incremental reads /v1/accounts by created window, not events (account.updated is scoped to the connected account) |
 | application_fees | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
 | application_fees_refunds | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
 | authorizations | medium | top-level parent | none | created_at_only | deferred_no_api_support |  |
@@ -92,6 +94,6 @@ The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on 
 
 ### Future incremental stream candidates
 
-- **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (0 streams):** none. `accounts` was listed here by mistake: `GET /v1/accounts` accepts a `created` filter, and since 7.0.4 the stream syncs incrementally on it.
 - **Created-at only (40 streams):** `application_fees`, `application_fees_refunds`, `authorizations`, `balance_transactions`, `bank_accounts`, `cardholders`, `cards`, `charges`, `checkout_sessions`, `coupons`, `credit_notes`, `customers`, `disputes`, `early_fraud_warnings`, `events`, `external_account_bank_accounts`, `external_account_cards`, `file_links`, `files`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, `payment_methods`, `payouts`, `persons`, `plans`, `prices`, `products`, `promotion_codes`, `refunds`, `reviews`, `setup_intents`, `shipping_rates`, `subscription_items`, `subscription_schedule`, `subscriptions`, `top_ups`, `transactions`, `transfers` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync.
 - **Child streams (1 streams):** `usage_records` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
