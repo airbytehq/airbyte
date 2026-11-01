@@ -81,6 +81,50 @@ definitions:
         schema:
           $ref: "#/schemas/tables"
 
+    collaborators:
+      type: DeclarativeStream
+      name: collaborators
+      primary_key: id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases/{{ stream_partition.base_id }}/collaborators
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collaborators
+
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: base_id
+              extra_fields:
+                - ["name"]
+                - ["id"]
+              stream:
+                $ref: "#/definitions/streams/bases"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collaborators"
+
     airtable_stream:
       type: DeclarativeStream
       name: airtable_stream
@@ -580,6 +624,10 @@ dynamic_streams:
             - table_id
           value: "{{ components_values.id }}"
 
+#calling the collaborators schema
+streams:
+  - $ref: "#/definitions/streams/collaborators"
+
 # Rate limits: https://airtable.com/developers/web/api/rate-limits
 # - 5 requests per second per base
 # - 50 requests per second per user/service account
@@ -590,7 +638,7 @@ api_budget:
       rates:
         - limit: 5
           interval: PT1S
-      matchers: []  # Applies to all endpoints
+      matchers: [] # Applies to all endpoints
   status_codes_for_ratelimit_hit: [429]
 
 concurrency_level:
@@ -719,24 +767,24 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
-        - type: ConfigMigration
-          description: |
-            Remaps the existing config authentication format to a new format
-            OLD: {"api_key": ...}
-            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "api_key"]
-                  value: "{{ config['api_key'] }}"
-              condition: "{{ config.get('api_key', False) }}"
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "auth_method"]
-                  value: "api_key"
-              condition: "{{ config.get('api_key', False) }}"
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ config.get('api_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_method"]
+                value: "api_key"
+            condition: "{{ config.get('api_key', False) }}"
 
 schemas:
   bases:
@@ -962,3 +1010,25 @@ schemas:
               type:
                 - string
                 - "null"
+
+  collaborators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      permissionLevel:
+        type:
+          - string
+          - "null"
