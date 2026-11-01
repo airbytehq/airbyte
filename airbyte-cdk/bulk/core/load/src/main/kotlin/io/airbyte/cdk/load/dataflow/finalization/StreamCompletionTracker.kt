@@ -25,5 +25,7 @@ class StreamCompletionTracker(
         completedStreams.add(msg.stream.mappedDescriptor)
     }
 
+    fun isStreamComplete(descriptor: DestinationStream.Descriptor) = descriptor in completedStreams
+
     fun allStreamsComplete() = completedStreams.containsAll(expectedStreams)
 }

@@ -44,8 +44,16 @@ class DestinationLifecycleTest {
         val streamLoader2 = mockk<StreamLoader>(relaxed = true)
         val stream1 = mockk<DestinationStream>(relaxed = true)
         val stream2 = mockk<DestinationStream>(relaxed = true)
+        val stream1Descriptor = DestinationStream.Descriptor("namespace", "stream1")
+        val stream2Descriptor = DestinationStream.Descriptor("namespace", "stream2")
 
         every { completionTracker.allStreamsComplete() } returns true
+        every { stream1.mappedDescriptor } returns stream1Descriptor
+        every { stream2.mappedDescriptor } returns stream2Descriptor
+        every { streamLoader1.stream } returns stream1
+        every { streamLoader2.stream } returns stream2
+        every { completionTracker.isStreamComplete(stream1Descriptor) } returns true
+        every { completionTracker.isStreamComplete(stream2Descriptor) } returns true
         every { destinationCatalog.streams } returns listOf(stream1, stream2)
         coEvery { destinationInitializer.createStreamLoader(stream1) } returns streamLoader1
         coEvery { destinationInitializer.createStreamLoader(stream2) } returns streamLoader2
@@ -66,14 +74,22 @@ class DestinationLifecycleTest {
     }
 
     @Test
-    fun `closes stream loaders exceptionally if all streams not-complete`() = runTest {
+    fun `finalizes streams according to their completion when some are incomplete`() = runTest {
         // Given
         val streamLoader1 = mockk<StreamLoader>(relaxed = true)
         val streamLoader2 = mockk<StreamLoader>(relaxed = true)
         val stream1 = mockk<DestinationStream>(relaxed = true)
         val stream2 = mockk<DestinationStream>(relaxed = true)
+        val stream1Descriptor = DestinationStream.Descriptor("namespace", "stream1")
+        val stream2Descriptor = DestinationStream.Descriptor("namespace", "stream2")
 
         every { completionTracker.allStreamsComplete() } returns false
+        every { stream1.mappedDescriptor } returns stream1Descriptor
+        every { stream2.mappedDescriptor } returns stream2Descriptor
+        every { streamLoader1.stream } returns stream1
+        every { streamLoader2.stream } returns stream2
+        every { completionTracker.isStreamComplete(stream1Descriptor) } returns true
+        every { completionTracker.isStreamComplete(stream2Descriptor) } returns false
         every { destinationCatalog.streams } returns listOf(stream1, stream2)
         coEvery { destinationInitializer.createStreamLoader(stream1) } returns streamLoader1
         coEvery { destinationInitializer.createStreamLoader(stream2) } returns streamLoader2
@@ -88,7 +104,7 @@ class DestinationLifecycleTest {
         coVerify(exactly = 1) { destinationInitializer.createStreamLoader(stream2) }
         coVerify(exactly = 1) { streamLoader2.start() }
         coVerify(exactly = 1) { pipeline.run() }
-        coVerify(exactly = 1) { streamLoader1.teardown(false) }
+        coVerify(exactly = 1) { streamLoader1.teardown(true) }
         coVerify(exactly = 1) { streamLoader2.teardown(false) }
         coVerify(exactly = 1) { destinationInitializer.teardown() }
     }
