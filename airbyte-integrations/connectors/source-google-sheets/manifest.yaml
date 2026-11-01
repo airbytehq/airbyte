@@ -429,6 +429,32 @@ spec:
       - spreadsheet_id
       - credentials
     additionalProperties: true
+    # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the
+    # groups it shows, in form order. Properties opt into a group with `group`. A section with `check: true` is
+    # checked when the user completes it: the platform sends a CHECK whose config carries a top-level `check-section`
+    # key, and the connector runs its declared check with the configuration collected up to that section (see the
+    # CDK's airbyte_cdk.sources.utils.check_section). The review section has no check of its own: the full check the
+    # platform runs before creating the source covers it.
+    groups:
+      - id: spreadsheet
+      - id: names
+      - id: advanced
+        title: Advanced
+    sections:
+      - id: spreadsheet
+        title: Connect spreadsheet
+        order: 0
+        description: Sign in with Google and paste the link to the spreadsheet you want to sync.
+        groups:
+          - spreadsheet
+        check: true
+      - id: review
+        title: Review & set up
+        order: 1
+        description: Name your source and check the optional settings.
+        groups:
+          - names
+          - advanced
     properties:
       num_workers:
         type: integer
@@ -440,7 +466,8 @@ spec:
         default: 2
         minimum: 1
         maximum: 10
-        order: 10
+        order: 11
+        group: advanced
       batch_size:
         type: integer
         title: Row Batch Size
@@ -454,7 +481,8 @@ spec:
           otherwise the request returns a timeout error. In regards to this information, consider network speed and
           number of columns of the google sheet when deciding a batch_size value.
         default: 1000000
-        order: 2
+        order: 10
+        group: advanced
       spreadsheet_id:
         type: string
         title: Spreadsheet Link
@@ -463,6 +491,7 @@ spec:
         examples:
           - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
         order: 1
+        group: spreadsheet
       names_conversion:
         type: boolean
         title: Convert Column Names to SQL-Compliant Format
@@ -470,7 +499,9 @@ spec:
           Converts column names to a SQL-compliant format (snake_case, lowercase, etc).
           If enabled, you can further customize the sanitization using the options below.
         default: false
-        order: 3
+        order: 2
+        group: names
+        always_show: true
       remove_leading_trailing_underscores:
         type: boolean
         title: Remove Leading and Trailing Underscores
@@ -479,7 +510,8 @@ spec:
           Example: "50th Percentile? "→ "_50_th_percentile"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 4
+        order: 3
+        group: names
       combine_number_word_pairs:
         type: boolean
         title: Combine Number-Word Pairs
@@ -488,7 +520,8 @@ spec:
           Example: "50th Percentile?" → "_50th_percentile_"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 5
+        order: 4
+        group: names
       remove_special_characters:
         type: boolean
         title: Remove All Special Characters
@@ -497,7 +530,8 @@ spec:
           Example: "Example ID*" → "example_id"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 6
+        order: 5
+        group: names
       combine_letter_number_pairs:
         type: boolean
         title: Combine Letter-Number Pairs
@@ -506,7 +540,8 @@ spec:
           Example: "Q3 2023" → "q3_2023"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 7
+        order: 6
+        group: names
       allow_leading_numbers:
         type: boolean
         title: Allow Leading Numbers
@@ -515,7 +550,8 @@ spec:
           Example: "50th Percentile" → "50_th_percentile"
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
-        order: 8
+        order: 7
+        group: names
       read_empty_header_columns:
         type: boolean
         title: Read Empty Header Columns
@@ -524,11 +560,14 @@ spec:
           and will include data from those columns using generated column names (e.g., "column_C").
           By default, the connector stops reading columns when it encounters an empty header cell.
         default: false
-        order: 9
+        order: 8
+        group: advanced
       credentials:
         type: object
         title: Authentication
         order: 0
+        group: spreadsheet
+        display_type: radio
         description: >-
           Credentials for connecting to the Google Sheets API
         oneOf:
@@ -577,6 +616,8 @@ spec:
       stream_name_overrides:
         type: array
         title: Stream Name Overrides
+        order: 9
+        group: advanced
         description: >-
           **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
 
