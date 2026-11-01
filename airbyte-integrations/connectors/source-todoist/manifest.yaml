@@ -70,6 +70,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - projects
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('inbox_project') is none }}"
+          fields:
+            - path:
+                - inbox_project
+              value: "{{ false }}"
+              value_type: boolean
       schema_loader:
         type: InlineSchemaLoader
         schema:

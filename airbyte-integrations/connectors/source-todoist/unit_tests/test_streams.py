@@ -92,7 +92,10 @@ def test_cold_read_uses_wildcard_and_commits_terminal_token(stream_name: str, re
         output = _read([stream_name])
 
         assert output.errors == []
-        assert [message.record.data for message in output.records] == records
+        expected_records = records
+        if stream_name == "projects":
+            expected_records = [{**record, "inbox_project": False} for record in records]
+        assert [message.record.data for message in output.records] == expected_records
         _assert_committed_state(output, stream_name, "tok1")
         http_mocker.assert_number_of_calls(request, 1)
 
@@ -108,8 +111,55 @@ def test_warm_read_replays_stored_token_and_commits_new_token(stream_name: str):
         output = _read([stream_name], state)
 
     assert output.errors == []
-    assert [message.record.data for message in output.records] == [record]
+    expected_record = {**record, "inbox_project": False} if stream_name == "projects" else record
+    assert [message.record.data for message in output.records] == [expected_record]
     _assert_committed_state(output, stream_name, "tok2")
+    http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_projects_default_missing_inbox_project_to_false():
+    request = _request("projects", "*")
+    project_with_inbox = {
+        "id": "project-1",
+        "name": "Inbox",
+        "color": "grey",
+        "parent_id": None,
+        "child_order": 0,
+        "is_collapsed": False,
+        "is_favorite": False,
+        "is_shared": False,
+        "is_archived": False,
+        "is_deleted": False,
+        "inbox_project": True,
+        "view_style": "list",
+    }
+    project_without_inbox = {
+        "id": "project-2",
+        "name": "Work",
+        "color": "blue",
+        "parent_id": None,
+        "child_order": 1,
+        "is_collapsed": False,
+        "is_favorite": False,
+        "is_shared": False,
+        "is_archived": False,
+        "is_deleted": False,
+        "view_style": "list",
+    }
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            request,
+            _response("projects", [project_with_inbox, project_without_inbox], "tok1"),
+        )
+
+        output = _read(["projects"])
+
+    assert output.errors == []
+    records = [message.record.data for message in output.records]
+    assert records[0]["id"] == project_with_inbox["id"]
+    assert records[0].get("inbox_project") is True
+    assert records[1]["id"] == project_without_inbox["id"]
+    assert records[1].get("inbox_project") is False
     http_mocker.assert_number_of_calls(request, 1)
 
 
