@@ -1,7 +1,4 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "connectionSpecification": {
     "title": "Config",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.",
@@ -382,17 +379,17 @@
               "type": "boolean"
             },
             "skip_full_check_for_parquet": {
-              "title": "Skip Full Check for Parquet",
+              "title": "Skip full check for Parquet",
               "description": "When enabled, the CHECK operation for Parquet streams will verify file accessibility but skip the full record-parse step. This avoids out-of-memory errors on large Parquet files.",
               "default": false,
               "type": "boolean"
             }
           },
-          "required": ["name", "format"]
+          "required": ["name", "format", "skip_full_check_for_parquet"]
         }
       },
       "delivery_method": {
-        "title": "Delivery Method",
+        "title": "Delivery method",
         "default": "use_records_transfer",
         "type": "object",
         "order": 7,
@@ -455,15 +452,15 @@
                 "type": "string"
               },
               "aws_access_key_id": {
-                "title": "AWS Access Key ID",
-                "description": "AWS access key ID for authenticating with a private S3 bucket or S3-compatible endpoint.",
+                "title": "AWS access key ID",
+                "description": "Create an access key for an IAM user in the AWS IAM console: select Users, choose the user, open Security credentials, and choose Create access key. Enter the Access key ID shown by AWS. See the S3 connector setup guide for the required policy.",
                 "airbyte_secret": true,
                 "order": 1,
                 "type": "string"
               },
               "aws_secret_access_key": {
-                "title": "AWS Secret Access Key",
-                "description": "AWS secret access key for authenticating with a private S3 bucket or S3-compatible endpoint.",
+                "title": "AWS secret access key",
+                "description": "AWS shows the secret access key only once when you create an access key for an IAM user. Choose Create access key from the user's Security credentials tab and copy the secret before closing the wizard. If you no longer have it, create a new access key. See the S3 connector setup guide for instructions.",
                 "airbyte_secret": true,
                 "order": 2,
                 "type": "string"
@@ -488,7 +485,7 @@
                 "type": "string"
               },
               "role_arn": {
-                "title": "AWS Role ARN",
+                "title": "AWS role ARN",
                 "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
                 "order": 1,
                 "type": "string"
@@ -529,7 +526,7 @@
         "type": "string"
       },
       "region_name": {
-        "title": "AWS Region",
+        "title": "AWS region",
         "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
         "order": 5,
         "type": "string"
@@ -813,6 +810,9 @@
         "airbyte_hidden": true
       }
     },
-    "required": ["streams", "credentials", "bucket"]
-  }
+    "required": ["streams", "credentials", "bucket", "endpoint"]
+  },
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+  "supportsNormalization": false,
+  "supportsDBT": false
 }
