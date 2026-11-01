@@ -1956,6 +1956,11 @@ spec:
     required:
       - client_secret
       - account_id
+      - api_retention_streams
+      - lookback_window_days
+      - num_workers
+      - slice_range
+      - start_date
     properties:
       account_id:
         type: string
@@ -1966,7 +1971,7 @@ spec:
         order: 0
       client_secret:
         type: string
-        title: Secret Key
+        title: Secret key
         description: >-
           Stripe API key (usually starts with 'sk_live_'; find yours <a
           href="https://dashboard.stripe.com/apikeys">here</a>).
@@ -1976,6 +1981,7 @@ spec:
         type: string
         title: Replication start date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
           after this date will be replicated.
@@ -1986,7 +1992,7 @@ spec:
         order: 2
       lookback_window_days:
         type: integer
-        title: Lookback Window in days
+        title: Lookback window in days
         default: 0
         minimum: 0
         description: >-
@@ -2024,11 +2030,11 @@ spec:
         examples: [25, 100]
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
-          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
+          API call rate limit (https://docs.stripe.com/rate-limits#rate-limits). If not specified the default maximum is 25
           calls per second for test/sandbox tokens and 100 for production tokens.
       api_retention_streams:
         type: array
-        title: Streams with API Data Retention Validation
+        title: Streams with API data retention validation
         description: >-
           Select streams where cursor age is validated against the Stripe API 30-day event retention period.
           When a selected stream's cursor is older than 30 days, the connector performs a full refresh
