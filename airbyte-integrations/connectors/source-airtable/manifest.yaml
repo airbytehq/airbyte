@@ -91,12 +91,12 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: meta/bases/{{ stream_partition.base_id }}/collaborators
           http_method: GET
-          record_selector:
-            type: RecordSelector
-            extractor:
-              type: DpathExtractor
-              field_path:
-                - collaborators
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collaborators
 
         paginator:
           type: DefaultPaginator
