@@ -22,7 +22,7 @@ from freezegun import freeze_time
 from mock_server.config import ConfigBuilder
 from mock_server.response_builder import create_oauth_response
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -171,6 +171,81 @@ class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
         # Verify the sync failed with appropriate error handling
         trace_messages = [msg for msg in output.trace_messages if hasattr(msg, "error")]
         assert len(trace_messages) > 0 or len(records) == 0, "Expected failure indication for FAIL handler on 400 response"
+
+    @HttpMocker()
+    def test_invalid_aggregation_type_returns_config_error(self, http_mocker: HttpMocker) -> None:
+        """Test that an invalid aggregationType 400 error is classified as a config error.
+
+        Google returns a 400 with 'BY_PROPERTY' is not a valid aggregation type for
+        properties that do not support byProperty aggregation. The user must enable
+        'always_use_aggregation_type_auto', so this is a config error, not a system error.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def bad_request_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return the Google 400 invalid aggregationType error."""
+            context.status_code = 400
+            return json.dumps(
+                {
+                    "error": {
+                        "code": 400,
+                        "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+                        "errors": [
+                            {
+                                "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+                                "domain": "global",
+                                "reason": "invalidParameter",
+                                "location": "aggregation_type",
+                                "locationType": "parameter",
+                            }
+                        ],
+                    }
+                }
+            )
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=bad_request_callback,
+        )
+
+        output = self._read_stream(config)
+
+        assert output.errors
+        aggregation_type_errors = [e for e in output.errors if "Invalid aggregationType 'byProperty'" in (e.trace.error.message or "")]
+        assert aggregation_type_errors
+        assert all(e.trace.error.failure_type == FailureType.config_error for e in aggregation_type_errors)
+
+    @HttpMocker()
+    def test_unrelated_400_is_not_config_error(self, http_mocker: HttpMocker) -> None:
+        """Test that an unrelated 400 error is not classified as a config error.
+
+        The FAIL filter is scoped to Google's "is not a valid aggregation type"
+        message, so a generic 400 falls back to the CDK default: system_error
+        without the aggregationType remediation message.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def bad_request_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return a generic 400 error unrelated to aggregationType."""
+            context.status_code = 400
+            return json.dumps({"error": {"code": 400, "message": "Invalid request"}})
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=bad_request_callback,
+        )
+
+        output = self._read_stream(config)
+
+        assert output.errors
+        assert not any("Invalid aggregationType" in (e.trace.error.message or "") for e in output.errors)
+        non_summary_errors = [e for e in output.errors if "did not sync successfully" not in (e.trace.error.message or "")]
+        assert non_summary_errors
+        assert all(e.trace.error.failure_type == FailureType.system_error for e in non_summary_errors)
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
