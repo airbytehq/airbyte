@@ -1,0 +1,62 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/redis-adbc",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Redis ADBC source",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "uri"
+    ],
+    "properties": {
+      "uri": {
+        "type": "string",
+        "minLength": 1,
+        "title": "Connection URI",
+        "description": "redis:// or rediss:// for direct Redis; grpc:// or grpc+tls:// for Flight SQL. URL-encode credentials. Use URI read_timeout to bound Redis reads.",
+        "airbyte_secret": true
+      },
+      "connection_type": {
+        "type": "string",
+        "enum": [
+          "redis",
+          "flight_sql"
+        ],
+        "default": "redis",
+        "description": "Flight SQL requires a separately operated compatible SQL gateway."
+      },
+      "schemas": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "string"
+        },
+        "default": [
+          "public"
+        ],
+        "description": "Exact database schema names to discover. Use an empty string for a gateway without schemas. Only tables and views exposed through ADBC metadata are read."
+      },
+      "catalog": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Optional exact catalog name; required when stream names would otherwise be ambiguous across catalogs."
+      },
+      "batch_size": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65536,
+        "default": 1024,
+        "description": "Redis Arrow batch row limit. Gateway batch sizes are controlled by its server."
+      },
+      "database_options": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "airbyte_secret": true,
+        "description": "Additional trusted ADBC driver database options. URI, driver and transaction settings cannot be overridden."
+      }
+    }
+  }
+}
