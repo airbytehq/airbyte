@@ -13,6 +13,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.71 | 2026-10-30 | [90242](https://github.com/airbytehq/airbyte/pull/90242) | Fix pagination: start from page 1 so the first page is not read twice |
 | 0.4.70 | 2026-10-27 | [89862](https://github.com/airbytehq/airbyte/pull/89862) | Update dependencies |
 | 0.4.69 | 2026-10-20 | [89164](https://github.com/airbytehq/airbyte/pull/89164) | Update dependencies |
 | 0.4.68 | 2026-10-13 | [88559](https://github.com/airbytehq/airbyte/pull/88559) | Update dependencies |
