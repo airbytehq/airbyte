@@ -85,6 +85,30 @@ class StreamCompletionTrackerTest {
     }
 
     @Test
+    fun `#isStreamComplete should track completion for individual streams`() {
+        // Given
+        val streams =
+            listOf(createStream("namespace1", "stream1"), createStream("namespace1", "stream2"))
+        val catalog = mockk<DestinationCatalog> { every { this@mockk.streams } returns streams }
+        val tracker = StreamCompletionTracker(catalog)
+
+        // Before receiving completion, neither stream is complete.
+        assertFalse(tracker.isStreamComplete(streams[0].mappedDescriptor))
+        assertFalse(tracker.isStreamComplete(streams[1].mappedDescriptor))
+
+        // When - send completion for only the first stream
+        val completeMsg =
+            mockk<DestinationRecordStreamComplete> {
+                every { this@mockk.stream } returns streams[0]
+            }
+        tracker.accept(completeMsg)
+
+        // Then
+        assertTrue(tracker.isStreamComplete(streams[0].mappedDescriptor))
+        assertFalse(tracker.isStreamComplete(streams[1].mappedDescriptor))
+    }
+
+    @Test
     fun `#allStreamsComplete should handle duplicate completion messages correctly`() {
         // Given
         val stream = createStream("namespace1", "stream1")

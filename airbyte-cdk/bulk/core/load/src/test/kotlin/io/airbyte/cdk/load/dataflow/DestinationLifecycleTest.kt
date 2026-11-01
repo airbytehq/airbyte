@@ -92,4 +92,48 @@ class DestinationLifecycleTest {
         coVerify(exactly = 1) { streamLoader2.teardown(false) }
         coVerify(exactly = 1) { destinationInitializer.teardown() }
     }
+
+    @Test
+    fun `tears down opted-in loaders based on stream completion`() = runTest {
+        // Given
+        val completedStreamLoader = mockk<StreamLoader>(relaxed = true)
+        val incompleteStreamLoader = mockk<StreamLoader>(relaxed = true)
+        val nonOptedInStreamLoader = mockk<StreamLoader>(relaxed = true)
+        val completedStream = mockk<DestinationStream>(relaxed = true)
+        val incompleteStream = mockk<DestinationStream>(relaxed = true)
+        val nonOptedInStream = mockk<DestinationStream>(relaxed = true)
+        val completedDescriptor = DestinationStream.Descriptor("namespace", "completed")
+        val incompleteDescriptor = DestinationStream.Descriptor("namespace", "incomplete")
+        val nonOptedInDescriptor = DestinationStream.Descriptor("namespace", "non_opted_in")
+
+        every { completedStream.mappedDescriptor } returns completedDescriptor
+        every { incompleteStream.mappedDescriptor } returns incompleteDescriptor
+        every { nonOptedInStream.mappedDescriptor } returns nonOptedInDescriptor
+        every { completedStreamLoader.stream } returns completedStream
+        every { incompleteStreamLoader.stream } returns incompleteStream
+        every { nonOptedInStreamLoader.stream } returns nonOptedInStream
+        every { completedStreamLoader.teardownOnStreamCompletion } returns true
+        every { incompleteStreamLoader.teardownOnStreamCompletion } returns true
+        every { nonOptedInStreamLoader.teardownOnStreamCompletion } returns false
+        every { completionTracker.allStreamsComplete() } returns false
+        every { completionTracker.isStreamComplete(completedDescriptor) } returns true
+        every { completionTracker.isStreamComplete(incompleteDescriptor) } returns false
+        every { completionTracker.isStreamComplete(nonOptedInDescriptor) } returns true
+        every { destinationCatalog.streams } returns
+            listOf(completedStream, incompleteStream, nonOptedInStream)
+        coEvery { destinationInitializer.createStreamLoader(completedStream) } returns
+            completedStreamLoader
+        coEvery { destinationInitializer.createStreamLoader(incompleteStream) } returns
+            incompleteStreamLoader
+        coEvery { destinationInitializer.createStreamLoader(nonOptedInStream) } returns
+            nonOptedInStreamLoader
+
+        // When
+        destinationLifecycle.run()
+
+        // Then
+        coVerify(exactly = 1) { completedStreamLoader.teardown(true) }
+        coVerify(exactly = 1) { incompleteStreamLoader.teardown(false) }
+        coVerify(exactly = 1) { nonOptedInStreamLoader.teardown(false) }
+    }
 }
