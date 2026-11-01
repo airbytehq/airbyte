@@ -31,11 +31,18 @@ from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
 from .exceptions import ErrorFetchingMetadata
 from .utils import (
+    LOGGER,
     FolderNotFoundException,
     MicrosoftSharePointRemoteFile,
     execute_query_with_retry,
     filter_http_urls,
     get_site_prefix,
+)
+
+
+SHARED_WITH_ME_DEPRECATION_HINT = (
+    "Microsoft Graph's sharedWithMe API, which this connector uses to find shared items, is deprecated and stops returning data "
+    "after November 2026. Set Search Scope to ACCESSIBLE_DRIVES and set Site URL to the site that holds the files."
 )
 
 
@@ -362,11 +369,46 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         return drives
 
+    @staticmethod
+    def _is_shared_with_me_client_error(ex: Exception) -> bool:
+        if isinstance(ex, FolderNotFoundException):
+            return True
+        response = getattr(ex._exception, "response", None) if isinstance(ex, AirbyteTracedException) else None
+        status_code = getattr(response, "status_code", None)
+        return isinstance(status_code, int) and 400 <= status_code < 500
+
+    def _get_shared_drive_items(self) -> Iterable[Any]:
+        """
+        Lists items shared with the user via the deprecated Microsoft Graph sharedWithMe API.
+
+        Client errors (4xx) from this API are expected once Microsoft retires it, so they are reported as a
+        config error for the SHARED_ITEMS scope and skipped with a warning for the ALL scope.
+        """
+        try:
+            shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
+        except (AirbyteTracedException, FolderNotFoundException) as ex:
+            if not self._is_shared_with_me_client_error(ex):
+                raise
+            if self.config.search_scope == "SHARED_ITEMS":
+                raise AirbyteTracedException(
+                    message=f"Failed to list items shared with you. {SHARED_WITH_ME_DEPRECATION_HINT}",
+                    internal_message=str(ex),
+                    failure_type=FailureType.config_error,
+                    exception=ex,
+                ) from ex
+            LOGGER.warning(
+                f"Skipping shared items because the Microsoft Graph sharedWithMe request failed: {ex}. {SHARED_WITH_ME_DEPRECATION_HINT}"
+            )
+            return []
+
+        if not shared_drive_items:
+            LOGGER.warning(f"Microsoft Graph sharedWithMe returned no shared items. {SHARED_WITH_ME_DEPRECATION_HINT}")
+        return shared_drive_items
+
     def _get_shared_files_from_all_drives(self, parsed_drives) -> Iterable[MicrosoftSharePointRemoteFile]:
         drive_ids = [drive.id for drive in parsed_drives]
 
-        shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
-        for drive_item in shared_drive_items:
+        for drive_item in self._get_shared_drive_items():
             parent_reference = drive_item.remote_item.parentReference
 
             # check if drive is already parsed
@@ -405,8 +447,12 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             yield file
 
         if not items_processed:
+            if self.config.search_scope == "SHARED_ITEMS":
+                message = f"No matching files were found in items shared with you. {SHARED_WITH_ME_DEPRECATION_HINT}"
+            else:
+                message = "Drive is empty or does not exist."
             raise AirbyteTracedException(
-                message=f"Drive is empty or does not exist.",
+                message=message,
                 failure_type=FailureType.config_error,
             )
 
