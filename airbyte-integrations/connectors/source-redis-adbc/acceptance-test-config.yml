@@ -1,0 +1,18 @@
+connector_image: airbyte/source-redis-adbc:dev
+test_strictness_level: low
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_redis_adbc/spec.json
+  connection:
+    tests:
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+  discovery:
+    bypass_reason: A live disposable Redis Software endpoint must be provisioned; scripts/e2e.py covers native discovery locally.
+  basic_read:
+    bypass_reason: Native full-refresh and destination checks run against disposable Redis Software in scripts/e2e.py.
+  full_refresh:
+    bypass_reason: scripts/e2e.py verifies two Overwrite generations against the official PostgreSQL destination.
+  incremental:
+    bypass_reason: This connector supports full refresh only, without incremental state or CDC.
