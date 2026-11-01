@@ -1,0 +1,12 @@
+{
+  "object": "list",
+  "url": "/v1/customers",
+  "has_more": false,
+  "data": [
+    {
+      "id": "synthetic-customer",
+      "object": "customer",
+      "created": 1
+    }
+  ]
+}
