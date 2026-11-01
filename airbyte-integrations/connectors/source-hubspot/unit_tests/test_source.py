@@ -92,7 +92,7 @@ def test_streams(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
 
-    assert len(streams) == 37
+    assert len(streams) == 38
 
 
 def test_streams_forbidden_returns_default_streams(requests_mock, config):
@@ -103,7 +103,7 @@ def test_streams_forbidden_returns_default_streams(requests_mock, config):
         status_code=403,
     )
     streams = get_source(config).streams(config)
-    assert len(streams) == 37
+    assert len(streams) == 38
 
 
 def test_check_credential_title_exception(config):
@@ -122,7 +122,7 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     )
     streams = discover(get_source(config), config).catalog.catalog.streams
     assert adapter.called
-    assert len(streams) == 38
+    assert len(streams) == 39
 
 
 def test_custom_object_colliding_with_builtin_stream_name_is_unchanged_by_default(requests_mock, config, mock_dynamic_schema_requests):
@@ -143,7 +143,7 @@ def test_custom_object_colliding_with_builtin_stream_name_is_unchanged_by_defaul
     assert names.count("form_submissions") == 2
     assert "custom_object_form_submissions" not in names
     assert "cars" in names
-    assert len(names) == 39
+    assert len(names) == 40
 
 
 def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_mock, config, mock_dynamic_schema_requests):
@@ -165,7 +165,7 @@ def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_m
     assert names.count("form_submissions") == 1
     assert "custom_object_form_submissions" in names
     assert "cars" in names
-    assert len(names) == 39
+    assert len(names) == 40
 
 
 def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(requests_mock, config, mock_dynamic_schema_requests):
