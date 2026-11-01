@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Single Item Feed</title>
+    <link>https://example.com</link>
+    <description>Feed with one item and no channel pubDate</description>
+    <item>
+      <title>Only Item</title>
+      <link>https://example.com/only</link>
+      <description>The only item</description>
+      <guid>https://example.com/only</guid>
+      <pubDate>Thu, 05 Jan 2023 09:15:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
