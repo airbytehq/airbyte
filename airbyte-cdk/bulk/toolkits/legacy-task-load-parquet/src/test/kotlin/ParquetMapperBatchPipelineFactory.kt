@@ -33,28 +33,29 @@ class ParquetMapperBatchPipelineFactory {
                                                                     "up_to" to
                                                                         FieldType(
                                                                             IntegerType,
-                                                                            true
+                                                                            true,
                                                                         ),
                                                                     "name" to
                                                                         FieldType(StringType, true),
-                                                                )
+                                                                ),
                                                             ),
-                                                            StringType
+                                                            StringType,
                                                         ),
                                                         isLegacyUnion = false,
                                                     ),
-                                                    true
+                                                    true,
                                                 ),
-                                            "metadata" to FieldType(ObjectTypeWithEmptySchema, true)
-                                        )
+                                            "metadata" to
+                                                FieldType(ObjectTypeWithEmptySchema, true),
+                                        ),
                                     ),
-                                    StringType
+                                    StringType,
                                 ),
                                 isLegacyUnion = false,
                             ),
-                            true
-                        )
-                )
+                            true,
+                        ),
+                ),
             )
         every { stream.schema } returns schema
         every { stream.syncId } returns 101L
@@ -73,14 +74,14 @@ class ParquetMapperBatchPipelineFactory {
                                     ObjectValue(
                                         linkedMapOf(
                                             "up_to" to IntegerValue(10),
-                                            "name" to StringValue("tier1")
-                                        )
+                                            "name" to StringValue("tier1"),
+                                        ),
                                     ),
                                 "metadata" to
-                                    ObjectValue(linkedMapOf("key" to StringValue("value")))
-                            )
+                                    ObjectValue(linkedMapOf("key" to StringValue("value"))),
+                            ),
                         ),
-                )
+                ),
             )
         @Suppress("DEPRECATION")
         val pipeline = io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)

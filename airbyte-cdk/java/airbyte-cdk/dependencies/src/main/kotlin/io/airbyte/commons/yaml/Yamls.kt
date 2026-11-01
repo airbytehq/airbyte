@@ -35,6 +35,7 @@ object Yamls {
      *
      * @param object
      * - object to serialize
+     *
      * @return YAML string version of object
      */
     fun <T> serialize(`object`: T): String {
@@ -50,6 +51,7 @@ object Yamls {
      *
      * @param object
      * - object to serialize
+     *
      * @return YAML string version of object
      */
     fun serializeWithoutQuotes(`object`: Any?): String {
@@ -109,7 +111,7 @@ object Yamls {
             return AutoCloseableIterators.fromIterator<JsonNode>(
                 iterator,
                 VoidCallable { parser.close() },
-                null
+                null,
             )
         } catch (e: IOException) {
             throw RuntimeException(e)
@@ -123,7 +125,7 @@ object Yamls {
      * @param writer writer to write to
      * @param <T> type of items being written
      * @return consumer that is able to write element to a list element by element. must be closed!
-     * </T>
+     *   </T>
      */
     fun <T> listWriter(writer: Writer?): CloseableConsumer<T> {
         return YamlConsumer(writer, OBJECT_MAPPER)

@@ -15,7 +15,6 @@ import logging
 from unittest.mock import patch
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -25,6 +24,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint segment under repos/{repository}/, primary key)
@@ -59,7 +60,7 @@ def _catalog(*stream_names):
 def _read_messages(config, *stream_names):
     """Return (messages, error); the caller decides what to assert on."""
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=[])
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -124,9 +125,8 @@ def test_stream_primary_key_matches_legacy(stream_name, endpoint, primary_key):
     """The primary keys the Python classes declared must survive the migration, otherwise
     existing destinations would start deduplicating on a different key."""
     config = _config("airbytehq/airbyte")
-    source = SourceGithub(config=config)
-    # `super()` skips `SourceGithub.streams()`, which returns the Python streams only.
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    source = make_source(config=config)
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
     assert airbyte_stream.source_defined_primary_key == [[field] for field in primary_key]
@@ -140,10 +140,8 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     _mock_repository_resolution(requests_mock, "airbytehq/airbyte")
     requests_mock.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"name": "master"}])
 
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
     migrated = {name for name, _, _ in MIGRATED_STREAMS}
-
-    assert {stream.name for stream in source.streams(config=dict(config))} & migrated == set()
 
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:
@@ -184,7 +182,7 @@ def test_pagination_follows_link_header(rate_limit_mock_response, requests_mock)
 def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expected_log, rate_limit_mock_response, requests_mock, caplog):
     """Legacy warned and continued on 404/403/409, and on a 410 naming a disabled feature, for a
     single repository (streams.py `GithubStreamABC.read_records` and
-    `errors_handlers.py::is_gone_with_feature_disabled`). One unreadable repository must not fail
+    the legacy `is_gone_with_feature_disabled`). One unreadable repository must not fail
     the stream or drop the repositories that follow it, and the skip must leave a trace in the log.
     """
     config = _config("ghost/deleted-repo", "docker/compose")
@@ -233,7 +231,7 @@ def test_unexpected_410_fails_fast(sleep_mock, rate_limit_mock_response, request
     ("status_code", "message"),
     [
         # Legacy required `status_code == 410` before it looked at the message at all
-        # (errors_handlers.py::is_gone_with_feature_disabled). The declarative predicate cannot see
+        # (the legacy `is_gone_with_feature_disabled`). The declarative predicate cannot see
         # the status code, so it names the features instead. These messages mention something being
         # disabled but no such feature, and so must not reach the IGNORE path.
         (401, {"message": "Your account is disabled"}),

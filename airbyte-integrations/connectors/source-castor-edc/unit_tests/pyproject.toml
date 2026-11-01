@@ -1,0 +1,16 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-castor-edc-tests"
+version = "0.0.0"
+description = "Unit tests for source-castor-edc"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+airbyte-cdk = "7.33.0"
+pytest = "^8.0"
+pyyaml = "^6.0"

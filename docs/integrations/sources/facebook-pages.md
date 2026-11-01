@@ -108,10 +108,18 @@ For Page Insights, Meta requires access to a Page that you own or administer, or
 
 ### "Please reduce the amount of data you're asking for" error
 
-This error occurs when the Facebook Graph API considers the total response data too large. Starting from version 2.1.3, the connector treats it as a configuration error and fails the sync instead of retrying, because retrying the same request never succeeds. There are two ways to resolve it:
+The Graph API returns this error (error code 1, often with HTTP 500) when a response is too large to build in time. Because Meta returns it intermittently, the connector retries the request with backoff. If the retries are exhausted, the sync fails with a transient error and usually succeeds on a later attempt. Version 2.1.3 failed the sync immediately with a configuration error instead of retrying; upgrade to 2.1.4 or later to restore the retries.
 
-- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
-- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+If the error keeps recurring, reduce the size of each response:
+
+- **Deselect fields in the Schema tab.** Open your connection's **Schema** tab and deselect fields you don't need for the affected stream. The connector requests only the selected fields. Applies to the `page` and `post` streams.
+- **Reduce the page size.** Set **Page Size** in the source settings to a lower value, such as 25 or 50. Applies to the `post` and `post_insights` streams.
+
+### `page` stream fails for New Pages Experience Pages
+
+Meta [deprecated](https://developers.facebook.com/docs/graph-api/changelog/version26.0) the legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info` for Pages on the New Pages Experience. On Graph API v26.0 and later, requesting these fields returns an error, and Meta plans to apply the deprecation to all API versions, including the v24.0 version this connector calls. Meta also doesn't make the `live_videos` edge available for New Pages Experience Pages.
+
+On versions earlier than 3.0.0, the connector requests these fields, so the entire `page` stream fails for a New Pages Experience Page. The sync fails with either the `Request contains invalid/deprecated field.` error or the [`Facebook API request contains invalid Page fields, metrics, or permissions`](#facebook-api-request-contains-invalid-page-fields-metrics-or-permissions-error) error followed by a Facebook message that starts with `(#10) To use live-video-api`. Upgrade to version 3.0.0 or later, which no longer requests these fields. Then refresh the source schema and update any downstream models that reference the removed columns. See the [migration guide](/integrations/sources/facebook-pages-migrations#upgrading-to-300) for the full list of removed columns.
 
 ### "Facebook API request contains invalid Page fields, metrics, or permissions" error
 
@@ -173,6 +181,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
+| 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |
 | 2.1.2 | 2026-08-17 | [84408](https://github.com/airbytehq/airbyte/pull/84408) | Remove Page/Post Insights metrics deprecated by Meta and request `page_total_media_view_unique` / `post_total_media_view_unique` instead; fail fast with Meta's own message on invalid-metric errors. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |

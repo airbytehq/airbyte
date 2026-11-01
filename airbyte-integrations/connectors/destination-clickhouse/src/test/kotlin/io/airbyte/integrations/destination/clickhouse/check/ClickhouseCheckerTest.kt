@@ -54,14 +54,14 @@ class ClickhouseCheckerTest {
 
         verify {
             client.execute(
-                "CREATE TABLE IF NOT EXISTS ${config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS ${config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()",
             )
         }
         verify {
             client.insert(
                 "${config.database}.${checker.tableName}",
                 any<InputStream>(),
-                ClickHouseFormat.JSONEachRow
+                ClickHouseFormat.JSONEachRow,
             )
         }
     }
@@ -75,7 +75,7 @@ class ClickhouseCheckerTest {
 
         verify {
             client.execute(
-                "CREATE TABLE IF NOT EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster` (test UInt8) ENGINE = ReplicatedMergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster` (test UInt8) ENGINE = ReplicatedMergeTree ORDER BY ()",
             )
         }
     }
@@ -89,7 +89,7 @@ class ClickhouseCheckerTest {
 
         verify {
             client.execute(
-                "DROP TABLE IF EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster`"
+                "DROP TABLE IF EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster`",
             )
         }
     }
