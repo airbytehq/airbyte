@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.ZoneOffset
 
 const val CONFIG_PATH = "secrets/oauth_config.json"
@@ -56,9 +57,15 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
 
 /**
  * Cleans up old test namespaces from Databricks. Finds schemas matching `test%` and drops those
- * older than the integration test threshold.
+ * older than the [RETENTION_DAYS].
+ *
+ * Unity Catalog caps a catalog at 10,000 schemas and each CI run leaves a few hundred behind, so
+ * the CDK default of 30 days exhausts the quota (`UC_RESOURCE_QUOTA_EXCEEDED`).
  */
 object DatabricksDataCleaner : DestinationCleaner {
+    private val log = KotlinLogging.logger {}
+    private const val RETENTION_DAYS = 2L
+
     override fun cleanup() {
         val config = DatabricksTestConfigProvider.configFromFile()
         val dataSource = DatabricksTestDataSourceProvider.get(config)
@@ -80,11 +87,15 @@ object DatabricksDataCleaner : DestinationCleaner {
                         }
                     }
 
-                schemas
-                    .filter { IntegrationTest.isNamespaceOld(it) }
-                    .forEach { schema ->
-                        stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
-                    }
+                val schemasToDrop = schemas.filter {
+                    IntegrationTest.isNamespaceOld(it, RETENTION_DAYS)
+                }
+                log.info {
+                    "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
+                }
+                schemasToDrop.forEach { schema ->
+                    stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
+                }
             }
         }
     }
