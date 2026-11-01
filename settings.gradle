@@ -8,6 +8,11 @@ pluginManagement {
         }
 
         // ## Look into other, public repos.
+        // Resolve Central artifacts before the plugin portal can redirect to a rate-limited Central.
+        maven {
+            name = 'maven-central-mirror'
+            url = 'https://maven-central.storage-download.googleapis.com/maven2/'
+        }
         // Gradle plugin portal.
         gradlePluginPortal()
         // Maven Central has most of everything.
@@ -50,6 +55,11 @@ dependencyResolutionManagement {
         // ## Look into other, public repos.
 
         // Maven Central has most of everything.
+        // Prefer Google's mirror to avoid Central's shared-IP rate limits on ephemeral runners.
+        maven {
+            name = 'maven-central-mirror'
+            url = 'https://maven-central.storage-download.googleapis.com/maven2/'
+        }
         mavenCentral()
         // Jitpack is used to pull dependencies directly from github.
         maven {
