@@ -173,8 +173,10 @@ class AtlasReplicaSetSpecification : DatabaseConfigSpecification {
     @JsonSchemaDescription(
         "The authentication source where the user information is stored.  See https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource for more details.",
     )
-    @JsonSchemaInject(json = """{"default":"admin","examples":["admin"],"order":6}""")
-    override var authSource: String = MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE
+    @JsonSchemaInject(
+        json = """{"default":"admin","examples":["admin"],"order":6,"airbyte_hidden":true}""",
+    )
+    override var authSource: String? = MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE
 
     @JsonProperty("schema_enforced")
     @JsonSchemaTitle("Schema Enforced")
@@ -234,7 +236,9 @@ class SelfManagedReplicaSetSpecification : DatabaseConfigSpecification {
     @JsonProperty("auth_source")
     @JsonSchemaTitle("Authentication Source")
     @JsonSchemaDescription("The authentication source where the user information is stored.")
-    @JsonSchemaInject(json = """{"default":"admin","examples":["admin"],"order":6}""")
+    @JsonSchemaInject(
+        json = """{"default":"admin","examples":["admin"],"order":6,"airbyte_hidden":true}""",
+    )
     override var authSource: String? = MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE
 
     @JsonProperty("schema_enforced")

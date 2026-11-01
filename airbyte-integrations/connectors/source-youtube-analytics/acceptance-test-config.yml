@@ -31,6 +31,10 @@ acceptance_tests:
             bypass_reason: "The test channel's videos have no end screens; every report file is header-only."
           - name: channel_province_a3
             bypass_reason: "The test channel has no US province-level traffic; every report file is header-only."
+          - name: channel_reach_basic_a1
+            bypass_reason: "The test channel's reach reporting jobs were created on 2026-10-22 and had no report files yet; remove this bypass once the stream returns records."
+          - name: channel_reach_combined_a1
+            bypass_reason: "The test channel's reach reporting jobs were created on 2026-10-22 and had no report files yet; remove this bypass once the stream returns records."
           - name: channel_sharing_service_a1
             bypass_reason: "The test channel's videos have no shares; every report file is header-only."
           - name: playlist_basic_a2

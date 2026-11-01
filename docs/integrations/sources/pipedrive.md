@@ -180,7 +180,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.2.2 | 2026-10-29 | [90176](https://github.com/airbytehq/airbyte/pull/90176) | Mark the connector as certified |
+| 5.0.1 | 2026-11-01 | [90176](https://github.com/airbytehq/airbyte/pull/90176) | Mark the connector as certified |
+| 5.0.0 | 2026-11-01 | [90177](https://github.com/airbytehq/airbyte/pull/90177) | Type the remaining date and time fields on nine streams and correct declared shapes on goals, leads, mailThreads and deal_fields; declare fields Pipedrive returns without documenting them |
 | 4.2.1 | 2026-10-28 | [90148](https://github.com/airbytehq/airbyte/pull/90148) | Read `call_logs`, `product_variations` and `leads_archived` in the standard tests, fail `legacy_teams` when Pipedrive retires its endpoint instead of returning no records, and allow `null` on eight `mailThreads` fields the API reference marks nullable |
 | 4.2.0 | 2026-10-28 | [85773](https://github.com/airbytehq/airbyte/pull/85773) | Add OAuth2.0 as the default authentication; existing API token configs move into `credentials` automatically |
 | 4.1.3 | 2026-10-27 | [90008](https://github.com/airbytehq/airbyte/pull/90008) | Update dependencies |
