@@ -632,11 +632,12 @@ jobs:
         run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
 
       # ── Autopilot rollouts (enable if missing, then wait for CI) ────
-      # Every auto-merged connector PR should ship with autopilot progressive
-      # rollouts enabled. If any modified connector is missing it, enable it via
-      # the same `airbyte-ops` command as the /enable-autopilot-rollouts slash
-      # command, commit to the PR branch (which re-triggers required CI), and
-      # wait for those checks to pass on the new commit before merging.
+      # Autopilot is only enabled alongside a version bump; rolloutConfiguration
+      # without one fails Connector Version Increment Check.
+      # If any modified connector is missing it, enable it via the same
+      # `airbyte-ops` command as the /enable-autopilot-rollouts slash command,
+      # commit to the PR branch (which re-triggers required CI), and wait for
+      # those checks to pass on the new commit before merging.
       - name: Resolve PR head for autopilot
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         id: autopilot-head
@@ -689,6 +690,7 @@ jobs:
         id: autopilot-detect
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha }}
         run: |
           set -euo pipefail
           CONNECTORS="$(
@@ -700,16 +702,73 @@ jobs:
               --autopilot-enabled=false \
               --output-format lines
           )"
-          if [ -z "$CONNECTORS" ]; then
+          [[ -n "$CONNECTORS" ]] || {
             echo "All modified connectors already have autopilot rollouts enabled."
-          else
-            echo "Connectors missing autopilot rollouts:"
-            echo "$CONNECTORS"
-            EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
-            echo "connectors<<$EOF" >> "$GITHUB_OUTPUT"
-            echo "$CONNECTORS" >> "$GITHUB_OUTPUT"
-            echo "$EOF" >> "$GITHUB_OUTPUT"
-          fi
+            exit 0
+          }
+
+          base_sha="$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER" --jq '.base.sha')"
+          merge_base_sha="$(gh api "repos/airbytehq/airbyte/compare/${base_sha}...${EVALUATED_SHA}" --jq '.merge_base_commit.sha')"
+          [[ -n "$merge_base_sha" && "$merge_base_sha" != "null" ]] || {
+            echo "::error::Could not resolve the merge base for evaluated SHA $EVALUATED_SHA."
+            exit 1
+          }
+
+          read_metadata_version() {
+            local connector="$1" ref="$2" err_file status=0 version
+            err_file="$(mktemp)"
+            version="$(airbyte-ops gh connector get-version "$connector" --ref "$ref" --gh-token "$GH_TOKEN" 2>"$err_file")" || status=$?
+            if [[ "$status" -ne 0 ]]; then
+              if grep -q "Metadata file not found" "$err_file"; then return 44; fi
+              cat "$err_file" >&2
+              return "$status"
+            fi
+            printf '%s\n' "$version"
+          }
+
+          filtered_connectors=()
+          while IFS= read -r connector; do
+            [[ -n "$connector" ]] || continue
+
+            evaluated_status=0
+            evaluated_version="$(read_metadata_version "$connector" "$EVALUATED_SHA")" || evaluated_status=$?
+            [[ "$evaluated_status" -eq 0 ]] || {
+              echo "::error::Could not read evaluated metadata for $connector at $EVALUATED_SHA."
+              exit 1
+            }
+
+            base_status=0
+            base_version="$(read_metadata_version "$connector" "$merge_base_sha")" || base_status=$?
+            [[ "$base_status" -ne 44 ]] || {
+              echo "No metadata at the merge base for $connector; treating it as a version bump."
+              filtered_connectors+=("$connector")
+              continue
+            }
+            [[ "$base_status" -eq 0 ]] || {
+              echo "::error::Could not read merge-base metadata for $connector at $merge_base_sha."
+              exit 1
+            }
+
+            if [[ "$base_version" == "$evaluated_version" ]]; then
+              echo "$connector has no version bump; skipping autopilot enable."
+            else
+              echo "$connector version bump found ($base_version -> $evaluated_version)."
+              filtered_connectors+=("$connector")
+            fi
+          done <<< "$CONNECTORS"
+
+          [[ "${#filtered_connectors[@]}" -gt 0 ]] || {
+            echo "No connectors need autopilot enablement after version-bump filtering."
+            exit 0
+          }
+          echo "Connectors eligible for autopilot enablement:"
+          printf '  %s\n' "${filtered_connectors[@]}"
+          EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
+          {
+            printf 'connectors<<%s\n' "$EOF"
+            printf '%s\n' "${filtered_connectors[@]}"
+            printf '%s\n' "$EOF"
+          } | tee -a "$GITHUB_OUTPUT"
 
       - name: Enable autopilot rollouts and push
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-detect.outputs.connectors != ''
@@ -763,113 +822,77 @@ jobs:
       - name: Wait for required checks after autopilot commit
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-enable.outputs.pushed == 'true'
         id: wait-autopilot-checks
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
           EXPECTED_SHA: ${{ steps.autopilot-enable.outputs.sha }}
-        with:
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          script: |
-            const prNum = Number(process.env.PR_NUMBER);
-            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
-            const expectedSha = process.env.EXPECTED_SHA;
-            const maxMinutes = 45;
-            const intervalMs = 60000;
-            const deadline = Date.now() + maxMinutes * 60000;
-            const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-            const failedConclusions = new Set([
-              'failure',
-              'cancelled',
-              'timed_out',
-              'action_required',
-              'startup_failure',
-            ]);
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha }}
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          expected_sha="$EXPECTED_SHA"
+          evaluated_sha="$EVALUATED_SHA"
+          start_time="$(date +%s)"
+          grace_deadline=$((start_time + 180))
+          deadline=$((start_time + 45 * 60))
+          interval_seconds=60
 
-            while (true) {
-              const { data: pr } = await github.rest.pulls.get({
-                owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
-              });
-              const sha = pr.head.sha;
-              if (expectedSha && sha !== expectedSha) {
-                throw new Error(
-                  `PR head moved to ${sha} (expected ${expectedSha}); aborting auto-merge.`
-                );
-              }
+          while true; do
+            sha="$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER" --jq '.head.sha')"
+            now="$(date +%s)"
+            if [[ "$sha" == "$evaluated_sha" ]]; then
+              if [[ "$now" -lt "$grace_deadline" ]]; then
+                echo "PR still reports evaluated SHA $evaluated_sha; waiting 10s for the autopilot push to become the PR head."
+                sleep 10
+                continue
+              fi
+              echo "::error::The autopilot push never became the PR head; PR still points to evaluated SHA $evaluated_sha instead of $expected_sha."
+              exit 1
+            fi
+            if [[ "$sha" != "$expected_sha" ]]; then
+              echo "::error::PR head moved to $sha (expected $expected_sha); aborting auto-merge."
+              exit 1
+            fi
 
-              const statuses = await github.paginate(
-                github.rest.repos.listCommitStatusesForRef,
-                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
-              );
-              // listCommitStatusesForRef returns historical entries; only the
-              // latest status per context reflects the current state.
-              const latestStatusByContext = new Map();
-              for (const s of statuses) {
-                const prev = latestStatusByContext.get(s.context);
-                if (!prev || new Date(s.updated_at) > new Date(prev.updated_at)) {
-                  latestStatusByContext.set(s.context, s);
-                }
-              }
-              const successStatuses = new Set(
-                [...latestStatusByContext.values()]
-                  .filter(s => s.state === 'success')
-                  .map(s => s.context)
-              );
-              const failedStatuses = new Set(
-                [...latestStatusByContext.values()]
-                  .filter(s => s.state === 'failure' || s.state === 'error')
-                  .map(s => s.context)
-              );
+            statuses_json="$(gh api --paginate --slurp "repos/airbytehq/airbyte/commits/$sha/statuses?per_page=100")"
+            success_statuses="$(jq -r 'flatten | group_by(.context) | map(max_by(.updated_at)) | map(select(.state == "success") | .context) | .[]' <<< "$statuses_json")"
+            failed_statuses="$(jq -r 'flatten | group_by(.context) | map(max_by(.updated_at)) | map(select(.state == "failure" or .state == "error") | .context) | .[]' <<< "$statuses_json")"
 
-              const checkRuns = await github.paginate(
-                github.rest.checks.listForRef,
-                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
-                (response) => response.data
-              );
-              const latestCheckRunByName = new Map();
-              for (const checkRun of checkRuns) {
-                const previous = latestCheckRunByName.get(checkRun.name);
-                if (!previous || checkRun.id > previous.id) {
-                  latestCheckRunByName.set(checkRun.name, checkRun);
-                }
-              }
-              const latestCheckRuns = [...latestCheckRunByName.values()];
-              const failedCheckRuns = new Set(
-                latestCheckRuns
-                  .filter(cr => cr.status === 'completed' && failedConclusions.has(cr.conclusion))
-                  .map(cr => cr.name)
-              );
-              const successChecks = new Set(
-                latestCheckRuns
-                  .filter(cr => cr.status === 'completed' && (cr.conclusion === 'success' || cr.conclusion === 'skipped'))
-                  .map(cr => cr.name)
-              );
+            check_runs_json="$(gh api --paginate --slurp "repos/airbytehq/airbyte/commits/$sha/check-runs?per_page=100")"
+            success_check_runs="$(jq -r '[.[].check_runs[]] | group_by(.name) | map(max_by(.id)) | map(select(.status == "completed" and (.conclusion == "success" or .conclusion == "skipped")) | .name) | .[]' <<< "$check_runs_json")"
+            failed_check_runs="$(jq -r '[.[].check_runs[]] | group_by(.name) | map(max_by(.id)) | map(select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "startup_failure")) | .name) | .[]' <<< "$check_runs_json")"
 
-              const failed = [...requiredChecks].filter(
-                check => failedStatuses.has(check) || failedCheckRuns.has(check)
-              );
-              if (failed.length > 0) {
-                core.setOutput('failed-checks', failed.join(', '));
-                throw new Error(
-                  `Required checks failed on autopilot commit ${sha}: ${failed.join(', ')}`
-                );
-              }
+            failed_checks=()
+            missing_checks=()
+            while IFS= read -r required_check; do
+              [[ -n "$required_check" ]] || continue
+              if grep -Fqx -- "$required_check" <<< "$failed_statuses"$'\n'"$failed_check_runs"; then
+                failed_checks+=("$required_check")
+              elif ! grep -Fqx -- "$required_check" <<< "$success_statuses"$'\n'"$success_check_runs"; then
+                missing_checks+=("$required_check")
+              fi
+            done < <(jq -r '.[]' <<< "$REQUIRED_CHECKS_JSON")
 
-              const allPassing = new Set([...successStatuses, ...successChecks]);
-              const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+            if [[ "${#failed_checks[@]}" -gt 0 ]]; then
+              failed_list="$(IFS=', '; printf '%s' "${failed_checks[*]}")"
+              printf 'failed-checks=%s\n' "$failed_list" | tee -a "$GITHUB_OUTPUT"
+              echo "::error::Required checks failed on autopilot commit $sha: $failed_list"
+              exit 1
+            fi
+            if [[ "${#missing_checks[@]}" -eq 0 ]]; then
+              echo "All required checks passing on autopilot commit."
+              exit 0
+            fi
 
-              if (missing.length === 0) {
-                core.info('All required checks passing on autopilot commit.');
-                return;
-              }
-              if (Date.now() > deadline) {
-                core.setOutput('failed-checks', missing.join(', '));
-                throw new Error(
-                  `Timed out after ${maxMinutes}m waiting for required checks: ${missing.join(', ')}`
-                );
-              }
-              core.info(`Waiting on required checks: ${missing.join(', ')}`);
-              await sleep(intervalMs);
-            }
+            now="$(date +%s)"
+            missing_list="$(IFS=', '; printf '%s' "${missing_checks[*]}")"
+            if [[ "$now" -ge "$deadline" ]]; then
+              printf 'failed-checks=%s\n' "$missing_list" | tee -a "$GITHUB_OUTPUT"
+              echo "::error::Timed out after 45m waiting for required checks: $missing_list"
+              exit 1
+            fi
+            echo "Waiting on required checks: $missing_list"
+            sleep "$interval_seconds"
+          done
 
       - name: Refresh 'octavia-bot-hoard' token for merge phase
         if: always() && steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
