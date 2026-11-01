@@ -20,7 +20,7 @@ Requirements
 
 Spotify Developer application with Partner API access
 OAuth 2.0 credentials (Client ID, Client Secret, Refresh Token)
-Valid Spotify Ad Account ID
+One or more valid Spotify Ad Account IDs
 
 ## Configuration
 
@@ -29,7 +29,8 @@ Valid Spotify Ad Account ID
 | `client_id` | `string` | Client ID. The Client ID of your Spotify Developer application. |  |
 | `client_secret` | `string` | Client Secret. The Client Secret of your Spotify Developer application. |  |
 | `refresh_token` | `string` | Refresh Token. The Refresh Token obtained from the initial OAuth 2.0 authorization flow. |  |
-| `ad_account_id` | `string` | Ad Account ID. The ID of the Spotify Ad Account you want to sync data from. |  |
+| `ad_account_id` | `string` | Ad Account ID. The ID of a single Spotify Ad Account to sync data from. To sync several accounts, use Ad Account IDs instead. Set at least one of the two; if both are set, every listed account is synced. |  |
+| `ad_account_ids` | `array` | Ad Account IDs. The IDs of the Spotify Ad Accounts to sync data from. Every account must be accessible with the credentials above. |  |
 | `start_date` | `string` | Start Date. The date to start syncing data from, in YYYY-MM-DD format. |  |
 | `fields` | `array` | Report Fields. List of fields to include in the campaign performance report. Choose from available metrics. | [IMPRESSIONS, CLICKS, SPEND, CTR, REACH, FREQUENCY, COMPLETION_RATE] |
 
@@ -51,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-27 | [90128](https://github.com/airbytehq/airbyte/pull/90128) | Support syncing multiple ad accounts in one connection |
 | 0.0.47 | 2026-10-20 | [89436](https://github.com/airbytehq/airbyte/pull/89436) | Update dependencies |
 | 0.0.46 | 2026-10-13 | [88823](https://github.com/airbytehq/airbyte/pull/88823) | Update dependencies |
 | 0.0.45 | 2026-10-06 | [88081](https://github.com/airbytehq/airbyte/pull/88081) | Update dependencies |
