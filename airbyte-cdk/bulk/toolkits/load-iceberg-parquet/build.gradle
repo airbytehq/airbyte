@@ -54,3 +54,8 @@ dependencies {
     testImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
     testImplementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.4.3'
 }
+
+test {
+    maxParallelForks = 1
+    systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+}
