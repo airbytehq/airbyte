@@ -25,6 +25,7 @@ import io.mockk.verify
 import java.nio.file.Files
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -918,6 +919,38 @@ class IcebergTableSynchronizerTest {
         assertThat(updatedSortOrder.fields().map { table.schema().findColumnName(it.sourceId()) })
             .containsExactly("date_start", "account_id")
 
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    @Test
+    fun `deleting a partition source column removes its partition field first`() {
+        val warehousePath = Files.createTempDirectory("iceberg-partition-column-delete")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "partition_column_delete")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "updated_at", Types.TimestampType.withZone()),
+                ),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
+                .create()
+        val incomingSchema =
+            Schema(listOf(Types.NestedField.required(1, "id", Types.StringType.get())))
+
+        createRealSynchronizer()
+            .maybeApplySchemaChanges(table, incomingSchema, ColumnTypeChangeBehavior.SAFE_SUPERTYPE)
+
+        table.refresh()
+        assertThat(table.schema().findField("updated_at")).isNull()
+        assertThat(table.spec().fields()).isEmpty()
         catalog.dropTable(tableId)
         warehousePath.toFile().deleteRecursively()
     }

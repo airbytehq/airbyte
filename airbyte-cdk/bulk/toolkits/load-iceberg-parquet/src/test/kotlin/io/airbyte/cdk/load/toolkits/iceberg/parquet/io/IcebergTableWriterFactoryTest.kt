@@ -9,15 +9,23 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer
+import java.nio.file.Files
+import java.time.OffsetDateTime
 import kotlin.random.Random
 import kotlin.test.assertNotNull
+import org.apache.hadoop.conf.Configuration
+import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
+import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.encryption.EncryptedOutputFile
 import org.apache.iceberg.encryption.EncryptionKeyMetadata
 import org.apache.iceberg.encryption.EncryptionManager
+import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.LocationProvider
 import org.apache.iceberg.io.OutputFile
@@ -245,5 +253,48 @@ internal class IcebergTableWriterFactoryTest {
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
+    }
+
+    @Test
+    fun `partitioned append writer accepts interleaved partitions`() {
+        val warehouse = Files.createTempDirectory("iceberg-interleaved-append")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "interleaved_append")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                    Types.NestedField.required(2, "updated_at", Types.TimestampType.withZone()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase(),
+                )
+                .withPartitionSpec(PartitionSpec.builderFor(schema).day("updated_at").build())
+                .create()
+        fun record(id: Int, at: String) =
+            GenericRecord.create(schema).apply {
+                setField("id", id)
+                setField("updated_at", OffsetDateTime.parse(at))
+            }
+        val writer = IcebergTableWriterFactory().create(table, generationIdSuffix, Append, schema)
+
+        writer.write(record(1, "2025-01-01T12:00:00Z"))
+        writer.write(record(2, "2025-01-02T12:00:00Z"))
+        writer.write(record(3, "2025-01-01T13:00:00Z"))
+        val result = writer.complete()
+
+        assertEquals(2, result.dataFiles().size)
+        assertEquals(2, result.dataFiles().map { it.partition() }.toSet().size)
+        assertEquals(0, result.deleteFiles().size)
+
+        catalog.dropTable(tableId)
+        warehouse.toFile().deleteRecursively()
     }
 }
