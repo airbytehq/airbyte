@@ -8,9 +8,9 @@
 The intake agent holds write credentials, so it never reads a community item live. This script
 fetches the item once, screens the community-written text with TypeSafe's Jev classifier, and
 writes a prompt holding exactly the text that was screened. Text edited after the screen never
-reaches the agent. A high score, or an item too large or too slow to screen, counts as flagged. A
-GitHub or Jev call that keeps failing is an error: nothing is held and no prompt is written, so the
-next sweep tries again. This is a filter, not a security boundary.
+reaches the agent. A high score, or an item too large to screen, counts as flagged. A GitHub or Jev
+call that keeps failing, a refused Jev key, or screening that runs out of time is an error: nothing
+is held and no prompt is written, so the next sweep tries again. This is a filter, not a security boundary.
 
 Usage:
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
