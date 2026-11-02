@@ -396,30 +396,27 @@ class DealPipelinesV1ShapeTransformation(RecordTransformation):
             stage["updatedAt"] = self._to_epoch_milliseconds(stage.get("updatedAt"), "updatedAt")
 
     @staticmethod
+    def _invalid_timestamp_error(value: Any, field_name: str) -> AirbyteTracedException:
+        return AirbyteTracedException(
+            message=(
+                f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
+                "so the record can't be read. Contact Airbyte support."
+            ),
+            internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
+            failure_type=FailureType.system_error,
+        )
+
+    @staticmethod
     def _to_epoch_milliseconds(value: Any, field_name: str) -> Optional[int]:
         if value is None or (isinstance(value, int) and not isinstance(value, bool)):
             return value
         if not isinstance(value, str):
-            raise AirbyteTracedException(
-                message=(
-                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
-                    "so the record can't be read. Contact Airbyte support."
-                ),
-                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
-                failure_type=FailureType.system_error,
-            )
+            raise DealPipelinesV1ShapeTransformation._invalid_timestamp_error(value, field_name)
 
         try:
             parsed_datetime = ab_datetime_parse(value)
         except (ValueError, TypeError, OverflowError) as exception:
-            raise AirbyteTracedException(
-                message=(
-                    f"HubSpot returned a deal pipeline `{field_name}` value that isn't a valid timestamp, "
-                    "so the record can't be read. Contact Airbyte support."
-                ),
-                internal_message=f"Unable to parse {field_name} value {value!r} as an ISO 8601 timestamp.",
-                failure_type=FailureType.system_error,
-            ) from exception
+            raise DealPipelinesV1ShapeTransformation._invalid_timestamp_error(value, field_name) from exception
 
         if parsed_datetime.tzinfo is None:
             parsed_datetime = parsed_datetime.replace(tzinfo=timezone.utc)

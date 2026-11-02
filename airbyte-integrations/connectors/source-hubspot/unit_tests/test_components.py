@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
@@ -320,6 +321,7 @@ def test_deal_pipelines_archived_flags_and_null_dates(components_module):
     "timestamp, expected",
     [
         ("2021-01-14T14:52:53Z", 1610635973000),
+        ("2021-01-14T14:52:53", 1610635973000),
         ("2021-01-14T14:52:53+00:00", 1610635973000),
         ("2021-01-14T09:52:53-05:00", 1610635973000),
     ],
@@ -339,10 +341,15 @@ def test_deal_pipelines_iso_dates_with_timezone_offsets(components_module, times
     assert pipeline["updatedAt"] == expected
 
 
-def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_module):
+@pytest.mark.parametrize(
+    "invalid_value",
+    ["not-a-date", 1.5, True],
+    ids=["unparseable_string", "float", "bool"],
+)
+def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_module, invalid_value):
     pipeline = {
         "id": "pipeline",
-        "createdAt": "not-a-date",
+        "createdAt": invalid_value,
         "updatedAt": None,
         "archived": False,
         "stages": [],
@@ -353,7 +360,20 @@ def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_mod
 
     assert exc_info.value.failure_type == FailureType.system_error
     assert "createdAt" in exc_info.value.internal_message
-    assert "not-a-date" in exc_info.value.internal_message
+    assert repr(invalid_value) in exc_info.value.internal_message
+
+
+def test_deal_pipelines_naive_parser_datetime_is_treated_as_utc(components_module, monkeypatch):
+    parsed_datetime = datetime(2021, 1, 14, 14, 52, 53)
+    monkeypatch.setattr(components_module, "ab_datetime_parse", lambda _: parsed_datetime)
+
+    assert (
+        components_module.DealPipelinesV1ShapeTransformation._to_epoch_milliseconds(
+            "2021-01-14T14:52:53",
+            "createdAt",
+        )
+        == 1610635973000
+    )
 
 
 def test_property_history_extractor(components_module):
