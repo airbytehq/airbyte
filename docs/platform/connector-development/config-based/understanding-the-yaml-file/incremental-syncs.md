@@ -26,7 +26,6 @@ Upon a successful sync, the final stream state will be the datetime of the last 
 
 Refer to the schema for both [`DatetimeBasedCursor`](reference/DatetimeBasedCursor.md) and [`MinMaxDatetime`](reference/MinMaxDatetime.md) in the YAML reference for more details.
 
-
 Example:
 
 ```yaml
