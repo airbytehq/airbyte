@@ -707,6 +707,34 @@ definitions:
     request_headers:
       Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
 
+  rate_limit_backoff_strategy:
+    type: CustomBackoffStrategy
+    class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+    header: x-amzn-RateLimit-Limit
+    default_backoff_time: 60
+
+  retry_on_forbidden_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 403
+    backoff_strategies:
+      - $ref: "#/definitions/rate_limit_backoff_strategy"
+
+  retry_on_forbidden_or_throttled_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 403
+          - 429
+    backoff_strategies:
+      - $ref: "#/definitions/rate_limit_backoff_strategy"
+        default_backoff_time: 1
+
   streams:
     orders:
       type: DeclarativeStream
@@ -748,19 +776,7 @@ definitions:
           request_parameters:
             MarketplaceIds: '{{ config["marketplace_id"] }}'
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -823,19 +839,10 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 10
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
+            backoff_strategies:
+              - $ref: "#/definitions/rate_limit_backoff_strategy"
+                default_backoff_time: 10
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -911,19 +918,7 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -989,19 +984,7 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1063,19 +1046,7 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1128,20 +1099,7 @@ definitions:
               {{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
               {%- endif -%}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                      - 429
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 1
+            $ref: "#/definitions/retry_on_forbidden_or_throttled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1184,20 +1142,7 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                      - 429
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 1
+            $ref: "#/definitions/retry_on_forbidden_or_throttled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1253,19 +1198,7 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            $ref: "#/definitions/retry_on_forbidden_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1333,26 +1266,21 @@ definitions:
           request_headers:
             content-type: "application/json"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 400
-                    predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
-                    error_message: >-
-                      The API returned an InvalidInput error. This typically occurs when the response
-                      exceeds the maximum number of transactions or 10 MB per page. To resolve this,
-                      lower the 'Financial Events Max Results Per Page' setting in your connector
-                      configuration. Current value: {{ config.get('financial_events_max_results_per_page', 100) }}.
-                      Try reducing it to a smaller value (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
-                backoff_strategies:
-                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                    type: CustomBackoffStrategy
-                    header: x-amzn-RateLimit-Limit
-                    default_backoff_time: 60
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
+                error_message: >-
+                  The API returned an InvalidInput error. This typically occurs when the response
+                  exceeds the maximum number of transactions or 10 MB per page. To resolve this,
+                  lower the 'Financial Events Max Results Per Page' setting in your connector
+                  configuration. Current value: {{ config.get('financial_events_max_results_per_page', 100) }}.
+                  Try reducing it to a smaller value (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
+            backoff_strategies:
+              - $ref: "#/definitions/rate_limit_backoff_strategy"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3583,32 +3511,20 @@ definitions:
         dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
         dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: "Rate limit exceeded for report creation. The request will be retried with backoff."
-            max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 403
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+            error_message: "Rate limit exceeded for report creation. The request will be retried with backoff."
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 403
+        max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
+        backoff_strategies:
+          - $ref: "#/definitions/rate_limit_backoff_strategy"
 
     polling_requester:
       # CustomRequester (not HttpRequester) so a FATAL report surfaces Amazon's own reason instead of
@@ -3622,19 +3538,7 @@ definitions:
       request_headers:
         content-type: "application/json"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 403
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
+        $ref: "#/definitions/retry_on_forbidden_error_handler"
 
     download_target_requester:
       type: HttpRequester
@@ -3645,19 +3549,7 @@ definitions:
       request_headers:
         content-type: "application/json"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 403
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
+        $ref: "#/definitions/retry_on_forbidden_error_handler"
 
     download_requester:
       type: HttpRequester
