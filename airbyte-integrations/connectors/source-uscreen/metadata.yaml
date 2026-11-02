@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-uscreen
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3@sha256:6c926ab34644e3fb6f5422aea148599eef8a8d877cd8b8b28b3e7af914d93bbf
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d2491549-1d5d-4b91-a7ac-8ced4aae929e
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-uscreen
+  githubIssueLabel: source-uscreen
+  icon: icon.svg
+  license: ELv2
+  name: Uscreen
+  releaseDate: 2026-09-03
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/uscreen
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
