@@ -680,7 +680,7 @@ internal class RedshiftSqlGeneratorTest {
                             ColumnTypeChange(
                                 originalType = ColumnType("super", true),
                                 newType = ColumnType("varchar(65535)", true),
-                            )
+                            ),
                     ),
             )
 
