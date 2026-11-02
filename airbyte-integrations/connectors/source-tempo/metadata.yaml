@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
-  dockerImageTag: 0.4.66
+  dockerImageTag: 0.4.67-rc.1
   dockerRepository: airbyte/source-tempo
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   githubIssueLabel: source-tempo
@@ -26,6 +26,9 @@ data:
     oss:
       enabled: true
   releaseStage: beta
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: community
   tags:
     - cdk:low-code
