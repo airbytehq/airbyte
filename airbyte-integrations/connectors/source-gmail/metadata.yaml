@@ -31,8 +31,8 @@ data:
   license: ELv2
   name: Gmail
   releaseDate: 2024-10-09
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/gmail
   tags:
     - language:manifest-only
@@ -46,8 +46,8 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: Gmail API reference
       url: https://developers.google.com/workspace/gmail/api/reference/rest
