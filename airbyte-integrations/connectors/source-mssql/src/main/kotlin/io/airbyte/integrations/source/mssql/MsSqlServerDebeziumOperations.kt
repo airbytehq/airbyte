@@ -844,23 +844,19 @@ class MsSqlServerDebeziumOperations(
         return streams
             .filter { it.configuredPrimaryKey?.isNotEmpty() == true }
             .joinToString(";") { stream ->
-                val tableId =
-                    "${escapeSpecialChars(stream.namespace)}.${escapeSpecialChars(stream.name)}"
-                val keyCols =
-                    stream.configuredPrimaryKey!!.joinToString(",") { escapeSpecialChars(it.id) }
+                val tableId = "${stream.namespace.escaped()}.${stream.name.escaped()}"
+                val keyCols = stream.configuredPrimaryKey!!.joinToString(",") { it.id.escaped() }
                 "$tableId:$keyCols"
             }
     }
 
     /**
      * Escapes special characters for Debezium message key columns. Escapes: space (converted to
-     * \s), dollar sign ($), comma (,), period (.), semicolon (;), and colon (:). This replicates
-     * the logic from the old MSSQL connector's escapeSpecialChars method.
+     * \s), dollar sign ($), comma (,), period (.), semicolon (;), and colon (:).
      */
-    private fun escapeSpecialChars(input: String?): String {
-        if (input == null) return ""
-        return input
-            .map { char ->
+    private fun String?.escaped(): String {
+        if (this == null) return ""
+        return map { char ->
                 when (char) {
                     ' ' -> "\\s"
                     '$',
