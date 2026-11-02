@@ -1,6 +1,6 @@
 # Config Database: organizations, workspaces, and access
 
-### `airbyte_configs_migrations`
+## `airbyte_configs_migrations`
 
 | Column Name     | Datatype      | Description                                     |
 | --------------- | ------------- | ----------------------------------------------- |
@@ -15,13 +15,13 @@
 | execution_time | INT            | Time taken to execute the migration.            |
 | success       | BOOLEAN         | Indicates whether the migration was successful. |
 
-#### Indexes and Constraints
+### Indexes and Constraints
+
 - Primary Key: (`installed_rank`)
 
 ---
 
-
-### `application`
+## `application`
 
 | Column Name    | Datatype  | Description                                         |
 | -------------- | --------- | --------------------------------------------------- |
@@ -32,14 +32,14 @@
 | client_secret | VARCHAR   | Secret key for authentication.                      |
 | created_at    | TIMESTAMP | Timestamp when the record was created.              |
 
-#### Indexes and Constraints
+### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 
 ---
 
-
-### `auth_refresh_token`
+## `auth_refresh_token`
 
 | Column Name  | Datatype  | Description                                     |
 | ------------ | --------- | ----------------------------------------------- |
@@ -49,14 +49,14 @@
 | created_at   | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at   | TIMESTAMP | Timestamp when the record was last modified.    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
+
 - Primary Key: (`value`)
 - Unique Constraint: (`session_id`, `value`)
 
 ---
 
-
-### `auth_user`
+## `auth_user`
 
 | Column Name    | Datatype  | Description                                       |
 | -------------- | --------- | ------------------------------------------------- |
@@ -67,15 +67,15 @@
 | created_at    | TIMESTAMP | Timestamp when the record was created.            |
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified.      |
 
-#### Indexes and Constraints
+### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 - Unique Constraint: (`auth_user_id`, `auth_provider`)
 
 ---
 
-
-### `dataplane`
+## `dataplane`
 
 | Column Name        | Datatype  | Description                                      |
 | ------------------ | --------- | ------------------------------------------------ |
@@ -88,7 +88,7 @@
 | updated_by        | UUID      | Foreign key referencing `user(id)`.              |
 | tombstone         | BOOLEAN   | Indicates if the record is deleted.              |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `dataplane_group_id` references `dataplane_group(id)`
@@ -97,8 +97,7 @@
 
 ---
 
-
-### `dataplane_group`
+## `dataplane_group`
 
 | Column Name      | Datatype  | Description                                      |
 | --------------- | --------- | ------------------------------------------------ |
@@ -111,7 +110,7 @@
 | updated_by     | UUID      | Foreign key referencing `user(id)`.              |
 | tombstone      | BOOLEAN   | Indicates if the record is deleted.              |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
@@ -120,8 +119,7 @@
 
 ---
 
-
-### `organization`
+## `organization`
 
 | Column Name  | Datatype  | Description                                      |
 | ------------ | --------- | ------------------------------------------------ |
@@ -133,15 +131,14 @@
 | updated_at  | TIMESTAMP | Timestamp when the record was last modified.      |
 | tombstone   | BOOLEAN   | Indicates if the organization is deleted.         |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 
 ---
 
-
-### `organization_email_domain`
+## `organization_email_domain`
 
 | Column Name      | Datatype  | Description                                     |
 | ---------------- | --------- | ----------------------------------------------- |
@@ -150,7 +147,7 @@
 | email_domain   | VARCHAR   | Email domain associated with the organization.  |
 | created_at     | TIMESTAMP | Timestamp when the record was created.          |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
@@ -159,8 +156,7 @@
 
 ---
 
-
-### `organization_payment_config`
+## `organization_payment_config`
 
 | Column Name               | Datatype  | Description                                    |
 | ------------------------- | --------- | ---------------------------------------------- |
@@ -173,7 +169,7 @@
 | updated_at                | TIMESTAMP | Timestamp when the record was last modified. |
 | subscription_status       | ENUM      | Status of the organization's subscription.   |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`organization_id`)
 - Unique Constraint: (`payment_provider_id`)
@@ -183,8 +179,7 @@
 
 ---
 
-
-### `permission`
+## `permission`
 
 | Column Name        | Datatype  | Description                                    |
 | ------------------ | --------- | ---------------------------------------------- |
@@ -196,7 +191,7 @@
 | organization_id  | UUID      | Foreign key referencing `organization(id)`.    |
 | permission_type  | ENUM      | Type of permission assigned.                   |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
@@ -209,8 +204,7 @@
 
 ---
 
-
-### `scoped_configuration`
+## `scoped_configuration`
 
 | Column Name      | Datatype  | Description                                    |
 | --------------- | --------- | ---------------------------------------------- |
@@ -229,15 +223,14 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Unique Constraint: (`key`, `resource_type`, `resource_id`, `scope_type`, `scope_id`)
 
 ---
 
-
-### `secret_persistence_config`
+## `secret_persistence_config`
 
 | Column Name                           | Datatype  | Description                                       |
 | ------------------------------------- | --------- | ------------------------------------------------- |
@@ -249,15 +242,14 @@
 | created_at                            | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at                            | TIMESTAMP | Timestamp when the record was last modified.     |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Unique Constraint: (`scope_id`, `scope_type`)
 
 ---
 
-
-### `sso_config`
+## `sso_config`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -267,7 +259,7 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.         |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.   |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
@@ -278,8 +270,7 @@
 
 ---
 
-
-### `user`
+## `user`
 
 | Column Name           | Datatype  | Description                                      |
 | --------------------- | --------- | ------------------------------------------------ |
@@ -294,7 +285,7 @@
 | created_at          | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at          | TIMESTAMP | Timestamp when the record was last modified.    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `default_workspace_id` references `workspace(id)`
@@ -304,8 +295,7 @@
 
 ---
 
-
-### `user_invitation`
+## `user_invitation`
 
 | Column Name       | Datatype  | Description                                         |
 | ---------------- | --------- | --------------------------------------------------- |
@@ -322,7 +312,7 @@
 | accepted_by_user_id | UUID  | Foreign key referencing `user(id)`.                 |
 | expires_at     | TIMESTAMP | Expiration timestamp of the invitation.             |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `inviter_user_id` references `user(id)`
@@ -337,8 +327,7 @@
 
 ---
 
-
-### `workspace`
+## `workspace`
 
 | Column Name               | Datatype  | Description                                   |
 | ------------------------ | --------- | --------------------------------------------- |
@@ -363,15 +352,14 @@
 | notification_settings  | JSONB     | Notification settings for the workspace.     |
 | organization_id        | UUID      | Foreign key referencing `organization(id)`.  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
 
 ---
 
-
-### `workspace_service_account`
+## `workspace_service_account`
 
 | Column Name            | Datatype  | Description                                      |
 | ---------------------- | --------- | ------------------------------------------------ |
@@ -383,7 +371,7 @@
 | created_at           | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at           | TIMESTAMP | Timestamp when the record was last modified.    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`workspace_id`, `service_account_id`)
 - Foreign Key: `workspace_id` references `workspace(id)`

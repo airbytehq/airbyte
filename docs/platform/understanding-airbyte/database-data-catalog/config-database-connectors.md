@@ -1,6 +1,6 @@
 # Config Database: connectors and definitions
 
-### `active_declarative_manifest`
+## `active_declarative_manifest`
 
 | Column Name           | Datatype  | Description                                           |
 | --------------------- | --------- | ----------------------------------------------------- |
@@ -9,15 +9,14 @@
 | created_at           | TIMESTAMP | Timestamp when the record was created.               |
 | updated_at           | TIMESTAMP | Timestamp when the record was last updated.          |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`actor_definition_id`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
 
 ---
 
-
-### `actor`
+## `actor`
 
 | Column Name            | Datatype     | Description                                             |
 | ---------------------- | ------------ | ------------------------------------------------------- |
@@ -32,7 +31,7 @@
 | updated_at             | TIMESTAMP    | Timestamp when the record was last updated.            |
 | resource_requirements  | JSONB        | Defines resource requirements for the actor.           |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
@@ -42,8 +41,7 @@
 
 ---
 
-
-### `actor_catalog`
+## `actor_catalog`
 
 | Column Name   | Datatype    | Description                                     |
 | ------------- | ----------- | ----------------------------------------------- |
@@ -53,15 +51,14 @@
 | created_at    | TIMESTAMP   | Timestamp when the record was created.          |
 | modified_at   | TIMESTAMP   | Timestamp when the record was last modified.    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Index: `actor_catalog_catalog_hash_id_idx` on (`catalog_hash`)
 
 ---
 
-
-### `actor_catalog_fetch_event`
+## `actor_catalog_fetch_event`
 
 | Column Name        | Datatype     | Description                                              |
 | ------------------ | ------------ | -------------------------------------------------------- |
@@ -73,7 +70,7 @@
 | created_at         | TIMESTAMP    | Timestamp when the record was created.                   |
 | modified_at        | TIMESTAMP    | Timestamp when the record was last modified.             |
 
-#### `Indexes and Constraints`
+### `Indexes and Constraints`
 
 - Primary Key: (`id`)
 - Foreign Key: `actor_catalog_id` references `actor_catalog(id)`
@@ -83,8 +80,7 @@
 
 ---
 
-
-### `actor_definition`
+## `actor_definition`
 
 | Column Name                     | Datatype     | Description                                              |
 | -------------------------------- | ------------ | -------------------------------------------------------- |
@@ -105,15 +101,14 @@
 | metrics                          | JSONB        | Metadata about the connector.                            |
 | enterprise                       | BOOLEAN      | Whether the connector is part of the enterprise edition.|
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `default_version_id` references `actor_definition_version(id)`
 
 ---
 
-
-### `actor_definition_breaking_change`
+## `actor_definition_breaking_change`
 
 | Column Name                     | Datatype     | Description                                                 |
 | -------------------------------- | ------------ | ----------------------------------------------------------- |
@@ -127,15 +122,14 @@
 | scoped_impact                    | JSONB        | JSON object describing the impact scope.                    |
 | deadline_action                   | VARCHAR(256) | Action required before the deadline.                        |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`actor_definition_id`, `version`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
 
 ---
 
-
-### `actor_definition_config_injection`
+## `actor_definition_config_injection`
 
 | Column Name         | Datatype    | Description                                     |
 | ------------------ | ----------- | ----------------------------------------------- |
@@ -145,15 +139,14 @@
 | created_at        | TIMESTAMP   | Timestamp when the record was created.          |
 | updated_at        | TIMESTAMP   | Timestamp when the record was last modified.    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`actor_definition_id`, `injection_path`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
 
 ---
 
-
-### `actor_definition_version`
+## `actor_definition_version`
 
 | Column Name         | Datatype     | Description                                  |
 | ------------------- | ------------ | -------------------------------------------- |
@@ -166,7 +159,7 @@
 | docker_image_tag  | VARCHAR(256) | Docker image tag for this version.           |
 | spec              | JSONB        | Specification JSON blob.                     |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
@@ -174,8 +167,7 @@
 
 ---
 
-
-### `actor_definition_workspace_grant`
+## `actor_definition_workspace_grant`
 
 | Column Name          | Datatype | Description                                    |
 | ------------------- | -------- | ---------------------------------------------- |
@@ -183,14 +175,13 @@
 | workspace_id       | UUID     | Foreign key referencing `workspace(id)`.       |
 | scope_id          | UUID     | Scope identifier.                             |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Unique Constraint: `actor_definition_id, scope_id, scope_type`
 
 ---
 
-
-### `actor_oauth_parameter`
+## `actor_oauth_parameter`
 
 | Column Name          | Datatype  | Description                                    |
 | ------------------- | --------- | ---------------------------------------------- |
@@ -198,7 +189,7 @@
 | workspace_id       | UUID      | Foreign key referencing `workspace(id)`.       |
 | actor_definition_id | UUID      | Foreign key referencing `actor_definition(id)`. |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
@@ -206,8 +197,7 @@
 
 ---
 
-
-### `connector_builder_project`
+## `connector_builder_project`
 
 | Column Name                     | Datatype  | Description                                       |
 | -------------------------------- | --------- | ------------------------------------------------- |
@@ -225,7 +215,7 @@
 | contribution_actor_definition_id | UUID      | Foreign key referencing `actor_definition(id)`.   |
 | components_file_content          | TEXT      | Raw content of component files.                   |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
@@ -236,8 +226,7 @@
 
 ---
 
-
-### `connector_rollout`
+## `connector_rollout`
 
 | Column Name                  | Datatype  | Description                                      |
 | ---------------------------- | --------- | ------------------------------------------------ |
@@ -262,7 +251,7 @@
 | workflow_run_id               | VARCHAR   | Workflow run identifier.                         |
 | paused_reason                 | VARCHAR   | Reason for pausing the rollout.                  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
@@ -274,8 +263,7 @@
 
 ---
 
-
-### `declarative_manifest`
+## `declarative_manifest`
 
 | Column Name          | Datatype  | Description                                      |
 | -------------------- | --------- | ------------------------------------------------ |
@@ -286,14 +274,13 @@
 | version            | BIGINT    | Version number of the manifest.                 |
 | created_at         | TIMESTAMP | Timestamp when the record was created.           |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`actor_definition_id`, `version`)
 
 ---
 
-
-### `declarative_manifest_image_version`
+## `declarative_manifest_image_version`
 
 | Column Name    | Datatype  | Description                          |
 | ------------- | --------- | ------------------------------------ |
@@ -303,7 +290,7 @@
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified. |
 | image_sha     | VARCHAR   | SHA checksum of the image.          |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`major_version`)
 

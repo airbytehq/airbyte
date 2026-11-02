@@ -1,6 +1,6 @@
 # Jobs Database
 
-### `jobs`
+## `jobs`
 
 | Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
@@ -15,7 +15,7 @@
 | `metadata`      | `jsonb`       | JSON blob containing metadata for the job. |
 | `is_scheduled`  | `boolean`     | Whether the job was scheduled automatically (default: `true`). |
 
-#### Indexes & Constraints
+### Indexes & Constraints
 
 - Primary Key: `id`
 - Indexes:
@@ -28,8 +28,7 @@
 
 ---
 
-
-### `attempts`
+## `attempts`
 
 | Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
@@ -46,7 +45,7 @@
 | `processing_task_queue` | `varchar(255)` | Task queue identifier for processing. |
 | `attempt_sync_config` | `jsonb`   | JSON blob for sync configuration. |
 
-#### Indexes & Constraints
+### Indexes & Constraints
 
 - Primary Key: `id`
 - Foreign Key: `job_id` → `jobs(id)`
@@ -56,22 +55,20 @@
 
 ---
 
-
-### `airbyte_metadata`
+## `airbyte_metadata`
 
 | Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `key`           | `varchar(255)` | Primary key, uniquely identifies a metadata key. |
 | `value`         | `varchar(255)` | Value associated with the key. |
 
-#### Indexes & Constraints
+### Indexes & Constraints
 
 - Primary Key: `key`
 
 ---
 
-
-### `airbyte_jobs_migrations`
+## `airbyte_jobs_migrations`
 
 | Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
@@ -86,7 +83,7 @@
 | `execution_time` | `int`        | Execution time in milliseconds. |
 | `success`      | `boolean`     | Whether the migration succeeded. |
 
-#### Indexes & Constraints
+### Indexes & Constraints
 
 - Primary Key: `installed_rank`
 - Indexes:
@@ -94,8 +91,7 @@
 
 ---
 
-
-### `normalization_summaries`
+## `normalization_summaries`
 
 | Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
@@ -107,7 +103,7 @@
 | `created_at`    | `timestamp(6) with time zone` | Timestamp when the summary was created. |
 | `updated_at`    | `timestamp(6) with time zone` | Timestamp when the summary was last updated. |
 
-#### Indexes & Constraints
+### Indexes & Constraints
 
 - Primary Key: `id`
 - Foreign Key: `attempt_id` → `attempts(id)`

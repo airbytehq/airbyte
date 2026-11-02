@@ -1,6 +1,6 @@
 # Config Database: connections and syncs
 
-### `connection`
+## `connection`
 
 | Column Name            | Datatype  | Description                                        |
 | ---------------------- | --------- | -------------------------------------------------- |
@@ -19,7 +19,8 @@
 | created_at            | TIMESTAMP | Timestamp when the record was created.             |
 | updated_at            | TIMESTAMP | Timestamp when the record was last modified.       |
 
-#### Indexes and Constraints
+### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `source_id` references `actor(id)`
 - Foreign Key: `destination_id` references `actor(id)`
@@ -28,8 +29,7 @@
 
 ---
 
-
-### `connection_operation`
+## `connection_operation`
 
 | Column Name    | Datatype  | Description                                    |
 | -------------- | --------- | ---------------------------------------------- |
@@ -39,7 +39,7 @@
 | created_at    | TIMESTAMP | Timestamp when the record was created.         |
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified.   |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`, `connection_id`, `operation_id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -48,8 +48,7 @@
 
 ---
 
-
-### `connection_tag`
+## `connection_tag`
 
 | Column Name    | Datatype  | Description                                      |
 | -------------- | --------- | ------------------------------------------------ |
@@ -59,7 +58,7 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.     |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `tag_id` references `tag(id)`
@@ -68,8 +67,7 @@
 
 ---
 
-
-### `connection_timeline_event`
+## `connection_timeline_event`
 
 | Column Name   | Datatype  | Description                                         |
 | ------------- | --------- | --------------------------------------------------- |
@@ -80,7 +78,7 @@
 | summary       | JSONB     | JSON blob containing event details.                 |
 | created_at    | TIMESTAMP | Timestamp when the event occurred.                  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -89,8 +87,7 @@
 
 ---
 
-
-### `notification_configuration`
+## `notification_configuration`
 
 | Column Name         | Datatype  | Description                                      |
 | ------------------- | --------- | ------------------------------------------------ |
@@ -101,15 +98,14 @@
 | created_at         | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at         | TIMESTAMP | Timestamp when the record was last modified.     |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 
 ---
 
-
-### `operation`
+## `operation`
 
 | Column Name           | Datatype  | Description                                      |
 | --------------------- | --------- | ------------------------------------------------ |
@@ -124,15 +120,14 @@
 | updated_at            | TIMESTAMP | Timestamp when the record was last modified.     |
 | operator_webhook      | JSONB     | JSON blob defining webhook settings.             |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
 
 ---
 
-
-### `schema_management`
+## `schema_management`
 
 | Column Name                 | Datatype  | Description                                       |
 | --------------------------- | --------- | ------------------------------------------------- |
@@ -143,7 +138,7 @@
 | auto_propagation_status     | ENUM      | Status of automatic schema propagation.          |
 | backfill_preference         | ENUM      | User preference for backfill operations.         |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -151,8 +146,7 @@
 
 ---
 
-
-### `state`
+## `state`
 
 | Column Name    | Datatype  | Description                                       |
 | ------------- | --------- | ------------------------------------------------- |
@@ -165,7 +159,7 @@
 | namespace     | TEXT      | Namespace of the stream.                         |
 | type          | ENUM      | Type of state (`STREAM`, `GLOBAL`, `LEGACY`).    |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`, `connection_id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -173,8 +167,7 @@
 
 ---
 
-
-### `stream_generation`
+## `stream_generation`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -187,7 +180,7 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -196,8 +189,7 @@
 
 ---
 
-
-### `stream_refreshes`
+## `stream_refreshes`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -208,7 +200,7 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | refresh_type   | ENUM      | Type of refresh operation performed.          |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -218,8 +210,7 @@
 
 ---
 
-
-### `stream_reset`
+## `stream_reset`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -230,7 +221,7 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
@@ -239,8 +230,7 @@
 
 ---
 
-
-### `tag`
+## `tag`
 
 | Column Name   | Datatype  | Description                                        |
 | ------------ | --------- | -------------------------------------------------- |
@@ -251,7 +241,7 @@
 | created_at   | TIMESTAMP | Timestamp when the record was created.             |
 | updated_at   | TIMESTAMP | Timestamp when the record was last modified.       |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
@@ -260,8 +250,7 @@
 
 ---
 
-
-### `workload`
+## `workload`
 
 | Column Name         | Datatype  | Description                                     |
 | ------------------ | --------- | ----------------------------------------------- |
@@ -284,7 +273,7 @@
 | dataplane_group | VARCHAR   | Dataplane group associated with the workload.   |
 | priority        | INT       | Priority level of the workload.                 |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Index: `active_workload_by_mutex_idx` on (`mutex_key`) where (`status` is active)
@@ -294,8 +283,7 @@
 
 ---
 
-
-### `workload_label`
+## `workload_label`
 
 | Column Name    | Datatype  | Description                                    |
 | -------------- | --------- | ---------------------------------------------- |
@@ -304,7 +292,7 @@
 | key           | VARCHAR   | Label key.                                    |
 | value         | VARCHAR   | Label value.                                  |
 
-#### Indexes and Constraints
+### Indexes and Constraints
 
 - Primary Key: (`id`)
 - Foreign Key: `workload_id` references `workload(id)`
