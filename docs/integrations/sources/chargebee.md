@@ -10,13 +10,15 @@ This page contains the setup guide and reference information for the Chargebee s
 
 To set up the Chargebee source connector, you need:
 
-- A [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth) with read access. A full-access key or a read-only key both work.
+- A [Chargebee API key](https://www.chargebee.com/docs/billing/2.0/site-configuration/api_keys). Use a **Read-only: All** key to read all supported streams without granting write access. A full-access key also works. Restricted read-only keys don't grant access to all supported streams, including Coupons.
 - Your Chargebee site name, which is the subdomain in your Chargebee URL. For example, if your dashboard URL is `https://acme.chargebee.com`, your site name is `acme`.
 - The [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of your Chargebee site.
 
 :::info
-All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) by default. Sites created before this date use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html). You can check your version in the Chargebee API docs under the **API Version** section.
+To check your site's Product Catalog version, log in to Chargebee and open the [Chargebee API documentation](https://apidocs.chargebee.com/docs/api/versioning). Chargebee prompts you to switch to the documentation version for your site. Both Product Catalog versions use API v2, so the API version alone doesn't identify your Product Catalog version.
 :::
+
+To create an API key, ask a Chargebee administrator to open **Settings > Configure Chargebee > API Keys and Webhooks > API Keys** and add a read-only key with access to all data. Test and live sites have separate API keys; use the key for the site you enter in Airbyte.
 
 ## Set up the Chargebee connector in Airbyte
 
@@ -25,10 +27,10 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
 5. For **Site**, enter the site prefix for your Chargebee instance. For example, if your Chargebee URL is `https://acme.chargebee.com`, enter `acme`.
-6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
+6. For **Start Date**, enter the earliest UTC date and time to sync in `YYYY-MM-DDTHH:mm:ssZ` format. For Attached Items, this filters parent items by their last update time, not the attached items themselves. See [Attached Items sync behavior](https://docs.airbyte.com/integrations/sources/chargebee#attached-items-sync-behavior) for details.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 5. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 3, and the allowed range is 1 to 50. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
 10. Click **Set up source**.
 
 <HideInUI>
@@ -41,6 +43,8 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+
+Contacts, Quote Line Groups, and Subscriptions With Scheduled Changes support full refresh only. All other streams support both full refresh and incremental sync. Attached Items supports incremental sync starting with connector version 0.11.0.
 
 ## Supported streams
 
@@ -76,21 +80,22 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                                                            | ✔                   | ✔                   |
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                                                  | ✔                   | ✔                   |
 
-:::note
-When using incremental sync mode, the `Attached Items` stream still lists all parent `Items` each sync (one attached-items request per item), but it only fetches attached items whose `updated_at` changed since the last sync. The first sync reads all attached items of the items updated on or after the start date.
+### Attached Items sync behavior
+
+On every sync, Attached Items lists parent Items updated on or after the configured **Start Date**, even if those items haven't changed since the previous sync. It makes at least one attached-items request per parent item, plus requests to list the parents and paginate results. Incremental sync therefore still consumes API requests for unchanged parent items.
+
+The first incremental sync reads all attached items for those parents, without filtering the attached items by date. Subsequent incremental syncs filter attached items by their `updated_at` value using the stream's saved cursor. Full refresh reads all attached items for the parents included by **Start Date**.
 
 Incremental sync has two limitations for this stream:
 
 - Deleting an attached item in Chargebee doesn't remove its record from the destination. A full refresh with overwrite replaces the stream's data and drops it.
-- An item last updated before the start date isn't read as a parent. If that item is updated later, the connector only fetches its attached items that changed since the last sync, so its older attached items are never synced. To avoid this, set an earlier start date or periodically run a full refresh of the stream.
-
-:::
+- An item last updated before **Start Date** isn't read as a parent, even during full refresh. If that item is updated later, incremental sync only fetches its attached items that changed since the saved cursor, so older attachments can be missed. To backfill these records, set **Start Date** before the parent items' last update time and run **Full Refresh - Overwrite** for Attached Items.
 
 ## Limitations & Troubleshooting
 
 ### Rate limiting
 
-The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. The connector automatically retries rate-limited requests using the `Retry-After` header provided by the Chargebee API. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The connector retries rate-limited requests using the `Retry-After` header provided by Chargebee, up to 10 retries per request. If syncs repeatedly hit rate limits, reduce **Number of concurrent threads** and account for other applications using the same Chargebee site. [Create an issue](https://github.com/airbytehq/airbyte/issues) if rate-limited requests still fail after retries.
 
 Chargebee API rate limits vary by plan. Chargebee limits test sites to 150 requests per minute regardless of plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
 
@@ -117,7 +122,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.11.0 | 2026-10-30 | [89003](https://github.com/airbytehq/airbyte/pull/89003) | Add incremental sync support to the `attached_item` stream |
+| 0.11.0 | 2026-11-02 | [89003](https://github.com/airbytehq/airbyte/pull/89003) | Add incremental sync support to the `attached_item` stream |
 | 0.10.53 | 2026-10-27 | [89839](https://github.com/airbytehq/airbyte/pull/89839) | Update dependencies |
 | 0.10.52 | 2026-10-20 | [89159](https://github.com/airbytehq/airbyte/pull/89159) | Update dependencies |
 | 0.10.51 | 2026-10-13 | [88525](https://github.com/airbytehq/airbyte/pull/88525) | Update dependencies |
