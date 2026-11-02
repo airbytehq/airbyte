@@ -71,6 +71,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.19 | 2026-11-01 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Consolidate error handling into a single shared handler per stream; no change in retry or skip behavior |
 | 0.2.18 | 2026-10-27 | [89961](https://github.com/airbytehq/airbyte/pull/89961) | Update dependencies |
 | 0.2.17 | 2026-10-20 | [78787](https://github.com/airbytehq/airbyte/pull/78787) | Update dependencies |
 | 0.2.16 | 2026-10-14 | [88959](https://github.com/airbytehq/airbyte/pull/88959) | Update to source-declarative-manifest 7.37.0 and CDK v7 for unit tests |
