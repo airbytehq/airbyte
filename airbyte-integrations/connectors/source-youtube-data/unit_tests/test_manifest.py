@@ -77,8 +77,7 @@ def _manifest() -> dict:
 
 
 def _base_requester_filters(manifest: dict) -> list:
-    error_handlers = manifest["definitions"]["base_requester"]["error_handler"]["error_handlers"]
-    return [f for handler in error_handlers for f in handler.get("response_filters", [])]
+    return manifest["definitions"]["base_requester"]["error_handler"]["response_filters"]
 
 
 def test_api_budget_windows_bounded_below_token_lifetime():
@@ -99,6 +98,24 @@ def test_api_budget_windows_bounded_below_token_lifetime():
     # Every endpoint the connector reads costs 1 unit and shares the documented
     # per-minute burst guard. search.list (100 units) is no longer used.
     assert rate_by_pattern == {"/(channels|playlistItems|videos|commentThreads)": (100, "PT1M")}
+
+
+def test_base_requester_uses_single_default_error_handler():
+    error_handler = _manifest()["definitions"]["base_requester"]["error_handler"]
+    assert error_handler["type"] == "DefaultErrorHandler"
+    assert [response_filter["action"] for response_filter in error_handler["response_filters"]] == [
+        "IGNORE",
+        "REFRESH_TOKEN_THEN_RETRY",
+        "FAIL",
+        "FAIL",
+        "RETRY",
+        "RATE_LIMITED",
+        "RETRY",
+    ]
+    assert [strategy["type"] for strategy in error_handler["backoff_strategies"]] == [
+        "WaitTimeFromHeader",
+        "ExponentialBackoffStrategy",
+    ]
 
 
 def test_401_filter_uses_refresh_token_then_retry():
