@@ -47,10 +47,7 @@ def test_cursor_field_is_declared_in_schema() -> None:
         f"so destinations that validate dedup configs (e.g. bulk-CDK destinations) accept "
         f"Incremental | Append + Deduped. Found properties: {sorted(properties)}"
     )
-    assert "changedBefore" not in properties, (
-        f"{_STREAM_NAME} schema should not declare 'changedBefore' (that field belongs to the "
-        f"VendorOrders stream and was a copy-paste leftover)."
-    )
+    assert "changedBefore" in properties, "'changedBefore' is kept for backwards compatibility."
 
 
 def _vendor_orders_status_request() -> RequestBuilder:
