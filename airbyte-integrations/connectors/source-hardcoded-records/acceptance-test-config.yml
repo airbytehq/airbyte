@@ -22,3 +22,4 @@ acceptance_tests:
         configured_catalog_path: integration_tests/configured_catalog.json
   incremental:
     bypass_reason: "Incremental is not supported"
+# Throwaway change to trigger connector CI (airbytehq/airbyte-internal-issues#17137). Do not merge.
