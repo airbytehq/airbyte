@@ -74,7 +74,8 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
           permission-issues: write
-          permission-pull-requests: read
+          # Labels and comments on PRs go through the issues API but may need PR write.
+          permission-pull-requests: write
 
       - name: Checkout the intake script from the default branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -133,15 +134,15 @@ jobs:
           echo "dry-run=$dry_run" >> "$GITHUB_OUTPUT"
 
       - name: Post start comment
-        if: inputs.comment-id != ''
+        if: always() && inputs.comment-id != '' && steps.app-token.outcome == 'success'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
           body: |
-            > **AI Intake started** (dry-run: ${{ steps.select.outputs.dry-run }})
+            > ${{ steps.select.outcome == 'success' && format('**AI Intake started** (dry-run: {0})', steps.select.outputs.dry-run) || '**AI Intake could not start**' }}
             >
-            > Screening the item before the intake session starts.
+            > ${{ steps.select.outcome == 'success' && 'Screening the item before the intake session starts.' || 'Nothing was screened or started. See the run.' }}
             > [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   intake:
@@ -168,7 +169,8 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
           permission-issues: write
-          permission-pull-requests: read
+          # Labels and comments on PRs go through the issues API but may need PR write.
+          permission-pull-requests: write
 
       - name: Checkout the intake script from the default branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -240,6 +242,16 @@ jobs:
             gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
           fi
 
+      # Before the session, not after: if labeling fails no session starts, and if the session start fails
+      # the label still stops the sweep from starting one every hour. Retry by removing it and running /ai-intake.
+      - name: Mark the item as started
+        id: started
+        if: steps.screen.outputs.flagged == 'false' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started
+
       # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
       # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
       - name: Start the intake session
@@ -257,13 +269,6 @@ jobs:
             oss-intake
             airbyte-item-${{ matrix.number }}
 
-      - name: Mark the item as started
-        if: steps.screen.outputs.flagged == 'false' && needs.select.outputs.dry-run == 'false'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          NUMBER: ${{ matrix.number }}
-        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started
-
       # Reports the outcome on the `/ai-intake` comment. Holds the screening reason (scores), never community text.
       - name: Summarize the outcome
         id: outcome
@@ -273,6 +278,7 @@ jobs:
           FLAGGED: ${{ steps.screen.outputs.flagged }}
           REASON: ${{ steps.screen.outputs.reason }}
           HOLD: ${{ steps.hold.outcome }}
+          STARTED: ${{ steps.started.outcome }}
           DEVIN: ${{ steps.devin.outcome }}
           DRY_RUN: ${{ needs.select.outputs.dry-run }}
         run: |
@@ -285,10 +291,14 @@ jobs:
             text="Held for human review$dry: $REASON. No session started."
           elif [[ "$FLAGGED" == "true" ]]; then
             text="Flagged ($REASON), but holding it failed. See the run."
+          elif [[ "$STARTED" == "failure" ]]; then
+            text="Screened clean, but labeling it ai-intake-started failed, so no session started. See the run."
           elif [[ "$DEVIN" == "success" ]]; then
             text="Screened clean; intake session started$dry."
-          else
+          elif [[ "$DRY_RUN" == "true" ]]; then
             text="Screened clean, but the session did not start. See the run."
+          else
+            text="Screened clean, but the session start failed. ai-intake-started stays on the item so the sweep won't retry; check Devin, then remove the label and run /ai-intake again."
           fi
           echo "text=$text" >> "$GITHUB_OUTPUT"
 

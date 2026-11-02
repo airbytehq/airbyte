@@ -154,12 +154,17 @@ def select(since: str, limit: int) -> list[int]:
     return numbers
 
 
+def bot_safe_body(entry: dict) -> str:
+    body = entry.get("body") or ""
+    # Bot text is not screened (bots are trusted), but review bots echo contributor text, so it is dropped.
+    # Only the intake result is kept, which the playbook updates in place.
+    if (entry.get("user") or {}).get("type") == "Bot" and RESULT_MARKER not in body:
+        return ""
+    return body
+
+
 def comment_entry(comment: dict) -> dict:
-    body = comment.get("body") or ""
-    # Bots post slash-command help everywhere; keep only the intake result, which the playbook updates in place.
-    if (comment.get("user") or {}).get("type") == "Bot" and RESULT_MARKER not in body:
-        body = ""
-    return {"id": comment["id"], "author": login(comment), "created_at": comment.get("created_at"), "body": body}
+    return {"id": comment["id"], "author": login(comment), "created_at": comment.get("created_at"), "body": bot_safe_body(comment)}
 
 
 def linked_numbers(number: int, is_pr: bool, author: str) -> list[int]:
@@ -226,8 +231,8 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
             "ready_for_review_at": ready[-1] if ready else None,
             "changed_files": [f["filename"] for f in files],
             "commits": [{"message": c["commit"]["message"], "date": (c["commit"].get("committer") or {}).get("date")} for c in commits],
-            "reviews": [{"author": login(r), "state": r.get("state"), "submitted_at": r.get("submitted_at"), "body": r.get("body") or ""} for r in reviews],
-            "review_comments": [{"author": login(c), "path": c.get("path"), "created_at": c.get("created_at"), "body": c.get("body") or ""} for c in review_comments],
+            "reviews": [{"author": login(r), "state": r.get("state"), "submitted_at": r.get("submitted_at"), "body": bot_safe_body(r)} for r in reviews],
+            "review_comments": [{"author": login(c), "path": c.get("path"), "created_at": c.get("created_at"), "body": bot_safe_body(c)} for c in review_comments],
             "diff": diff[:MAX_DIFF_CHARS],
             "diff_truncated": len(diff) > MAX_DIFF_CHARS,
         }
@@ -270,10 +275,12 @@ def ask_jev(text: str, key: str, deadline: float) -> dict[str, float]:
                 body = json.load(response)
             break
         except urllib.error.HTTPError as e:
-            if e.code in (401, 403):
-                raise ScreenError(f"Jev refused the key (HTTP {e.code})")
-            if 400 <= e.code < 500 and e.code != 429:
+            # Only these codes are about the text. Others (401/403 key, 404/410 model or endpoint gone)
+            # are config faults that would hold every item, so they fail the job instead.
+            if e.code in (400, 413, 422):
                 raise Flagged(f"Jev rejected the text (HTTP {e.code})")
+            if e.code != 429 and e.code < 500:
+                raise ScreenError(f"Jev refused the request (HTTP {e.code})")
         except Exception:
             pass
     else:
