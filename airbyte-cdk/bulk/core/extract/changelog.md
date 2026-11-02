@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.2.4 — 2026-11-02
 
-[#PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) — On the PROTOBUF record path, report `FIELD_SIZE_LIMITATION_ERASURE` and `FIELD_SIZE_LIMITATION_TRUNCATION` changes with reason `SOURCE_FIELD_SIZE_LIMITATION`, as the JSON path does, instead of `SOURCE_RECORD_SIZE_LIMITATION`.
+[#90413](https://github.com/airbytehq/airbyte/pull/90413) — On the PROTOBUF record path, report `FIELD_SIZE_LIMITATION_ERASURE` and `FIELD_SIZE_LIMITATION_TRUNCATION` changes with reason `SOURCE_FIELD_SIZE_LIMITATION`, as the JSON path does, instead of `SOURCE_RECORD_SIZE_LIMITATION`.
 
 ### 1.2.3 — 2026-10-21
 
