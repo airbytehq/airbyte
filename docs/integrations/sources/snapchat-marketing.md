@@ -167,6 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.9 | 2026-11-01 | [90345](https://github.com/airbytehq/airbyte/pull/90345) | Simplify error handler configuration with no change in behavior |
 | 1.6.8 | 2026-10-27 | [90055](https://github.com/airbytehq/airbyte/pull/90055) | Update dependencies |
 | 1.6.7 | 2026-10-21 | [89614](https://github.com/airbytehq/airbyte/pull/89614) | Report not-found organization and ad account IDs as configuration errors with actionable messages |
 | 1.6.6 | 2026-10-20 | [89417](https://github.com/airbytehq/airbyte/pull/89417) | Update dependencies |
