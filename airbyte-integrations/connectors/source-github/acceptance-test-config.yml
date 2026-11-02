@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
           - name: workflow_runs
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: "workflow_run_attempts"
+            bypass_reason: "airbytehq/integration-test reports total_count 0 for GET /actions/runs, so there is no run to read an attempt of. Covered by unit tests instead."
   incremental:
     tests:
       - config_path: "secrets/config.json"

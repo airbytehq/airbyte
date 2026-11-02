@@ -675,7 +675,7 @@ class MsSqlServerJdbcCursorIncrementalPartition(
 fun MsSqlServerJdbcRfrSnapshotPartition.split(
     opaqueStateValues: List<OpaqueStateValue>,
 ): List<MsSqlServerJdbcRfrSnapshotPartition> {
-    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> = opaqueStateValues.map {
+    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> = opaqueStateValues.mapNotNull {
         MsSqlServerStateMigration.parseStateValue(it)
     }
 
@@ -758,7 +758,7 @@ fun MsSqlServerJdbcCdcSnapshotPartition.split(
 fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
     opaqueStateValues: List<OpaqueStateValue>,
 ): List<MsSqlServerJdbcSplittableSnapshotWithCursorPartition> {
-    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> = opaqueStateValues.map {
+    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> = opaqueStateValues.mapNotNull {
         MsSqlServerStateMigration.parseStateValue(it)
     }
 
