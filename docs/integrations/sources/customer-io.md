@@ -7,7 +7,7 @@ The connector reads a Customer.io workspace through the [App API](https://docs.c
 ## Prerequisites
 
 - A Customer.io account in which you are an Account Admin, or a Member with the account-level **Manage API credentials** permission, to create the key
-- An **App API Key** for the workspace you want to sync. Track API keys do not work.
+- A private API key (`sk_`) or an existing legacy App API key for the workspace you want to sync. Public API keys (`pk_`) and Track API keys do not work.
 - The **Region** of your Customer.io account, US or EU
 - If your account restricts API access by IP address, the IP addresses Airbyte connects from on its allowlist
 
@@ -15,14 +15,14 @@ The connector reads a Customer.io workspace through the [App API](https://docs.c
 
 ### Step 1: Set up Customer.io
 
-The connector authenticates with an App API key. Each key belongs to one workspace, and Customer.io shows it only once.
+The connector uses bearer authentication with a [private API key](https://docs.customer.io/accounts/settings/managing-credentials/#public-and-private-keys). Existing legacy App API keys still work, but Customer.io no longer lets you create new ones. If you already have an App API key for the workspace you want to sync, you can keep using it and skip key creation below.
 
 1. Check that you can manage API credentials: you need to be an Account Admin, or a Member with the account-level **Manage API credentials** permission ([Manage your API credentials](https://docs.customer.io/accounts/settings/managing-credentials/)).
-2. In Customer.io, go to **Account Settings** > **API Credentials** ([Where can you find them?](https://docs.customer.io/accounts/settings/managing-credentials/#where-can-you-find-them)).
-3. Add an App API key: give it a name and select the workspace you want to sync ([Adding new credentials](https://docs.customer.io/accounts/settings/managing-credentials/#adding-new-credentials)). Track API keys send data into a workspace and do not work here ([Track API Keys vs App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#track-api-keys-vs-app-api-keys)). If you restrict the key's scope, make sure it includes the data you want to sync ([Authentication](https://docs.customer.io/integrations/api/app/#authentication)).
-4. Copy the key right away and store it somewhere safe: Customer.io shows App API keys only once ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)).
+2. In Customer.io, go to **Account Settings** > **API Credentials** and click **Create API key**.
+3. Select the workspace you want to sync and choose **Private API key**. Under **Used in**, you can leave the integration type empty if you only use the key for the App API. Give the key a name and click **Create private key** ([Create a key](https://docs.customer.io/accounts/settings/managing-credentials/#create-a-key)). Do not choose **Public API key** or **Track site ID + key**: neither can read the App API data this connector syncs.
+4. Copy the private key right away and store it somewhere safe: Customer.io shows it only once. If you lose it, create a new key.
 5. Find your account's region, US or EU. Account Admins see it under **Settings** > **Account Settings** > **Data and Privacy**; other roles do not, so ask an Account Admin ([How do I know what region my data is in?](https://docs.customer.io/accounts/settings/data-centers/#how-do-i-know-what-region-my-data-is-in)). A wrong region fails the connection test with a 401 error.
-6. If your account restricts API access by IP address, allow the addresses Airbyte connects from: the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) on Airbyte Cloud, or your deployment's public IP addresses on Self-Managed Airbyte. On the **Manage API Credentials** page, click **Add IP Address**, enter an address, select the workspace and click **Add IP Address**, once per address ([Restrict API access by IP Address](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)). Customer.io denies addresses missing from the list, even with a valid key.
+6. If your workspace restricts API access by IP address, allow the addresses Airbyte connects from: the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) on Airbyte Cloud, or your deployment's public IP addresses on Self-Managed Airbyte. On the **API Credentials** page, under **IP address allowlist**, click **Add IP address**, enter an address, select the workspace and click **Add IP address**, once per address ([Restrict API access by IP address](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)). Customer.io denies addresses missing from the list, even with a valid key.
 
 ### Step 2: Set up the Customer.io connector in Airbyte
 
@@ -33,7 +33,7 @@ The connector authenticates with an App API key. Each key belongs to one workspa
 
 <FieldAnchor field="app_api_key">
 
-**App API Key**: The App API key you created in Step 1 for the workspace you want to sync ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)). Airbyte sends it as a bearer token. Track API keys do not work.
+**App API Key**: Enter the private API key (`sk_`) you created in Step 1, or an existing [legacy App API key](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys), for the workspace you want to sync. The field is still named **App API Key**, but accepts either credential. Airbyte sends it as a bearer token. Public API keys (`pk_`) and Track API keys do not work.
 
 </FieldAnchor>
 
@@ -185,7 +185,7 @@ How the connector treats Customer.io HTTP errors:
 
 ### Troubleshooting
 
-- **401 errors**: Customer.io rejected the key. Check that it is an App API key, not a Track API key, and that you copied all of it; Customer.io shows a key only once, so create a new one if you lost it. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your account restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it.
+- **401 errors**: Customer.io rejected the key. Check that it is a private API key (`sk_`) or a legacy App API key, not a public API key (`pk_`) or Track API key, and that you copied all of it. Create a new private key if you lost the original. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your workspace restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it. The connector's error message still refers to an App API key; private keys work in the same field.
 - **403 errors**: Customer.io denied the key access to the data the stream reads, or the addresses Airbyte connects from are not on the allowlist. Use a key that can read the data, or deselect the stream.
 - **429 errors or slow syncs**: your other App API traffic shares the 10 requests per second. Schedule syncs when that traffic is low, sync less often, or deselect the expensive streams listed in [Performance considerations](#performance-considerations).
 - **5xx errors**: temporary Customer.io errors. If the sync fails after the retries, check [Customer.io Status](https://status.customerio.com/) and sync again later.
@@ -199,6 +199,8 @@ How the connector treats Customer.io HTTP errors:
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 1.1.5 | 2026-11-02 | [90331](https://github.com/airbytehq/airbyte/pull/90331) | Consolidate substream error handling into a single error handler; no behavior change |
+| 1.1.4 | 2026-10-27 | [89851](https://github.com/airbytehq/airbyte/pull/89851) | Update dependencies |
 | 1.1.3 | 2026-10-20 | [89499](https://github.com/airbytehq/airbyte/pull/89499) | Mark the connector as certified |
 | 1.1.2 | 2026-10-20 | [89495](https://github.com/airbytehq/airbyte/pull/89495) | Add the Customer.io OpenAPI spec to the documentation URLs |
 | 1.1.1 | 2026-10-20 | [89163](https://github.com/airbytehq/airbyte/pull/89163) | Update dependencies |

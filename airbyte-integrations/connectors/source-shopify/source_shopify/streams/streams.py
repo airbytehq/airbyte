@@ -238,7 +238,7 @@ class DeletedProducts(IncrementalShopifyStream):
         query_filter = "action:destroy AND subject_type:Product"
         if stream_state and stream_state.get(self.cursor_field):
             state_value = stream_state[self.cursor_field]
-            query_filter += f" AND created_at:>'{state_value}'"
+            query_filter += f" AND created_at:>='{state_value}'"
 
         variables = {
             "first": 250,

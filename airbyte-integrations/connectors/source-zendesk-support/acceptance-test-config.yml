@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "There is a retention period which requires too much maintenance"
           - name: "tags"
             bypass_reason: "API issue" # TODO: remove this after all changes being merged
+          - name: "side_conversations"
+            bypass_reason: "Side conversations are disabled on the test account (all side conversation channels are off), so no records can be seeded"
   incremental:
     tests:
       - config_path: "secrets/config.json"
