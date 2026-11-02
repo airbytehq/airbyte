@@ -600,6 +600,33 @@ class LoadPipelineStepTaskUTest {
     }
 
     @Test
+    fun `heartbeat finishes the state of its completed streams only, and they stay open`() =
+        runTest {
+            val completed = StreamKey(DestinationStream.Descriptor("namespace", "completed"))
+            val other = StreamKey(DestinationStream.Descriptor("namespace", "other"))
+            val task = createTask(7, batchAccumulatorNoUpdate)
+
+            coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+            coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+            coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+
+            coEvery { inputFlow.collect(any()) } coAnswers
+                {
+                    val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                    collector.emit(messageEvent(completed, "before"))
+                    collector.emit(messageEvent(other, "other"))
+                    collector.emit(PipelineHeartbeat(setOf(completed.stream)))
+                    collector.emit(messageEvent(completed, "late"))
+                }
+
+            assertDoesNotThrow { task.execute() }
+
+            coVerify(exactly = 2) { batchAccumulatorNoUpdate.start(completed, any()) }
+            coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(other, any()) }
+            coVerify(exactly = 1) { batchAccumulatorNoUpdate.finish(any()) }
+        }
+
+    @Test
     fun `heartbeat is ignored when flush strategy returns false`() = runTest {
         val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
         val part = 7
