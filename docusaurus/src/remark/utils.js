@@ -25,6 +25,14 @@ const isDocsPage = (vfile) => {
         response.isTrueDocsPage = false;
       }
     }
+
+    if (
+      /[\\/]sources[\\/](?:postgres|hubspot)[\\/]changelog(?:-[^\\/]+)?\.md$/i.test(
+        vfile.path,
+      )
+    ) {
+      response.isTrueDocsPage = false;
+    }
   }
 
   return response;

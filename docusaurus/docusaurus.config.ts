@@ -11,6 +11,7 @@ const getRemarkPlugins = () => ({
   productInformation: require("./src/remark/productInformation"),
   connectorList: require("./src/remark/connectorList"),
   specDecoration: require("./src/remark/specDecoration"),
+  changelogPages: require("./src/remark/changelogPages"),
   docMetaTags: require("./src/remark/docMetaTags"),
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
 });
@@ -152,6 +153,7 @@ const config: Config = {
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         beforeDefaultRemarkPlugins: [
           plugins.specDecoration,
+          plugins.changelogPages,
           plugins.connectorList,
         ], // use before-default plugins so TOC rendering picks up inserted headings
         remarkPlugins: [
