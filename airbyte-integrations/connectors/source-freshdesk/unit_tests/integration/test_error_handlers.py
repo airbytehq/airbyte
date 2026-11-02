@@ -73,6 +73,7 @@ _TOP_LEVEL_STREAM_ENDPOINTS = {
     "tickets": "tickets",
     "time_entries": "time_entries",
 }
+_RETRY_AFTER_SECONDS = 7
 _EXPECTED_UNAUTHORIZED_MESSAGE = (
     "The endpoint to access stream {stream_name} returned 401: Unauthorized. " "This is most likely due to wrong credentials."
 )
@@ -137,7 +138,7 @@ def test_rate_limit_waits_retry_after_header(stream_name: str, monkeypatch: pyte
         http_mocker.get(
             request,
             [
-                HttpResponse("[]", 429, headers={"Retry-After": "7"}),
+                HttpResponse("[]", 429, headers={"Retry-After": str(_RETRY_AFTER_SECONDS)}),
                 HttpResponse("[]", 200),
             ],
         )
@@ -147,4 +148,5 @@ def test_rate_limit_waits_retry_after_header(stream_name: str, monkeypatch: pyte
         http_mocker.assert_number_of_calls(request, 2)
 
     assert not output.errors
-    assert 8 in waits
+    # The CDK rate-limit handler sleeps one extra second on top of the backoff time.
+    assert _RETRY_AFTER_SECONDS + 1 in waits
