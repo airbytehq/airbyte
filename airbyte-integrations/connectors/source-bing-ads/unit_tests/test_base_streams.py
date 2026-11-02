@@ -13,6 +13,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 ALL_CAMPAIGN_TYPES = "App,Audience,DynamicSearchAds,Hotel,ObjectiveBased,PerformanceMax,Search,Shopping"
+ALL_AD_TYPES = ["AppInstall", "DynamicSearch", "ExpandedText", "Hotel", "Image", "Product", "ResponsiveAd", "ResponsiveSearch", "Text"]
 
 
 @pytest.mark.parametrize(
@@ -173,9 +174,21 @@ def test_ads_request_body_data(mock_auth_token, config):
 
     request_params = ads.retriever.requester.get_request_body_json(stream_slice=stream_slice)
     assert request_params == {
-        "AdTypes": ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"],
+        "AdTypes": ALL_AD_TYPES,
         "ReturnAdditionalFields": "ImpressionTrackingUrls,Videos,LongHeadlines",
     }
+
+
+@pytest.mark.parametrize("ad_type", ALL_AD_TYPES)
+def test_ads_request_includes_every_documented_ad_type(ad_type, mock_auth_token, config):
+    """The API only returns the ad types listed in the AdTypes request filter."""
+    ads = find_stream("ads", config)
+    stream_slice = {
+        "ad_group_id": [1],
+        "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "AccountName", "user_id": 1, "parent_slice": {}}}],
+    }
+
+    assert ad_type in ads.retriever.requester.get_request_body_json(stream_slice=stream_slice)["AdTypes"]
 
 
 def test_ads_stream_slices(mock_auth_token, mock_user_query, mock_account_query, requests_mock, config):

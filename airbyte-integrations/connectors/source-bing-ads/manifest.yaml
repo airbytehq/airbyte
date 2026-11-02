@@ -332,7 +332,7 @@ definitions:
           CustomerId: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
         request_body_json:
           AdGroupId: "{{ stream_partition['ad_group_id'][0] | string }}"
-          AdTypes: '{{ [ "Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch" ] }}'
+          AdTypes: '{{ [ "AppInstall", "DynamicSearch", "ExpandedText", "Hotel", "Image", "Product", "ResponsiveAd", "ResponsiveSearch", "Text" ] }}'
           ReturnAdditionalFields: "ImpressionTrackingUrls,Videos,LongHeadlines"
         authenticator: "#/definitions/authenticator"
       partition_router:
