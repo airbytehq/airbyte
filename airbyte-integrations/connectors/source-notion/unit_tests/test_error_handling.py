@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import requests
 import requests_mock
+import yaml
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
@@ -47,8 +48,20 @@ def _notion_response(status_code, code=None, message=None, headers=None):
     return response
 
 
-def test_manifest_has_no_composite_error_handler():
-    assert "CompositeErrorHandler" not in Path(_YAML_FILE_PATH).read_text()
+def _nodes(node):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from _nodes(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _nodes(value)
+
+
+def test_manifest_error_handlers_are_all_default_error_handlers():
+    manifest = yaml.safe_load(Path(_YAML_FILE_PATH).read_text())
+    handler_types = {node["type"] for node in _nodes(manifest) if "response_filters" in node or "error_handlers" in node}
+    assert handler_types == {"DefaultErrorHandler"}
 
 
 @pytest.mark.parametrize("stream_name", _SHARED_HANDLER_STREAMS + ["users"])
