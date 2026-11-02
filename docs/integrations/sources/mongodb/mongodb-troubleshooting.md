@@ -22,7 +22,7 @@ Oplog: 1.2 GB used of 40.0 GB, 1,203,400 entries, 2026-10-18T06:00:12Z to 2026-1
 
 A saved position reported as "OLDER than the oldest entry" is the sign that the next sync will fail with "Saved offset is not valid". The line needs read access to the `local` database (for example the `clusterMonitor` role); without it the sync logs a warning and continues. Sharded clusters reached through `mongos` have one oplog per shard, which the connector does not read.
 
-You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to verify the current of your Oplog. The expect output is:
+You can run the commands outlined [in this tutorial](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-replica-sets/#check-the-size-of-the-oplog) to check the current size of your Oplog. The output looks like this:
 
 ```yaml
 configured oplog size: 10.10546875MB
@@ -46,7 +46,7 @@ If you encounter this error, you have several options to resolve it:
 
 For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
 
-## How update events are captured
+### How update events are captured
 
 For an update event, Airbyte reads the document's current state when the event is processed (MongoDB's `updateLookup`).
 If a document is updated several times in quick succession, or several times between two syncs, the records for those
@@ -60,7 +60,7 @@ that was deleted before the event could be read is emitted as a delete.
 - Views and time series collections are not discovered and cannot be synced: MongoDB has no change streams for them, and a time series collection has no `_id` index to resume a snapshot from. Sync the underlying collection of a view instead. Capped and clustered collections have not been validated with this connector.
 - Empty collections are excluded from schema discovery.
 - All documents in a collection should use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types is read in full by an uninterrupted sync, but a sync resuming after a checkpoint on one type does not sync the documents of the other types. The connector warns with "The \_id fields in this collection are not consistently typed, which may lead to data loss" and the types it found; make the type consistent or exclude the collection.
-- Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
+- Atlas clusters are only supported on a dedicated M10 tier or above. Lower tiers may fail during connection setup.
 
 ### Schema Discovery & Enforcement
 
@@ -81,7 +81,7 @@ These approaches address the root cause of the performance risk by reducing or e
 
 1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb#schema-enforcement) for configuration details.
 
-2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb#configuration-parameters) configuration parameter.
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Document discovery sample size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the **Document discovery sample size** setting under [Configuration Parameters](/integrations/sources/mongodb#configuration-parameters).
 
 #### Other alternatives
 
@@ -101,7 +101,7 @@ These approaches do not reduce the discovery workload itself, but can help isola
 
    This fully isolates the discovery workload from your production traffic.
 
-3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
+3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Before a sync, Airbyte can run schema discovery to [check for schema changes](/platform/using-airbyte/schema-change-management), so the discovery queries also run at sync time. The sync itself reads the schema from the connection and does not sample documents.
 
 4. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
 
