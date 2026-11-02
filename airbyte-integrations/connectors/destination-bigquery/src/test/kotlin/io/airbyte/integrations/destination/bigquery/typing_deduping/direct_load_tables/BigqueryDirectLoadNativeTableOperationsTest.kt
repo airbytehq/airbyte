@@ -62,7 +62,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         Assertions.assertEquals(StandardSQLTypeName.JSON, toDialectType(a))
         Assertions.assertEquals(
             StandardSQLTypeName.JSON,
-            toDialectType(UnionType(emptySet(), isLegacyUnion = false))
+            toDialectType(UnionType(emptySet(), isLegacyUnion = false)),
         )
 
         var u = UnionType(setOf(s), isLegacyUnion = true)
@@ -84,7 +84,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -103,14 +103,14 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     emptyList<Pair<String, StandardSQLTypeName>>(),
-                    alterTableReport.columnsToAdd
+                    alterTableReport.columnsToAdd,
                 )
             },
             { Assertions.assertEquals(emptyList<String>(), alterTableReport.columnsToRemove) },
             {
                 Assertions.assertEquals(
                     emptyList<ColumnChange<StandardSQLTypeName>>(),
-                    alterTableReport.columnsToChangeType
+                    alterTableReport.columnsToChangeType,
                 )
             },
             // NB: column names in AlterTableReport are all _after_ destination name transform
@@ -129,12 +129,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     linkedMapOf(
                         "a1" to FieldType(IntegerType, nullable = true),
                         "c1" to FieldType(IntegerType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2", "c1" to "c2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -143,9 +143,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 FieldList.of(
                     listOf(
                         Field.of("a2", StandardSQLTypeName.STRING),
-                        Field.of("b2", StandardSQLTypeName.INT64)
-                    )
-                )
+                        Field.of("b2", StandardSQLTypeName.INT64),
+                    ),
+                ),
             )
         val alterTableReport =
             BigqueryDirectLoadNativeTableOperations(
@@ -161,7 +161,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     listOf(ColumnAdd("c2", StandardSQLTypeName.INT64)),
-                    alterTableReport.columnsToAdd
+                    alterTableReport.columnsToAdd,
                 )
             },
             { Assertions.assertEquals(listOf("b2"), alterTableReport.columnsToRemove) },
@@ -172,7 +172,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                             name = "a2",
                             originalType = StandardSQLTypeName.STRING,
                             newType = StandardSQLTypeName.INT64,
-                        )
+                        ),
                     ),
                     alterTableReport.columnsToChangeType,
                 )
@@ -180,9 +180,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             {
                 Assertions.assertEquals(
                     emptyList<ColumnChange<StandardSQLTypeName>>(),
-                    alterTableReport.columnsToRetain
+                    alterTableReport.columnsToRetain,
                 )
-            }
+            },
         )
     }
 
@@ -200,7 +200,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         var columnNameMapping = ColumnNameMapping(mapOf("bar" to "foo"))
 
@@ -224,7 +224,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
 
@@ -234,7 +234,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 Clustering.newBuilder()
                     .setFields(listOf("a2", "b2", "c2", "_airbyte_extracted_at"))
-                    .build()
+                    .build(),
             )
         stream =
             DestinationStream(
@@ -242,7 +242,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 "bar",
                 Dedupe(
                     listOf(listOf("a1"), listOf("b1"), listOf("c1"), listOf("d1"), listOf("e1")),
-                    emptyList()
+                    emptyList(),
                 ),
                 ObjectType(
                     linkedMapOf(
@@ -251,12 +251,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                         "c1" to FieldType(IntegerType, nullable = true),
                         "d1" to FieldType(IntegerType, nullable = true),
                         "e1" to FieldType(IntegerType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         columnNameMapping =
             ColumnNameMapping(
@@ -266,7 +266,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     "c1" to "c2",
                     "d1" to "d2",
                     "e1" to "e2",
-                )
+                ),
             )
         Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
     }
@@ -280,7 +280,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         // incorrect field
         Mockito.`when`(existingTable.timePartitioning)
             .thenReturn(
-                TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build()
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build(),
             )
         Assertions.assertFalse(partitioningMatches(existingTable))
         // incorrect partitioning scheme
@@ -288,7 +288,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.YEAR)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
         Assertions.assertFalse(partitioningMatches(existingTable))
 
@@ -297,7 +297,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
     }

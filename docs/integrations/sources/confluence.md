@@ -75,7 +75,7 @@ The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence
 The Confluence Cloud REST API uses rate limits and quotas. Atlassian doesn't publish
 fixed limits for this API. The connector automatically retries rate-limited
 requests. If you see rate limit issues that aren't retried successfully, contact
-Airbyte Support or post in the [Airbyte community Slack](https://slack.airbyte.com/).
+Airbyte Support or post in the [Airbyte Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 
 ## IP allow list
 
@@ -104,6 +104,9 @@ schema and set the affected streams back to Full Refresh.
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.42 | 2026-10-27 | [89859](https://github.com/airbytehq/airbyte/pull/89859) | Update dependencies |
+| 1.0.41 | 2026-10-20 | [89169](https://github.com/airbytehq/airbyte/pull/89169) | Update dependencies |
+| 1.0.40 | 2026-10-13 | [88582](https://github.com/airbytehq/airbyte/pull/88582) | Update dependencies |
 | 1.0.39 | 2026-10-06 | [87813](https://github.com/airbytehq/airbyte/pull/87813) | Update dependencies |
 | 1.0.38 | 2026-09-29 | [87105](https://github.com/airbytehq/airbyte/pull/87105) | Update dependencies |
 | 1.0.37 | 2026-09-22 | [86589](https://github.com/airbytehq/airbyte/pull/86589) | Update dependencies |

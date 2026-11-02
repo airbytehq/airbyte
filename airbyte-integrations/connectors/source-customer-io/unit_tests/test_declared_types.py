@@ -27,11 +27,18 @@ def _documented_campaign() -> dict:
 
 def _documented_action() -> dict:
     """`id` arrives as a JSON string live, although the spec documents an integer (AGENTS.md section 6)."""
-    return {**_action(2, 1, _UPDATED), "id": "2", "from_id": 1, "reply_to_id": 38}
+    return {**_action(2, 1, _UPDATED), "id": "2", "from_id": 1, "reply_to_id": 38, "event_name": "signed_up", "payload_android": {"a": 1}}
 
 
 def _documented_newsletter() -> dict:
-    return {**_newsletter(3, _UPDATED), "sent_at": _UPDATED, "tags": ["launch"], "content_ids": [4, 5]}
+    return {
+        **_newsletter(3, _UPDATED),
+        "sent_at": _UPDATED,
+        "tags": ["launch"],
+        "content_ids": [4, 5],
+        "rate_limit_spread": True,
+        "rate_limit_time_period": 3600,
+    }
 
 
 @pytest.mark.parametrize(
@@ -81,3 +88,41 @@ def test_values_of_another_type_fail_validation(stream_name, field, wrong_value)
     """Pins the scalar and item types: under the old schemas any array passed, and `from_id` and `reply_to_id` took strings."""
     errors = Draft7Validator(_schemas()[stream_name]).iter_errors({field: wrong_value})
     assert [error for error in errors if list(error.absolute_path)[:1] == [field]]
+
+
+@pytest.mark.parametrize(
+    "stream_name, field, declared_type",
+    [
+        ("campaigns_actions", "event_name", ["null", "string"]),
+        ("campaigns_actions", "payload_android", None),
+        ("newsletters", "rate_limit_spread", ["null", "boolean"]),
+        ("newsletters", "rate_limit_time_period", ["null", "integer"]),
+        ("broadcasts", "scheduled_stop_should_sunset", ["null", "boolean"]),
+    ],
+)
+def test_fields_seen_in_production_are_declared(stream_name, field, declared_type):
+    """Production syncs on 0.8.0 returned these undeclared fields (Datadog, 2026-10-09 to 2026-10-12)."""
+    assert _schemas()[stream_name]["properties"][field].get("type") == declared_type
+
+
+def test_webhook_id_digit_strings_are_cast_to_integers():
+    """The spec types `webhook_id` as an integer, but some automations return a string: strings of up to 18 digits that
+    parse as integer literals become integers, other values pass through unchanged."""
+    cases = [
+        ("123", 123),
+        (456, 456),
+        (None, None),
+        ("wh_abc", "wh_abc"),
+        ("123456789012345678", 123456789012345678),
+        ("1234567890123456789", "1234567890123456789"),
+        ("0123", "0123"),
+        ("\u0661\u0662\u0663", "\u0661\u0662\u0663"),
+    ]
+    campaigns = [{**_campaign(i, _UPDATED), "webhook_id": value} for i, (value, _) in enumerate(cases, start=1)]
+    campaigns.append(_campaign(len(cases) + 1, _UPDATED))
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_API}/campaigns", json={"campaigns": campaigns})
+        output = _read("campaigns", _BASE_CONFIG)
+
+    emitted = {record.record.data["id"]: record.record.data.get("webhook_id") for record in output.records}
+    assert [emitted[i] for i in range(1, len(cases) + 2)] == [expected for _, expected in cases] + [None]

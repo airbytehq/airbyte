@@ -24,12 +24,12 @@ import org.junit.jupiter.api.extension.InvocationInterceptor
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * By default, junit only output logs to the console, and nothing makes it into log4j logs. This
  * class fixes that by using the interceptor facility to print progress and timing information. This
  * allows us to have junit loglines in our test logs. This is instanciated via
- * [Java's
- * ServiceLoader](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/util/ServiceLoader.html)
+ * [Java's ServiceLoader](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/util/ServiceLoader.html)
  * The declaration can be found in
  * resources/META-INF/services/org.junit.jupiter.api.extension.Extension
  */
@@ -50,12 +50,12 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                         method.name,
                         InvocationInterceptor.Invocation::class.java,
                         invocationContextClass,
-                        ExtensionContext::class.java
+                        ExtensionContext::class.java,
                     )
             } catch (_: NoSuchMethodException) {
                 LOGGER.error(
                     "Junit LoggingInvocationInterceptor executing unknown interception point {}",
-                    method.name
+                    method.name,
                 )
                 return method.invoke(proxy, *(args))
             }
@@ -68,7 +68,10 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 logLineSuffix = "execution of DynamicTest ${extensionContext!!.displayName}"
             } else if (methodName == "interceptTestClassConstructor") {
                 logLineSuffix =
-                    "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
+                    String.format(
+                        "instance creation for %s",
+                        reflectiveInvocationContext!!.targetClass,
+                    )
             } else if (methodMatcher.matches()) {
                 val interceptedEvent = methodMatcher.group(1)
                 val methodRealClassName =
@@ -79,10 +82,11 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     if (targetClassName == methodRealClassName) methodName
                     else "$methodName($methodRealClassName)"
                 logLineSuffix =
-                    "execution of @%s method %s.%s".formatted(
+                    String.format(
+                        "execution of @%s method %s.%s",
                         interceptedEvent,
                         targetClassName,
-                        methodDisplayName
+                        methodDisplayName,
                     )
                 TestContext.CURRENT_TEST_NAME.set("$targetClassName.$methodName")
             } else {
@@ -97,7 +101,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     LOGGER.info(
                         "Junit starting {} with timeout of {}",
                         logLineSuffix,
-                        DurationFormatUtils.formatDurationWords(timeout.toMillis(), true, true)
+                        DurationFormatUtils.formatDurationWords(timeout.toMillis(), true, true),
                     )
                     Timer("TimeoutTimer-" + currentThread.name, true)
                         .schedule(timeoutTask, timeout.toMillis())
@@ -109,7 +113,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 LOGGER.info(
                     "Junit completed {} in {}",
                     logLineSuffix,
-                    DurationFormatUtils.formatDurationWords(elapsedMs, true, true)
+                    DurationFormatUtils.formatDurationWords(elapsedMs, true, true),
                 )
                 return retVal
             } catch (throwable: Throwable) {
@@ -124,7 +128,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                         TimeoutException(
                             "Execution was cancelled after $timeoutAsString. If you think your test should be given more time to complete, " +
                                 "you can use the @Timeout annotation. If all the test of a connector are slow, " +
-                                " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties."
+                                " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties.",
                         )
                     t1.initCause(throwable)
                 } else {
@@ -138,7 +142,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                         if (
                             !belowCurrentCall &&
                                 stackString.contains(
-                                    LoggingInvocationInterceptor::class.java.canonicalName
+                                    LoggingInvocationInterceptor::class.java.canonicalName,
                                 )
                         ) {
                             belowCurrentCall = true
@@ -155,7 +159,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     "Junit exception throw during {} after {}:\n{}",
                     logLineSuffix,
                     DurationFormatUtils.formatDurationWords(elapsedMs, true, true),
-                    stackTrace
+                    stackTrace,
                 )
                 throw t1
             } finally {
@@ -166,7 +170,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
         private class TimeoutInteruptor(
             private val parentThread: Thread,
-            private val context: String
+            private val context: String,
         ) : TimerTask() {
             @Volatile var wasTriggered: Boolean = false
             val id = timerIdentifier.incrementAndGet()
@@ -176,7 +180,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     "interrupting running task on ${parentThread.name}. " +
                         "Current Stacktrace is ${parentThread.stackTrace.asList()}" +
                         "TimeoutIterruptor $id interrupting running task on ${parentThread.name}: $context. " +
-                        "Current Stacktrace is ${parentThread.stackTrace.asList()}"
+                        "Current Stacktrace is ${parentThread.stackTrace.asList()}",
                 )
                 wasTriggered = true
                 parentThread.interrupt()
@@ -198,7 +202,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             private val PATTERN: Pattern =
                 Pattern.compile(
                     "([1-9]\\d*) *((?:[nμm]?s)|m|h|d)?",
-                    Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE
+                    Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE,
                 )
             private val UNITS_BY_ABBREVIATION: MutableMap<String, TimeUnit>
 
@@ -228,7 +232,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 throw DateTimeParseException(
                     "Timeout duration is not in the expected format (<number> [ns|μs|ms|s|m|h|d])",
                     text,
-                    0
+                    0,
                 )
             }
 
@@ -244,14 +248,14 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     if (timeoutAnnotation != null) {
                         timeout =
                             Duration.ofMillis(
-                                timeoutAnnotation.unit.toMillis(timeoutAnnotation.value)
+                                timeoutAnnotation.unit.toMillis(timeoutAnnotation.value),
                             )
                     }
                 }
                 if (timeout == null) {
                     timeout =
                         parseDuration(
-                            System.getProperty(JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME)
+                            System.getProperty(JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME),
                         )
                 }
                 return timeout
@@ -263,14 +267,14 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
         Proxy.newProxyInstance(
             javaClass.classLoader,
             arrayOf<Class<*>?>(InvocationInterceptor::class.java),
-            LoggingInvocationInterceptorHandler()
+            LoggingInvocationInterceptorHandler(),
         ) as InvocationInterceptor
 
     @Throws(Throwable::class)
     override fun interceptAfterAllMethod(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptAfterAllMethod(invocation, invocationContext, extensionContext)
     }
@@ -279,7 +283,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptAfterEachMethod(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptAfterEachMethod(invocation, invocationContext, extensionContext)
     }
@@ -288,7 +292,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptBeforeAllMethod(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptBeforeAllMethod(invocation, invocationContext, extensionContext)
     }
@@ -297,7 +301,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptBeforeEachMethod(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptBeforeEachMethod(invocation, invocationContext, extensionContext)
     }
@@ -306,7 +310,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptDynamicTest(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: DynamicTestInvocationContext?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptDynamicTest(invocation, invocationContext, extensionContext)
     }
@@ -315,13 +319,13 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptTestMethod(
         invocation: InvocationInterceptor.Invocation<Void>,
         invocationContext: ReflectiveInvocationContext<Method>,
-        extensionContext: ExtensionContext
+        extensionContext: ExtensionContext,
     ) {
         if (!Modifier.isPublic(invocationContext.executable!!.modifiers)) {
             LOGGER!!.warn(
                 "Junit method {}.{} is not declared as public",
                 invocationContext.executable!!.declaringClass.canonicalName,
-                invocationContext.executable!!.name
+                invocationContext.executable!!.name,
             )
         }
         proxy!!.interceptTestMethod(invocation, invocationContext, extensionContext)
@@ -331,7 +335,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun interceptTestTemplateMethod(
         invocation: InvocationInterceptor.Invocation<Void>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ) {
         proxy!!.interceptTestTemplateMethod(invocation, invocationContext, extensionContext)
     }
@@ -340,7 +344,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun <T> interceptTestFactoryMethod(
         invocation: InvocationInterceptor.Invocation<T>?,
         invocationContext: ReflectiveInvocationContext<Method>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ): T? {
         return proxy!!.interceptTestFactoryMethod(invocation, invocationContext, extensionContext)
     }
@@ -349,12 +353,12 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     override fun <T> interceptTestClassConstructor(
         invocation: InvocationInterceptor.Invocation<T>?,
         invocationContext: ReflectiveInvocationContext<Constructor<T>?>?,
-        extensionContext: ExtensionContext?
+        extensionContext: ExtensionContext?,
     ): T? {
         return proxy!!.interceptTestClassConstructor(
             invocation,
             invocationContext,
-            extensionContext
+            extensionContext,
         )
     }
 

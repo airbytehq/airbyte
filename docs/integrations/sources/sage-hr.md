@@ -35,6 +35,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.73 | 2026-10-20 | [89373](https://github.com/airbytehq/airbyte/pull/89373) | Update dependencies |
+| 0.0.72 | 2026-10-13 | [88779](https://github.com/airbytehq/airbyte/pull/88779) | Update dependencies |
 | 0.0.71 | 2026-10-07 | [88244](https://github.com/airbytehq/airbyte/pull/88244) | Document the `subdomain` field and tolerate full `https://<subdomain>.sage.hr` values so connection checks no longer fail with `<subdomain>.sage.hr.sage.hr` |
 | 0.0.70 | 2026-10-06 | [88016](https://github.com/airbytehq/airbyte/pull/88016) | Update dependencies |
 | 0.0.69 | 2026-09-29 | [87333](https://github.com/airbytehq/airbyte/pull/87333) | Update dependencies |

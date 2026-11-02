@@ -40,7 +40,7 @@ internal class PostgresRecordFormatterTest {
                         "extended_timestamp_with_timezone",
                         "normal_date",
                         "negative_date",
-                    )
+                    ),
                 )
                 .format(record)
 
@@ -63,9 +63,9 @@ internal class PostgresRecordFormatterTest {
                 linkedMapOf(
                     "entries" to
                         ArrayValue(
-                            listOf(ObjectValue(linkedMapOf("text" to StringValue("a\u0000b"))))
-                        )
-                )
+                            listOf(ObjectValue(linkedMapOf("text" to StringValue("a\u0000b")))),
+                        ),
+                ),
             )
         val enrichedValue =
             EnrichedAirbyteValue(
@@ -94,9 +94,9 @@ internal class PostgresRecordFormatterTest {
                 linkedMapOf(
                     "entries" to
                         ArrayValue(
-                            listOf(ObjectValue(linkedMapOf("text" to StringValue("a\u0000b"))))
-                        )
-                )
+                            listOf(ObjectValue(linkedMapOf("text" to StringValue("a\u0000b")))),
+                        ),
+                ),
             )
         val enrichedValue =
             EnrichedAirbyteValue(

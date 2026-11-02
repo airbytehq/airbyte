@@ -43,7 +43,7 @@ internal class DestStreamStateLifecycleManagerTest {
         // after adding a state, it is in pending only.
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listPending()
+            mgr!!.listPending(),
         )
         Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
         Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
@@ -54,7 +54,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listFlushed()
+            mgr!!.listFlushed(),
         )
         Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
@@ -65,7 +65,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listCommitted()
+            mgr!!.listCommitted(),
         )
     }
 
@@ -78,7 +78,7 @@ internal class DestStreamStateLifecycleManagerTest {
         // verify the LAST message is returned.
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listPending()
+            mgr!!.listPending(),
         )
         Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
         Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
@@ -99,7 +99,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listFlushed()
+            mgr!!.listFlushed(),
         )
         Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
@@ -111,7 +111,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE1, STREAM2_MESSAGE1)),
-            mgr!!.listFlushed()
+            mgr!!.listFlushed(),
         )
         Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
     }
@@ -128,7 +128,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE2, STREAM2_MESSAGE1)),
-            mgr!!.listCommitted()
+            mgr!!.listCommitted(),
         )
 
         // verify that multiple calls to markFlushedAsCommitted overwrite old states
@@ -141,7 +141,7 @@ internal class DestStreamStateLifecycleManagerTest {
         Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
         Assertions.assertEquals(
             LinkedList(List.of(STREAM1_MESSAGE1, STREAM2_MESSAGE1)),
-            mgr!!.listCommitted()
+            mgr!!.listCommitted(),
         )
     }
 
@@ -173,8 +173,8 @@ internal class DestStreamStateLifecycleManagerTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(StreamDescriptor().withName("apples"))
-                                .withStreamState(Jsons.jsonNode("a"))
-                        )
+                                .withStreamState(Jsons.jsonNode("a")),
+                        ),
                 )
         private val STREAM1_MESSAGE2: AirbyteMessage =
             AirbyteMessage()
@@ -185,8 +185,8 @@ internal class DestStreamStateLifecycleManagerTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(StreamDescriptor().withName("apples"))
-                                .withStreamState(Jsons.jsonNode("b"))
-                        )
+                                .withStreamState(Jsons.jsonNode("b")),
+                        ),
                 )
         private val STREAM2_MESSAGE1: AirbyteMessage =
             AirbyteMessage()
@@ -197,8 +197,8 @@ internal class DestStreamStateLifecycleManagerTest {
                         .withStream(
                             AirbyteStreamState()
                                 .withStreamDescriptor(StreamDescriptor().withName("bananas"))
-                                .withStreamState(Jsons.jsonNode("10"))
-                        )
+                                .withStreamState(Jsons.jsonNode("10")),
+                        ),
                 )
     }
 }

@@ -42,7 +42,7 @@ class BigQueryObjectStorageFormattingWriter(
 @Singleton
 class BigQueryObjectStorageFormattingWriterFactory(
     private val config: BigqueryConfiguration,
-    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,

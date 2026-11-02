@@ -84,6 +84,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.26 | 2026-10-13 | [78834](https://github.com/airbytehq/airbyte/pull/78834) | Update dependencies |
 | 0.2.25 | 2026-10-07 | [88273](https://github.com/airbytehq/airbyte/pull/88273) | Fix pagination: send the `next` cursor as the `cursor` query parameter (was appended to the URL path, causing 404s on multi-page streams) and request `page_size=100`; skip (instead of failing on) streams whose Common Model Scope is disabled for the Linked Account (HTTP 403) |
 | 0.2.24 | 2025-05-24 | [60605](https://github.com/airbytehq/airbyte/pull/60605) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59794](https://github.com/airbytehq/airbyte/pull/59794) | Update dependencies |
