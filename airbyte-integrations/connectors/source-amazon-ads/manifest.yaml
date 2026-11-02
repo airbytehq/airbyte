@@ -16,7 +16,16 @@ max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count',
 definitions:
   sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
+    # Follow basic_error_handler for Retry-After handling.
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 900
     response_filters:
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - http_codes: [400]
         action: IGNORE
         error_message: "Skip current AdGroup because it does not support request {response.request.url} for current profile"
@@ -101,6 +110,15 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "{{ response.details }}"
+      - predicate: "{{ 'must be equal to or after report type data retention start date' in response.get('detail', '') }}"
+        action: FAIL
+        failure_type: system_error
+        error_message: "Amazon Ads rejected the report request because its start date is earlier than Amazon's data retention window for this report type."
+      # Must stay last: DefaultErrorHandler returns the first matching filter.
+      - http_codes: [400]
+        action: FAIL
+        failure_type: system_error
+        error_message: "Amazon Ads rejected the report request: {{ response.get('detail') or response.get('details') or response.get('message') or 'no error detail was returned' }}"
 
   report_polling_error_handler:
     type: DefaultErrorHandler
