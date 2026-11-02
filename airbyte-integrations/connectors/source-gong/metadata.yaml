@@ -35,7 +35,12 @@ data:
             impactedScopes:
               - "extensiveCalls"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   releaseStage: generally_available
   suggestedStreams:
     streams:
