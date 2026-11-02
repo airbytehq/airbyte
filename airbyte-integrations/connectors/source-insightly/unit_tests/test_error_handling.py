@@ -20,7 +20,7 @@ def test_403_is_ignored() -> None:
     catalog = CatalogBuilder().with_stream("activity_sets", SyncMode.full_refresh).build()
     request = HttpRequest("https://api.na1.insightly.com/v3.1/ActivitySets", query_params=ANY_QUERY_PARAMS)
     with HttpMocker() as mocker, patch("time.sleep") as sleep:
-        mocker.get(request, HttpResponse('{}', 403))
+        mocker.get(request, HttpResponse("{}", 403))
         output = read(get_source(CONFIG, catalog), CONFIG, catalog)
         assert output.records == []
         assert output.errors == []
@@ -41,7 +41,7 @@ def test_429_is_retried_with_six_second_backoff() -> None:
     assert component.backoff_time(None, attempt_count=1) == 6
     request = HttpRequest("https://api.na1.insightly.com/v3.1/ActivitySets", query_params=ANY_QUERY_PARAMS)
     with HttpMocker() as mocker, patch("time.sleep") as sleep:
-        mocker.get(request, [HttpResponse('{}', 429), HttpResponse('[{"ACTIVITYSET_ID": 1}]')])
+        mocker.get(request, [HttpResponse("{}", 429), HttpResponse('[{"ACTIVITYSET_ID": 1}]')])
         output = read(source, CONFIG, catalog)
         assert output.errors == []
         assert [message.record.data for message in output.records] == [{"ACTIVITYSET_ID": 1}]
