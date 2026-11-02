@@ -898,9 +898,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - $ref: "#/definitions/base_error_handler"
+      $ref: "#/definitions/base_error_handler"
   updated_at_cursor:
     type: DatetimeBasedCursor
     cursor_field: updated_at
