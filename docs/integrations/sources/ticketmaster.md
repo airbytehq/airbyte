@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.68 | 2026-11-01 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Simplify rate-limit error handling configuration with no change in behavior |
+| 0.0.68 | 2026-11-01 | [90388](https://github.com/airbytehq/airbyte/pull/90388) | Simplify rate-limit error handling configuration with no change in behavior |
 | 0.0.67 | 2026-10-20 | [89426](https://github.com/airbytehq/airbyte/pull/89426) | Update dependencies |
 | 0.0.66 | 2026-10-13 | [88846](https://github.com/airbytehq/airbyte/pull/88846) | Update dependencies |
 | 0.0.65 | 2026-10-07 | [88241](https://github.com/airbytehq/airbyte/pull/88241) | Stop paginating `events`, `attractions` and `venues` at the API's 1,000-item deep-paging limit (fixes `DIS1035` 400 errors) and start from page 0 instead of skipping the first page |
