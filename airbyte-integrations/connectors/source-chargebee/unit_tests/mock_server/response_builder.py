@@ -148,6 +148,15 @@ def configuration_incompatible_response() -> HttpResponse:
     return json_response("error_configuration_incompatible.json", HTTPStatus.BAD_REQUEST)
 
 
+def retry_after_response() -> HttpResponse:
+    """429 response with a Retry-After header."""
+    return HttpResponse(
+        body='{"message": "Too many requests"}',
+        status_code=HTTPStatus.TOO_MANY_REQUESTS.value,
+        headers={"Retry-After": "1"},
+    )
+
+
 def order_response() -> HttpResponse:
     """Order stream response."""
     return json_response("order.json")
