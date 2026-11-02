@@ -1,0 +1,61 @@
+{
+  "type": "GLOBAL",
+  "global": {
+    "shared_state": {
+      "state": {
+        "[\"mongodb___mongo-rs_27017__replicaSet_rs0\",{\"server_id\":\"mongodb___mongo-rs_27017__replicaSet_rs0\"}]": "{\"sec\":1690221043,\"ord\":1,\"resume_token\":\"LwAAAAJfZGF0YQAfAAAAODI2NEJFQjlGMzAwMDAwMDAxMkIwMjI5Mjk2RTA0AAA=\"}"
+      },
+      "schema_enforced": true
+    },
+    "stream_states": [
+      {
+        "stream_descriptor": {
+          "name": "in_progress",
+          "namespace": "test_db"
+        },
+        "stream_state": {
+          "id": "650000000000000000000002",
+          "status": "IN_PROGRESS",
+          "idType": "OBJECT_ID",
+          "binarySubType": 0
+        }
+      },
+      {
+        "stream_descriptor": {
+          "name": "complete",
+          "namespace": "test_db"
+        },
+        "stream_state": {
+          "id": "42",
+          "status": "COMPLETE",
+          "idType": "INT",
+          "binarySubType": 0
+        }
+      },
+      {
+        "stream_descriptor": {
+          "name": "uuid_keyed",
+          "namespace": "test_db"
+        },
+        "stream_state": {
+          "id": "123e4567-e89b-12d3-a456-426614174000",
+          "status": "IN_PROGRESS",
+          "idType": "BINARY",
+          "binarySubType": 4
+        }
+      },
+      {
+        "stream_descriptor": {
+          "name": "full_refresh",
+          "namespace": "test_db"
+        },
+        "stream_state": {
+          "id": "k-10",
+          "status": "FULL_REFRESH",
+          "idType": "STRING",
+          "binarySubType": 0
+        }
+      }
+    ]
+  }
+}

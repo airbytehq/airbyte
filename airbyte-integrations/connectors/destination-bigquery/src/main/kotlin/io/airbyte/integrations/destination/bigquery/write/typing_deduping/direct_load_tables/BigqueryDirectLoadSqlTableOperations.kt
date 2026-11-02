@@ -49,8 +49,8 @@ class BigqueryDirectLoadSqlTableOperations(
                         .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                         // overwrite the table if it already exists
                         .setWriteDisposition(JobInfo.WriteDisposition.WRITE_TRUNCATE)
-                        .build()
-                )
+                        .build(),
+                ),
             )
         BigQueryUtils.waitForJobFinish(job)
         bq.getTable(sourceTableId).delete()

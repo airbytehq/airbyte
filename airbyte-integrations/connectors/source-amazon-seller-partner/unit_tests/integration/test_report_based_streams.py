@@ -1366,6 +1366,521 @@ class TestSalesAndTrafficReportRequestBody:
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
 
+class TestFatalReportErrorSurfacing:
+    """
+    A FATAL report means Amazon accepted createReport but could not produce the report, and the
+    reason lives in a separate error document. ReportPollingRequester fetches that document so the
+    reason reaches the user instead of the CDK's generic retry-exhausted message.
+    """
+
+    # A vendor analytics stream, so the FATAL path is exercised on exactly the streams the
+    # customer hit. The reads below pin a one-day window so there is a single slice and a single,
+    # fixed request body.
+    _STREAM_NAME = "GET_VENDOR_SALES_REPORT"
+    _SLICE_END_DATE = pendulum.datetime(2023, 1, 2)
+    _ERROR_DOCUMENT_ID = "fatal_error_document_id"
+    _ERROR_DOCUMENT_URL = "https://test.com/fatal-error-document"
+
+    # Amazon's verbatim wording, captured from a canary prerelease against the affected Vendor
+    # connection. Pinned because the marker matching depends on the exact phrasing: note
+    # "reportOption" is singular, and the "on GitHub" pointer refers to docs Amazon archived in 2024.
+    _AMAZON_REPORT_OPTIONS_REASON = (
+        "Error in report request: This report type requires the reportPeriod, distributorView, "
+        "sellingProgram reportOption to be specified. Please review the document for this report "
+        "type on GitHub, provide a value for this reportOption in your request, and try again."
+    )
+    _DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
+
+    @classmethod
+    def _read(cls, stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor").with_end_date(cls._SLICE_END_DATE),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=True,
+        )
+
+    def _mock_fatal_flow(
+        self,
+        http_mocker: HttpMocker,
+        error_document_body: Optional[str],
+        report_document_id: Optional[str] = _ERROR_DOCUMENT_ID,
+        attempts: int = 3,
+    ) -> None:
+        """
+        Mock a report that goes FATAL. tick=True advances time, so without_amz_date() is needed.
+
+        `attempts` is the number of times the CDK is expected to create the report: 3 for
+        _DEFAULT_MAX_JOB_RETRY when the failure is retried, and 1 when a config error aborts the
+        job loop on the first attempt.
+        """
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
+        create_body = json.dumps(
+            {
+                "reportType": self._STREAM_NAME,
+                "dataStartTime": "2023-01-01T00:00:00Z",
+                "dataEndTime": "2023-01-01T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+        )
+        http_mocker.post(
+            _create_report_request(self._STREAM_NAME).with_body(create_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    self._STREAM_NAME,
+                    processing_status=ReportProcessingStatus.FATAL,
+                    report_document_id=report_document_id,
+                )
+            ]
+            * attempts,
+        )
+        if report_document_id is not None:
+            http_mocker.get(
+                _get_document_download_url_request(report_document_id).without_amz_date().build(),
+                [_get_document_download_url_response(self._ERROR_DOCUMENT_URL, report_document_id)] * attempts,
+            )
+        if error_document_body is not None:
+            http_mocker.get(
+                _download_document_request(self._ERROR_DOCUMENT_URL).build(),
+                [HttpResponse(body=error_document_body, status_code=HTTPStatus.OK)] * attempts,
+            )
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_when_read_then_config_error_quotes_amazon_once(self, http_mocker: HttpMocker) -> None:
+        """Amazon's real wording names the options itself, so the message must not restate them."""
+        # attempts=1: a config error is breaking, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        # Assert on our own message alone: output.errors also carries the CDK's combined
+        # "streams did not sync successfully" error, which re-embeds the same reason.
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert self._AMAZON_REPORT_OPTIONS_REASON in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        # Point the user at where to set the options, and past Amazon's retired GitHub reference.
+        assert "Report Options" in message
+        assert self._DOC_URL in message
+        assert "archived in 2024" in message
+        # Amazon already listed the options, so our own list must not be appended alongside it:
+        # each option name appears exactly once, inside Amazon's quote.
+        for option in ("reportPeriod", "distributorView", "sellingProgram"):
+            assert message.count(option) == 1, f"{option} restated alongside Amazon's own list"
+        assert "Amazon documents" not in message
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(self, http_mocker: HttpMocker) -> None:
+        """When Amazon's reason names no options, fall back to the documented list for the report type."""
+        amazon_reason = "Error in report request: a required reportOption is missing."
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert amazon_reason in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in message
+        # Amazon said nothing about GitHub here, so the archival note must not appear.
+        assert "archived in 2024" not in message
+        assert self._DOC_URL in message
+
+    # Amazon's verbatim wordings for FATAL reasons that are not report-options problems.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            # Captured from the #85294 canary: the trailing day had not been published yet.
+            pytest.param("The report data for the requested date range is not yet available", id="not_yet_available"),
+            # Captured from the #85294 canary, also in amzn/selling-partner-api-models discussion #3785.
+            pytest.param("dataStartTime and dataEndTime must be supplied", id="no_date_window"),
+            # amzn/selling-partner-api-models#4701: a weekly report request that went FATAL. Amazon's
+            # generic parameter error names no option, so it must not be classified as one.
+            pytest.param(
+                "A client error occurred. Please double check that your parameters are valid and fulfill the "
+                "requirements of the report type.",
+                id="generic_client_error",
+            ),
+        ],
+    )
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
+        """An unrelated FATAL reason is logged but must not be reported as a report-options problem."""
+        # Default attempts=3: the failure is not breaking, so the CDK still retries it.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}))
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output(amazon_reason, output, log_level=Level.ERROR)
+        # The stream fails through the CDK's retry-exhausted path, typed system_error. The CDK's
+        # trailing "streams did not sync successfully" summary is always config_error, so the
+        # failure type is asserted on the stream's own error rather than across output.errors.
+        retry_exhausted = [
+            error
+            for error in output.errors
+            if error.trace.error.message == "One or more async jobs failed after exhausting all retry attempts."
+        ]
+        assert retry_exhausted and all(error.trace.error.failure_type == FailureType.system_error for error in retry_exhausted)
+        assert not any(error.trace.error.message.startswith("Amazon rejected") for error in output.errors)
+        error_messages = " ".join(error.trace.error.message for error in output.errors)
+        assert "Add the options under Report Options" not in error_messages
+
+    # Illustrative wordings: Amazon's exact text for these cases has not been captured live. Each
+    # mentions an option because its value was rejected, not because it is missing.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            pytest.param("Invalid reportPeriod WEEK: dataStartTime must fall on a Sunday.", id="misaligned_week"),
+            pytest.param("reportPeriod WEEK requires dataStartTime to be a Sunday.", id="misaligned_week_requires"),
+            pytest.param("MANUFACTURING is not a valid distributorView for this vendor group.", id="invalid_distributor_view"),
+        ],
+    )
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_invalid_report_option_value_when_read_then_config_error_without_add_advice(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
+        """An option Amazon rejected was already set, so the user must not be told to add it."""
+        # attempts=1: still a config error, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert amazon_reason in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        assert "Add the options under Report Options" not in message
+        assert "Amazon documents" not in message
+        assert f"Check the values set for {self._STREAM_NAME} under Report Options" in message
+        assert self._DOC_URL in message
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_without_error_document_when_read_then_reported_without_reason(self, http_mocker: HttpMocker) -> None:
+        """A FATAL report with no reportDocumentId must not break the existing failure path."""
+        self._mock_fatal_flow(http_mocker, error_document_body=None, report_document_id=None)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output("without an error document explaining why", output, log_level=Level.ERROR)
+        assert output.errors
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_on_stream_with_hardcoded_options_when_read_then_not_config_error(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT hardcodes reportOptions (reportPeriod: WEEK), so a
+        report-options FATAL there is a connector bug, not a user config problem: the reason is
+        logged and the report keeps the retry path, ending in a system_error like any other FATAL.
+        """
+        stream_name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+        attempts = 3
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
+        # NOW is 2024-06-01, a Saturday, so the stream's WEEK window resolves to the prior Sun-Sat.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": "2024-05-19T00:00:00Z",
+                "dataEndTime": "2024-05-25T23:59:59Z",
+                "reportOptions": {"reportPeriod": "WEEK"},
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name,
+                    processing_status=ReportProcessingStatus.FATAL,
+                    report_document_id=self._ERROR_DOCUMENT_ID,
+                )
+            ]
+            * attempts,
+        )
+        http_mocker.get(
+            _get_document_download_url_request(self._ERROR_DOCUMENT_ID).without_amz_date().build(),
+            [_get_document_download_url_response(self._ERROR_DOCUMENT_URL, self._ERROR_DOCUMENT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _download_document_request(self._ERROR_DOCUMENT_URL).build(),
+            [HttpResponse(body=json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), status_code=HTTPStatus.OK)] * attempts,
+        )
+
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output(self._AMAZON_REPORT_OPTIONS_REASON, output, log_level=Level.ERROR)
+        # Same assertion as the unrelated-reason test: the stream fails through the CDK's
+        # retry-exhausted path, typed system_error, not through the report-options config_error.
+        retry_exhausted = [
+            error
+            for error in output.errors
+            if error.trace.error.message == "One or more async jobs failed after exhausting all retry attempts."
+        ]
+        assert retry_exhausted and all(error.trace.error.failure_type == FailureType.system_error for error in retry_exhausted)
+        assert not any(error.trace.error.message.startswith("Amazon rejected") for error in output.errors)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorReportOptionsForwarding:
+    """
+    The four vendor retail analytics streams declare their own request_body_json, which replaces
+    rather than merges with the shared creation_requester, so configured Report Options used to be
+    validated and then dropped (issue #77617).
+
+    They now forward configured options, and - critically - still send no reportOptions key at all
+    when nothing is configured, so the request body for an unconfigured connection is unchanged.
+    The connector supplies no defaults of its own for these reports.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_INVENTORY_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _expected_body(stream_name: str, report_options: Optional[dict]) -> dict:
+        # All four streams send the same day-aligned window derived from the slice.
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+        }
+        if report_options is not None:
+            body["reportOptions"] = report_options
+        return body
+
+    def _mock_report_flow(self, http_mocker: HttpMocker, stream_name: str, body: dict) -> None:
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        # The byte-exact body matcher is the assertion: an unexpected or missing reportOptions
+        # key means no matcher matches and the read produces no records.
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format="json"),
+        )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_report_options_configured_when_read_then_report_options_omitted(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """No configured options means no reportOptions key - the connector invents no defaults."""
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_report_options_configured_when_read_then_options_sent(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """Configured options are forwarded verbatim, including reportPeriod."""
+        configured_options = {
+            "reportPeriod": "WEEK",
+            "distributorView": "SOURCING",
+            "sellingProgram": "FRESH",
+        }
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, configured_options))
+
+        report_options = [
+            {
+                "report_name": stream_name,
+                "stream_name": stream_name,
+                "options_list": [{"option_name": name, "option_value": value} for name, value in configured_options.items()],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_sent(self, http_mocker: HttpMocker) -> None:
+        """Options configured for another stream must not leak into this stream's request body."""
+        stream_name = "GET_VENDOR_SALES_REPORT"
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        report_options = [
+            {
+                "report_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "stream_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorAnalyticsAvailabilityHoldback:
+    """
+    Amazon publishes the vendor retail analytics reports "72 hours after the close of the period"
+    (https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics). Requesting a day it
+    has not published yet makes the report FATAL with "The report data for the requested date range
+    is not yet available", which fails the stream rather than skipping the day, so the cursor holds
+    the newest requested day four calendar days back — a slice for day D closes at D 23:59:59 and is
+    published 72h after that, so four days is the smallest holdback that is safe at any time of day.
+
+    Every assertion here is a byte-exact create-report matcher: HttpMocker fails an unmatched
+    request, so a day requested inside the holdback window fails the test rather than passing
+    silently.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, days: List[str]) -> None:
+        """Mock one full create/poll/download cycle per expected day, keyed by a byte-exact body."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), [_get_reports_response()] * len(days))
+        for index, day in enumerate(days):
+            report_id = f"{_REPORT_ID}_{index}"
+            document_id = f"{_REPORT_DOCUMENT_ID}_{index}"
+            download_url = f"{_DOCUMENT_DOWNLOAD_URL}/{index}"
+            body = {
+                "reportType": stream_name,
+                "dataStartTime": f"{day}T00:00:00Z",
+                "dataEndTime": f"{day}T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+            http_mocker.post(
+                _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+                _create_report_response(report_id),
+            )
+            http_mocker.get(
+                _check_report_status_request(report_id).build(),
+                _check_report_status_response(stream_name, report_document_id=document_id),
+            )
+            http_mocker.get(
+                _get_document_download_url_request(document_id).build(),
+                _get_document_download_url_response(download_url, document_id),
+            )
+            http_mocker.get(
+                _download_document_request(download_url).build(),
+                _download_document_response(stream_name, data_format="json"),
+            )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_end_date_when_read_then_newest_requested_day_is_four_days_back(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        NOW is 2024-06-01T00:00:00Z, so the cursor's end bound is 2024-05-28T00:00:00Z. The bound is
+        exclusive, so the newest day requested is 2024-05-27 — published 2024-05-30T23:59:59Z, well
+        inside NOW.
+
+        2024-05-28 onwards is deliberately not mocked: requesting any of those days is the bug this
+        guards against.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-26", "2024-05-27"])
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 26)))
+
+        assert len(output.records) == 2 * DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        # Records alone are not enough: an unmocked day fails its own job and leaves the mocked
+        # days' records in place, so the error check is what actually pins the requested day set.
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_explicit_end_date_when_read_then_holdback_not_applied(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """
+        An explicitly configured replication_end_date is honoured as-is, matching the pre-migration
+        Python connector where availability_sla_days only ever moved the "now" bound. 2024-05-31 is
+        inside the holdback window, so it is only requested because the config asked for it.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-31"])
+
+        output = self._read(
+            stream_name,
+            config().with_start_date(pendulum.datetime(2024, 5, 31)).with_end_date(pendulum.datetime(2024, 6, 1)),
+        )
+
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
 @freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
@@ -1532,6 +2047,17 @@ class TestVendorJsonReportsIncremental:
                 id="vendor_traffic_report",
             ),
             pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
+            ),
+            pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "endDate",
                 {
@@ -1598,6 +2124,17 @@ class TestVendorJsonReportsIncremental:
                     "marketplaceIds": [MARKETPLACE_ID],
                 },
                 id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
@@ -1668,6 +2205,40 @@ class TestVendorJsonReportsIncremental:
         # The day-aligned cursor is what stops the drift from recurring: the next slice starts at
         # 2023-01-30T00:00:00Z (cursor_granularity is PT1S), so every later slice is day-aligned too.
         assert output.most_recent_state.stream_state.__dict__[cursor_field] == "2023-01-29T23:59:59Z"
+
+
+class TestVendorInventoryAvailabilityHoldback:
+    """
+    GET_VENDOR_INVENTORY_REPORT is published on the same ~72h-after-close schedule as the other
+    vendor retail analytics reports, so its cursor ends four days back too: NOW is
+    2024-06-01T00:00:00Z, making the exclusive end bound 2024-05-28T00:00:00Z.
+    """
+
+    _STREAM_NAME = "GET_VENDOR_INVENTORY_REPORT"
+
+    @staticmethod
+    def _read(config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name="GET_VENDOR_INVENTORY_REPORT",
+            sync_mode=SyncMode.incremental,
+        )
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(self, http_mocker: HttpMocker) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
 
 
 @freezegun.freeze_time(NOW.isoformat())

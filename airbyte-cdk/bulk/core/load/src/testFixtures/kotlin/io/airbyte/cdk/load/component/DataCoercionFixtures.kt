@@ -93,12 +93,12 @@ object DataCoercionIntegerFixtures {
             case(
                 INT32_MAX_PLUS_ONE,
                 IntegerValue(Integer.MAX_VALUE.toLong() + 1),
-                Integer.MAX_VALUE.toLong() + 1
+                Integer.MAX_VALUE.toLong() + 1,
             ),
             case(
                 INT32_MIN_MINUS_ONE,
                 IntegerValue(Integer.MIN_VALUE.toLong() - 1),
-                Integer.MIN_VALUE.toLong() - 1
+                Integer.MIN_VALUE.toLong() - 1,
             ),
             // int64 bounds, and slightly out of bounds
             case(INT64_MAX, IntegerValue(Long.MAX_VALUE), Long.MAX_VALUE),
@@ -108,13 +108,13 @@ object DataCoercionIntegerFixtures {
                 INT64_MAX_PLUS_ONE,
                 IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 INT64_MIN_MINUS_1,
                 IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
             // (these are all out of bounds for an int64 value, so they all get nulled)
@@ -122,25 +122,25 @@ object DataCoercionIntegerFixtures {
                 NUMERIC_38_0_MAX,
                 IntegerValue(numeric38_0Max),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_0_MIN,
                 IntegerValue(numeric38_0Min),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_0_MAX_PLUS_ONE,
                 IntegerValue(numeric38_0Max + BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_0_MIN_MINUS_ONE,
                 IntegerValue(numeric38_0Min - BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
         )
 
@@ -161,22 +161,22 @@ object DataCoercionIntegerFixtures {
             case(
                 INT32_MAX,
                 IntegerValue(Integer.MAX_VALUE.toLong()),
-                bigint(Integer.MAX_VALUE.toLong())
+                bigint(Integer.MAX_VALUE.toLong()),
             ),
             case(
                 INT32_MIN,
                 IntegerValue(Integer.MIN_VALUE.toLong()),
-                bigint(Integer.MIN_VALUE.toLong())
+                bigint(Integer.MIN_VALUE.toLong()),
             ),
             case(
                 INT32_MAX_PLUS_ONE,
                 IntegerValue(Integer.MAX_VALUE.toLong() + 1),
-                bigint(Integer.MAX_VALUE.toLong() + 1)
+                bigint(Integer.MAX_VALUE.toLong() + 1),
             ),
             case(
                 INT32_MIN_MINUS_ONE,
                 IntegerValue(Integer.MIN_VALUE.toLong() - 1),
-                bigint(Integer.MIN_VALUE.toLong() - 1)
+                bigint(Integer.MIN_VALUE.toLong() - 1),
             ),
             // int64 bounds, and slightly out of bounds
             case(INT64_MAX, IntegerValue(Long.MAX_VALUE), bigint(Long.MAX_VALUE)),
@@ -184,12 +184,12 @@ object DataCoercionIntegerFixtures {
             case(
                 INT64_MAX_PLUS_ONE,
                 IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
-                bigint(Long.MAX_VALUE) + BigInteger.ONE
+                bigint(Long.MAX_VALUE) + BigInteger.ONE,
             ),
             case(
                 INT64_MIN_MINUS_1,
                 IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
-                bigint(Long.MIN_VALUE) - BigInteger.ONE
+                bigint(Long.MIN_VALUE) - BigInteger.ONE,
             ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
             case(NUMERIC_38_0_MAX, IntegerValue(numeric38_0Max), numeric38_0Max),
@@ -199,13 +199,13 @@ object DataCoercionIntegerFixtures {
                 NUMERIC_38_0_MAX_PLUS_ONE,
                 IntegerValue(numeric38_0Max + BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_0_MIN_MINUS_ONE,
                 IntegerValue(numeric38_0Min - BigInteger.ONE),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
         )
 
@@ -216,16 +216,18 @@ object DataCoercionIntegerFixtures {
      * rather than [Long].
      */
     @JvmStatic
-    fun int64AsBigInteger() =
-        int64.map { it.copy(outputValue = it.outputValue?.let { bigint(it as Long) }) }
+    fun int64AsBigInteger() = int64.map {
+        it.copy(outputValue = it.outputValue?.let { bigint(it as Long) })
+    }
 
     /**
      * Convenience fixture if your [TestTableOperationsClient] returns integers as [BigDecimal]
      * rather than [Long].
      */
     @JvmStatic
-    fun int64AsBigDecimal() =
-        int64.map { it.copy(outputValue = it.outputValue?.let { BigDecimal.valueOf(it as Long) }) }
+    fun int64AsBigDecimal() = int64.map {
+        it.copy(outputValue = it.outputValue?.let { BigDecimal.valueOf(it as Long) })
+    }
 
     @JvmStatic fun numeric38_0() = numeric38_0.toArgs()
 }
@@ -267,83 +269,83 @@ object DataCoercionNumberFixtures {
             case(
                 NEGATIVE_ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                 NumberValue(bigdec("-123.4")),
-                -123.4
+                -123.4,
             ),
             // These values have too much precision for a float64, so we round them
             case(
                 POSITIVE_HIGH_PRECISION_FLOAT,
                 NumberValue(bigdec("1234567890.1234567890123456789")),
                 1234567890.1234567,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NEGATIVE_HIGH_PRECISION_FLOAT,
                 NumberValue(bigdec("-1234567890.1234567890123456789")),
                 -1234567890.1234567,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_9_MAX,
                 NumberValue(numeric38_9Max),
                 1.0E29,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 NUMERIC_38_9_MIN,
                 NumberValue(numeric38_9Min),
                 -1.0E29,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             // min/max_value are all positive values, so we need to manually test their negative
             // version
             case(
                 SMALLEST_POSITIVE_FLOAT32,
                 NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
-                Float.MIN_VALUE.toDouble()
+                Float.MIN_VALUE.toDouble(),
             ),
             case(
                 SMALLEST_NEGATIVE_FLOAT32,
                 NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
-                -Float.MIN_VALUE.toDouble()
+                -Float.MIN_VALUE.toDouble(),
             ),
             case(
                 LARGEST_POSITIVE_FLOAT32,
                 NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
-                Float.MAX_VALUE.toDouble()
+                Float.MAX_VALUE.toDouble(),
             ),
             case(
                 LARGEST_NEGATIVE_FLOAT32,
                 NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
-                -Float.MAX_VALUE.toDouble()
+                -Float.MAX_VALUE.toDouble(),
             ),
             case(
                 SMALLEST_POSITIVE_FLOAT64,
                 NumberValue(bigdec(Double.MIN_VALUE)),
-                Double.MIN_VALUE
+                Double.MIN_VALUE,
             ),
             case(
                 SMALLEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MIN_VALUE)),
-                -Double.MIN_VALUE
+                -Double.MIN_VALUE,
             ),
             case(LARGEST_POSITIVE_FLOAT64, NumberValue(bigdec(Double.MAX_VALUE)), Double.MAX_VALUE),
             case(
                 LARGEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MAX_VALUE)),
-                -Double.MAX_VALUE
+                -Double.MAX_VALUE,
             ),
             // These values are out of bounds, so we null them
             case(
                 SLIGHTLY_ABOVE_LARGEST_POSITIVE_FLOAT64,
                 NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 SLIGHTLY_BELOW_LARGEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
         )
 
@@ -359,49 +361,49 @@ object DataCoercionNumberFixtures {
                 case(
                     ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                     NumberValue(bigdec("123.4")),
-                    bigdec("123.4")
+                    bigdec("123.4"),
                 ),
                 case(
                     NEGATIVE_ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                     NumberValue(bigdec("-123.4")),
-                    bigdec("-123.4")
+                    bigdec("-123.4"),
                 ),
                 // These values have too much precision for a numeric(38, 9), so we round them
                 case(
                     POSITIVE_HIGH_PRECISION_FLOAT,
                     NumberValue(bigdec("1234567890.1234567890123456789")),
                     bigdec("1234567890.123456789"),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     NEGATIVE_HIGH_PRECISION_FLOAT,
                     NumberValue(bigdec("-1234567890.1234567890123456789")),
                     bigdec("-1234567890.123456789"),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SMALLEST_POSITIVE_FLOAT32,
                     NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
                     bigdec(0),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SMALLEST_NEGATIVE_FLOAT32,
                     NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
                     bigdec(0),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SMALLEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MIN_VALUE)),
                     bigdec(0),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SMALLEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MIN_VALUE)),
                     bigdec(0),
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 // numeric bounds are perfectly fine
                 case(NUMERIC_38_9_MAX, NumberValue(numeric38_9Max), numeric38_9Max),
@@ -411,42 +413,43 @@ object DataCoercionNumberFixtures {
                     LARGEST_POSITIVE_FLOAT32,
                     NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     LARGEST_NEGATIVE_FLOAT32,
                     NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     LARGEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MAX_VALUE)),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     LARGEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MAX_VALUE)),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SLIGHTLY_ABOVE_LARGEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
                 case(
                     SLIGHTLY_BELOW_LARGEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
                     null,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
             )
             .map { it.copy(outputValue = (it.outputValue as BigDecimal?)?.setScale(9)) }
 
     @JvmStatic fun float64() = float64.toArgs()
+
     @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
 }
 
@@ -643,12 +646,12 @@ object DataCoercionStringFixtures {
                 LONG_STRING,
                 StringValue("a".repeat(16777216 + 1)),
                 null,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
             case(
                 SPECIAL_CHARS_STRING,
                 StringValue("`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"),
-                "`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"
+                "`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀",
             ),
             case(
                 NULL_CHAR_STRING,
@@ -671,14 +674,13 @@ object DataCoercionObjectFixtures {
             case(
                 NORMAL_OBJECT,
                 ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
-                mapOf("foo" to "bar")
+                mapOf("foo" to "bar"),
             ),
         )
 
-    val stringifiedObjects =
-        objects.map { fixture ->
-            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
-        }
+    val stringifiedObjects = objects.map { fixture ->
+        fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+    }
 
     @JvmStatic fun objects() = objects.toArgs()
 
@@ -696,10 +698,9 @@ object DataCoercionArrayFixtures {
             case(NORMAL_ARRAY, ArrayValue(listOf(StringValue("foo"))), listOf("foo")),
         )
 
-    val stringifiedArrays =
-        arrays.map { fixture ->
-            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
-        }
+    val stringifiedArrays = arrays.map { fixture ->
+        fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+    }
 
     @JvmStatic fun arrays() = arrays.toArgs()
 
@@ -719,14 +720,13 @@ object DataCoercionUnionFixtures {
             case(
                 UNION_OBJ_VALUE,
                 ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
-                mapOf("foo" to "bar")
+                mapOf("foo" to "bar"),
             ),
         )
 
-    val stringifiedUnions =
-        unions.map { fixture ->
-            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
-        }
+    val stringifiedUnions = unions.map { fixture ->
+        fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+    }
 
     @JvmStatic fun unions() = unions.toArgs()
 
@@ -747,7 +747,7 @@ object DataCoercionLegacyUnionFixtures {
             case(
                 UNION_OBJ_VALUE,
                 ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
-                mapOf("foo" to "bar")
+                mapOf("foo" to "bar"),
             ),
         )
 
@@ -776,14 +776,13 @@ object DataCoercionUnknownFixtures {
             case(
                 OBJ_VALUE,
                 ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
-                mapOf("foo" to "bar")
+                mapOf("foo" to "bar"),
             ),
         )
 
-    val stringifiedUnknowns =
-        unknowns.map { fixture ->
-            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
-        }
+    val stringifiedUnknowns = unknowns.map { fixture ->
+        fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+    }
 
     @JvmStatic fun unknowns() = unknowns.toArgs()
 
@@ -841,12 +840,12 @@ val dateTimeFormatter =
  * constructor.
  *
  * @param name A short human-readable name for the test. Primarily useful for tests where
- * [inputValue] is either very long, or otherwise hard to read.
+ *   [inputValue] is either very long, or otherwise hard to read.
  * @param inputValue The value to pass into [ValueCoercer.validate]
  * @param outputValue The value that we expect to read back from the destination. Should be
- * basically equivalent to the output of [ValueCoercer.validate]
+ *   basically equivalent to the output of [ValueCoercer.validate]
  * @param changeReason If `validate` returns Truncate/Nullify, the reason for that
- * truncation/nullification. If `validate` returns Valid, this should be null.
+ *   truncation/nullification. If `validate` returns Valid, this should be null.
  */
 data class DataCoercionTestCase(
     val name: String,

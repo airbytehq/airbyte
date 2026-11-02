@@ -51,7 +51,8 @@ class SnowflakeMetaColumnRepairTest(
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "TEST" NUMBER(38,0)
             )
-            """.trimIndent()
+            """
+                .trimIndent(),
         )
     }
 
@@ -62,7 +63,8 @@ class SnowflakeMetaColumnRepairTest(
             INSERT INTO ${sqlGenerator.fullyQualifiedName(tableName)}
                 ("_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT", "TEST")
             VALUES ('legacy-row', CURRENT_TIMESTAMP(), 7)
-            """.trimIndent()
+            """
+                .trimIndent(),
         )
     }
 
@@ -79,7 +81,7 @@ class SnowflakeMetaColumnRepairTest(
                 client
                     .describeTable(table)
                     .keys
-                    .containsAll(SnowflakeColumnManager.Constants.schemaModeMetaColNames)
+                    .containsAll(SnowflakeColumnManager.Constants.schemaModeMetaColNames),
             )
 
             client.ensureSchemaMatches(stream, table, testMapping)

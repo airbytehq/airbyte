@@ -8,16 +8,16 @@ In order to manage your payment and billing information, you need the **Organiza
 
 ## What are credits?
 
-Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. Airbyte Cloud plans start at $10 per month, which includes 4 credits. Additional credits are available at $2.50 each.
+Airbyte credits are used to pay for Airbyte resources when you run a sync on the Standard and Plus plans. Each plan includes a number of credits per month, and you can buy additional credits. Pro and Enterprise Flex are capacity-based plans that use [data workers](manage-data-workers) instead. For plan and credit pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
-Airbyte uses credits to unify pricing across multiple types of sources. You can refer to the below table to understand how pricing differs across each source.
+Airbyte uses credits to unify usage across multiple types of sources. You can refer to the below table to estimate how many credits a sync consumes for each source type.
 
-| Source Type    | Billing Type | Price                | Credit Equivalent |
-| -------------- | ------------ | -------------------- | ----------------- |
-| APIs           | Rows         | $15 per million rows | 6 credits         |
-| Databases      | GB           | $10 per GB           | 4 credits         |
-| Files          | GB           | $10 per GB           | 4 credits         |
-| Custom sources | Rows         | $15 per million rows | 6 credits         |
+| Source Type    | Billing Type | Usage        | Credits   |
+| -------------- | ------------ | ------------ | --------- |
+| APIs           | Rows         | Million rows | 6 credits |
+| Databases      | GB           | 1 GB         | 4 credits |
+| Files          | GB           | 1 GB         | 4 credits |
+| Custom sources | Rows         | Million rows | 6 credits |
 
 For APIs and custom sources, most syncs happen incrementally, so the row amount is typically those rows added, edited, or deleted. For Full Refresh syncs, every row synced is charged.
 
@@ -33,13 +33,19 @@ All pricing is in USD.
 
 If you pass $10,000 (USD) in credit usage during a billing period, Airbyte automatically charges your saved payment method and issues an invoice.
 
-## Purchase credits
+## Choose or change your plan
 
-If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
+Manage your plan from the Plan page. To open it, click **Organization settings** in the navigation bar, then click **Plan**.
+
+- **Standard** and **Plus** are self-serve. You can subscribe to either plan, switch between them, and choose how many credits your Plus plan includes each month.
+
+- **Pro** and **Enterprise Flex** are contracted, capacity-based plans. [Contact Sales](https://airbyte.com/company/talk-to-sales) to move to one of these plans or to change plans once you're on one.
+
+To compare plans and pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
 ## Start a trial
 
-To begin a trial of Airbyte Cloud, head to [cloud.airbyte.com/signup](https://cloud.airbyte.com/signup). Your trial begins after your first successful sync. Trials last 30 days or when you use 400 trial credits, whichever occurs first.
+To begin a trial of Airbyte Cloud, head to [cloud.airbyte.com/signup](https://cloud.airbyte.com/signup). Your trial begins after your first successful sync. Trials last 14 days or when you use 400 trial credits, whichever occurs first.
 
 If you need additional trial credits or time to evaluate Airbyte, please reach out to Airbyte's [Sales team](https://airbyte.com/company/talk-to-sales).
 
@@ -69,9 +75,7 @@ Airbyte automatically charges the credit card on file at the end of each month's
 
 ### Review your subscription
 
-The Subscription section shows the subscription plan you have enrolled in.
-
-If you're on Standard and eligible for self-serve Plus, you can upgrade from the Billing page. Plus includes everything in Standard and adds [15-minute sync schedules](/platform/using-airbyte/core-concepts/sync-schedules) and [mappings](/platform/using-airbyte/mappings). Airbyte applies Plus after checkout is complete.
+The Subscription section shows the plan you're enrolled in. To change plans or the number of credits in your Plus plan, use the [Plan page](#choose-or-change-your-plan).
 
 Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about Pro, Enterprise Flex, new features, or custom discounts.
 
@@ -109,22 +113,36 @@ You can view more details about an individual invoice by clicking **View Invoice
 
 ## Billing notifications
 
-By default, all customers automatically review upcoming invoice notifications 3 and 7 days before the invoice is finalized. All billing notifications are sent to the billing email on file.
+Airbyte sends two kinds of billing emails: upcoming invoice reminders, which all subscribed organizations receive, and billing alerts, which you configure.
 
-You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices.
+### Upcoming invoice reminders
 
-Airbyte can notify you when:
+Airbyte emails your billing email 7 days and 3 days before your billing period ends. The email shows your estimated invoice amount and the payment method Airbyte will charge. You don't need to set anything up to receive these reminders.
 
-- A sync consumes over $__
+### Billing alerts
 
-- Your upcoming invoice has increased __%
+Billing alerts email you when your usage or upcoming invoice crosses a limit you set. Airbyte highly recommends setting up billing alerts so you aren't surprised by your invoice.
 
-- Notify me when my upcoming invoice is over $___
+Billing alerts are available to organizations on the Standard and Plus plans that have a payment method on file. You need the [organization admin](../../access-management/rbac.md) role to manage them. Pro and Enterprise Flex organizations don't have billing alerts.
 
-To enroll in or modify your existing billing notifications:
+You can set up either or both of these alerts:
 
-1. From the Billing page, click **Set up billing alerts**.
+- **Single sync usage**: Airbyte emails you when a single sync uses more than the number of credits you set. Airbyte estimates each sync's credits from the rows or data volume it synced, using the rates in [What are credits?](#what-are-credits). This alert applies to every connection in your organization.
 
-2. Submit the form with the thresholds you want to use for alerts.
+- **Upcoming invoice amount**: Airbyte emails you when your estimated invoice for the current billing period is more than the amount you set, in U.S. dollars. You receive this alert at most once per billing period.
 
-To unenroll, [email the Billing team](mailto:billing@airbyte.io) with your request.
+Alerts can take up to a day to arrive after a threshold is crossed.
+
+#### Set up or change billing alerts
+
+1. Click **Organization settings** in the navigation bar, then click **Billing**. You can also click **Set up billing alerts** on the **Usage** page or the workspace **Notifications** settings page.
+
+2. In the **Billing alerts** section, enter the **Email** address that should receive alerts. To send alerts to more than one person, use a distribution list.
+
+3. Turn on the alerts you want, and enter a threshold for each one. Thresholds must be whole numbers greater than 0.
+
+4. Click **Save changes**.
+
+Airbyte sends a confirmation email to the address you entered.
+
+To stop an alert, turn it off and click **Save changes**.

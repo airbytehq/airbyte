@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 
 class MSSQLDataValidator(
     private val getConfiguration:
-        (spec: ConfigurationSpecification, stream: DestinationStream) -> MSSQLConfiguration
+        (spec: ConfigurationSpecification, stream: DestinationStream) -> MSSQLConfiguration,
 ) : DataValidator {
     override fun count(spec: ConfigurationSpecification, stream: DestinationStream): Long? {
         val config = getConfiguration(spec as MSSQLSpecification, stream)
@@ -31,7 +31,7 @@ class MSSQLDataValidator(
 
         return dataSource.connection.use { connection ->
             COUNT_FROM.toQuery(sqlBuilder.outputSchema, sqlBuilder.tableName).executeQuery(
-                connection
+                connection,
             ) { rs ->
                 while (rs.next()) {
                     return@executeQuery rs.getLong(1)

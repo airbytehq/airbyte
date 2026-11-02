@@ -38,7 +38,7 @@ class S3ParquetWriter(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp?,
     schema: Schema?,
-    converter: JsonAvroConverter?
+    converter: JsonAvroConverter?,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory
@@ -50,7 +50,7 @@ class S3ParquetWriter(
                 .timestamp(uploadTimestamp)
                 .fileExtension(FileUploadFormat.PARQUET.fileExtension)
                 .fileNamePattern(config.fileNamePattern)
-                .build()
+                .build(),
         )
 
     // object key = <path>/<output-filename>
@@ -68,10 +68,10 @@ class S3ParquetWriter(
         hadoopConfig.setBoolean(AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE, false)
         this.parquetWriter =
             AvroParquetWriter.builder<GenericData.Record>(
-                    HadoopOutputFile.fromPath(path, hadoopConfig)
+                    HadoopOutputFile.fromPath(path, hadoopConfig),
                 )
                 .withConf(
-                    hadoopConfig
+                    hadoopConfig,
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)

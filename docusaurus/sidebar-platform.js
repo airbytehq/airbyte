@@ -244,7 +244,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Data replication platform",
+      label: "Platform",
       link: {
         type: "doc",
         id: "readme",
@@ -260,10 +260,6 @@ module.exports = {
         {
           type: "doc",
           id: "using-airbyte/core-concepts/readme",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/getting-started/academy",
         },
         sectionHeader("Move and manage data"),
         {
@@ -460,6 +456,31 @@ module.exports = {
           ],
         },   
         buildAConnector,     
+        sectionHeader("Work with AI agents"),
+        {
+          type: "category",
+          label: "Airbyte MCP",
+          link: {
+            type: "doc",
+            id: "airbyte-mcp/readme",
+          },
+          items: [
+            "airbyte-mcp/install",
+            "airbyte-mcp/tools",
+            "airbyte-mcp/advanced-configuration",
+            "airbyte-mcp/self-managed",
+          ],
+        },
+        "airbyte-knowledge-mcp",
+        {
+          type: "category",
+          label: "Context layer",
+          link: {
+            type: "doc",
+            id: "context-layer/readme",
+          },
+          items: ["context-layer/manage-access"],
+        },
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
         "enterprise-setup/README",

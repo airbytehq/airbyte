@@ -13,12 +13,13 @@ from requests.auth import HTTPBasicAuth
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.types import Config, StreamSlice
+from airbyte_cdk.sources.types import Config, Record, StreamSlice
 
 
 logger = logging.getLogger("airbyte")
@@ -53,6 +54,7 @@ class TicketActivitiesRetriever(Retriever):
     request_timeout: int = 300
     backoff_strategy: Optional[BackoffStrategy] = field(default=None)
     api_budget: Optional[APIBudget] = field(default=None)
+    cursor: Optional[Cursor] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         error_mapping = {
@@ -86,6 +88,9 @@ class TicketActivitiesRetriever(Retriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
+        """Read the daily export file whole (files follow the account's local day) and skip only
+        records before the sync start: already synced, or before the start day.
+        """
         export_date = self._get_export_date(stream_slice)
         export_payload = self._get_json(
             self._export_endpoint,
@@ -100,6 +105,12 @@ class TicketActivitiesRetriever(Retriever):
         if "activities_data" not in export_data:
             download_url = self._extract_download_url(export_payload)
             if not download_url:
+                if export_payload.get("export"):
+                    raise AirbyteTracedException(
+                        message="Freshdesk ticket activities export response did not contain a download URL.",
+                        internal_message=f"Export shape for {export_date}: {self._describe_export_shape(export_payload['export'])}",
+                        failure_type=FailureType.system_error,
+                    )
                 logger.info("No ticket activities export was available for %s", export_date)
                 return
             export_data = self._get_json(download_url, allow_missing=True) or {}
@@ -111,8 +122,11 @@ class TicketActivitiesRetriever(Retriever):
                 failure_type=FailureType.system_error,
             )
 
-        for record in self._add_stable_ids(records, export_date, stream_slice):
-            yield record
+        for record in self._add_stable_ids(records, export_date):
+            if self.cursor is None or self.cursor.should_be_synced(
+                Record(data=record, stream_name="ticket_activities", associated_slice=stream_slice)
+            ):
+                yield record
 
     @property
     def _export_endpoint(self) -> str:
@@ -162,17 +176,26 @@ class TicketActivitiesRetriever(Retriever):
     @staticmethod
     def _extract_download_url(payload: Mapping[str, Any]) -> Optional[str]:
         export = payload.get("export")
-        if isinstance(export, Mapping) and isinstance(export.get("url"), str):
-            return export["url"]
+        export_entries = export if isinstance(export, list) else [export]
+        for entry in export_entries:
+            if isinstance(entry, Mapping) and isinstance(entry.get("url"), str):
+                return entry["url"]
         for key in ("url", "link"):
             value = payload.get(key)
             if isinstance(value, str):
                 return value
         return None
 
-    def _add_stable_ids(
-        self, records: Iterable[Mapping[str, Any]], export_date: str, stream_slice: Optional[StreamSlice]
-    ) -> Iterable[Mapping[str, Any]]:
+    @staticmethod
+    def _describe_export_shape(export: Any) -> str:
+        if isinstance(export, Mapping):
+            return f"object with keys {sorted(export.keys())}"
+        if isinstance(export, list):
+            entry_types = sorted({type(entry).__name__ for entry in export})
+            return f"list of {len(export)} entries with types {entry_types}"
+        return type(export).__name__
+
+    def _add_stable_ids(self, records: Iterable[Mapping[str, Any]], export_date: str) -> Iterable[Mapping[str, Any]]:
         seen_record_hashes: dict[str, int] = {}
         for record in records:
             enriched_record = dict(record)
@@ -182,8 +205,6 @@ class TicketActivitiesRetriever(Retriever):
                     failure_type=FailureType.system_error,
                 )
             enriched_record["performed_at"] = self._format_datetime(enriched_record["performed_at"])
-            if not self._is_in_stream_slice(enriched_record["performed_at"], stream_slice):
-                continue
             enriched_record["export_date"] = export_date
 
             base_hash = self._hash_record(enriched_record)
@@ -195,19 +216,6 @@ class TicketActivitiesRetriever(Retriever):
     def _hash_record(record: Mapping[str, Any]) -> str:
         serialized_record = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(serialized_record.encode("utf-8")).hexdigest()
-
-    @classmethod
-    def _is_in_stream_slice(cls, performed_at: str, stream_slice: Optional[StreamSlice]) -> bool:
-        if stream_slice is None:
-            return True
-        performed_at_datetime = cls._parse_datetime(performed_at)
-        start_time = stream_slice.get("start_time")
-        if start_time and performed_at_datetime < cls._parse_datetime(start_time):
-            return False
-        end_time = stream_slice.get("end_time")
-        if end_time and performed_at_datetime > cls._parse_datetime(end_time):
-            return False
-        return True
 
     @classmethod
     def _format_datetime(cls, value: Any) -> Any:
