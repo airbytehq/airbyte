@@ -31,12 +31,10 @@ definitions:
         field_name: Authorization
         inject_into: header
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-      - type: DefaultErrorHandler
-        backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 10
+      type: DefaultErrorHandler
+      backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 10
     request_body_json: {}
   paginator:
     type: DefaultPaginator
@@ -80,12 +78,10 @@ definitions:
                 field_name: Authorization
                 inject_into: header
             error_handler:
-              type: CompositeErrorHandler
-              error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 10
+              type: DefaultErrorHandler
+              backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 10
             request_body_json: {}
             path: members/me/boards
             request_parameters:
@@ -448,12 +444,10 @@ definitions:
                 field_name: Authorization
                 inject_into: header
             error_handler:
-              type: CompositeErrorHandler
-              error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 10
+              type: DefaultErrorHandler
+              backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 10
             request_body_json: {}
             path: members/me/organizations
             request_parameters:
@@ -698,12 +692,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: members/me/boards
         request_parameters:
@@ -1062,12 +1054,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: members/me/organizations
         request_parameters:
@@ -1312,12 +1302,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: boards/{{ stream_partition.id }}/actions
       record_selector:
@@ -1367,12 +1355,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/boards
                 request_parameters:
@@ -1735,12 +1721,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/organizations
                 request_parameters:
@@ -2392,12 +2376,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: boards/{{ stream_partition.id }}/cards/all
         request_parameters:
@@ -2455,12 +2437,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/boards
                 request_parameters:
@@ -2823,12 +2803,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/organizations
                 request_parameters:
@@ -3401,12 +3379,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: boards/{{ stream_partition.id }}/checklists
         request_parameters:
@@ -3445,12 +3421,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/boards
                 request_parameters:
@@ -3813,12 +3787,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/organizations
                 request_parameters:
@@ -4784,12 +4756,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: boards/{{ stream_partition.id }}/lists
         request_parameters:
@@ -4826,12 +4796,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/boards
                 request_parameters:
@@ -5194,12 +5162,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/organizations
                 request_parameters:
@@ -5479,12 +5445,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 10
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
         request_body_json: {}
         path: boards/{{ stream_partition.id }}/members
         request_parameters:
@@ -5521,12 +5485,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/boards
                 request_parameters:
@@ -5889,12 +5851,10 @@ definitions:
                     field_name: Authorization
                     inject_into: header
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    backoff_strategies:
-                    - type: ConstantBackoffStrategy
-                      backoff_time_in_seconds: 10
+                  type: DefaultErrorHandler
+                  backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
                 request_body_json: {}
                 path: members/me/organizations
                 request_parameters:
@@ -6160,12 +6120,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: members/me/boards
       request_parameters:
@@ -6524,12 +6482,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: members/me/organizations
       request_parameters:
@@ -6773,12 +6729,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: boards/{{ stream_partition.id }}/actions
     record_selector:
@@ -6828,12 +6782,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/boards
               request_parameters:
@@ -7197,12 +7149,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/organizations
               request_parameters:
@@ -7853,12 +7803,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: boards/{{ stream_partition.id }}/cards/all
       request_parameters:
@@ -7916,12 +7864,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/boards
               request_parameters:
@@ -8285,12 +8231,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/organizations
               request_parameters:
@@ -8862,12 +8806,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: boards/{{ stream_partition.id }}/checklists
       request_parameters:
@@ -8906,12 +8848,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/boards
               request_parameters:
@@ -9275,12 +9215,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/organizations
               request_parameters:
@@ -10245,12 +10183,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: boards/{{ stream_partition.id }}/lists
       request_parameters:
@@ -10287,12 +10223,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/boards
               request_parameters:
@@ -10656,12 +10590,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/organizations
               request_parameters:
@@ -10940,12 +10872,10 @@ streams:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ConstantBackoffStrategy
-            backoff_time_in_seconds: 10
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 10
       request_body_json: {}
       path: boards/{{ stream_partition.id }}/members
       request_parameters:
@@ -10982,12 +10912,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/boards
               request_parameters:
@@ -11351,12 +11279,10 @@ streams:
                   field_name: Authorization
                   inject_into: header
               error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
+                type: DefaultErrorHandler
+                backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 10
               request_body_json: {}
               path: members/me/organizations
               request_parameters:
