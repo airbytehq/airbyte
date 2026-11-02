@@ -187,7 +187,7 @@ The publication name is customizable. Refer to the [Postgres docs](https://www.p
 </FieldAnchor>
 
 :::note
-The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+With CDC, only tables in the publication can be synced incrementally. Tables outside it are offered Full Refresh only; to sync one incrementally, add it to the publication and refresh the source schema. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
 ### Step 6: Enable CDC replication in Airbyte UI
@@ -369,6 +369,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.12 | 2026-11-02 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | CDC: discover offers incremental sync only for tables in the configured publication; other tables are offered Full Refresh only, so a table outside the publication can no longer be configured for CDC and silently stop receiving changes after its initial snapshot. |
 | 3.8.11 | 2026-10-21 | [89637](https://github.com/airbytehq/airbyte/pull/89637) | Upgrade to Bulk CDK 1.2.3: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; Kafka 4.1.2, Jetty 12.0.40, plexus-utils 3.6.2. |
 | 3.8.10 | 2026-10-21 | [89623](https://github.com/airbytehq/airbyte/pull/89623) | Upgrade to Bulk CDK 1.2.1, which brings Debezium 3.4.3 (CDC requires PostgreSQL 14 or later; the JDBC driver's keep-alive no longer advances the replication slot while the captured tables are idle, so configure the Debezium heartbeat query on low-activity databases), CDC records written while Debezium shuts down are counted in the final checkpoint, Kotlin 2.4 / K2 runtime, Micronaut 4.10.31, Jackson 2.21.7. |
 | 3.8.9 | 2026-10-14 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream. |
