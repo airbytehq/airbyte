@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "resource_missing",
+    "message": "No such application fee: 'fee_1Ab2Cd3Ef4Gh5Ij6'",
+    "param": "id",
+    "type": "invalid_request_error"
+  }
+}
