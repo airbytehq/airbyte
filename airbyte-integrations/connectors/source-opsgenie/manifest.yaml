@@ -15,12 +15,10 @@ definitions:
       field_name: Authorization
       inject_into: header
   on_error:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        backoff_strategies:
-          - type: WaitUntilTimeFromHeader
-            header: X-RateLimit-Period-In-Sec
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitUntilTimeFromHeader
+        header: X-RateLimit-Period-In-Sec
   pagination:
     type: DefaultPaginator
     page_token_option:
@@ -44,12 +42,10 @@ definitions:
         field_name: Authorization
         inject_into: header
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitUntilTimeFromHeader
-              header: X-RateLimit-Period-In-Sec
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Period-In-Sec
     request_body_json: {}
   retriever:
     type: SimpleRetriever
@@ -68,12 +64,10 @@ definitions:
           field_name: Authorization
           inject_into: header
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitUntilTimeFromHeader
-                header: X-RateLimit-Period-In-Sec
+        type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitUntilTimeFromHeader
+            header: X-RateLimit-Period-In-Sec
       request_body_json: {}
     record_selector:
       type: RecordSelector
@@ -107,12 +101,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -146,12 +138,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -303,12 +293,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -379,12 +367,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -473,12 +459,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -556,12 +540,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -757,12 +739,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1048,12 +1028,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
         path: "v2/users/{{ stream_partition['user_id'] }}/teams"
       record_selector:
@@ -1094,12 +1072,10 @@ definitions:
                       field_name: Authorization
                       inject_into: header
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                   request_body_json: {}
                 record_selector:
                   type: RecordSelector
@@ -1283,12 +1259,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
         path: "v2/alerts/{{ stream_partition['alert_id'] }}/recipients"
       record_selector:
@@ -1330,12 +1304,10 @@ definitions:
                       field_name: Authorization
                       inject_into: header
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                   request_body_json: {}
                 record_selector:
                   type: RecordSelector
@@ -1698,12 +1670,10 @@ definitions:
             field_name: Authorization
             inject_into: header
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1744,12 +1714,10 @@ definitions:
                       field_name: Authorization
                       inject_into: header
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                   request_body_json: {}
                 record_selector:
                   type: RecordSelector
@@ -2093,15 +2061,10 @@ streams:
           primary_key: "id"
           path: "v2/users"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "users"
-                  primary_key: "id"
-                  path: "v2/users"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "users"
               primary_key: "id"
               path: "v2/users"
@@ -2292,15 +2255,10 @@ streams:
           primary_key: "id"
           path: "v2/teams"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "teams"
-                  primary_key: "id"
-                  path: "v2/teams"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "teams"
               primary_key: "id"
               path: "v2/teams"
@@ -2410,15 +2368,10 @@ streams:
           primary_key: "id"
           path: "v1/services"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "services"
-                  primary_key: "id"
-                  path: "v1/services"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "services"
               primary_key: "id"
               path: "v1/services"
@@ -2546,15 +2499,10 @@ streams:
           primary_key: "id"
           path: "v2/integrations"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "integrations"
-                  primary_key: "id"
-                  path: "v2/integrations"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "integrations"
               primary_key: "id"
               path: "v2/integrations"
@@ -2671,15 +2619,10 @@ streams:
           primary_key: "id"
           path: "v1/incidents"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "incidents"
-                  primary_key: "id"
-                  path: "v1/incidents"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "incidents"
               primary_key: "id"
               path: "v1/incidents"
@@ -2912,15 +2855,10 @@ streams:
           primary_key: "id"
           path: "v2/alerts"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "alerts"
-                  primary_key: "id"
-                  path: "v2/alerts"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "alerts"
               primary_key: "id"
               path: "v2/alerts"
@@ -3250,14 +3188,10 @@ streams:
           name: user_teams
           primary_key: "id"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: user_teams
-                  primary_key: "id"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: user_teams
               primary_key: "id"
           name: user_teams
@@ -3320,15 +3254,10 @@ streams:
                     primary_key: "id"
                     path: "v2/users"
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
-                            name: "users"
-                            primary_key: "id"
-                            path: "v2/users"
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                         name: "users"
                         primary_key: "id"
                         path: "v2/users"
@@ -3564,15 +3493,10 @@ streams:
           primary_key: "user_id"
           path: "v2/alerts/{{ record }}/recipients"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "alert_recipients"
-                  primary_key: "user_id"
-                  path: "v2/alerts/{{ record }}/recipients"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "alert_recipients"
               primary_key: "user_id"
               path: "v2/alerts/{{ record }}/recipients"
@@ -3643,15 +3567,10 @@ streams:
                     primary_key: "id"
                     path: "v2/alerts"
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
-                            name: "alerts"
-                            primary_key: "id"
-                            path: "v2/alerts"
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                         name: "alerts"
                         primary_key: "id"
                         path: "v2/alerts"
@@ -4094,15 +4013,10 @@ streams:
           primary_key: "offset"
           path: "v2/alerts/{{ stream_partition.alert_id }}/logs"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-RateLimit-Period-In-Sec
-                  name: "alert_logs"
-                  primary_key: "offset"
-                  path: "v2/alerts/{{ stream_partition.alert_id }}/logs"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitUntilTimeFromHeader
+              header: X-RateLimit-Period-In-Sec
               name: "alert_logs"
               primary_key: "offset"
               path: "v2/alerts/{{ stream_partition.alert_id }}/logs"
@@ -4173,15 +4087,10 @@ streams:
                     primary_key: "id"
                     path: "v2/alerts"
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        backoff_strategies:
-                          - type: WaitUntilTimeFromHeader
-                            header: X-RateLimit-Period-In-Sec
-                            name: "alerts"
-                            primary_key: "id"
-                            path: "v2/alerts"
+                    type: DefaultErrorHandler
+                    backoff_strategies:
+                      - type: WaitUntilTimeFromHeader
+                        header: X-RateLimit-Period-In-Sec
                         name: "alerts"
                         primary_key: "id"
                         path: "v2/alerts"
