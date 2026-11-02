@@ -1,12 +1,12 @@
 ---
-products: oss-*
+products: oss-*, enterprise-flex
 ---
 
 # Breaking change list
 
 Occasionally, new versions of Airbyte introduce breaking changes. This page inventories breaking changes between versions and any necessary steps to mitigate the change.
 
-When you upgrade your Self-Managed instance of Airbyte to a version with a breaking change, you may need to take mitigating action. If you are upgrading multiple versions at once, complete the mitigaton steps for the versions you are skipping as well.
+When you upgrade your self-managed instance of Airbyte or an Enterprise Flex data plane to a version with a breaking change, you may need to take mitigating action. If you are upgrading multiple versions at once, complete the mitigation steps for the versions you are skipping as well.
 
 ## Core
 
@@ -21,6 +21,14 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 ### 1.6.x to 1.7.x
 
 - Airbyte began removing the `webapp` service and moving its functions to `server`. To mitigate this, [update your ingress](/platform/deploying-airbyte/integrations/ingress-1-7)
+
+## Enterprise Flex data planes
+
+These breaking changes apply to self-managed data planes you deploy with the `airbyte-data-plane` Helm chart.
+
+### 2.0.x to 2.1.x
+
+- Micronaut management endpoints, like health and metrics, moved from the application port to a dedicated management port, `8085`. The chart updates Kubernetes probes for you. If you have custom health checks or monitoring that target the application port, update them to use port `8085`.
 
 ## Self-Managed Enterprise
 
