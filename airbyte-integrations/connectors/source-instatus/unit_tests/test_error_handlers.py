@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from typing import Any
 
 import pytest
 import requests
 import requests_mock as requests_mock_lib
 import yaml
-
 from conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import SyncMode
@@ -64,18 +65,14 @@ def _response(status_code: int, headers: dict[str, str] | None = None) -> reques
 
 
 @pytest.mark.parametrize("stream_name,path,expected_max_retries", _HANDLER_LOCATIONS)
-def test_shared_error_handlers_preserve_response_behavior(
-    stream_name: str, path: str, expected_max_retries: int
-) -> None:
+def test_shared_error_handlers_preserve_response_behavior(stream_name: str, path: str, expected_max_retries: int) -> None:
     manifest = _read_manifest()
     handler_definition = _at_path(manifest["definitions"]["streams"][stream_name], path)
     handler_definition = ManifestComponentTransformer().propagate_types_and_parameters(
         "HttpRequester.error_handler", handler_definition, {}
     )
     assert handler_definition["type"] == "DefaultErrorHandler"
-    handler = ModelToComponentFactory().create_component(
-        DefaultErrorHandlerModel, handler_definition, config={"api_key": "k"}
-    )
+    handler = ModelToComponentFactory().create_component(DefaultErrorHandlerModel, handler_definition, config={"api_key": "k"})
 
     assert handler.max_retries == expected_max_retries
     assert handler.interpret_response(_response(401)).response_action == ResponseAction.IGNORE
@@ -109,9 +106,7 @@ def test_page_components_ignores_401(requests_mock: requests_mock_lib.Mocker) ->
     assert sum(request.url == component_url for request in requests_mock.request_history) == 1
 
 
-def test_page_components_retries_429_with_retry_after(
-    requests_mock: requests_mock_lib.Mocker, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_page_components_retries_429_with_retry_after(requests_mock: requests_mock_lib.Mocker, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("time.sleep", lambda *_args, **_kwargs: None)
     requests_mock.get("https://api.instatus.com/v2/pages", json=[{"id": "p1", "subdomain": "s"}])
     component_url = "https://api.instatus.com/v1/p1/components"
