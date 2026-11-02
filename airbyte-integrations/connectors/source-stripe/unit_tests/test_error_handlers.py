@@ -27,7 +27,10 @@ def _walk_error_handlers(node: Any) -> List[Dict[str, Any]]:
 
 def _ignored_codes(error_handler: Dict[str, Any]) -> List[int]:
     return [
-        code for response_filter in error_handler["response_filters"] if response_filter["action"] == "IGNORE" for code in response_filter["http_codes"]
+        code
+        for response_filter in error_handler["response_filters"]
+        if response_filter["action"] == "IGNORE"
+        for code in response_filter["http_codes"]
     ]
 
 
