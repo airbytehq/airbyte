@@ -8,13 +8,12 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import yaml
+from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
-from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 
 _STREAM_NAME = "speeches"
