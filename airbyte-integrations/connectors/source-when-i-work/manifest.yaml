@@ -26,19 +26,7 @@ definitions:
           path: account
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -76,19 +64,7 @@ definitions:
           path: payrolls
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -126,19 +102,7 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -176,19 +140,7 @@ definitions:
           path: timezones
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -211,26 +163,15 @@ definitions:
           path: payrolls/notices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: Token expired, Please refresh
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 401
+                error_message: When I Work rejected the payroll notices request as unauthorized. Check that the email and password are correct and that the account can access payroll notices.
+              - $ref: "#/definitions/rate_limit_response_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -258,19 +199,7 @@ definitions:
           path: times
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -298,19 +227,7 @@ definitions:
           path: requests
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -348,19 +265,7 @@ definitions:
           path: blocks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -398,19 +303,7 @@ definitions:
           path: sites
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -448,19 +341,7 @@ definitions:
           path: locations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -498,19 +379,7 @@ definitions:
           path: positions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -533,19 +402,7 @@ definitions:
           path: openshiftapprovalrequests
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -576,6 +433,20 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/openshiftapprovalrequests"
+  rate_limit_response_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    http_codes:
+      - 429
+    error_message: Rate limits hit
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 5
+    response_filters:
+      - $ref: "#/definitions/rate_limit_response_filter"
   base_requester:
     type: HttpRequester
     url_base: https://api.wheniwork.com/2/
