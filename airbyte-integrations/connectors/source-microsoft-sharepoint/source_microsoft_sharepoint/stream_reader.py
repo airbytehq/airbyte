@@ -7,6 +7,7 @@ import logging
 import re
 from datetime import datetime
 from functools import lru_cache
+from http import HTTPStatus
 from io import IOBase
 from os.path import getsize
 from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
@@ -42,7 +43,14 @@ from .utils import (
 
 SHARED_WITH_ME_DEPRECATION_HINT = (
     "Microsoft Graph's sharedWithMe API, which this connector uses to find shared items, is deprecated and stops returning data "
-    "after November 2026. Set Search Scope to ACCESSIBLE_DRIVES and set Site URL to the site that holds the files."
+    "after November 2026. Files shared from a SharePoint site can still be synced by setting Search Scope to ACCESSIBLE_DRIVES "
+    "and Site URL to that site (this syncs the whole document library). Files shared from another user's OneDrive can't be synced "
+    "after the retirement."
+)
+SHARED_WITH_ME_RETIRED_STATUS_CODES = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND, HTTPStatus.GONE)
+SHARED_WITH_ME_AUTH_STATUS_CODES = (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN)
+SERVICE_AUTH_SHARED_ITEMS_MESSAGE = (
+    "Shared items can't be listed with Service Key authentication because Microsoft Graph's sharedWithMe API requires a signed-in user."
 )
 
 
@@ -370,35 +378,52 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         return drives
 
     @staticmethod
-    def _is_shared_with_me_client_error(ex: Exception) -> bool:
+    def _shared_with_me_error_details(ex: Exception) -> Tuple[Optional[int], Optional[str]]:
+        """Returns the HTTP status code and Graph error code of a failed sharedWithMe request, when known."""
         if isinstance(ex, FolderNotFoundException):
-            return True
+            return HTTPStatus.NOT_FOUND, None
         response = getattr(ex._exception, "response", None) if isinstance(ex, AirbyteTracedException) else None
         status_code = getattr(response, "status_code", None)
-        return isinstance(status_code, int) and 400 <= status_code < 500
+        if not isinstance(status_code, int):
+            return None, None
+        try:
+            error_code = response.json().get("error", {}).get("code")
+        except (ValueError, AttributeError):
+            error_code = None
+        return status_code, error_code
 
     def _get_shared_drive_items(self) -> Iterable[Any]:
         """
         Lists items shared with the user via the deprecated Microsoft Graph sharedWithMe API.
 
-        Client errors (4xx) from this API are expected once Microsoft retires it, so they are reported as a
-        config error for the SHARED_ITEMS scope and skipped with a warning for the ALL scope.
+        400/404/410 responses are how the retired API is expected to fail, so they are reported as a config error for the
+        SHARED_ITEMS scope and skipped with a warning for the ALL scope. 401/403 are reported as permission errors.
         """
         try:
             shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
         except (AirbyteTracedException, FolderNotFoundException) as ex:
-            if not self._is_shared_with_me_client_error(ex):
-                raise
-            if self.config.search_scope == "SHARED_ITEMS":
+            status_code, error_code = self._shared_with_me_error_details(ex)
+            cause = f"The Microsoft Graph sharedWithMe request failed with status {status_code}" + (
+                f" ({error_code})." if error_code else "."
+            )
+            if status_code in SHARED_WITH_ME_AUTH_STATUS_CODES:
                 raise AirbyteTracedException(
-                    message=f"Failed to list items shared with you. {SHARED_WITH_ME_DEPRECATION_HINT}",
+                    message=f"Failed to list items shared with you. {cause} Check that the app has the Files.Read.All "
+                    "permission and that consent was granted, then re-authenticate the source.",
                     internal_message=str(ex),
                     failure_type=FailureType.config_error,
                     exception=ex,
                 ) from ex
-            LOGGER.warning(
-                f"Skipping shared items because the Microsoft Graph sharedWithMe request failed: {ex}. {SHARED_WITH_ME_DEPRECATION_HINT}"
-            )
+            if status_code not in SHARED_WITH_ME_RETIRED_STATUS_CODES:
+                raise
+            if self.config.search_scope == "SHARED_ITEMS":
+                raise AirbyteTracedException(
+                    message=f"Failed to list items shared with you. {cause} {SHARED_WITH_ME_DEPRECATION_HINT}",
+                    internal_message=str(ex),
+                    failure_type=FailureType.config_error,
+                    exception=ex,
+                ) from ex
+            LOGGER.warning(f"Skipping shared items. {cause} {SHARED_WITH_ME_DEPRECATION_HINT}")
             return []
 
         if not shared_drive_items:
@@ -420,15 +445,26 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             # Get files from accessible drives
             yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
 
+        if self.config.search_scope not in ("SHARED_ITEMS", "ALL"):
+            return
+
+        if self.config.credentials.auth_type == "Service":
+            if self.config.search_scope == "SHARED_ITEMS":
+                raise AirbyteTracedException(
+                    message=f"{SERVICE_AUTH_SHARED_ITEMS_MESSAGE} Set Search Scope to ACCESSIBLE_DRIVES or use OAuth authentication.",
+                    failure_type=FailureType.config_error,
+                )
+            LOGGER.warning(f"Skipping shared items. {SERVICE_AUTH_SHARED_ITEMS_MESSAGE}")
+            return
+
         # skip this step for application authentication flow
         if self.config.credentials.auth_type != "Client" or (
             hasattr(self.config.credentials, "refresh_token") and self.config.credentials.refresh_token
         ):
-            if self.config.search_scope in ("SHARED_ITEMS", "ALL"):
-                parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
+            parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
 
-                # Get files from shared items
-                yield from self._get_shared_files_from_all_drives(parsed_drives)
+            # Get files from shared items
+            yield from self._get_shared_files_from_all_drives(parsed_drives)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
