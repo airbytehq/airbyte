@@ -1783,7 +1783,7 @@ internal fun bigqueryCopyFormattedGzip(
     record: DestinationRecordRaw,
 ): ByteArray {
     val bytes = ByteArrayOutputStream()
-    BigQueryObjectStorageFormattingWriterFactory(config, format)
+    BigQueryObjectStorageFormattingWriterFactory(config, mockk(), format, DisabledBigqueryS3Copy)
         .create(stream, GZIPOutputStream(bytes))
         .use { writer -> writer.accept(record) }
     return bytes.toByteArray()
