@@ -30,8 +30,10 @@ _EVENT = {"EventId": "event-1", "EventName": "ConsoleLogin", "EventTime": 179085
 
 
 @pytest.fixture(autouse=True)
-def no_sleep(monkeypatch):
-    monkeypatch.setattr("time.sleep", lambda *_args, **_kwargs: None)
+def slept(monkeypatch):
+    durations = []
+    monkeypatch.setattr("time.sleep", lambda seconds=0, *_args, **_kwargs: durations.append(seconds))
+    return durations
 
 
 def _find_typed_nodes(node, type_name):
@@ -60,7 +62,7 @@ def test_manifest_has_no_composite_error_handler() -> None:
     assert list(_find_typed_nodes(manifest, "CompositeErrorHandler")) == []
 
 
-def test_error_handlers_retry_http_400_with_exponential_backoff() -> None:
+def test_error_handlers_retry_http_400_with_default_backoff() -> None:
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
     error_handlers = [requester["error_handler"] for requester in _find_typed_nodes(manifest, "HttpRequester")]
 
@@ -68,7 +70,6 @@ def test_error_handlers_retry_http_400_with_exponential_backoff() -> None:
     for error_handler in error_handlers:
         assert error_handler == {
             "type": "DefaultErrorHandler",
-            "backoff_strategies": [{"type": "ExponentialBackoffStrategy"}],
             "response_filters": [{"type": "HttpResponseFilter", "action": "RETRY", "http_codes": [400]}],
         }
 
@@ -88,3 +89,18 @@ def test_management_events_retries_http_400_then_completes() -> None:
 
         http_mocker.assert_number_of_calls(_LOOKUP_EVENTS_REQUEST, 2)
     assert not output.errors
+
+
+@freezegun.freeze_time("2026-10-02T00:00:00Z")
+def test_management_events_http_400_backoff_doubles_from_one_second(slept) -> None:
+    # On the source-declarative-manifest 5.15.0 base image, CompositeErrorHandler did not expose its child's
+    # backoff_strategies, so 1.1.0 used the CDK default backoff rather than ExponentialBackoffStrategy.
+    bad_request = HttpResponse(json.dumps({"__type": "ThrottlingException", "message": "Rate exceeded"}), 400)
+    with HttpMocker() as http_mocker:
+        http_mocker.post(_LOOKUP_EVENTS_REQUEST, [bad_request] * 5 + [HttpResponse(json.dumps({"Events": [_EVENT]}), 200)])
+
+        output = _read_management_events()
+
+        http_mocker.assert_number_of_calls(_LOOKUP_EVENTS_REQUEST, 6)
+    assert not output.errors
+    assert [seconds for seconds in slept if seconds] == [1, 2, 4, 8, 16]

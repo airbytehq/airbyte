@@ -18,8 +18,6 @@ definitions:
       aws_region_name: "{{config['aws_region_name']}}"
     error_handler:
       type: DefaultErrorHandler
-      backoff_strategies:
-      - type: ExponentialBackoffStrategy
       response_filters:
       - type: HttpResponseFilter
         action: RETRY
@@ -142,8 +140,6 @@ definitions:
           aws_region_name: "{{config['aws_region_name']}}"
         error_handler:
           type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ExponentialBackoffStrategy
           response_filters:
           - type: HttpResponseFilter
             action: RETRY
@@ -313,8 +309,6 @@ streams:
         aws_region_name: "{{config['aws_region_name']}}"
       error_handler:
         type: DefaultErrorHandler
-        backoff_strategies:
-        - type: ExponentialBackoffStrategy
         response_filters:
         - type: HttpResponseFilter
           action: RETRY
