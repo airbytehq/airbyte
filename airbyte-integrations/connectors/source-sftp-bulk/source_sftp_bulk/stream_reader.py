@@ -2,6 +2,7 @@
 
 
 import logging
+import re
 import stat
 from datetime import datetime
 from io import IOBase
@@ -125,6 +126,60 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             )
         return self._sftp_client
 
+    # Matches one or more consecutive forward slashes.
+    _MULTI_SLASH = re.compile(r"/+")
+
+    @classmethod
+    def _normalize_path(cls, path: str) -> str:
+        """
+        Normalize an absolute SFTP path so it has exactly one leading slash and no
+        repeated or trailing slashes (the root "/" is preserved).
+
+        This mirrors how S3 matches a single, canonical object key against the glob:
+        the path we hand to the glob matcher is the same shape as the path we expose
+        as the file URI, so an intuitive glob matches without the user compensating
+        for duplicate slashes.
+
+        Examples:
+            "//downloaded/client2" -> "/downloaded/client2"
+            "/downloaded//client2/" -> "/downloaded/client2"
+            "/" -> "/"
+            "" -> "/"
+        """
+        if not path:
+            return "/"
+        collapsed = cls._MULTI_SLASH.sub("/", path)
+        if collapsed != "/":
+            collapsed = collapsed.rstrip("/")
+        return collapsed or "/"
+
+    @classmethod
+    def _normalize_glob(cls, glob_pattern: str, root_folder: str) -> str:
+        """
+        Resolve a configured glob to the same canonical, absolute shape as file URIs.
+
+        A glob that does not start with "/" is interpreted as relative to the configured
+        root folder (mirroring S3, where globs are always relative to the bucket root).
+        An already-absolute glob is kept absolute. In both cases repeated slashes are
+        collapsed so the pattern lines up with normalized file URIs.
+
+        The trailing portion of the pattern (wildcards, "**", filename segment) is left
+        untouched; only the slash structure is normalized.
+
+        Examples (root_folder="/"):
+            "folder/sub/file*" -> "/folder/sub/file*"
+            "//folder/sub/file*" -> "/folder/sub/file*"
+            "**" -> "/**"
+        Examples (root_folder="/upload"):
+            "data/*.csv" -> "/upload/data/*.csv"
+            "/absolute/*.csv" -> "/absolute/*.csv"
+        """
+        if glob_pattern.startswith("/"):
+            combined = glob_pattern
+        else:
+            combined = f"{root_folder}/{glob_pattern}"
+        return cls._MULTI_SLASH.sub("/", combined)
+
     @staticmethod
     def _directory_could_match_globs(dir_path: str, globs: List[str], root_folder: str) -> bool:
         """
@@ -221,22 +276,20 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[SFTPBulkUploadableRemoteFile]:
-        root_folder = self._config.folder_path or "/"
+        # Canonicalize the configured root folder so all derived paths are consistent.
+        root_folder = self._normalize_path(self._config.folder_path or "/")
         directories = [root_folder]
         files_batch = []
         BATCH_SIZE = 100  # Process files in batches to reduce overhead
 
-        # Normalize globs to handle root folder correctly
-        normalized_globs = []
-        for glob_pattern in globs:
-            # If glob doesn't start with /, make it relative to root_folder
-            if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
-            else:
-                normalized_globs.append(glob_pattern)
-            if glob_pattern.startswith("//"):
-                #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
-                normalized_globs.append(glob_pattern[1:])
+        # Resolve every configured glob to the same canonical, absolute shape as the
+        # file URIs we build below. A relative glob (e.g. "downloaded/client2/Lacey*")
+        # is interpreted relative to the root folder; an absolute glob is kept absolute;
+        # repeated slashes are collapsed. This is what lets the intuitive configuration
+        # (folder_path="/", glob="downloaded/client2/Lacey*") match
+        # "/downloaded/client2/Lacey Gaddis Report.csv" without the user having to add a
+        # leading or duplicate slash.
+        normalized_globs = [self._normalize_glob(glob_pattern, root_folder) for glob_pattern in globs]
 
         # Iterate through directories and subdirectories
         while directories:
@@ -244,14 +297,14 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             try:
                 for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                     if item.st_mode and stat.S_ISDIR(item.st_mode):
-                        dir_path = f"{current_dir}/{item.filename}"
+                        dir_path = self._normalize_path(f"{current_dir}/{item.filename}")
                         # Only traverse directories that could contain matching files
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)
                         else:
                             logger.debug(f"Skipping directory {dir_path} (no globs match)")
                     else:
-                        file_uri = f"{current_dir}/{item.filename}"
+                        file_uri = self._normalize_path(f"{current_dir}/{item.filename}")
                         file_mtime = datetime.fromtimestamp(item.st_mtime)
 
                         file = SFTPBulkUploadableRemoteFile(
@@ -268,7 +321,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         if len(files_batch) >= BATCH_SIZE:
                             yield from self.filter_files_by_globs_and_start_date(
                                 files_batch,
-                                globs,
+                                normalized_globs,
                             )
                             files_batch = []
             except AirbyteTracedException:
@@ -281,7 +334,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         if files_batch:
             yield from self.filter_files_by_globs_and_start_date(
                 files_batch,
-                globs,
+                normalized_globs,
             )
 
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:

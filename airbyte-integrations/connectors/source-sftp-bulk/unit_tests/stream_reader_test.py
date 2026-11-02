@@ -42,7 +42,8 @@ def test_stream_reader_files_read_and_filter_by_date():
         reader.config = config
         files = list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
         assert len(files) == 1
-        assert files[0].uri == "//sample_file_1.csv"
+        # Paths are normalized to a single leading slash (no "//" artifact).
+        assert files[0].uri == "/sample_file_1.csv"
         assert files[0].last_modified == datetime.datetime(2024, 1, 1, 0, 0)
 
 
@@ -64,7 +65,7 @@ def test_upload_file_size_error():
             return SourceSFTPBulkStreamReader.FILE_SIZE_LIMIT + 1
 
     file = SizeOverWriteSFTPBulkUploadableRemoteFile(
-        uri="//sample_file_1.csv",
+        uri="/sample_file_1.csv",
         last_modified=datetime.datetime(2024, 1, 1, 0, 0),
         config=config,
         sftp_client=MagicMock(),
@@ -72,7 +73,7 @@ def test_upload_file_size_error():
     )
     with pytest.raises(FileSizeLimitError) as err:
         reader.upload(file, "/test", MagicMock())
-    assert str(err.value) == "File size exceeds the 1.5 GB limit. File URI: //sample_file_1.csv"
+    assert str(err.value) == "File size exceeds the 1.5 GB limit. File URI: /sample_file_1.csv"
 
 
 def test_get_matching_files_reraises_airbyte_traced_exception():
