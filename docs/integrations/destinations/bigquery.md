@@ -63,6 +63,22 @@ several workers and a gzipped CSV file with one, and Avro takes far less CPU to 
 large volumes load faster. The rows loaded are the same with either format. Avro does not apply in
 legacy raw tables mode, where the files are always gzipped CSV.
 
+#### Using the Storage Write API
+
+Streams records into BigQuery with the
+[Storage Write API](https://cloud.google.com/bigquery/docs/write-api) while they arrive, with no
+staging bucket and no load jobs. Each batch is written to a pending write stream and committed when
+the batch is flushed, so a batch is loaded entirely or not at all. Syncs no longer pause while every
+stream's staged files are loaded at the same time, which they do with GCS staging at each flush.
+
+- Ingestion through the Storage Write API is billed per GB beyond the
+  [free monthly allowance](https://cloud.google.com/bigquery/pricing#data_ingestion_pricing); load
+  jobs are free.
+- A single record larger than 18 MB fails the sync. Use GCS staging for such data.
+- Not available in legacy raw tables mode.
+- The service account needs `bigquery.tables.updateData` on the destination dataset, which the
+  `BigQuery Data Editor` role includes.
+
 #### Using Batched Standard Inserts
 
 A simpler setup with no external staging required. Uses the BigQuery SDK to stream data directly. Suitable for smaller data volumes or quick testing. These staging files are managed by BigQuery and deleted automatically after the load is complete.
@@ -84,7 +100,8 @@ You cannot change the location later.
 
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
-8. For **Loading Method**, select [GCS Staging (Recommended)](#using-a-google-cloud-storage-bucket-recommended) or
+8. For **Loading Method**, select [GCS Staging (Recommended)](#using-a-google-cloud-storage-bucket-recommended),
+   [Storage Write API](#using-the-storage-write-api) or
    [Batched Standard Inserts](#using-batched-standard-inserts).
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
@@ -286,6 +303,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.0 | 2026-11-02 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New loading method **Storage Write API**: records are streamed into pending write streams and committed at each flush, instead of being staged in GCS and loaded with load jobs. |
 | 3.3.0 | 2026-11-02 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | GCS Staging: new option **Staging File Format**, `CSV (gzip)` by default or `Avro`, which stages Avro files with snappy compression for faster load jobs and less CPU in the destination. |
 | 3.2.2 | 2026-10-22 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
 | 3.2.1 | 2026-10-06 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |

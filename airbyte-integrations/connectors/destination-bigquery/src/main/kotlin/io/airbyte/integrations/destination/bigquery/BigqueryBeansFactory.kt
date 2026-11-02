@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.api.gax.retrying.RetrySettings
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
+import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient
+import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -29,11 +32,13 @@ import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyWriter
 import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.StorageWriteApiConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.stagesAvroFiles
+import io.airbyte.integrations.destination.bigquery.write.storage_write.BigqueryConfiguredForStorageWriteApi
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
@@ -42,6 +47,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -162,6 +168,7 @@ class BigqueryBeansFactory {
                     bigquery,
                     config.jobProjectId,
                     config.datasetLocation.region,
+                    emptiesDroppedTables = config.loadingMethod is StorageWriteApiConfiguration,
                 )
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -201,26 +208,9 @@ class BigqueryBeansFactory {
     @Singleton
     @Primary
     fun getBigqueryClient(config: BigqueryConfiguration): BigQuery {
-        // Follows this order of resolution:
-        // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
-        val credentials =
-            if (config.credentialsJson == null) {
-                logger.info {
-                    "No service account key json is provided. It is required if you are using Airbyte cloud."
-                }
-                logger.info { "Using the default service account credential from environment." }
-                GoogleCredentials.getApplicationDefault()
-            } else {
-                // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-                GoogleCredentials.fromStream(
-                    ByteArrayInputStream(
-                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8),
-                    ),
-                )
-            }
         return BigQueryOptions.newBuilder()
             .setProjectId(config.projectId)
-            .setCredentials(credentials)
+            .setCredentials(googleCredentials(config))
             .setHeaderProvider(BigQueryUtils.headerProvider)
             .setRetrySettings(
                 RetrySettings.newBuilder()
@@ -241,6 +231,17 @@ class BigqueryBeansFactory {
     }
 
     @Singleton
+    @Bean(preDestroy = "close")
+    @Requires(condition = BigqueryConfiguredForStorageWriteApi::class)
+    fun getBigqueryWriteClient(config: BigqueryConfiguration): BigQueryWriteClient =
+        BigQueryWriteClient.create(
+            BigQueryWriteSettings.newBuilder()
+                .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials(config)))
+                .setHeaderProvider(BigQueryUtils.headerProvider)
+                .build(),
+        )
+
+    @Singleton
     @Named("jobProjectBigquery")
     fun getJobProjectBigqueryClient(config: BigqueryConfiguration, bigquery: BigQuery): BigQuery =
         if (config.jobProjectId == config.projectId) {
@@ -249,3 +250,19 @@ class BigqueryBeansFactory {
             bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
         }
 }
+
+// Follows this order of resolution:
+// https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
+private fun googleCredentials(config: BigqueryConfiguration): GoogleCredentials =
+    if (config.credentialsJson == null) {
+        logger.info {
+            "No service account key json is provided. It is required if you are using Airbyte cloud."
+        }
+        logger.info { "Using the default service account credential from environment." }
+        GoogleCredentials.getApplicationDefault()
+    } else {
+        // The JSON credential can either be a raw JSON object, or a serialized JSON object.
+        GoogleCredentials.fromStream(
+            ByteArrayInputStream(config.credentialsJson.toByteArray(StandardCharsets.UTF_8)),
+        )
+    }

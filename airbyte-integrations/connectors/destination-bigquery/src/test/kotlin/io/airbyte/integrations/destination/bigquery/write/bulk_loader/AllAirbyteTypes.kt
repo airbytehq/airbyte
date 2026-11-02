@@ -173,14 +173,23 @@ object AllAirbyteTypes {
     fun rawId(row: Map<String, String>): UUID = UUID.nameUUIDFromBytes(row["id"]!!.toByteArray())
 
     fun records(stream: DestinationStream, format: DataChannelFormat): List<DestinationRecordRaw> =
-        rows.map { row ->
-            val source =
-                when (format) {
-                    DataChannelFormat.PROTOBUF -> protobufSource(stream, row)
-                    else -> jsonSource(row)
-                }
-            DestinationRecordRaw(stream, source, 1000, airbyteRawId = rawId(row))
+        rows.map {
+            record(stream, format, it)
         }
+
+    /** A record of [row]: column name to the JSON value the source sends. */
+    fun record(
+        stream: DestinationStream,
+        format: DataChannelFormat,
+        row: Map<String, String>,
+    ): DestinationRecordRaw {
+        val source =
+            when (format) {
+                DataChannelFormat.PROTOBUF -> protobufSource(stream, row)
+                else -> jsonSource(row)
+            }
+        return DestinationRecordRaw(stream, source, 1000, airbyteRawId = rawId(row))
+    }
 
     private const val EMITTED_AT_MS = 1_724_438_400_123L
 

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.spec
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
@@ -31,6 +32,8 @@ sealed interface LoadingMethodConfiguration
 
 data object BatchedStandardInsertConfiguration : LoadingMethodConfiguration
 
+data object StorageWriteApiConfiguration : LoadingMethodConfiguration
+
 data class GcsStagingConfiguration(
     val gcsClientConfig: GcsClientConfiguration,
     val filePostProcessing: GcsFilePostProcessing,
@@ -49,6 +52,14 @@ class BigqueryConfigurationFactory :
                         loadingMethod.filePostProcessing ?: GcsFilePostProcessing.DELETE,
                         loadingMethod.stagingFileFormat ?: GcsStagingFileFormat.CSV_GZIP,
                     )
+                is StorageWriteApiSpecification -> {
+                    if (pojo.legacyRawTablesOnly == true) {
+                        throw ConfigErrorException(
+                            "The Storage Write API loading method does not support legacy raw tables mode.",
+                        )
+                    }
+                    StorageWriteApiConfiguration
+                }
                 is BatchedStandardInsertSpecification,
                 null -> BatchedStandardInsertConfiguration
             }

@@ -97,39 +97,64 @@ fun bigQueryAvroFormattingWriter(
     dataChannelFormat: DataChannelFormat,
     outputStream: OutputStream,
 ): BigQueryAvroFormattingWriter {
-    val finalSchema = stream.schema.withAirbyteMeta(true)
-    val header = finalSchema.toCsvHeader()
-    val columns =
-        BigQueryRecordFormatter.getDirectLoadSchema(stream, columnNameMapping).fields.associateBy {
-            it.name
+    val rows = BigQueryLoadRows.of(stream, columnNameMapping, dataChannelFormat)
+    return BigQueryAvroFormattingWriter(rows.columns, outputStream, rows::generate)
+}
+
+/**
+ * The rows the CSV row generator of a record path produces, matched to the direct-load table's
+ * columns: [generate] returns one value per [columns] entry, in that order, with
+ * [BigQueryConsts.NULL_MARKER] for null. The protobuf path's generator reuses the returned list for
+ * its next row, so a caller consumes each row before generating the next, and an instance serves
+ * one caller at a time.
+ */
+class BigQueryLoadRows
+private constructor(
+    val columns: List<Field>,
+    private val rows: (DestinationRecordRaw) -> List<Any>,
+) {
+    fun generate(record: DestinationRecordRaw): List<Any> = rows(record)
+
+    companion object {
+        fun of(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            dataChannelFormat: DataChannelFormat,
+        ): BigQueryLoadRows {
+            val finalSchema = stream.schema.withAirbyteMeta(true)
+            val header = finalSchema.toCsvHeader()
+            val columns =
+                BigQueryRecordFormatter.getDirectLoadSchema(stream, columnNameMapping)
+                    .fields
+                    .associateBy { it.name }
+            val rowColumns = header.map { name ->
+                val columnName = if (name in Meta.COLUMN_NAMES) name else columnNameMapping[name]!!
+                columns[columnName]
+                    ?: throw IllegalStateException("no column $columnName in the load schema")
+            }
+            val rows: (DestinationRecordRaw) -> List<Any> =
+                when (dataChannelFormat) {
+                    DataChannelFormat.PROTOBUF -> {
+                        val generator =
+                            ProtoToBigQueryCSVRowGenerator(
+                                header,
+                                stream,
+                                stream.airbyteValueProxyFieldAccessors,
+                            )
+                        ({ record -> generator.generate(record).asList() })
+                    }
+                    else -> {
+                        val generator = BigQueryCSVRowGenerator()
+                        ({ record -> generator.generate(record, finalSchema) })
+                    }
+                }
+            return BigQueryLoadRows(rowColumns, rows)
         }
-    val rowColumns = header.map { name ->
-        val columnName = if (name in Meta.COLUMN_NAMES) name else columnNameMapping[name]!!
-        columns[columnName]
-            ?: throw IllegalStateException("no column $columnName in the load schema")
     }
-    val rows: (DestinationRecordRaw) -> List<Any> =
-        when (dataChannelFormat) {
-            DataChannelFormat.PROTOBUF -> {
-                val generator =
-                    ProtoToBigQueryCSVRowGenerator(
-                        header,
-                        stream,
-                        stream.airbyteValueProxyFieldAccessors,
-                    )
-                ({ record -> generator.generate(record).asList() })
-            }
-            else -> {
-                val generator = BigQueryCSVRowGenerator()
-                ({ record -> generator.generate(record, finalSchema) })
-            }
-        }
-    return BigQueryAvroFormattingWriter(rowColumns, outputStream, rows)
 }
 
 object BigQueryAvro {
     private const val NUMERIC_PRECISION = 38
-    private const val NUMERIC_SCALE = 9
 
     fun recordSchema(columns: List<Field>): Schema =
         Schema.createRecord(
@@ -162,7 +187,7 @@ object BigQueryAvro {
             StandardSQLTypeName.INT64 -> Schema.create(Schema.Type.LONG)
             StandardSQLTypeName.BOOL -> Schema.create(Schema.Type.BOOLEAN)
             StandardSQLTypeName.NUMERIC ->
-                LogicalTypes.decimal(NUMERIC_PRECISION, NUMERIC_SCALE)
+                LogicalTypes.decimal(NUMERIC_PRECISION, BigQueryLoadValues.NUMERIC_SCALE)
                     .addToSchema(Schema.create(Schema.Type.BYTES))
             StandardSQLTypeName.DATE ->
                 LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT))
@@ -175,10 +200,7 @@ object BigQueryAvro {
             else -> throw IllegalArgumentException("no Avro staging type for BigQuery type $type")
         }
 
-    /**
-     * Turns a value of the CSV row generators into the Avro datum of [type]. The generators hand
-     * over native values or the text the CSV file would hold, depending on the record's path.
-     */
+    /** Turns a value of the CSV row generators into the Avro datum of [type]. */
     fun converter(type: StandardSQLTypeName): (Any) -> Any =
         when (type) {
             StandardSQLTypeName.STRING,
@@ -186,30 +208,40 @@ object BigQueryAvro {
                 v as? String ?: v.toString()
             }
             StandardSQLTypeName.INT64 -> { v ->
-                toLong(v)
+                BigQueryLoadValues.toLong(v)
             }
             StandardSQLTypeName.BOOL -> { v ->
                 v as? Boolean ?: v.toString().toBooleanStrict()
             }
             StandardSQLTypeName.NUMERIC -> { v ->
-                toDecimalBytes(v)
+                ByteBuffer.wrap(BigQueryLoadValues.toNumeric(v).unscaledValue().toByteArray())
             }
             StandardSQLTypeName.DATE -> { v ->
-                toDate(v).toEpochDay().toInt()
+                BigQueryLoadValues.toDate(v).toEpochDay().toInt()
             }
             StandardSQLTypeName.TIME -> { v ->
-                toTime(v).toNanoOfDay() / 1_000
+                BigQueryLoadValues.toTime(v).toNanoOfDay() / 1_000
             }
             StandardSQLTypeName.TIMESTAMP -> { v ->
-                micros(toInstant(v))
+                BigQueryLoadValues.micros(BigQueryLoadValues.toInstant(v))
             }
             StandardSQLTypeName.DATETIME -> { v ->
-                micros(toDateTime(v).toInstant(ZoneOffset.UTC))
+                BigQueryLoadValues.micros(
+                    BigQueryLoadValues.toDateTime(v).toInstant(ZoneOffset.UTC),
+                )
             }
             else -> throw IllegalArgumentException("no Avro staging type for BigQuery type $type")
         }
+}
 
-    private fun toLong(v: Any): Long =
+/**
+ * Parses the values of the CSV row generators, which hand over native values or the text the CSV
+ * file would hold, depending on the record's path.
+ */
+internal object BigQueryLoadValues {
+    const val NUMERIC_SCALE = 9
+
+    fun toLong(v: Any): Long =
         when (v) {
             is Long -> v
             is Int -> v.toLong()
@@ -219,28 +251,23 @@ object BigQueryAvro {
             else -> v.toString().toLong()
         }
 
-    private fun toDecimalBytes(v: Any): ByteBuffer {
-        val decimal =
-            when (v) {
-                is BigDecimal -> v
-                is BigInteger -> BigDecimal(v)
-                is Long -> BigDecimal.valueOf(v)
-                is Int -> BigDecimal.valueOf(v.toLong())
-                else -> BigDecimal(v.toString())
-            }
-        return ByteBuffer.wrap(
-            decimal.setScale(NUMERIC_SCALE, RoundingMode.HALF_UP).unscaledValue().toByteArray(),
-        )
-    }
+    /** A NUMERIC value at the column's scale. */
+    fun toNumeric(v: Any): BigDecimal =
+        when (v) {
+            is BigDecimal -> v
+            is BigInteger -> BigDecimal(v)
+            is Long -> BigDecimal.valueOf(v)
+            is Int -> BigDecimal.valueOf(v.toLong())
+            else -> BigDecimal(v.toString())
+        }.setScale(NUMERIC_SCALE, RoundingMode.HALF_UP)
 
-    private fun toDate(v: Any): LocalDate = v as? LocalDate ?: LocalDate.parse(v.toString())
+    fun toDate(v: Any): LocalDate = v as? LocalDate ?: LocalDate.parse(v.toString())
 
-    private fun toTime(v: Any): LocalTime = v as? LocalTime ?: LocalTime.parse(v.toString())
+    fun toTime(v: Any): LocalTime = v as? LocalTime ?: LocalTime.parse(v.toString())
 
-    private fun toDateTime(v: Any): LocalDateTime =
-        v as? LocalDateTime ?: LocalDateTime.parse(v.toString())
+    fun toDateTime(v: Any): LocalDateTime = v as? LocalDateTime ?: LocalDateTime.parse(v.toString())
 
-    private fun toInstant(v: Any): Instant =
+    fun toInstant(v: Any): Instant =
         when (v) {
             is Instant -> v
             is OffsetDateTime -> v.toInstant()
@@ -249,6 +276,6 @@ object BigQueryAvro {
             else -> OffsetDateTime.parse(v.toString().replaceFirst(' ', 'T')).toInstant()
         }
 
-    private fun micros(instant: Instant): Long =
+    fun micros(instant: Instant): Long =
         Math.addExact(Math.multiplyExact(instant.epochSecond, 1_000_000L), instant.nano / 1_000L)
 }

@@ -23,6 +23,7 @@ class BigqueryConfigurationTest {
         "'GCS Staging', '\"staging_file_format\": \"CSV (gzip)\",', false, false",
         "'GCS Staging', '\"staging_file_format\": \"Avro\",', false, true",
         "'GCS Staging', '\"staging_file_format\": \"Avro\",', true, false",
+        "'Storage Write API', '\"staging_file_format\": \"Avro\",', false, false",
     )
     fun `Avro is staged only when GCS staging selects it outside legacy raw tables mode`(
         method: String,

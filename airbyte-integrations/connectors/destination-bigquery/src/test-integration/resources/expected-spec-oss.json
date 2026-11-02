@@ -120,6 +120,19 @@
             }
           },
           "required" : [ "method" ]
+        }, {
+          "title" : "Storage Write API",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Streams records into BigQuery with the Storage Write API, each batch in a pending stream committed when the batch is flushed. No staging bucket or load jobs. Billed per GB ingested beyond the free monthly allowance. Not available in legacy raw tables mode.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "Storage Write API" ],
+              "default" : "Storage Write API"
+            }
+          },
+          "required" : [ "method" ]
         } ],
         "description" : "The way data will be uploaded to BigQuery.",
         "title" : "Loading Method",

@@ -123,11 +123,13 @@ class BigquerySpecification : ConfigurationSpecification() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = GcsStagingSpecification::class, name = "GCS Staging"),
     JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
+    JsonSubTypes.Type(value = StorageWriteApiSpecification::class, name = "Storage Write API"),
 )
 sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
     enum class LoadingMethod(@get:JsonValue val typeName: String) {
         BATCHED_STANDARD_INSERT("Standard"),
         GCS("GCS Staging"),
+        STORAGE_WRITE_API("Storage Write API"),
     }
 }
 
@@ -165,6 +167,12 @@ class GcsStagingSpecification :
     override val credential: GcsAuthSpecification =
         GcsHmacKeySpecification(accessKeyId = "", secretAccessKey = "")
 }
+
+@JsonSchemaTitle("Storage Write API")
+@JsonSchemaDescription(
+    "Streams records into BigQuery with the Storage Write API, each batch in a pending stream committed when the batch is flushed. No staging bucket or load jobs. Billed per GB ingested beyond the free monthly allowance. Not available in legacy raw tables mode.",
+)
+class StorageWriteApiSpecification : LoadingMethodSpecification(LoadingMethod.STORAGE_WRITE_API)
 
 // bigquery supports a subset of GCS regions.
 // See https://cloud.google.com/bigquery/docs/locations#supported_locations
