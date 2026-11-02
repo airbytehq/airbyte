@@ -90,12 +90,6 @@ class FromDictMixin:
 
 
 @dataclasses.dataclass
-class ZohoPickListItem(FromDictMixin):
-    display_value: str
-    actual_value: str
-
-
-@dataclasses.dataclass
 class AutoNumberDict(FromDictMixin):
     prefix: str
     suffix: str
@@ -113,7 +107,6 @@ class FieldMeta(FromDictMixin):
     decimal_place: Optional[int]
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]]
     auto_number: Optional[AutoNumberDict] = dataclasses.field(default_factory=lambda: {"prefix": "", "suffix": ""})
 
     def _default_type_kwargs(self) -> Dict[str, str]:
