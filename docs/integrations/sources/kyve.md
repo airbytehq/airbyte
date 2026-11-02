@@ -1,26 +1,50 @@
 # KYVE
 
-This page contains the setup guide and reference information for the **KYVE** source connector.
+This page contains the setup guide and reference information for the KYVE source connector.
 
-The KYVE Data Pipeline enables easy import of KYVE data into any data warehouse or destination
-supported by [Airbyte](https://airbyte.com/). With the `ELT` format, data analysts and engineers can now confidently source KYVE data without worrying about its validity or reliability.
+The KYVE source connector reads validated data bundles from [KYVE](https://www.kyve.network/) storage pools. Each pool archives data from a specific source, such as a blockchain, and KYVE validators verify the data before it's finalized. For an end-to-end pipeline walkthrough, see the [KYVE data pipeline documentation](https://docs.kyve.network/access-data-sets/data-pipeline/overview).
 
-For information about how to setup an end to end pipeline with this connector, see [the documentation](https://docs.kyve.network/data_engineers/accessing_data/elt_pipeline/overview).
+## Prerequisites
 
-## Source configuration setup
+- The ID of one or more KYVE storage pools. Browse the available pools in the [KYVE app](https://app.kyve.network/#/pools).
+- No API key or account is required. The connector reads from the public KYVE Chain API and public storage provider gateways.
 
-1. In order to create an ELT pipeline with KYVE source you should specify the **`Pool-ID`** of [KYVE storage pool](https://app.kyve.network/#/pools) from which you want to retrieve data.
+## Set up the KYVE connector in Airbyte
 
-2. You can specify a specific **`Bundle-Start-ID`** in case you want to narrow the records that will be retrieved from the pool. You can find the valid bundles of in the KYVE app (e.g. [Cosmos Hub pool](https://app.kyve.network/#/pools/0/bundles)).
+1. For **Pool-IDs**, enter the ID of the KYVE storage pool you want to sync. To sync more than one pool, enter a comma-separated list, for example `0,1`.
+2. For **Bundle-Start-IDs**, enter the bundle ID to start syncing from for each pool. To start from the first bundle in a pool, enter `0`. If you entered more than one pool, enter one start ID per pool in the same order, for example `0,0`. The number of start IDs must match the number of pool IDs, or the connection check fails. You can browse a pool's bundles in the KYVE app, for example the [Cosmos Hub pool bundles](https://app.kyve.network/#/pools/0/bundles).
+3. For **KYVE-API URL Base**, enter the KYVE Chain API endpoint to read from. The default is the mainnet endpoint, `https://api.kyve.network`.
 
-3. In order to extract the validated from KYVE, you can specify the endpoint which will be requested **`KYVE-API URL Base`**. By default, the official KYVE **`mainnet`** endpoint will be used, providing the data of [these pools](https://app.kyve.network/#/pools).
+:::note
+KYVE runs three networks: mainnet (`https://api.kyve.network`), the Kaon testnet (`https://api.kaon.kyve.network`), and the Korellia devnet (`https://api.korellia.kyve.network`). Each network has its own pools, so the same pool ID can refer to different data on different networks. Only trust data validated on mainnet for production use.
+:::
 
-   **_Note:_**
-   KYVE Network consists of three individual networks: _Korellia_ is the `devnet` used for development purposes, _Kaon_ is the `testnet` used for testing purposes, and **`mainnet`** is the official network. Although through Kaon and Korellia validated data can be used for development purposes, it is recommended to only trust the data validated on Mainnet.
+## Supported sync modes
 
-## Multiple pools
+The KYVE source connector supports the following sync modes:
 
-You can fetch with one source configuration more than one pool simultaneously. You just need to specify the **`Pool-IDs`** and the **`Bundle-Start-ID`** for the KYVE storage pool you want to archive separated with comma.
+- Full Refresh
+- Incremental
+
+Incremental syncs use the ID of the most recently read bundle as the cursor. The streams don't have a primary key, so deduplication isn't available.
+
+## Supported streams
+
+The connector creates one stream per configured pool, named `pool_<pool_id>`. For example, pool `0` produces a stream named `pool_0`.
+
+Every stream uses the same schema:
+
+| Field   | Type   | Description                                                                        |
+| :------ | :----- | :--------------------------------------------------------------------------------- |
+| `key`   | string | The key of the data item within the pool, such as a block height.                  |
+| `value` | object | The data item itself. Its structure depends on the pool's runtime and data source. |
+
+## Limitations
+
+- The connector only reads finalized bundles.
+- The connector downloads bundle data from the storage provider that the bundle was uploaded to. It supports Arweave, Irys, and the KYVE storage provider. If a bundle uses any other storage provider, the sync fails.
+- If none of the gateways for a bundle's storage provider respond, the connector logs an error and skips that bundle.
+- The connector verifies each downloaded bundle against the data hash recorded on the KYVE chain. If the hashes don't match, the sync fails.
 
 ## IP allow list
 
