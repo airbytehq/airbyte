@@ -84,13 +84,13 @@ def _read(stream_name: str, expecting_exception: bool = False):
     return read(get_source(CONFIG), CONFIG, catalog, expecting_exception=expecting_exception)
 
 
-def test_manifest_has_no_composite_error_handler() -> None:
-    composite_handlers = []
+def test_every_error_handler_in_manifest_is_a_single_default_error_handler() -> None:
+    handler_types = []
 
     def walk(node):
         if isinstance(node, dict):
-            if node.get("type") == "CompositeErrorHandler":
-                composite_handlers.append(node)
+            if "error_handler" in node:
+                handler_types.append(node["error_handler"].get("type"))
             for value in node.values():
                 walk(value)
         elif isinstance(node, list):
@@ -99,7 +99,8 @@ def test_manifest_has_no_composite_error_handler() -> None:
 
     walk(_resolved_manifest())
 
-    assert not composite_handlers
+    assert handler_types
+    assert set(handler_types) == {"DefaultErrorHandler"}
 
 
 @pytest.mark.parametrize("stream_name", list(STREAMS))
