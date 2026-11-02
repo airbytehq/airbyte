@@ -1,14 +1,8 @@
 const {
-  CHANGELOG_PAGE_DOCS,
+  getChangelogSourceDocId,
   getChangelogPages,
+  isGeneratedChangelogPage,
 } = require("../scripts/connector-changelog-pages");
-
-function getDocId(filePath) {
-  const match = filePath
-    .replace(/\\/g, "/")
-    .match(/(?:^|\/)integrations\/(sources\/(?:postgres|hubspot))\.md$/);
-  return match?.[1];
-}
 
 function changelogIntroduction(title, pages) {
   const latest = pages.find((page) => page.slug === "changelog");
@@ -75,8 +69,8 @@ function findChangelogHeading(nodes) {
 
 function plugin() {
   return (tree, file) => {
-    const docId = getDocId(file.path);
-    if (!docId || !CHANGELOG_PAGE_DOCS.includes(docId)) return;
+    const docId = getChangelogSourceDocId(file.path);
+    if (!docId || isGeneratedChangelogPage(file.path)) return;
 
     const pages = getChangelogPages(docId);
     const title = pages[0].title;

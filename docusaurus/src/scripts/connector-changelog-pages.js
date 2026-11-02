@@ -16,6 +16,29 @@ function getSourcePath(docId) {
   return path.join(INTEGRATIONS_DOCS, `${docId}.md`);
 }
 
+function isGeneratedChangelogPage(filePath) {
+  const normalizedPath = String(filePath).replace(/\\/g, "/");
+  const fileName = normalizedPath.slice(normalizedPath.lastIndexOf("/") + 1);
+  return CHANGELOG_PAGE_DOCS.some(
+    (docId) =>
+      normalizedPath.endsWith(`/integrations/${docId}/${fileName}`) &&
+      /^changelog(?:-[^/]+)?\.md$/i.test(fileName),
+  );
+}
+
+function getChangelogSourceDocId(filePath) {
+  const normalizedPath = String(filePath).replace(/\\/g, "/");
+  const fileName = normalizedPath.slice(normalizedPath.lastIndexOf("/") + 1);
+  return (
+    CHANGELOG_PAGE_DOCS.find(
+      (docId) =>
+        normalizedPath.endsWith(`/integrations/${docId}.md`) ||
+        (normalizedPath.endsWith(`/integrations/${docId}/${fileName}`) &&
+          /^changelog(?:-[^/]+)?\.md$/i.test(fileName)),
+    ) ?? null
+  );
+}
+
 function parseVersion(row) {
   const firstCell = row.match(/^\|\s*([^|]+)\|/);
   const version = firstCell?.[1].trim();
@@ -242,6 +265,7 @@ function groupRows(rows) {
   return groups.reverse().map((group, index) => ({
     ...group,
     slug: index === 0 ? "changelog" : `changelog-${group.slugPart}`,
+    label: index === 0 ? "Changelog" : `Changelog: ${group.rangeLabel}`,
     rowCount: group.rows.length,
     versionedRowCount: group.rows.filter((row) => !row.inferredVersion).length,
     rows: group.rows.map((row) => row.line),
@@ -256,11 +280,13 @@ function getChangelogPages(docId) {
   const title =
     source.match(/^#\s+(.+?)\s*$/m)?.[1] ??
     connector[0].toUpperCase() + connector.slice(1);
+  const connectorType = docId.split("/")[0].replace(/s$/, "");
 
   return groupRows(rows).map((page) => ({
     ...page,
     id: `${docId}/${page.slug}`,
     title,
+    connectorType,
     tableHeader,
   }));
 }
@@ -270,12 +296,16 @@ function renderPage(page, allPages) {
     page.slug === "changelog"
       ? `${page.title} changelog`
       : `${page.title} changelog: ${page.rangeLabel}`;
-  const description = `${page.title} connector version history: ${page.rangeLabel}.`;
+  const description = `${page.title} ${page.connectorType} connector version history: ${page.rangeLabel}.`;
   const otherPages = allPages.filter((other) => other.slug !== page.slug);
-  const links = otherPages
-    .map((other) => `[${other.label}](/integrations/${other.id})`)
-    .join(", ");
-  return [
+  const otherVersionLinks = otherPages.map(
+    (other) => `[${other.rangeLabel}](/integrations/${other.id})`,
+  );
+  const joinedOtherVersionLinks =
+    otherVersionLinks.length > 1
+      ? `${otherVersionLinks.slice(0, -1).join(", ")} and ${otherVersionLinks.at(-1)}`
+      : otherVersionLinks[0];
+  const rendered = [
     "---",
     `title: ${JSON.stringify(heading)}`,
     `sidebar_label: ${JSON.stringify(page.label)}`,
@@ -286,13 +316,19 @@ function renderPage(page, allPages) {
     "",
     `# ${heading}`,
     "",
-    `Read the [${page.title} connector documentation](/integrations/${page.id.split("/").slice(0, 2).join("/")}) for setup and configuration; this page lists changes for ${page.rangeLabel}.`,
-    ...(links ? ["", `Other changelog pages: ${links}.`] : []),
+    `This page lists changes to the [${page.title} ${page.connectorType} connector](/integrations/${page.id.split("/").slice(0, 2).join("/")}) for ${page.rangeLabel}.`,
+    ...(joinedOtherVersionLinks
+      ? ["", `For other versions, see ${joinedOtherVersionLinks}.`]
+      : []),
     "",
     ...page.tableHeader,
     ...page.rows,
     "",
   ].join("\n");
+  if (rendered.includes("undefined")) {
+    throw new Error(`Generated changelog page ${page.id} contains undefined.`);
+  }
+  return rendered;
 }
 
 function main() {
@@ -342,7 +378,9 @@ function main() {
 module.exports = {
   CHANGELOG_PAGE_DOCS,
   MAX_ROWS_PER_PAGE,
+  getChangelogSourceDocId,
   getChangelogPages,
+  isGeneratedChangelogPage,
   main,
 };
 

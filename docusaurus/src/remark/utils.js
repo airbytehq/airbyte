@@ -1,4 +1,7 @@
 const { fetchRegistry } = require("../scripts/fetch-registry");
+const {
+  isGeneratedChangelogPage,
+} = require("../scripts/connector-changelog-pages");
 
 // the migration guide and troubleshooting guide are not connectors, but also not in a sub-folder, e.g. /integrations/sources/mssql-migrations
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
@@ -26,11 +29,7 @@ const isDocsPage = (vfile) => {
       }
     }
 
-    if (
-      /[\\/]sources[\\/](?:postgres|hubspot)[\\/]changelog(?:-[^\\/]+)?\.md$/i.test(
-        vfile.path,
-      )
-    ) {
+    if (isGeneratedChangelogPage(vfile.path)) {
       response.isTrueDocsPage = false;
     }
   }

@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useHistory, useLocation } from "@docusaurus/router";
+import { useLocation } from "@docusaurus/router";
 
 export function HashRedirect({ redirects }) {
-  const history = useHistory();
   const location = useLocation();
   const didRedirect = useRef(false);
 
@@ -17,10 +16,9 @@ export function HashRedirect({ redirects }) {
       !document.getElementById(id)
     ) {
       didRedirect.current = true;
-      history.replace(`${target}#${id}`);
-      window.location.reload();
+      window.location.replace(`${target}#${id}`);
     }
-  }, [history, location.hash, location.pathname, redirects]);
+  }, [location.hash, location.pathname, redirects]);
 
   return null;
 }
