@@ -8,7 +8,6 @@ from _helpers import CONFIG, json_response, read_stream, request
 from conftest import _YAML_FILE_PATH
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.declarative.models import declarative_component_schema
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     DefaultErrorHandler as DefaultErrorHandlerModel,
 )
@@ -73,9 +72,7 @@ def _stream_error_handler(manifest, stream_name):
 
 
 def _build_handler(definition):
-    composite_type = "Composite" + "ErrorHandler"
-    model = getattr(declarative_component_schema, composite_type) if definition.get("type") == composite_type else DefaultErrorHandlerModel
-    return ModelToComponentFactory().create_component(model, definition, config=CONFIG)
+    return ModelToComponentFactory().create_component(DefaultErrorHandlerModel, definition, config=CONFIG)
 
 
 def _response(status_code):
