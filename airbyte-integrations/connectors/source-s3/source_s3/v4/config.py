@@ -175,6 +175,8 @@ class Config(AbstractFileBasedSpec):
         stream_item_props = schema["properties"]["streams"]["items"]["properties"]
         stream_item_props["name"]["order"] = 0
         stream_item_props["format"]["order"] = 1
+        # `globs` keeps the CDK default of 1 otherwise, which repeats the `order` of `format`.
+        stream_item_props["globs"]["order"] = 2
         stream_item_props["skip_full_check_for_parquet"] = skip_prop
 
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
