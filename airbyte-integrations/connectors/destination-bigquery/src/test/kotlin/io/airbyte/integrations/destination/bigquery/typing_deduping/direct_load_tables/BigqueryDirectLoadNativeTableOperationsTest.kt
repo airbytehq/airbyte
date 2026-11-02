@@ -319,12 +319,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     linkedMapOf(
                         "id" to FieldType(IntegerType, nullable = true),
                         "name" to FieldType(StringType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
         val tableName = TableName("test_namespace", "campaigns")
@@ -341,17 +341,17 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Field.of("_airbyte_meta", StandardSQLTypeName.JSON),
                     Field.of("_airbyte_generation_id", StandardSQLTypeName.INT64),
                     Field.of("_airbyte_raw_id", StandardSQLTypeName.STRING),
-                )
+                ),
             )
         Mockito.`when`(existingTableDef.clustering)
             .thenReturn(
-                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build(),
             )
         Mockito.`when`(existingTableDef.timePartitioning)
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
 
         // Mock BigQuery to return the existing table
@@ -400,12 +400,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     linkedMapOf(
                         "id" to FieldType(IntegerType, nullable = true),
                         "name" to FieldType(IntegerType, nullable = true),
-                    )
+                    ),
                 ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val columnNameMapping = ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
         val tableName = TableName("test_namespace", "campaigns")
@@ -422,17 +422,17 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Field.of("_airbyte_meta", StandardSQLTypeName.JSON),
                     Field.of("_airbyte_generation_id", StandardSQLTypeName.INT64),
                     Field.of("_airbyte_raw_id", StandardSQLTypeName.STRING),
-                )
+                ),
             )
         Mockito.`when`(existingTableDef.clustering)
             .thenReturn(
-                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build(),
             )
         Mockito.`when`(existingTableDef.timePartitioning)
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
 
         // Mock BigQuery to return the existing table
