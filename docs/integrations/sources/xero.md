@@ -125,7 +125,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 2.1.7 | 2026-11-01 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fail fast when the Xero daily API limit is reached, honor `Retry-After` on rate-limited requests, and show an actionable message for rejected credentials |
+| 2.1.7 | 2026-11-01 | [90378](https://github.com/airbytehq/airbyte/pull/90378) | Fail fast when the Xero daily API limit is reached, honor `Retry-After` on rate-limited requests, and show an actionable message for rejected credentials |
 | 2.1.6 | 2026-06-30 | [79089](https://github.com/airbytehq/airbyte/pull/79089) | Update dependencies |
 | 2.1.5 | 2026-02-25 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
