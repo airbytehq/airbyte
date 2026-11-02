@@ -378,9 +378,9 @@ class TestFullRefresh(TestCase):
             assert metric in output.records[0].record.data
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Insights error for business_account_id" in msg for msg in log_messages), (
-            f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Insights error for business_account_id" in msg for msg in log_messages
+        ), f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions(self, http_mocker: HttpMocker) -> None:
@@ -418,9 +418,9 @@ class TestFullRefresh(TestCase):
             assert metric in output.records[0].record.data
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Check provided permissions for" in msg for msg in log_messages), (
-            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Check provided permissions for" in msg for msg in log_messages
+        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions_code_10(self, http_mocker: HttpMocker) -> None:
@@ -458,6 +458,6 @@ class TestFullRefresh(TestCase):
             assert metric in output.records[0].record.data
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Check provided permissions for" in msg for msg in log_messages), (
-            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Check provided permissions for" in msg for msg in log_messages
+        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
