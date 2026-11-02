@@ -26,17 +26,15 @@ definitions:
           path: /campaigns
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 15
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{ 'Too much requests' in response }}"
-                    http_codes: []
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 15
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'Too much requests' in response }}"
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -126,17 +124,15 @@ definitions:
           path: /emailAccounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 15
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{ 'Too much requests' in response }}"
-                    http_codes: []
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 15
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'Too much requests' in response }}"
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -185,17 +181,15 @@ definitions:
           path: /people
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 15
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{ 'Too much requests' in response }}"
-                    http_codes: []
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 15
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'Too much requests' in response }}"
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -303,17 +297,15 @@ definitions:
           path: /templates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 15
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    predicate: "{{ 'Too much requests' in response }}"
-                    http_codes: []
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 15
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                predicate: "{{ 'Too much requests' in response }}"
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,17 +369,15 @@ streams:
         path: /campaigns
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 15
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{ 'Too much requests' in response }}"
-                  http_codes: []
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 15
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{ 'Too much requests' in response }}"
+              http_codes: []
       record_selector:
         type: RecordSelector
         extractor:
@@ -476,17 +466,15 @@ streams:
         path: /emailAccounts
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 15
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{ 'Too much requests' in response }}"
-                  http_codes: []
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 15
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{ 'Too much requests' in response }}"
+              http_codes: []
       record_selector:
         type: RecordSelector
         extractor:
@@ -534,17 +522,15 @@ streams:
         path: /people
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 15
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{ 'Too much requests' in response }}"
-                  http_codes: []
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 15
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{ 'Too much requests' in response }}"
+              http_codes: []
       record_selector:
         type: RecordSelector
         extractor:
@@ -651,17 +637,15 @@ streams:
         path: /templates
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 15
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  predicate: "{{ 'Too much requests' in response }}"
-                  http_codes: []
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 15
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: "{{ 'Too much requests' in response }}"
+              http_codes: []
       record_selector:
         type: RecordSelector
         extractor:
