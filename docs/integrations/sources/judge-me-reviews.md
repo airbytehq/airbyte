@@ -26,7 +26,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.46 | 2026-11-01 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Simplify the reviews stream error handler configuration; no change in retry behavior |
+| 0.0.46 | 2026-11-01 | [90371](https://github.com/airbytehq/airbyte/pull/90371) | Simplify the reviews stream error handler configuration; no change in retry behavior |
 | 0.0.45 | 2026-10-27 | [89931](https://github.com/airbytehq/airbyte/pull/89931) | Update dependencies |
 | 0.0.44 | 2026-10-20 | [89276](https://github.com/airbytehq/airbyte/pull/89276) | Update dependencies |
 | 0.0.43 | 2026-10-13 | [88669](https://github.com/airbytehq/airbyte/pull/88669) | Update dependencies |
