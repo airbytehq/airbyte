@@ -16,7 +16,7 @@ import requests_mock
 
 from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -2335,7 +2335,7 @@ def _mock_report_flow_with_requester_error(
     report_name: str,
     requester_name: str,
     status_code: HTTPStatus,
-) -> RequestBuilder:
+) -> HttpRequest:
     http_mocker.clear_all_matchers()
     mock_auth(http_mocker)
     http_mocker.get(_get_reports_request().build(), _get_reports_response())
