@@ -2,6 +2,7 @@
 
 
 import logging
+import posixpath
 import stat
 from datetime import datetime
 from io import IOBase
@@ -140,9 +141,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             - dir_path="/data/folder", glob="/*/folder/folder2/*" -> True (partial match)
         """
 
-        if dir_path.startswith("//"):
-            #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
-            dir_path = dir_path[1:]
+        # Normalize directory path (remove duplicate slashes)
+        dir_path = posixpath.normpath(dir_path)
 
         for glob_pattern in globs:
             # Handle recursive wildcard - it matches everything
@@ -155,6 +155,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             # Extract directory part from glob (everything before the last /)
             if "/" in glob_pattern:
                 glob_dir = glob_pattern.rsplit("/", 1)[0]
+                # Normalize glob_dir (remove duplicate slashes)
+                glob_dir = posixpath.normpath(glob_dir)
 
                 # For patterns without wildcards, use simple string matching
                 if "*" not in glob_dir:
@@ -226,17 +228,15 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         files_batch = []
         BATCH_SIZE = 100  # Process files in batches to reduce overhead
 
-        # Normalize globs to handle root folder correctly
+        # Normalize globs: remove duplicate slashes and ensure they are relative to root_folder
         normalized_globs = []
         for glob_pattern in globs:
+            # Remove duplicate slashes
+            normalized = posixpath.normpath(glob_pattern)
             # If glob doesn't start with /, make it relative to root_folder
-            if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
-            else:
-                normalized_globs.append(glob_pattern)
-            if glob_pattern.startswith("//"):
-                #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
-                normalized_globs.append(glob_pattern[1:])
+            if not normalized.startswith("/"):
+                normalized = f"{root_folder.rstrip('/')}/{normalized}"
+            normalized_globs.append(normalized)
 
         # Iterate through directories and subdirectories
         while directories:
@@ -245,6 +245,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                 for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                     if item.st_mode and stat.S_ISDIR(item.st_mode):
                         dir_path = f"{current_dir}/{item.filename}"
+                        # Normalize directory path
+                        dir_path = posixpath.normpath(dir_path)
                         # Only traverse directories that could contain matching files
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)
@@ -252,6 +254,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                             logger.debug(f"Skipping directory {dir_path} (no globs match)")
                     else:
                         file_uri = f"{current_dir}/{item.filename}"
+                        # Normalize file URI to remove duplicate slashes
+                        file_uri = posixpath.normpath(file_uri)
                         file_mtime = datetime.fromtimestamp(item.st_mtime)
 
                         file = SFTPBulkUploadableRemoteFile(
@@ -268,7 +272,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         if len(files_batch) >= BATCH_SIZE:
                             yield from self.filter_files_by_globs_and_start_date(
                                 files_batch,
-                                globs,
+                                normalized_globs,
                             )
                             files_batch = []
             except AirbyteTracedException:
@@ -281,7 +285,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         if files_batch:
             yield from self.filter_files_by_globs_and_start_date(
                 files_batch,
-                globs,
+                normalized_globs,
             )
 
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
