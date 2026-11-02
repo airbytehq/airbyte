@@ -83,7 +83,11 @@ class MsSqlSourceOperations :
                         if (type.precision!! < 25) FloatFieldType else DoubleFieldType
                     JDBCType.DOUBLE -> DoubleFieldType
                     JDBCType.NUMERIC,
-                    JDBCType.DECIMAL -> BigDecimalFieldType
+                    JDBCType.DECIMAL ->
+                        // SQL Server NUMERIC/DECIMAL with scale 0 holds whole numbers; map to
+                        // Airbyte integer so downstream destinations preserve integral semantics
+                        // (e.g. Snowflake NUMBER vs FLOAT).
+                        if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
                     JDBCType.CHAR,
                     JDBCType.VARCHAR,
                     JDBCType.LONGVARCHAR,
@@ -245,8 +249,7 @@ class MsSqlSourceOperations :
         GEOMETRY(MsSqlServerGeometryFieldType, "GEOMETRY"),
         GEOGRAPHY(MsSqlServerGeographyFieldType, "GEOGRAPHY"),
         DOUBLE(DoubleFieldType, "MONEY", "SMALLMONEY"),
-        HIERARCHY(MsSqlServerHierarchyFieldType, "HIERARCHYID"),
-        ;
+        HIERARCHY(MsSqlServerHierarchyFieldType, "HIERARCHYID");
 
         constructor(
             jdbcType: JdbcFieldType<*>,
@@ -305,10 +308,12 @@ class MsSqlSourceOperations :
      * column identifiers (never per-column transformations such as `[col].ToString()` used for
      * hierarchy columns) so that:
      * 1. The derived `randomly_sampled` table exposes every column by its original name, which is
+     *
      * ```
      *    what the outer SELECT references when applying transformations.
      * ```
      * 2. HIDDEN period columns on system-versioned temporal tables (`PERIOD FOR SYSTEM_TIME`)
+     *
      * ```
      *    remain accessible to the outer query; `SELECT *` would silently drop them.
      * ```
@@ -399,7 +404,7 @@ class MsSqlSourceOperations :
         when (this) {
             NoLimit,
             Limit(0),
-            is Limit, -> emptyList()
+            is Limit -> emptyList()
         }
 
     fun FromNode.bindings(): List<SelectQuery.Binding> =
@@ -407,6 +412,7 @@ class MsSqlSourceOperations :
             is FromSample -> where?.bindings() ?: emptyList()
             else -> emptyList()
         }
+
     override val globalCursor: MetaField = MsSqlServerCdcMetaFields.CDC_CURSOR
     override val globalMetaFields: Set<MetaField> =
         setOf(
@@ -464,13 +470,13 @@ class MsSqlSourceOperations :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         // Add CDC_UPDATED_AT field
         recordData[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 timestamp,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         // Add CDC_LSN field with empty string as default
@@ -501,7 +507,7 @@ class MsSqlSourceOperations :
         recordData[MsSqlServerCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
                 lsnValue,
-                MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
+                MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
     }
 

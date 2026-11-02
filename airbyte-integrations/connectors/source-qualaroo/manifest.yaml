@@ -22,7 +22,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "500"
-            start_date: "{{config['start_date']}}"
+            start_date: "{{ timestamp(config['start_date']) | int }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -74,7 +74,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "500"
-            start_date: "{{config['start_date']}}"
+            start_date: "{{ timestamp(config['start_date']) | int }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:

@@ -10,7 +10,7 @@ from destination_milvus.config import MilvusIndexingConfigModel, NoAuth, TokenAu
 from destination_milvus.indexer import MilvusIndexer
 from pymilvus import DataType
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, DestinationSyncMode, SyncMode
 
 
 @patch("destination_milvus.indexer.connections")

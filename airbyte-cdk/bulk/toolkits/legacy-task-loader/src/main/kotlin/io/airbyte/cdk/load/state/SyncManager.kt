@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -19,14 +18,10 @@ data object DestinationSuccess : DestinationResult
 
 data class DestinationFailure(
     val cause: Exception,
-    val streamResults: Map<DestinationStream.Descriptor, StreamResult>
+    val streamResults: Map<DestinationStream.Descriptor, StreamResult>,
 ) : DestinationResult
 
 @Singleton
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "exception is guaranteed to be non-null by Kotlin's type system"
-)
 class SyncManager(val catalog: DestinationCatalog) {
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
         ConcurrentHashMap(catalog.streams.associate { it.mappedDescriptor to StreamManager(it) })
@@ -45,7 +40,7 @@ class SyncManager(val catalog: DestinationCatalog) {
 
     fun registerStartedStreamLoader(
         streamDescriptor: DestinationStream.Descriptor,
-        streamLoaderResult: Result<StreamLoader>
+        streamLoaderResult: Result<StreamLoader>,
     ) {
         streamLoaders
             .getOrPut(streamDescriptor) { CompletableDeferred() }
@@ -80,7 +75,7 @@ class SyncManager(val catalog: DestinationCatalog) {
     suspend fun markDestinationSucceeded() {
         if (streamManagers.values.any { it.isActive() }) {
             throw IllegalStateException(
-                "Cannot mark sync as succeeded until all streams are complete"
+                "Cannot mark sync as succeeded until all streams are complete",
             )
         }
         destinationResult.complete(DestinationSuccess)
@@ -114,7 +109,7 @@ class SyncManager(val catalog: DestinationCatalog) {
         if (incompleteStreams.isNotEmpty()) {
             val prettyStreams = incompleteStreams.map { it.toPrettyString() }
             throw TransientErrorException(
-                "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
+                "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: $prettyStreams",
             )
         }
         inputConsumed.complete(true)

@@ -117,14 +117,15 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
-| 0.0.11  | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
-| 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1                      |
-| 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0                      |
-| 0.0.8   | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61.               |
-| 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
-| 0.0.6   | 2025-09-10 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
-| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
-| 0.0.4   | 2025-07-31 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
+| 0.0.12 | 2026-06-17 | [80214](https://github.com/airbytehq/airbyte/pull/80214) | Move to community support level |
+| 0.0.11 | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
+| 0.0.10 | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1 |
+| 0.0.9 | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0 |
+| 0.0.8 | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61. |
+| 0.0.7 | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact |
+| 0.0.6 | 2025-09-10 | [65986](https://github.com/airbytehq/airbyte/pull/65986) | Adding product object |
+| 0.0.5 | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157) | Update following breaking changes on spec |
+| 0.0.4 | 2025-07-31 | [64144](https://github.com/airbytehq/airbyte/pull/64144) | OSS release |
 | 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                       |
 | 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                               |
 | 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally                |

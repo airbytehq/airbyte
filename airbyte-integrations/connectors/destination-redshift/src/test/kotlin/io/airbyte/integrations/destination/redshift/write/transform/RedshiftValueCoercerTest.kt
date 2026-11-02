@@ -152,7 +152,7 @@ internal class RedshiftValueCoercerTest {
     fun `validate nullifies number exceeding maximum`() {
         val result =
             coercer.validate(
-                enriched(NumberValue(NUMERIC_MAX.multiply(BigDecimal.TEN)), NumberType)
+                enriched(NumberValue(NUMERIC_MAX.multiply(BigDecimal.TEN)), NumberType),
             )
         assertShouldNullify(result)
     }
@@ -161,7 +161,7 @@ internal class RedshiftValueCoercerTest {
     fun `validate nullifies number below minimum`() {
         val result =
             coercer.validate(
-                enriched(NumberValue(NUMERIC_MIN.multiply(BigDecimal.TEN)), NumberType)
+                enriched(NumberValue(NUMERIC_MIN.multiply(BigDecimal.TEN)), NumberType),
             )
         assertShouldNullify(result)
     }
@@ -236,7 +236,7 @@ internal class RedshiftValueCoercerTest {
                 linkedMapOf(
                     "foo" to IntegerValue(1),
                     "bar" to IntegerValue(2),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -247,7 +247,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -271,11 +271,11 @@ internal class RedshiftValueCoercerTest {
                                     ObjectValue(
                                         linkedMapOf<String, AirbyteValue>(
                                             "l3" to StringValue("deep"),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -286,7 +286,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -296,6 +296,173 @@ internal class RedshiftValueCoercerTest {
         val largeArray = ArrayValue((1..1000).map { IntegerValue(it.toBigInteger()) })
         val result =
             coercer.validate(enriched(largeArray, ArrayType(FieldType(IntegerType, false))))
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    // ================================================================
+    // validate() — SUPER nested string (VARCHAR 65535) tests
+    // ================================================================
+
+    @Test
+    fun `validate nullifies object with nested string exceeding 65535 bytes`() {
+        val obj =
+            ObjectValue(
+                linkedMapOf(
+                    "id" to StringValue("abc-123"),
+                    "signature" to StringValue("a".repeat(VARCHAR_MAX_BYTES + 1)),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    obj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate accepts object with nested string at exactly 65535 bytes`() {
+        val obj =
+            ObjectValue(
+                linkedMapOf(
+                    "id" to StringValue("abc-123"),
+                    "data" to StringValue("a".repeat(VARCHAR_MAX_BYTES)),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    obj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun `validate nullifies array with nested oversized string`() {
+        val arr =
+            ArrayValue(
+                listOf(
+                    StringValue("small"),
+                    StringValue("a".repeat(70000)),
+                ),
+            )
+        val result = coercer.validate(enriched(arr, ArrayType(FieldType(StringType, false))))
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate nullifies deeply nested object with oversized string`() {
+        val deepObj =
+            ObjectValue(
+                linkedMapOf<String, AirbyteValue>(
+                    "level1" to
+                        ObjectValue(
+                            linkedMapOf<String, AirbyteValue>(
+                                "level2" to
+                                    ObjectValue(
+                                        linkedMapOf<String, AirbyteValue>(
+                                            "huge" to
+                                                StringValue("x".repeat(VARCHAR_MAX_BYTES + 1)),
+                                        ),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    deepObj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate accepts object with only small values`() {
+        val obj =
+            ObjectValue(
+                linkedMapOf(
+                    "name" to StringValue("Alice"),
+                    "count" to IntegerValue(42),
+                    "active" to BooleanValue(true),
+                    "tags" to ArrayValue(listOf(StringValue("a"), StringValue("b"))),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    obj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun `validate nullifies object with multi-byte nested string over limit`() {
+        // Each emoji is 4 bytes in UTF-8. 16384 emojis = 65536 bytes > 65535 limit.
+        val obj =
+            ObjectValue(
+                linkedMapOf(
+                    "data" to StringValue("\uD83D\uDE00".repeat(16384)),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    obj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate accepts object with multi-byte nested string under limit`() {
+        // Each 'é' is 2 bytes in UTF-8. 32000 chars = 64000 bytes < 65535 limit.
+        val obj =
+            ObjectValue(
+                linkedMapOf(
+                    "data" to StringValue("é".repeat(32000)),
+                ),
+            )
+        val result =
+            coercer.validate(
+                enriched(
+                    obj,
+                    ObjectType(
+                        properties = linkedMapOf(),
+                        additionalProperties = true,
+                        required = emptyList(),
+                    ),
+                ),
+            )
         assertEquals(ValidationResult.Valid, result)
     }
 

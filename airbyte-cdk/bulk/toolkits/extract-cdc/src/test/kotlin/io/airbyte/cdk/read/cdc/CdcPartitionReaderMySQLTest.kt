@@ -39,6 +39,7 @@ class CdcPartitionReaderMySQLTest :
 
     companion object {
         const val DOCKER_IMAGE_NAME = "mysql:8.0"
+
         init {
             TestContainerFactory.register(DOCKER_IMAGE_NAME, ::MySQLContainer)
         }
@@ -51,6 +52,16 @@ class CdcPartitionReaderMySQLTest :
     override fun MySQLContainer<*>.insert12345() {
         for (i in 1..5) {
             withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
+        }
+    }
+
+    override fun MySQLContainer<*>.insertMultipleInOneTransaction(n: Int) {
+        withStatement {
+            it.execute("BEGIN")
+            for (i in 1..n) {
+                it.execute("INSERT INTO tbl (v) VALUES ($i)")
+            }
+            it.execute("COMMIT")
         }
     }
 
@@ -128,13 +139,12 @@ class CdcPartitionReaderMySQLTest :
                 .withStreams(streams)
                 .buildMap()
 
-        private fun currentPosition(): Position =
-            container.withStatement { statement: Statement ->
-                statement.executeQuery("SHOW MASTER STATUS").use {
-                    it.next()
-                    Position(it.getString("File"), it.getLong("Position"))
-                }
+        private fun currentPosition(): Position = container.withStatement { statement: Statement ->
+            statement.executeQuery("SHOW MASTER STATUS").use {
+                it.next()
+                Position(it.getString("File"), it.getLong("Position"))
             }
+        }
     }
 
     inner class TestCdcPartitionReaderDbzOps : AbstractCdcPartitionReaderDbzOps<Position>() {

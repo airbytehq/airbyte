@@ -59,6 +59,12 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -132,6 +138,12 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -204,6 +216,12 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at

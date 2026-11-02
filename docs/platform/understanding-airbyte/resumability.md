@@ -4,12 +4,6 @@ products: all
 
 # Resumability & Resumable Full Refresh
 
-:::info
-
-This page describes a coming-soon feature. Resumable Full Refresh will be available as of Airbyte v1.0.0.
-
-:::
-
 ## Resumability
 
 Airbyte strives to create resilient syncs that can handle many types of issues (for example, networking issues, flaky source APIs or under provisioned
@@ -41,8 +35,7 @@ Resumability applies to all sync modes, including standard Full Refresh + Overwr
 
 ## Resumable Full Refresh
 
-Resumability is an inherent feature of Incremental syncs. 
-
+Resumability is an inherent feature of Incremental syncs.
 
 Although incremental syncs are superior in all cases, they require implementing a cursor, which is not always possible.
 
@@ -56,14 +49,15 @@ These cursors are artificial as they are often not present in the data schema, e
 change i.e. without external control or input. This differs from a proper cursor column, e.g. an `update_at` column, that is present in the data schema,
 and changes in response to user input.
 
-
 ### Enabling Resumable Full Refresh
 
 Resuamble Full Refresh is automatically enabled on connections with:
+
 1) A Resumable-Full-Refresh-enabled Source
 2) A Refresh-enabled Destination
 
 The following Database Sources support Resumable Full Refresh as of 9th July 2024:
+
 1) **Source MySql >= 3.4.7**
    1) Tables without primary keys do not support Resumable Full Refresh.
 2) **Source MsSql >= 4.0.27**
@@ -73,12 +67,15 @@ The following Database Sources support Resumable Full Refresh as of 9th July 202
 4) **Source Mongo >= 1.3.14**
 
 The following API Sources support Resumable Full Refresh as of 9th July 2024:
+
 1) All Sources on Python CDK version 1.1.0 and above.
 
 ### Identifying Resumed Streams
 
-The platform emits the following log lines to help identify resumed streams:
-```angular2html
-2024-07-08 22:58:40 replication-orchestrator > Number of Resumed Full Refresh Streams: {1}
-2024-07-08 22:58:40 replication-orchestrator >  Resumed stream name: activities namespace: null
-```
+The platform emits log lines to help identify resumed streams. Look for messages indicating the number of resumed streams and their names in the sync logs.
+
+### Resumability in Socket Mode
+
+For connections running in socket mode, sources can read tables as parallel partitions, and records and state messages travel over multiple sockets at once. Each state message carries a `partition_id` and an incrementing `id`. The destination only commits a state once it receives every record for that partition, and it commits states in `id` order, so checkpoints remain sequential even though records arrive out of order.
+
+If a sync fails, Airbyte resumes from the last state the destination committed in that sequence rather than restarting the stream. This preserves the same at-least-once delivery semantics as legacy mode while improving throughput.

@@ -23,6 +23,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: assignments
           http_method: GET
         record_selector:
@@ -467,6 +475,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: employees
           http_method: GET
         record_selector:
@@ -574,6 +590,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: hash_tags
           http_method: GET
         record_selector:
@@ -616,6 +640,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/clients
           http_method: GET
         record_selector:
@@ -658,6 +690,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/company_groups
           http_method: GET
         record_selector:
@@ -700,6 +740,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/departments
           http_method: GET
         record_selector:
@@ -742,6 +790,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/identity_providers
           http_method: GET
         record_selector:
@@ -779,6 +835,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/positions
           http_method: GET
         record_selector:
@@ -821,6 +885,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/rag_scopes
           http_method: GET
         record_selector:
@@ -879,6 +951,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/roles
           http_method: GET
         record_selector:
@@ -924,6 +1004,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/seniorities
           http_method: GET
         record_selector:
@@ -968,6 +1056,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/tags
           http_method: GET
         record_selector:
@@ -1010,6 +1106,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/teams
           http_method: GET
         record_selector:
@@ -1052,6 +1156,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: organization/timeoff_types
           http_method: GET
         record_selector:
@@ -1094,6 +1206,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: people
           http_method: GET
         record_selector:
@@ -1157,6 +1277,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: projects
           http_method: GET
         record_selector:
@@ -1301,6 +1429,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: projects_vacancies
           http_method: GET
         record_selector:
@@ -1378,6 +1514,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: rag_ratings
           http_method: GET
         record_selector:
@@ -1428,6 +1572,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: skills
           http_method: GET
         record_selector:
@@ -1488,6 +1640,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: timeoffs
           http_method: GET
         record_selector:
@@ -1569,6 +1729,14 @@ definitions:
             refresh_request_body: {}
             token_refresh_endpoint: https://api.primetric.com/auth/token/
             grant_type: client_credentials
+            refresh_token_error_status_codes:
+              - 400
+              - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+              - invalid_client
+              - invalid_grant
+              - unauthorized_client
           path: worklogs
           http_method: GET
         record_selector:
@@ -1653,6 +1821,14 @@ definitions:
       refresh_request_body: {}
       token_refresh_endpoint: https://api.primetric.com/auth/token/
       grant_type: client_credentials
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_client
+        - invalid_grant
+        - unauthorized_client
 streams:
   - type: DeclarativeStream
     name: assignments
@@ -1670,6 +1846,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: assignments
         http_method: GET
       record_selector:
@@ -2113,6 +2297,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: employees
         http_method: GET
       record_selector:
@@ -2219,6 +2411,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: hash_tags
         http_method: GET
       record_selector:
@@ -2260,6 +2460,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/clients
         http_method: GET
       record_selector:
@@ -2301,6 +2509,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/company_groups
         http_method: GET
       record_selector:
@@ -2342,6 +2558,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/departments
         http_method: GET
       record_selector:
@@ -2383,6 +2607,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/identity_providers
         http_method: GET
       record_selector:
@@ -2419,6 +2651,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/positions
         http_method: GET
       record_selector:
@@ -2460,6 +2700,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/rag_scopes
         http_method: GET
       record_selector:
@@ -2517,6 +2765,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/roles
         http_method: GET
       record_selector:
@@ -2561,6 +2817,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/seniorities
         http_method: GET
       record_selector:
@@ -2604,6 +2868,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/tags
         http_method: GET
       record_selector:
@@ -2645,6 +2917,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/teams
         http_method: GET
       record_selector:
@@ -2686,6 +2966,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: organization/timeoff_types
         http_method: GET
       record_selector:
@@ -2727,6 +3015,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: people
         http_method: GET
       record_selector:
@@ -2789,6 +3085,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: projects
         http_method: GET
       record_selector:
@@ -2932,6 +3236,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: projects_vacancies
         http_method: GET
       record_selector:
@@ -3008,6 +3320,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: rag_ratings
         http_method: GET
       record_selector:
@@ -3057,6 +3377,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: skills
         http_method: GET
       record_selector:
@@ -3116,6 +3444,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: timeoffs
         http_method: GET
       record_selector:
@@ -3196,6 +3532,14 @@ streams:
           refresh_request_body: {}
           token_refresh_endpoint: https://api.primetric.com/auth/token/
           grant_type: client_credentials
+          refresh_token_error_status_codes:
+            - 400
+            - 401
+          refresh_token_error_key: error
+          refresh_token_error_values:
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
         path: worklogs
         http_method: GET
       record_selector:
