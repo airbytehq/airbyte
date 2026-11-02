@@ -138,18 +138,16 @@ definitions:
             longitude: "{{ config['longitude'] }}"
             propertyType: "{{ config['property_type'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    error_message_contains: >-
-                      The required query parameters 'address' or
-                      'latitude'/'longitude' were not provided
-                    http_codes:
-                      - 400
-                    error_message: Please provide a zipcode
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                error_message_contains: >-
+                  The required query parameters 'address' or
+                  'latitude'/'longitude' were not provided
+                http_codes:
+                  - 400
+                error_message: Please provide a zipcode
         record_selector:
           type: RecordSelector
           extractor:
@@ -173,18 +171,16 @@ definitions:
             dataType: "{{ config['data_type_'] }}"
             historyRange: "{{ config['history_range'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    error_message_contains: >-
-                      The required query parameters 'address' or
-                      'latitude'/'longitude' were not provided
-                    http_codes:
-                      - 400
-                    error_message: Please provide a zipcode
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                error_message_contains: >-
+                  The required query parameters 'address' or
+                  'latitude'/'longitude' were not provided
+                http_codes:
+                  - 400
+                error_message: Please provide a zipcode
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,20 +204,18 @@ definitions:
             latitude: "{{ config[\"latitude\"] }}"
             longitude: "{{ config[\"longitude\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    error_message_contains: >-
-                      The required query parameters 'address' or
-                      'latitude'/'longitude' were not provided
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      Please provide either an address or a latitude and
-                      longitude.
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                error_message_contains: >-
+                  The required query parameters 'address' or
+                  'latitude'/'longitude' were not provided
+                http_codes:
+                  - 400
+                error_message: >-
+                  Please provide either an address or a latitude and
+                  longitude.
         record_selector:
           type: RecordSelector
           extractor:
@@ -245,20 +239,18 @@ definitions:
             latitude: "{{ config[\"latitude\"] }}"
             longitude: "{{ config[\"longitude\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    error_message_contains: >-
-                      The required query parameters 'address' or
-                      'latitude'/'longitude' were not provided
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      Please provide either an address or a latitude and
-                      longitude.
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                error_message_contains: >-
+                  The required query parameters 'address' or
+                  'latitude'/'longitude' were not provided
+                http_codes:
+                  - 400
+                error_message: >-
+                  Please provide either an address or a latitude and
+                  longitude.
         record_selector:
           type: RecordSelector
           extractor:

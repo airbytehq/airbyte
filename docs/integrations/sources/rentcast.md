@@ -44,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-11-01 | [90405](https://github.com/airbytehq/airbyte/pull/90405) | Simplify the error handler configuration of the Rental Listings, Statistics, Value Estimate and Rent Estimate streams; no behavior change |
 | 0.0.66 | 2026-10-20 | [89389](https://github.com/airbytehq/airbyte/pull/89389) | Update dependencies |
 | 0.0.65 | 2026-10-13 | [88802](https://github.com/airbytehq/airbyte/pull/88802) | Update dependencies |
 | 0.0.64 | 2026-10-06 | [88012](https://github.com/airbytehq/airbyte/pull/88012) | Update dependencies |
