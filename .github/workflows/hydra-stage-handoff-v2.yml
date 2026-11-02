@@ -1,0 +1,312 @@
+name: "Hydra: Stage Handoff v2 (hydra-driven)"
+# Hydra-driven per-event stage handoff. Ships alongside hydra-stage-handoff.yml
+# (unchanged) during the cutover period described in HYD-368 and the plan at
+# airbytehq/airbyte#90136 (docs/hydra/hands-free-determinism-plan.md).
+#
+# Shape:
+#   1. Trigger fires (currently workflow_dispatch + repository_dispatch; the
+#      full trigger set — check_run, pull_request synchronize/labeled, weekend
+#      cron — lands in Phase 2 PRs).
+#   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
+#      no community/fork. The v2 label is intentionally separate from `hyd-chain`
+#      so this workflow and the existing hydra-stage-handoff.yml can run in
+#      parallel against disjoint PR sets during the soak period, with zero
+#      double-dispatch risk. After cutover, rename hyd-chain-v2 → hyd-chain (or
+#      have the new workflow accept both) and retire the old workflow.
+#   3. Download and run `hydra state <pr> --assess` from airbytehq/hydrakit.
+#      Hydra re-reads the PR's current state (facts + prior runs + stages + CI
+#      + flags + conflict + support-bot + draft) and returns an Assessment with
+#      a typed next_action and (when it hits a judgment call it can't make) a
+#      blockers array.
+#   4. Switch on next_action and dispatch the matching slash-command workflow
+#      via curl. No Devin session is launched for the decision itself.
+#
+# Dry-run: controlled by workflow_dispatch input (preferred) or by the
+# HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
+# is proven in prod per the HYD-368 cutover plan). In dry-run, every step runs
+# identically except the dispatches — they are logged as WOULD and skipped. The
+# old hydra-stage-handoff.yml continues dispatching for real throughout.
+#
+# This workflow does not yet handle:
+#   - `escalate`: template-fire path (HYD-382).
+#   - `fix_ci`:   thin-LLM CI-relatedness classifier (Phase 3).
+# Both are logged and exited; the daily sweep and author/human handle them
+# meanwhile.
+
+on:
+  # Dispatcher-emitted completion signals. The slash-command workflows that
+  # pivot to wait-for-stopped-status in HYD-369 will POST to the dispatches
+  # API with event_type=handoff and {pr, head_sha, source_stage} in the
+  # client_payload. Until that pivot lands, this fires only via
+  # workflow_dispatch.
+  repository_dispatch:
+    types: [handoff]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "PR number to run a single-PR handoff pass on"
+        required: true
+        type: string
+      dry-run:
+        description: "If 'true', the workflow reports what it would do without dispatching"
+        required: false
+        type: boolean
+        default: true
+
+run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr }}"
+
+# GITHUB_TOKEN is unused: all reads/writes go through the Octavia app token.
+permissions: {}
+
+concurrency:
+  # Serialise handoff runs per PR so burst-firing events don't double-dispatch.
+  # cancel-in-progress is deliberately false: cancelling after a slash-command
+  # dispatch has fired would leave a session running that nobody owns.
+  group: hydra-stage-handoff-v2-${{ github.event.inputs.pr || github.event.client_payload.pr }}
+  cancel-in-progress: false
+
+jobs:
+  handoff:
+    name: Compute next_action and dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR number
+        id: pr
+        env:
+          INPUT_PR: ${{ github.event.inputs.pr }}
+          CLIENT_PR: ${{ github.event.client_payload.pr }}
+        run: |
+          set -euo pipefail
+          PR="${INPUT_PR:-$CLIENT_PR}"
+          if [[ -z "$PR" ]]; then
+            echo "::error::no PR number resolved from inputs or client_payload"
+            exit 1
+          fi
+          echo "number=$PR" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Resolve dry-run mode
+        id: mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry-run }}
+          VAR_DRY_RUN: ${{ vars.HYDRA_HANDOFF_V2_DRY_RUN }}
+        run: |
+          set -euo pipefail
+          # Default: true. Repo variable can flip to 'false' when the cutover
+          # is ready. workflow_dispatch input overrides both.
+          DRY_RUN="true"
+          [[ "$VAR_DRY_RUN" == "false" ]] && DRY_RUN="false"
+          [[ "$EVENT_NAME" == "workflow_dispatch" && -n "$INPUT_DRY_RUN" ]] && DRY_RUN="$INPUT_DRY_RUN"
+          echo "dry_run=$DRY_RUN" | tee -a "$GITHUB_OUTPUT"
+          echo "::notice::DRY_RUN=$DRY_RUN"
+
+      - name: Authenticate as GitHub App
+        id: get-app-token
+        uses: actions/create-github-app-token@v3.0.0
+        with:
+          owner: airbytehq
+          # hydrakit is needed to download the hydra.mjs release artifact.
+          repositories: "airbyte,oncall,hydrakit"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Pre-flight eligibility (fast exit before any hydra call)
+        id: eligibility
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json state,isCrossRepository,labels)
+          STATE=$(jq -r '.state' <<<"$PR_JSON")
+          IS_FORK=$(jq -r '.isCrossRepository' <<<"$PR_JSON")
+          LABELS=$(jq -r '[.labels[].name] | join(",")' <<<"$PR_JSON")
+          echo "state=$STATE fork=$IS_FORK labels=$LABELS"
+
+          SKIP=""
+          [[ "$STATE" != "OPEN" ]] && SKIP="PR is $STATE"
+          [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
+          [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
+          [[ -z "$SKIP" && ",$LABELS," == *",hyd-pause,"* ]] && SKIP="hyd-pause label"
+          [[ -z "$SKIP" && ",$LABELS," != *",hyd-chain-v2,"* ]] && SKIP="PR not opted in (no hyd-chain-v2 label)"
+
+          if [[ -n "$SKIP" ]]; then
+            echo "::notice::Skipping handoff: $SKIP"
+            echo "eligible=false" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "eligible=true" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download hydra CLI
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          # Pin a specific hydrakit release. Update HYDRA_VERSION and
+          # HYDRA_SHA256 together whenever bumping — the sha256 lives in the
+          # release's SHA256SUMS.
+          HYDRA_VERSION: "v0.1.0"
+          HYDRA_SHA256: ""
+        run: |
+          set -euo pipefail
+          gh release download "$HYDRA_VERSION" -R airbytehq/hydrakit -p hydra.mjs -D "$RUNNER_TEMP"
+          if [[ -n "$HYDRA_SHA256" ]]; then
+            echo "$HYDRA_SHA256  $RUNNER_TEMP/hydra.mjs" | sha256sum -c -
+          else
+            echo "::warning::HYDRA_SHA256 is empty; skipping checksum verification. Pin it before DRY_RUN flips to false."
+          fi
+
+      - name: Compute next action via hydra assess
+        if: steps.eligibility.outputs.eligible == 'true'
+        id: assess
+        env:
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          HYDRA_EXPERIMENTAL_ASSESS: "1"
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
+          echo "::group::hydra output"
+          echo "$OUT"
+          echo "::endgroup::"
+          NEXT_ACTION=$(jq -r '.assessment.next_action // "unknown"' <<<"$OUT")
+          REASON=$(jq -r '.assessment.reason // ""' <<<"$OUT")
+          TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
+          BLOCKERS=$(jq -r '(.assessment.blockers // []) | join("; ")' <<<"$OUT")
+          MARK_READY=$(jq -r '.assessment.mark_ready_for_review // false' <<<"$OUT")
+          echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
+          echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "blockers=$BLOCKERS" >> "$GITHUB_OUTPUT"
+          echo "mark_ready=$MARK_READY" >> "$GITHUB_OUTPUT"
+          echo "::notice::next_action=$NEXT_ACTION target=$TARGET reason=$REASON"
+
+      - name: Dispatch next action
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          TARGET: ${{ steps.assess.outputs.target }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          dispatch_airbyte() {
+            local WORKFLOW="$1"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "::notice::WOULD dispatch $WORKFLOW for PR #$PR_NUMBER"
+              return 0
+            fi
+            curl -fsS -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
+              -d "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
+            echo "::notice::Dispatched $WORKFLOW for PR #$PR_NUMBER"
+          }
+
+          dispatch_oncall() {
+            local WORKFLOW="$1"
+            local ISSUE="$2"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "::notice::WOULD dispatch $WORKFLOW for oncall issue #$ISSUE"
+              return 0
+            fi
+            curl -fsS -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
+              -d "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
+            echo "::notice::Dispatched $WORKFLOW for issue #$ISSUE"
+          }
+
+          # hydra assesses the whole issue+PR group, so target can be another
+          # PR in the group. Only act on PR-level actions aimed at this PR.
+          case "$NEXT_ACTION" in
+            prove|review|ready|resolve_conflicts)
+              if [[ "$TARGET" != "airbytehq/airbyte#$PR_NUMBER" ]]; then
+                echo "::notice::next_action=$NEXT_ACTION targets $TARGET, not this PR; skipping dispatch"
+                exit 0
+              fi
+              ;;
+          esac
+
+          case "$NEXT_ACTION" in
+            prove)
+              dispatch_airbyte "ai-prove-fix-command.yml"
+              ;;
+            review)
+              dispatch_airbyte "ai-review-command.yml"
+              # TODO: mark PR ready-for-review when
+              # steps.assess.outputs.mark_ready == 'true' and support-bot is
+              # assigned. See §2.5.4 and HYD-368 follow-on.
+              ;;
+            ready)
+              dispatch_airbyte "ai-ready-command.yml"
+              ;;
+            resolve_conflicts)
+              dispatch_airbyte "ai-resolve-conflicts-command.yml"
+              ;;
+            fix|triage)
+              # The oncall workflows only take oncall issues; the group's issue
+              # can live elsewhere (e.g. airbyte-internal-issues).
+              if [[ ! "$TARGET" =~ ^airbytehq/oncall#([0-9]+)$ ]]; then
+                echo "::warning::$NEXT_ACTION next_action targets '$TARGET', not an airbytehq/oncall issue; skipping dispatch"
+                exit 0
+              fi
+              dispatch_oncall "ai-$NEXT_ACTION-command.yml" "${BASH_REMATCH[1]}"
+              ;;
+            fix_ci)
+              # TODO (Phase 3): thin-LLM relatedness classifier reads the
+              # failing checks and decides to dispatch /ai-prove-fix anyway
+              # (unrelated) or exit (related, author/human fixes). Until then,
+              # log and exit — the daily sweep's §2.5.5 path still covers it.
+              echo "::warning::fix_ci next_action — no automatic handling yet (Phase 3). Blockers: $BLOCKERS"
+              ;;
+            escalate)
+              # TODO (HYD-382): template-fire escalation via MCP with
+              # deterministic target (connector→team lookup + @oc-hydra
+              # fallback) and thin-LLM message body. Until then, log and exit —
+              # the daily sweep still covers it.
+              echo "::warning::escalate next_action — no automatic handling yet (HYD-382). Reason: $REASON Blockers: $BLOCKERS"
+              ;;
+            wait|none|skip)
+              echo "::notice::no action ($NEXT_ACTION): $REASON"
+              ;;
+            unknown)
+              echo "::error::hydra did not return a next_action — check the hydra output above."
+              exit 1
+              ;;
+            *)
+              echo "::error::unexpected next_action: $NEXT_ACTION (reason: $REASON)"
+              exit 1
+              ;;
+          esac
+
+      - name: Summarize
+        if: always()
+        env:
+          ELIGIBLE: ${{ steps.eligibility.outputs.eligible }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          TARGET: ${{ steps.assess.outputs.target }}
+          BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          {
+            echo "## Hydra v2 handoff"
+            echo "- PR: #${PR_NUMBER}"
+            echo "- Eligible: ${ELIGIBLE:-n/a}"
+            echo "- next_action: \`${NEXT_ACTION:-n/a}\`"
+            [[ -n "${REASON:-}" ]] && echo "- Reason: ${REASON}"
+            [[ -n "${TARGET:-}" ]] && echo "- Target: ${TARGET}"
+            [[ -n "${BLOCKERS:-}" ]] && echo "- Blockers: ${BLOCKERS}"
+            echo "- Dry run: ${DRY_RUN:-unknown}"
+            true
+          } | tee -a "$GITHUB_STEP_SUMMARY"
