@@ -249,7 +249,7 @@ A queued job is cancelled if:
 - The next scheduled sync for that connection arrives. The newer sync replaces the queued one.
 - Eight hours have elapsed and the connection uses a manual schedule type.
 
-Capacity enforcement applies only to sync jobs, not to check, discover, or spec operations. For more information, see [Monitor data worker usage](/platform/cloud/managing-airbyte-cloud/manage-data-workers).
+Capacity enforcement applies only to sync jobs, not to check, discover, or spec operations. For more information, see [Manage and monitor data workers](/platform/cloud/managing-airbyte-cloud/manage-data-workers).
 
 ### Attempts and Retries
 

@@ -37,7 +37,7 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 ## 5. Per-Ticket Substreams Must Key Error Handling on the Status Code, Not the Response Body
 
-`side_conversations` and the stateful `ticket_metrics` path both request one URL per parent ticket (`GET /tickets/{ticket_id}/side_conversations`, `GET /tickets/{ticket_id}/metrics`). Both use IGNORE filters keyed exclusively on `http_codes`, and that is deliberate on two counts:
+`side_conversations`, the stateful `ticket_metrics` path and the `ticket_audits_per_ticket` stream all request one URL per parent ticket (`GET /tickets/{ticket_id}/side_conversations`, `GET /tickets/{ticket_id}/metrics`, `GET /tickets/{ticket_id}/audits.json`). All three use IGNORE filters keyed exclusively on `http_codes`, and that is deliberate on two counts:
 
 1. **Zendesk does not guarantee a response body.** Permission denials from the `collaboration-api` service arrive as a `403` with an empty `text/html` body. `HttpResponseFilter._response_contains_error_message` parses the body with `JsonErrorMessageParser`, which yields nothing for a non-JSON body, so an `error_message_contains` filter silently never matches. The same emptiness makes `{{ response.get('error') }}` render as `None` in any error message template.
 2. **Denial is scoped to the ticket, not to the stream.** Side conversations require the Collaboration add-on and can be restricted per brand and per group, and the `tickets` incremental export also returns deleted tickets. So individual tickets are refused (`403`) or gone (`404`) while the rest of the stream reads normally. Failing the sync on one refused ticket blocks the whole stream.
@@ -45,6 +45,38 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 There is a second-order trap here. Because these are substreams with `incremental_dependency: true`, the parent cursor is only checkpointed once the substream finishes. A refusal that fails the stream therefore prevents `parent_state` from ever advancing, so the next sync restarts the parent walk from the same position and fails on the same ticket forever — no self-healing, and heavy rate-limit pressure from re-walking the parent every run.
 
 **Why this matters:** the shared `definitions.retriever.requester.error_handler` treats `403`/`404` as a whole-stream configuration error, which is correct for stream-level endpoints and wrong for per-partition ones. Any new substream that requests one URL per parent record needs its own status-code-keyed handler; inheriting the shared one lets a single unreachable parent record fail the sync. Note that `error_message_contains` is also unreliable in the shared handler for the same body-shape reason.
+
+## 6. `num_workers` Minimum Is 2 — One Thread Leaves No Sibling to Beat the Heartbeat
+
+The floor is enforced in three places, and all three are load-bearing:
+
+1. the spec pins `num_workers` to `minimum: 2`;
+2. `spec.config_normalization_rules` carries a `ConfigMigration` that rewrites a stored `num_workers: 1` to `2`;
+3. `concurrency_level.default_concurrency` clamps with `{{ [config.get('num_workers', 4), 2] | max }}`.
+
+The clamp is not redundant with the migration. In CDK 7.23.8 and later (unfixed as of 7.28.3, tracked in [airbyte-python-cdk#1147](https://github.com/airbytehq/airbyte-python-cdk/issues/1147)) `ConcurrentDeclarativeSource.__init__` builds the `ConcurrencyLevel` component from the **pre-migration** config (`config=config or {}`, not `self._config`), so on the first sync after an upgrade a stored `1` would still run a single worker — exactly the sync that needs two. Verified locally: with a stored `num_workers: 1`, `self._config['num_workers']` is `2` while the thread pool is built with `max_workers=1`. The clamp makes the floor effective immediately; the migration keeps the persisted config consistent with the spec minimum. If the CDK is fixed to interpolate the migrated config, the clamp becomes redundant but stays harmless.
+
+Unclamped, `default_concurrency` is `config.get('num_workers', 4)`, so `num_workers: 1` makes the concurrent framework run a single worker thread and every stream is processed strictly one at a time. The `tickets` stream is the problem case: it reads the Incremental Ticket Export endpoint, which the `api_budget` limits to 10 requests per minute, and it uses `cursor_incremental_sync` with no `step` and no `end_datetime`, so the whole date range is a single partition. The concurrent cursor only emits state when a partition closes, so a long `tickets` walk produces no state message until it finishes.
+
+The platform heartbeat resets on a RECORD **or** a STATE message. With two or more workers, a sibling stream keeps emitting during the walk and the sync stays alive. With one worker there is no sibling: once `tickets` is past its first pages, nothing is emitted at all, and the platform cancels the attempt at the `heartbeat-max-seconds-between-messages` threshold (5400s on Cloud). Because the partition never closes, no cursor is checkpointed, so every retry re-enters the identical state and the connection is wedged permanently rather than making partial progress.
+
+What `airbytehq/oncall#13250` establishes is narrower than the mechanism above: every wedged connection ran 1 thread, and one thread leaves no sibling stream to keep the heartbeat alive during the `tickets` walk. Why that walk runs beat-free long enough to trip the threshold is not confirmed (the sync logs carry no source stdout), and a second worker only helps while sibling streams still have work. Treat the floor as a mitigation, not as the root-cause fix.
+
+**Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
+
+## 7. `ticket_audits_per_ticket` Exists Because `ticket_audits` Cannot See Archived Tickets
+
+`ticket_audits` reads `GET /api/v2/ticket_audits`, which Zendesk documents as excluding archived tickets (closed tickets are archived about 120 days after they close) and as unsuitable for change data capture. A bulk update of archived tickets therefore writes audits that `ticket_audits` never returns. `ticket_audits_per_ticket` reads `GET /api/v2/tickets/{ticket_id}/audits.json` for each ticket the `tickets` incremental export returns, and that endpoint does return archived tickets' audits. `ticket_audits` was deliberately left unchanged: switching it to the per-ticket endpoint would change its state shape and make every user pay the per-ticket cost.
+
+How it is built, and why:
+
+1. **Opt-in through stream selection only: no spec flag, no `ConditionalStreams`.** The stream is always discovered, like every other stream. It is left out of `metadata.yaml` `suggestedStreams`, so a new connection does not select it by default, and an existing connection only starts syncing it when the user selects it or the connection automatically enables new streams. That auto-enable case is the one users must act on, so the user docs and changelog warn about it.
+2. **Global substream cursor.** The cursor mirrors the stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`, via `extra_fields` and `AddFields`), but `global_substream_cursor: true` stores one cursor value instead of one entry per ticket. Each changed ticket re-emits all of its audits; `id` deduplicates them downstream.
+3. **No `api_budget` policy of its own.** Like the per-ticket `ticket_metrics` calls (`GET /tickets/{ticket_id}/metrics`), `^/api/v2/tickets/\d+/audits` matches no policy, so requests go out at the connector's concurrency and count against the account-wide plan limit shared with other integrations. On a `429` the error handler waits for `Retry-After` (`WaitTimeFromHeader`). The parent walk is a separate pass over the incremental ticket export and stays under that endpoint's 10 req/min policy. Do not add a broad policy that matches `^/api/v2/tickets/` without deciding what it does to this stream and `ticket_metrics`.
+4. **Pagination** reuses `links_next_paginator` (`page[size]=100`, `links.next`, `meta.has_more`). Zendesk returns audits for archived tickets unpaginated; a response without `meta.has_more` stops after one page.
+5. **Schema** `schemas.ticket_audits_per_ticket` `$ref`s each `ticket_audits` property and adds `_ab_updated_at`. A unit test fails if `ticket_audits` gains a property this schema does not list.
+
+**Why this matters:** do not add the stream to `suggestedStreams`. That would select it on every new connection, exposing users who never asked for archived-ticket audits to a request per updated ticket, and a single bulk update can mean six-figure request counts on the next sync. The first sync after the stream is selected reads every ticket since `start_date`, which is also how a user backfills archived-ticket audits.
 
 ## Incremental Stream Considerations
 

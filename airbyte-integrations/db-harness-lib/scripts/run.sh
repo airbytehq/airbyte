@@ -36,6 +36,14 @@
 #           if any `--fixture=` is also passed (either apply fixtures
 #           or skip them — asking for both is a caller bug).
 #
+#   --sync-mode=incremental (with --cursor-field and usually
+#          --streams, or an explicit --catalog) is required when the
+#          config uses `replication_method.method == "CDC"`: without it
+#          the derived catalog is full_refresh, the connector configures
+#          no CDC streams, and the read aborts with a misleading
+#          'Saved offset no longer present' error. run.sh refuses that
+#          combination outright (exit 2) once the config is rendered.
+#
 #   --state passes a saved state file to the read step as
 #           `--state-path`. Meant for multi-phase drivers: a first
 #           `run.sh` writes the read's stdout, the driver extracts a
@@ -97,7 +105,7 @@
 # run instead exits with the connector's own exit code, so a repro can
 # still assert on it.
 #
-# Env: REPRO_OUT, BACKEND_NAME, BACKEND_SA_PASSWORD, BACKEND_PORT,
+# Env: REPRO_OUT, BACKEND_MODE, BACKEND_NAME, BACKEND_SA_PASSWORD, BACKEND_PORT,
 #      AIRBYTE_OPS, TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}
 #      (see SKILL.md)
 set -euo pipefail
@@ -106,7 +114,10 @@ LIB_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_SCRIPTS_DIR="${ENGINE_SCRIPTS_DIR:?engine shim must export ENGINE_SCRIPTS_DIR}"
 STOP_BACKEND="$ENGINE_SCRIPTS_DIR/stop-backend.sh"
 [[ -x "$STOP_BACKEND" ]] || STOP_BACKEND="$LIB_SCRIPTS/stop-backend.sh"
+RENDER_CONFIG="$ENGINE_SCRIPTS_DIR/render-config.sh"
+[[ -x "$RENDER_CONFIG" ]] || RENDER_CONFIG="$LIB_SCRIPTS/render-config.sh"
 CONNECTOR="${CONNECTOR:?engine shim must export CONNECTOR}"
+export BACKEND_MODE="${BACKEND_MODE:-local}"
 REPRO_OUT="${REPRO_OUT:-/tmp/$CONNECTOR-repro}"
 export REPRO_OUT
 
@@ -183,6 +194,14 @@ case "$RESET" in
   none|fixture|backend) ;;
   *) echo "[run] --reset must be none|fixture|backend (got '$RESET')" >&2; exit 2 ;;
 esac
+case "$BACKEND_MODE" in
+  local|remote) ;;
+  *) echo "[run] BACKEND_MODE must be local|remote (got '$BACKEND_MODE')" >&2; exit 2 ;;
+esac
+if [[ "$BACKEND_MODE" == remote && "$RESET" == backend ]]; then
+  echo "[run] remote backend cannot be recreated; use --reset=fixture" >&2
+  exit 2
+fi
 
 for v in "$EXPECT_TEST" "$EXPECT_CONTROL"; do
   case "$v" in
@@ -282,7 +301,21 @@ WORKING_CONFIG="$ARTIFACTS_DIR/config.json"
 rm -rf "$ARTIFACTS_DIR"
 mkdir -p "$ARTIFACTS_DIR"
 CONFIG_TEMPLATE="${CONFIG_TEMPLATE:-${DEFAULT_CONFIG_TEMPLATE:?engine shim must export DEFAULT_CONFIG_TEMPLATE}}"
-"$LIB_SCRIPTS/render-config.sh" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
+"$RENDER_CONFIG" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
+
+# A CDC config with a full-refresh derived catalog configures zero
+# incremental CDC streams and the read aborts with a misleading 'Saved
+# offset no longer present' error, so refuse that combination outright.
+# An explicit --catalog is the caller's escape hatch.
+case " ${COMMANDS[*]} " in *" read "*)
+  if [[ -z "$CATALOG" && "$SYNC_MODE" == full_refresh ]] \
+    && jq -e '.replication_method.method == "CDC"' "$WORKING_CONFIG" >/dev/null; then
+    echo "[run] config uses replication_method CDC but the derived catalog would be full_refresh: the connector configures no CDC streams and the read aborts with a misleading 'Saved offset no longer present' error" >&2
+    echo "[run] fix: pass --sync-mode=incremental --cursor-field=CURSOR --streams=TABLE1,TABLE2 (or --catalog=PATH)" >&2
+    exit 2
+  fi
+  ;;
+esac
 
 # Under --reset=fixture|backend we run two full single-version sweeps
 # with a reset between them. Every STATUS/RC/NOTE entry is prefixed by
@@ -414,7 +447,7 @@ reset_between_images() {
       echo "[run] --reset=fixture: dropping non-system databases and re-applying fixtures" >&2
       "$ENGINE_SCRIPTS_DIR/reset-databases.sh"
       apply_fixtures
-      "$LIB_SCRIPTS/render-config.sh" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
+      "$RENDER_CONFIG" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
       ;;
     backend)
       echo "[run] --reset=backend: recreating the backend container" >&2
@@ -422,7 +455,7 @@ reset_between_images() {
       "$ENGINE_SCRIPTS_DIR/start-backend.sh"
       apply_fixtures
       # Backend recreation may have assigned a new bridge IP.
-      "$LIB_SCRIPTS/render-config.sh" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
+      "$RENDER_CONFIG" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
       ;;
   esac
 }

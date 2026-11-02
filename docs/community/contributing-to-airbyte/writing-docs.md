@@ -163,33 +163,9 @@ You can only use these templates for platform docs. Docs for connectors have the
 
 If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](/platform/connector-development/writing-connector-docs). Platform documentation is less formulaic.
 
-### Agent connector documentation {#agent-connector-docs}
+### Agent connector labels {#agent-connector-labels}
 
-Agent connector documentation follows a different workflow than traditional connector docs. Agent connectors are Python packages that equip AI agents to call third-party APIs. Their documentation is fully automated and flows through a three-stage pipeline that requires no manual intervention.
-
-#### How agent connector docs are delivered
-
-The documentation pipeline involves three repositories and two GitHub Apps:
-
-1. **Source repository (sonar)**: Connector definitions live in the private [sonar](https://github.com/airbytehq/sonar) repository under `integrations/*/connector.yaml`. When changes merge to `main`, the [publish-sdk.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-sdk.yml) workflow builds the unified `airbyte-agent-sdk` Python package, publishes it to PyPI, and generates per-connector documentation files. The [ConnectorGenerator](https://github.com/airbytehq/sonar/blob/main/connector-sdk/airbyte_agent_sdk/codegen/generator.py) class uses Jinja2 templates ([README.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/airbyte_agent_sdk/codegen/templates/README.md.jinja2), [AUTH.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/airbyte_agent_sdk/codegen/templates/AUTH.md.jinja2), [REFERENCE.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/airbyte_agent_sdk/codegen/templates/REFERENCE.md.jinja2)) to generate README.md, AUTH.md, and REFERENCE.md. The `octavia-bot-hoard` GitHub App authenticates and pushes the package source and generated docs to the airbyte-agent-sdk repository.
-
-2. **Generated repository (airbyte-agent-sdk)**: The [airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) repository receives the SDK source and generated documentation. Each connector has its own directory under `connectors/` containing its documentation files. The sonar workflow tags each published version and creates a GitHub release in this repository.
-
-3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-sdk repository, copies the markdown files (except `CHANGELOG.md`) from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
-
-#### Key characteristics
-
-- **Fully automated**: No manual steps are required. Changes to connector definitions in sonar automatically propagate to the public documentation.
-- **Two-hour sync cycle**: Documentation updates appear on docs.airbyte.com within two hours of changes landing in airbyte-agent-sdk.
-- **Bot-managed PRs**: The `octavia-bot-hoard` and `octavia-bot` GitHub Apps handle authentication and PR creation across repositories.
-- **Auto-merge enabled**: Documentation sync PRs are labeled for auto-merge, minimizing manual review overhead.
-
-#### Workflow files reference
-
-| Repository | Workflow | Purpose |
-| --- | --- | --- |
-| [sonar](https://github.com/airbytehq/sonar) | [publish-sdk.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-sdk.yml) | Builds and publishes the SDK package, generates connector docs, and pushes to airbyte-agent-sdk |
-| [airbyte](https://github.com/airbytehq/airbyte) | [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) | Syncs docs from airbyte-agent-sdk to Docusaurus |
+Some data replication connectors also have an agent connector equivalent. Connector pages and the connector lists on `/integrations` mark these connectors. The list of agent-capable connectors lives in [`docusaurus/src/data/agent_connectors.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/src/data/agent_connectors.json). Add or remove a connector's slug there, without the `source-` or `destination-` prefix, to change its label.
 
 ## Multiple instances
 
@@ -201,7 +177,6 @@ Currently, the site has these instances:
 - Platform
 - Connectors
 - Release notes
-- AI Agents
 - Developers
 - Community
 

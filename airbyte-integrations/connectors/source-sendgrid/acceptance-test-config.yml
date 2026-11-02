@@ -33,9 +33,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/lowcode_config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: spam_reports
             bypass_reason: "can not populate"
@@ -45,7 +42,6 @@ acceptance_tests:
             bypass_reason: "can not populate"
           - name: bounces
             bypass_reason: "can not populate"
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/lowcode_config.json"

@@ -25,7 +25,7 @@ internal constructor(
     private val executor: ExecutorService,
     private val mdc: Map<String?, String?>?,
     private val caller: String = GENERIC,
-    private val containerLogMdcBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER
+    private val containerLogMdcBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER,
 ) : VoidCallable {
     private val `is`: BufferedReader = IOs.newBufferedReader(`is`)
 
@@ -34,7 +34,7 @@ internal constructor(
         consumer: Consumer<String>,
         executor: ExecutorService,
         mdc: Map<String?, String?>?,
-        mdcScopeBuilder: MdcScope.Builder
+        mdcScopeBuilder: MdcScope.Builder,
     ) : this(`is`, consumer, executor, mdc, GENERIC, mdcScopeBuilder)
 
     override fun voidCall() {
@@ -63,7 +63,7 @@ internal constructor(
         @JvmOverloads
         fun gobble(
             message: String,
-            consumer: Consumer<String> = Consumer { msg: String -> LOGGER.info { msg } }
+            consumer: Consumer<String> = Consumer { msg: String -> LOGGER.info { msg } },
         ) {
             val stringAsSteam: InputStream =
                 ByteArrayInputStream(message.toByteArray(StandardCharsets.UTF_8))
@@ -93,7 +93,7 @@ internal constructor(
         fun gobble(
             `is`: InputStream,
             consumer: Consumer<String>,
-            mdcScopeBuilder: MdcScope.Builder
+            mdcScopeBuilder: MdcScope.Builder,
         ) {
             gobble(`is`, consumer, GENERIC, mdcScopeBuilder)
         }
@@ -103,7 +103,7 @@ internal constructor(
             `is`: InputStream,
             consumer: Consumer<String>,
             caller: String = GENERIC,
-            mdcScopeBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER
+            mdcScopeBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER,
         ) {
             val executor = Executors.newSingleThreadExecutor()
             val mdc = MDC.getCopyOfContextMap()

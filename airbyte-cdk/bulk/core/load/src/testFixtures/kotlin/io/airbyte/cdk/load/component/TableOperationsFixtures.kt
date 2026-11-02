@@ -89,14 +89,14 @@ object TableOperationsFixtures {
                 "union" to
                     FieldType(
                         UnionType(setOf(StringType, IntegerType), isLegacyUnion = false),
-                        true
+                        true,
                     ),
                 // Most destinations just ignore the isLegacyUnion flag, which is totally fine.
                 // This is here for the small set of connectors that respect it.
                 "legacy_union" to
                     FieldType(
                         UnionType(setOf(StringType, IntegerType), isLegacyUnion = true),
-                        true
+                        true,
                     ),
                 "unknown" to FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
             ),
@@ -118,7 +118,7 @@ object TableOperationsFixtures {
                 "union" to "union",
                 "legacy_union" to "legacy_union",
                 "unknown" to "unknown",
-            )
+            ),
         )
 
     // Common column mappings
@@ -145,7 +145,7 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 generationId = 1,
                 TEST_FIELD to IntegerValue(42),
-            )
+            ),
         )
 
     val SINGLE_TEST_RECORD_EXPECTED: List<Map<String, Any>> = listOf(mapOf(TEST_FIELD to 42L))
@@ -226,7 +226,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1000),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "New record, no existing record. Upsert should insert this record."
+                        "New record, no existing record. Upsert should insert this record.",
                     ),
             ),
             inputRecord(
@@ -239,7 +239,7 @@ object TableOperationsFixtures {
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "New deletion record with later cursor and extracted_at than existing record. Upsert should delete the existing record."
+                        "New deletion record with later cursor and extracted_at than existing record. Upsert should delete the existing record.",
                     ),
             ),
             inputRecord(
@@ -251,7 +251,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(5),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with no existing record, but there's a second incoming deletion record with later extracted_at. Upsert should discard this record."
+                        "Incoming record with no existing record, but there's a second incoming deletion record with later extracted_at. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -274,7 +274,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(6),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with no existing record, but there's a second incoming record with later extracted_at. Upsert should discard this record."
+                        "Incoming record with no existing record, but there's a second incoming record with later extracted_at. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -286,7 +286,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(6),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with no existing record. Upsert should insert this record."
+                        "Incoming record with no existing record. Upsert should insert this record.",
                     ),
             ),
             inputRecord(
@@ -299,7 +299,7 @@ object TableOperationsFixtures {
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming deletion record, but there's a second incoming record with later extracted_at. Upsert should discard this record."
+                        "Incoming deletion record, but there's a second incoming record with later extracted_at. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -311,7 +311,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(7),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with no existing record. Upsert should insert this record."
+                        "Incoming record with no existing record. Upsert should insert this record.",
                     ),
             ),
             inputRecord(
@@ -323,7 +323,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(8),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with earlier cursor and later extracted_at than existing record. Upsert should discard this record (prefer cursor over extracted_at)."
+                        "Incoming record with earlier cursor and later extracted_at than existing record. Upsert should discard this record (prefer cursor over extracted_at).",
                     ),
             ),
             inputRecord(
@@ -335,7 +335,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(9),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with equal cursor and later extracted_at than existing record. Upsert should update with this record (break ties with extracted_at)."
+                        "Incoming record with equal cursor and later extracted_at than existing record. Upsert should update with this record (break ties with extracted_at).",
                     ),
             ),
             inputRecord(
@@ -347,7 +347,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1010),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with later cursor and later extracted_at than existing record. Upsert should update with this record."
+                        "Incoming record with later cursor and later extracted_at than existing record. Upsert should update with this record.",
                     ),
             ),
             inputRecord(
@@ -359,7 +359,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(11),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with earlier cursor and equal extracted_at than existing record. Upsert should discard this record."
+                        "Incoming record with earlier cursor and equal extracted_at than existing record. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -371,7 +371,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1012),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with later cursor and equal extracted_at than existing record. Upsert should update with this record."
+                        "Incoming record with later cursor and equal extracted_at than existing record. Upsert should update with this record.",
                     ),
             ),
             inputRecord(
@@ -383,7 +383,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(13),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with earlier cursor and earlier extracted_at than existing record. Upsert should discard this record."
+                        "Incoming record with earlier cursor and earlier extracted_at than existing record. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -395,7 +395,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(14),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with equal cursor and earlier extracted_at than existing record. Upsert should discard this record."
+                        "Incoming record with equal cursor and earlier extracted_at than existing record. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -407,7 +407,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1015),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Incoming record with later cursor and earlier extracted_at than existing record. Upsert should update with this record."
+                        "Incoming record with later cursor and earlier extracted_at than existing record. Upsert should update with this record.",
                     ),
             ),
         )
@@ -427,7 +427,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record, no incoming record. Upsert should preserve this record."
+                        "Existing record, no incoming record. Upsert should preserve this record.",
                     ),
             ),
             // TODO what about destinations with CDC soft deletes?
@@ -441,7 +441,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(3),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with incoming deletion record with later cursor and extracted_at. Upsert should delete this record."
+                        "Existing record with incoming deletion record with later cursor and extracted_at. Upsert should delete this record.",
                     ),
             ),
             inputRecord(
@@ -453,7 +453,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1008),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with later cursor and earlier extracted_at than incoming record. Upsert should preserve this record (prefer cursor over extracted_at)."
+                        "Existing record with later cursor and earlier extracted_at than incoming record. Upsert should preserve this record (prefer cursor over extracted_at).",
                     ),
             ),
             inputRecord(
@@ -465,7 +465,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(9),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with equal cursor and earlier extracted_at than incoming record. Upsert should discard this record (break ties with extracted_at)."
+                        "Existing record with equal cursor and earlier extracted_at than incoming record. Upsert should discard this record (break ties with extracted_at).",
                     ),
             ),
             inputRecord(
@@ -477,7 +477,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(10),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with earlier cursor and earlier extracted_at than incoming record. Upsert should discard this record."
+                        "Existing record with earlier cursor and earlier extracted_at than incoming record. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -489,7 +489,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1011),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with later cursor and equal extracted_at than incoming record. Upsert should preserve this record."
+                        "Existing record with later cursor and equal extracted_at than incoming record. Upsert should preserve this record.",
                     ),
             ),
             inputRecord(
@@ -501,7 +501,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(12),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with earlier cursor and equal extracted_at than incoming record. Upsert should discard this record."
+                        "Existing record with earlier cursor and equal extracted_at than incoming record. Upsert should discard this record.",
                     ),
             ),
             inputRecord(
@@ -513,7 +513,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(1013),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with later cursor and later extracted_at than incoming record. Upsert should preserve this record."
+                        "Existing record with later cursor and later extracted_at than incoming record. Upsert should preserve this record.",
                     ),
             ),
             inputRecord(
@@ -525,7 +525,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(14),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with equal cursor and later extracted_at than incoming record. Upsert should preserve this record."
+                        "Existing record with equal cursor and later extracted_at than incoming record. Upsert should preserve this record.",
                     ),
             ),
             inputRecord(
@@ -537,7 +537,7 @@ object TableOperationsFixtures {
                 TEST_FIELD to IntegerValue(15),
                 DESCRIPTION_FIELD to
                     StringValue(
-                        "Existing record with earlier cursor and later extracted_at than existing record. Upsert should discard this record."
+                        "Existing record with earlier cursor and later extracted_at than existing record. Upsert should discard this record.",
                     ),
             ),
         )
@@ -674,10 +674,10 @@ object TableOperationsFixtures {
         return TableName(
             namespace,
             "$prefix-${UUID.randomUUID()}"
-            // this is a hack for now - eventually we probably want to plumb in a
-            // TableNameGenerator,
-            // but until then - underscores are generally nicer than hyphens.
-            .replace('-', '_'),
+                // this is a hack for now - eventually we probably want to plumb in a
+                // TableNameGenerator,
+                // but until then - underscores are generally nicer than hyphens.
+                .replace('-', '_'),
         )
     }
 
@@ -719,16 +719,17 @@ object TableOperationsFixtures {
         map { record ->
             record.mapKeys { (k, _) -> mapping[k] ?: k }
         }
+
     fun <V> List<Map<String, V>>.reverseColumnNameMapping(
         columnNameMapping: ColumnNameMapping,
-        airbyteMetaColumnMapping: Map<String, String>
+        airbyteMetaColumnMapping: Map<String, String>,
     ): List<Map<String, V>> {
         val totalMapping = ColumnNameMapping(columnNameMapping + airbyteMetaColumnMapping)
         return map { record -> record.mapKeys { (k, _) -> totalMapping.invert()[k] ?: k } }
     }
 
     fun <V> List<Map<String, V>>.removeAirbyteColumns(
-        airbyteMetaColumnMapping: Map<String, String>
+        airbyteMetaColumnMapping: Map<String, String>,
     ): List<Map<String, V>> =
         this.map { rec -> rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) } }
 
@@ -752,7 +753,7 @@ object TableOperationsFixtures {
         extractedAt: String,
         meta: LinkedHashMap<String, AirbyteValue>,
         generationId: Long,
-        vararg pairs: Pair<String, AirbyteValue>
+        vararg pairs: Pair<String, AirbyteValue>,
     ) =
         mapOf(
             COLUMN_NAME_AB_RAW_ID to StringValue(rawId),
@@ -776,7 +777,7 @@ object TableOperationsFixtures {
         extractedAt: String,
         meta: LinkedHashMap<String, Any>,
         generationId: Long,
-        vararg pairs: Pair<String, Any>
+        vararg pairs: Pair<String, Any>,
     ) =
         mapOf(
             COLUMN_NAME_AB_RAW_ID to rawId,

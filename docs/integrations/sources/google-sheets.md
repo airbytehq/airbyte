@@ -292,6 +292,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 - If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
 - Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+- If the connection check or schema discovery fails with `Failed to find output files from connector within timeout of 9 minute(s)` after repeated `Rate limit exceeded (HTTP 503)` retries in the logs, Google is likely having trouble serving the spreadsheet. The connector logs every retry as `Rate limit exceeded`, but a `503` means the Sheets API is unavailable or finds the request or spreadsheet too complex, so the API rate limits above usually aren't the cause. During check and discovery, the connector reads the header row of every sheet in the spreadsheet, including hidden sheets and sheets you don't sync. It retries each `503` up to five times with growing waits, and across all those requests the waits can pass the 9-minute limit. If one request runs out of retries first, the error is `Exhausted available request attempts` instead. Airbyte checks the source before sync attempts, so syncs can fail for days and then succeed without any change on the Airbyte side. To reduce the load, follow Google's [suggestions for `503` errors](https://developers.google.com/workspace/sheets/api/troubleshoot-api-errors#503-service-unavailable), such as:
+  - Limit access to the spreadsheet to people who need it, for example by removing inactive accounts from its sharing settings.
+  - Limit `IMPORTRANGE`, `QUERY`, and other complex formulas, and use volatile functions like `NOW`, `TODAY`, and `RAND` sparingly.
+  - Delete sheets you don't need, or move the sheets you sync into a separate, smaller spreadsheet. Hiding a sheet doesn't help, because the connector still reads it. Paste plain values into the new spreadsheet instead of pulling them in with `IMPORTRANGE`, which adds formula load.
 - Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -307,8 +311,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| ------------ | ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
+| 0.12.44 | 2026-10-20 | [89239](https://github.com/airbytehq/airbyte/pull/89239) | Update dependencies |
+| 0.12.43 | 2026-10-16 | [89046](https://github.com/airbytehq/airbyte/pull/89046) | Show Authentication before Spreadsheet Link in the setup form |
+| 0.12.42 | 2026-10-13 | [88639](https://github.com/airbytehq/airbyte/pull/88639) | Update dependencies |
+| 0.12.41 | 2026-10-06 | [87878](https://github.com/airbytehq/airbyte/pull/87878) | Update dependencies |
+| 0.12.40 | 2026-09-29 | [87193](https://github.com/airbytehq/airbyte/pull/87193) | Update dependencies |
+| 0.12.39 | 2026-09-22 | [86655](https://github.com/airbytehq/airbyte/pull/86655) | Update dependencies |
+| 0.12.38 | 2026-09-15 | [86081](https://github.com/airbytehq/airbyte/pull/86081) | Update dependencies |
 | 0.12.37 | 2026-09-08 | [85517](https://github.com/airbytehq/airbyte/pull/85517) | Update dependencies |
 | 0.12.36 | 2026-08-18 | [83961](https://github.com/airbytehq/airbyte/pull/83961) | Update dependencies |
 | 0.12.35 | 2026-07-28 | [82977](https://github.com/airbytehq/airbyte/pull/82977) | Update dependencies |

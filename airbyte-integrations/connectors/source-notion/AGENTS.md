@@ -12,12 +12,6 @@ A single page with deeply nested content (e.g., toggles inside toggles inside co
 
 ## Incremental Stream Considerations
 
-The Notion API supports `filter` with `last_edited_time` for databases and pages. The connector uses Python custom components referenced from the manifest.
+All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
-**Connector type:** Python custom components (hybrid manifest + Python)
-
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
-
-### Future incremental stream candidates
-
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+`pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.

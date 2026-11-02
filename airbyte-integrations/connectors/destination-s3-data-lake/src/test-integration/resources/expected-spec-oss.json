@@ -223,6 +223,13 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "normalize_column_names" : {
+        "type" : "boolean",
+        "description" : "Lowercases column names and replaces non-alphanumeric characters with underscores before writing to Iceberg (e.g. \"Foo.Bar\" -> \"foo_bar\"). Enable this when downstream query engines cannot handle mixed-case or special-character column names. IMPORTANT: toggling this on existing synced streams requires clearing the stream data and running a full refresh.",
+        "title" : "Normalize Column Names",
+        "default" : false,
+        "order" : 9
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

@@ -179,6 +179,20 @@ def test_manifest_transaction_id_has_value_type_string(manifest):
     )
 
 
+def test_transactions_rate_limits_use_long_backoff(manifest):
+    """Transactions must retry rate limits instead of failing after the default delay."""
+    transactions = manifest["definitions"]["streams"]["transactions"]
+    error_handler = transactions["retriever"]["requester"]["error_handler"]
+    default_handler = next(handler for handler in error_handler["error_handlers"] if handler["type"] == "DefaultErrorHandler")
+
+    backoff_strategies = default_handler["backoff_strategies"]
+    assert {
+        strategy["type"]: strategy["backoff_time_in_seconds"]
+        for strategy in backoff_strategies
+        if strategy["type"] == "ConstantBackoffStrategy"
+    } == {"ConstantBackoffStrategy": 100}
+
+
 @pytest.mark.parametrize(
     "transaction_id,expected",
     [

@@ -16,7 +16,7 @@ class CdcInitialSnapshotPostgresSourceDatatypeTest : AbstractPostgresSourceDatat
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
-                    PostgresTestDatabase.ContainerModifier.CONF
+                    PostgresTestDatabase.ContainerModifier.CONF,
                 )
                 .with("CREATE EXTENSION hstore;")
                 .with("CREATE SCHEMA $nameSpace;")

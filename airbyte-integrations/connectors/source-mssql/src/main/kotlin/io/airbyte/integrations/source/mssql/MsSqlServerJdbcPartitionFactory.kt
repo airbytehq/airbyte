@@ -23,11 +23,11 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
+import jakarta.inject.Singleton
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Singleton
 
 @Primary
 @Singleton
@@ -197,13 +197,15 @@ open class MsSqlServerJdbcPartitionFactory(
 
     /**
      * Flowchart:
-     * 1. If the input state is null - using coldstart.
+     * 1. If the input state is null or an empty object `{}` - using coldstart.
+     *
      * ```
      *    a. If it's global but without PK, use non-resumable snapshot.
      *    b. If it's global with PK, use CDC snapshot.
      *    c. If it's not global, use snapshot with cursor.
      * ```
      * 2. If the input state is not null -
+     *
      * ```
      *    a. If it's in global mode:
      *       i. JdbcPartitionFactory handles the initial CDC snapshot phase (resuming incomplete snapshots)
@@ -226,7 +228,9 @@ open class MsSqlServerJdbcPartitionFactory(
             return null
         }
 
-        if (opaqueStateValue == null) {
+        // The CDK emits an empty object as the placeholder state for a stream that has not
+        // checkpointed yet; it carries no resume point, so treat it like no state at all.
+        if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState)
         }
 
@@ -254,7 +258,7 @@ open class MsSqlServerJdbcPartitionFactory(
             val sv: MsSqlServerCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(
                     opaqueStateValue,
-                    MsSqlServerCdcInitialSnapshotStateValue::class.java
+                    MsSqlServerCdcInitialSnapshotStateValue::class.java,
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -304,6 +308,13 @@ open class MsSqlServerJdbcPartitionFactory(
         } else { // Cursor-based sync
             val sv: MsSqlServerJdbcStreamStateValue =
                 MsSqlServerStateMigration.parseStateValue(opaqueStateValue)
+                    ?: run {
+                        log.warn {
+                            "Unrecognized state for stream ${stream.name}, resetting stream and starting from scratch"
+                        }
+                        streamState.reset()
+                        return coldStart(streamState)
+                    }
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream)
@@ -411,7 +422,7 @@ open class MsSqlServerJdbcPartitionFactory(
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = false,
-                    cursorCutoffTime = getCursorCutoffTime(cursor)
+                    cursorCutoffTime = getCursorCutoffTime(cursor),
                 )
             }
             return MsSqlServerJdbcCursorIncrementalPartition(
@@ -427,7 +438,7 @@ open class MsSqlServerJdbcPartitionFactory(
     }
 
     private fun handleFullRefreshWithoutPk(
-        streamState: DefaultJdbcStreamState
+        streamState: DefaultJdbcStreamState,
     ): MsSqlServerJdbcPartition? {
         if (
             streamState.streamFeedBootstrap.currentState ==
@@ -447,7 +458,7 @@ open class MsSqlServerJdbcPartitionFactory(
 
     private fun extractPkLowerBound(
         pkValue: JsonNode?,
-        orderedColumnForSync: EmittedField
+        orderedColumnForSync: EmittedField,
     ): JsonNode {
         return when {
             pkValue == null || pkValue.isNull -> Jsons.nullNode()
@@ -496,7 +507,7 @@ open class MsSqlServerJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: MsSqlServerJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<MsSqlServerJdbcPartition> {
         return when (unsplitPartition) {
             is MsSqlServerJdbcRfrSnapshotPartition -> unsplitPartition.split(opaqueStateValues)

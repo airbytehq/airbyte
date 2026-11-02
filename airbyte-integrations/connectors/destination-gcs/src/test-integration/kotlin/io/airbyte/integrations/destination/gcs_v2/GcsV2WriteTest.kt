@@ -111,15 +111,15 @@ abstract class GcsV2WriteTest(
                                             ObjectType(
                                                 linkedMapOf(
                                                     "field1" to FieldType(StringType, true),
-                                                )
+                                                ),
                                             ),
-                                            ObjectTypeWithoutSchema
+                                            ObjectTypeWithoutSchema,
                                         ),
-                                    nullable = true
-                                )
-                        )
+                                    nullable = true,
+                                ),
+                        ),
                     ),
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
             )
 
         assertThrows<DestinationUncleanExitException> {
@@ -128,9 +128,9 @@ abstract class GcsV2WriteTest(
                 stream,
                 listOf(
                         """{"id": 1, "union_of_objects": {"field1": "a"}}""",
-                        """{"id": 2, "union_of_objects": {"undeclared": "field"}}"""
+                        """{"id": 2, "union_of_objects": {"undeclared": "field"}}""",
                     )
-                    .map { InputRecord(stream, it, 1L) }
+                    .map { InputRecord(stream, it, 1L) },
             )
         }
     }
@@ -164,41 +164,41 @@ abstract class GcsV2WriteTest(
                                                                     "nested_schemaless" to
                                                                         FieldType(
                                                                             ObjectTypeWithoutSchema,
-                                                                            true
+                                                                            true,
                                                                         ),
                                                                     "nested_union" to
                                                                         FieldType(
                                                                             UnionType.of(
                                                                                 StringType,
-                                                                                BooleanType
+                                                                                BooleanType,
                                                                             ),
-                                                                            true
-                                                                        )
-                                                                )
+                                                                            true,
+                                                                        ),
+                                                                ),
                                                             ),
-                                                            true
-                                                        )
-                                                )
+                                                            true,
+                                                        ),
+                                                ),
                                             ),
-                                            StringType
+                                            StringType,
                                         ),
-                                    nullable = true
+                                    nullable = true,
                                 ),
-                        )
+                        ),
                     ),
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
             )
 
         val expectedRecords =
             if (unionBehavior == UnionBehavior.PROMOTE_TO_OBJECT) {
                 listOf(
                     """{"id": 1, "union_of_objects": {"field1": "a", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": {"type": "string", "string": "string"}}}}""",
-                    """{"id": 2, "union_of_objects": {"field1": "b", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": {"type": "boolean", "boolean": true}}}}"""
+                    """{"id": 2, "union_of_objects": {"field1": "b", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": {"type": "boolean", "boolean": true}}}}""",
                 )
             } else {
                 listOf(
                     """{"id": 1, "union_of_objects": {"field1": "a", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": "string"}}}""",
-                    """{"id": 2, "union_of_objects": {"field1": "b", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": true}}}"""
+                    """{"id": 2, "union_of_objects": {"field1": "b", "field2": {"nested_schemaless": "{\"field\": \"value\"}", "nested_union": true}}}""",
                 )
             }
 

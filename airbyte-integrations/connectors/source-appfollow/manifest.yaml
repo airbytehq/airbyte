@@ -157,7 +157,7 @@ definitions:
     authenticator:
       type: ApiKeyAuthenticator
       header: X-AppFollow-API-Token
-      api_token: "{{ config['api_key'] }}"
+      api_token: "{{ config.get('api_secret') or config.get('api_key') }}"
 
 streams:
   - $ref: "#/definitions/streams/users"
