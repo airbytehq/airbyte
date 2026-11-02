@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Tests for ShipStation error handling."""
 
 import json
@@ -8,7 +10,6 @@ from unittest.mock import patch
 
 import pytest
 import yaml
-
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
