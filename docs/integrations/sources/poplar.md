@@ -28,6 +28,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-11-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Simplify stream error handler configuration (no behavior change) |
 | 0.0.56 | 2026-10-27 | [90034](https://github.com/airbytehq/airbyte/pull/90034) | Update dependencies |
 | 0.0.55 | 2026-10-20 | [89331](https://github.com/airbytehq/airbyte/pull/89331) | Update dependencies |
 | 0.0.54 | 2026-10-13 | [88751](https://github.com/airbytehq/airbyte/pull/88751) | Update dependencies |
