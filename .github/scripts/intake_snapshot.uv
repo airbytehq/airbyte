@@ -260,12 +260,15 @@ def ask_jev(text: str, key: str, deadline: float) -> dict[str, float]:
             time.sleep(RETRY_SECONDS * 2**attempt)
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise Flagged("too slow to screen")
+            # A slow service, not the text: fail the job so the next sweep retries. Size is capped by MAX_CHUNKS.
+            raise ScreenError("too slow to screen")
         try:
             with urllib.request.urlopen(request, timeout=min(30, remaining)) as response:
                 body = json.load(response)
             break
         except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                raise ScreenError(f"Jev refused the key (HTTP {e.code})")
             if 400 <= e.code < 500 and e.code != 429:
                 raise Flagged(f"Jev rejected the text (HTTP {e.code})")
         except Exception:

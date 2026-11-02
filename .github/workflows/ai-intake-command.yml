@@ -229,6 +229,8 @@ jobs:
             "- Run: $RUN_URL" \
             "" \
             "No AI session was started. Evaluate the item by hand. If it is a false positive, check it holds no instructions aimed at automation, remove \`intake/pending-human\` from it, and run \`/ai-intake\` there.")
+          # Label first: if it is missing, the step fails before filing a ticket the next sweep would repeat.
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
           existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
             | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
           if [[ -n "$existing" ]]; then
@@ -236,8 +238,6 @@ jobs:
           else
             gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
           fi
-          # Fails if the label is missing, rather than holding the item again every hour.
-          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
 
       # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
       # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
