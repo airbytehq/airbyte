@@ -250,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.7 | 2026-10-13 | [88463](https://github.com/airbytehq/airbyte/pull/88463) | Update LinkedIn Marketing API version from 202601 to 202609 |
 | 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
 | 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
 | 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream failing on Message Ads (Sponsored InMail) creatives and on creatives with a null `content.reference` |
