@@ -146,7 +146,7 @@ jobs:
           # HYDRA_SHA256 together whenever bumping — the sha256 lives in the
           # release's SHA256SUMS.
           HYDRA_VERSION: "v0.1.0"
-          HYDRA_SHA256: ""
+          HYDRA_SHA256: "498e4ce77933f3eddb791ad2f1474b41466bc834ec8801f8cd661fc34ebfaa27"
         run: |
           set -euo pipefail
           gh release download "$HYDRA_VERSION" -R airbytehq/hydrakit -p hydra.mjs -D "$RUNNER_TEMP"
