@@ -151,20 +151,47 @@ jobs:
             Check Changelog Updated
         run: |
           set -euo pipefail
-          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq '.headRefOid')
-          echo "head_sha=$HEAD_SHA"
+          read -r HEAD_SHA HAS_LABEL < <(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json headRefOid,labels \
+            --jq '"\(.headRefOid) \([.labels[].name] | index("hyd-chain-v2") != null)"')
+          {
+            echo "## Hydra v2 gate"
+            echo "- PR: #$PR_NUMBER"
+            echo "- Head SHA: \`$HEAD_SHA\`"
+            echo "- \`hyd-chain-v2\` label: $HAS_LABEL"
+          } >>"$GITHUB_STEP_SUMMARY"
+          if [[ "$HAS_LABEL" != "true" ]]; then
+            echo "::notice::Not ready: PR #$PR_NUMBER has no hyd-chain-v2 label"
+            echo "ready=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # One TSV line per check run, streamed across all pages.
+          RUNS=$(gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?filter=latest&per_page=100" \
+            --jq '.check_runs[] | [.name, .status] | @tsv')
+
+          # A check that doesn't exist yet counts as pending; any completed
+          # run (including skipped/neutral/failure) counts as done.
           PENDING=()
+          {
+            echo ""
+            echo "| Required check | State |"
+            echo "| --- | --- |"
+          } >>"$GITHUB_STEP_SUMMARY"
           while IFS= read -r NAME; do
-            # A check that doesn't exist yet counts as pending; any completed
-            # run (including skipped/neutral/failure) counts as done.
-            COUNTS=$(gh api -X GET "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs" \
-              -f check_name="$NAME" -f filter=latest \
-              --jq '"\(.check_runs | length) \([.check_runs[] | select(.status != "completed")] | length)"')
-            read -r TOTAL OPEN <<<"$COUNTS"
-            if (( TOTAL == 0 || OPEN > 0 )); then
-              PENDING+=("$NAME")
+            STATUSES=$(awk -F'\t' -v n="$NAME" '$1 == n { print $2 }' <<<"$RUNS")
+            if [[ -z "$STATUSES" ]]; then
+              STATE=missing
+            elif grep -qvx completed <<<"$STATUSES"; then
+              STATE=running
+            else
+              STATE=completed
             fi
+            [[ "$STATE" != completed ]] && PENDING+=("$NAME")
+            echo "| $NAME | $STATE |" >>"$GITHUB_STEP_SUMMARY"
           done <<<"$REQUIRED_CHECKS"
+
           if (( ${#PENDING[@]} > 0 )); then
             echo "::notice::Not ready: waiting on ${#PENDING[@]} required check(s): $(IFS=';'; echo "${PENDING[*]}")"
             echo "ready=false" | tee -a "$GITHUB_OUTPUT"
