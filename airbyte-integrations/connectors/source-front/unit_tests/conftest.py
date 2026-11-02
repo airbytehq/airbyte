@@ -36,11 +36,6 @@ def get_source(config: Mapping[str, Any], state=None) -> YamlDeclarativeSource:
 
 @fixture(autouse=True)
 def in_memory_request_cache(monkeypatch):
-    """Keep the CDK's HTTP request cache in memory during tests.
-
-    With REQUEST_CACHE_PATH set, every stream opens a shared sqlite file that concurrent partitions
-    (for example the four mailbox folders of `mailThreads`) write at the same time, which intermittently
-    fails with `sqlite3.DatabaseError: file is not a database`. Unset, the cache is per-session and in memory.
-    """
+    """Keep the CDK's HTTP request cache in memory so tests do not share a sqlite file on disk."""
     monkeypatch.delenv("REQUEST_CACHE_PATH", raising=False)
     yield
