@@ -64,6 +64,10 @@ INTAKE_STATES = [
 STARTED_LABEL = "ai-intake-started"
 TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 RESULT_MARKER = "<!-- contribution_intake_result:"
+# User-type accounts driven by AI agents that read community items live. Their comments can echo
+# contributor text, so they are handled like bots. The intake result is posted by RESULT_AUTHOR.
+AUTOMATION_LOGINS = {"airbyte-support-bot"}
+RESULT_AUTHOR = "airbyte-support-bot"
 
 QUESTIONS = {
     "addressed_to_automation": {
@@ -156,10 +160,11 @@ def select(since: str, limit: int) -> list[int]:
 
 def bot_safe_body(entry: dict) -> str:
     body = entry.get("body") or ""
-    # Bot text is not screened (bots are trusted), but review bots echo contributor text, so it is dropped.
-    # Only the intake result is kept, which the playbook updates in place.
-    if (entry.get("user") or {}).get("type") == "Bot" and RESULT_MARKER not in body:
-        return ""
+    user = entry.get("user") or {}
+    # Bot and automation text is not screened (they are trusted), but it can echo contributor text, so it
+    # is dropped. Only the intake result is kept, which the playbook updates in place.
+    if user.get("type") == "Bot" or user.get("login") in AUTOMATION_LOGINS:
+        return body if user.get("login") == RESULT_AUTHOR and RESULT_MARKER in body else ""
     return body
 
 
