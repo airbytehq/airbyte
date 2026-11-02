@@ -1,13 +1,12 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from pathlib import Path
 from typing import Any, Dict
 from unittest import TestCase
 from unittest.mock import patch
 
 import yaml
-from unit_tests.conftest import get_source
+from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -20,7 +19,6 @@ _CONFIG = {"api_key": "test-key"}
 _CUSTOMER_ID = "customer-external-id"
 _SUBSCRIPTION_ID = "subscription-external-id"
 _MAX_RETRIES = 5
-_MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 _CUSTOMERS_REQUEST = HttpRequest(
     url=f"{_BASE_URL}/customers",
@@ -176,7 +174,7 @@ class TestGetLagoErrorHandler(TestCase):
         http_mocker.assert_number_of_calls(_CURRENT_USAGE_REQUEST, _MAX_RETRIES + 1)
 
     def test_usage_streams_use_default_error_handlers(self) -> None:
-        manifest_text = _MANIFEST_PATH.read_text()
+        manifest_text = _YAML_FILE_PATH.read_text()
         manifest = yaml.safe_load(manifest_text)
 
         for stream_name in ("customer_usage", "customer_usage_past"):
