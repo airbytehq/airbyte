@@ -37,3 +37,11 @@ data:
     - title: VWO API documentation
       url: https://developers.vwo.com/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
