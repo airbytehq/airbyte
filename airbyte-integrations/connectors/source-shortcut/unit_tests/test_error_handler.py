@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Tests for Shortcut error handling."""
 
 import json
@@ -9,12 +11,11 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from unit_tests.conftest import get_source
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from unit_tests.conftest import get_source
 
 
 _CONFIG = {"api_key_2": "key", "start_date": "2024-01-01T00:00:00Z"}
