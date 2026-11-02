@@ -475,19 +475,17 @@ definitions:
       api_token: "{{ config['api_token'] }}"
 
   error_handler:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        max_retries: 3
-        backoff_strategies:
-          - type: ExponentialBackoffStrategy
-            factor: 5
-        response_filters:
-          - type: HttpResponseFilter
-            action: RATE_LIMITED
-            http_codes:
-              - 429
-            error_message: Rate limit hit
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: Rate limit hit
 
   cursor_paginator:
     type: DefaultPaginator
