@@ -8,8 +8,8 @@
 # TypeSafe's Jev classifier, and writes a prompt holding exactly the screened text. Only items that
 # pass start a session, one session per item, and get the `ai-intake-started` label so the sweep
 # doesn't start another. A flagged item gets a link-only oncall ticket with `skip-triage` instead
-# and is never shown to an agent; the ticket carries a digest of the screened text, and
-# `/ai-intake override=<digest>` starts the intake while that text is unchanged. If GitHub or Jev keeps
+# and is never shown to an agent; the ticket carries a digest of the screened text and its edit history,
+# and `/ai-intake override=<digest>` starts the intake while neither has changed. If GitHub or Jev keeps
 # failing, the job fails, holds nothing, and labels the item `ai-intake-screen-error`; the sweep retries
 # it after newer items.
 #
@@ -257,7 +257,9 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          title="[OSS Intake] Held for human review: $ITEM_URL"
+          # From the number, not the URL: a PR held before it was fetched has an /issues/ URL, and the
+          # title is how an existing ticket is found.
+          title="[OSS Intake] Held for human review: $GITHUB_REPOSITORY#$NUMBER"
           if [[ "$DRY_RUN" == "true" ]]; then
             echo "::notice::Dry run: would hold $ITEM_URL ($REASON) in oncall as \"$title\"."
             exit 0
@@ -279,12 +281,19 @@ jobs:
           remove=$(grep -E '^(intake/|ai-intake-screen-error$)' <<<"$current" | grep -vx 'intake/pending-human' | paste -sd, - || true)
           # Label first: if it is missing, the step fails before filing a ticket the next sweep would repeat.
           gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human" ${remove:+--remove-label "$remove"}
-          existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
-            | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
-          if [[ -n "$existing" ]]; then
-            gh issue comment "$existing" --repo airbytehq/oncall --body "$body"
-          else
-            gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
+          # Without a ticket nobody sees the hold, so swap the label for the retry one if filing fails.
+          if ! {
+            existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
+              | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty') &&
+            if [[ -n "$existing" ]]; then
+              gh issue comment "$existing" --repo airbytehq/oncall --body "$body"
+            else
+              gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
+            fi
+          }; then
+            echo "::error::Could not file the oncall ticket; labeling #$NUMBER ai-intake-screen-error so the sweep retries it."
+            gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --remove-label "intake/pending-human" --add-label ai-intake-screen-error
+            exit 1
           fi
 
       # Before the session, not after: if labeling fails no session starts, and if the session start fails
