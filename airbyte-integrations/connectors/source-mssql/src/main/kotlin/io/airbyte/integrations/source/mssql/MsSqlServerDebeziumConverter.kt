@@ -109,6 +109,8 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             else -> {
                 // User-defined alias types (e.g. CREATE TYPE x FROM datetime) report the alias
                 // as typeName, so resolve temporal aliases via their JDBC type instead.
+                // JDBC TIMESTAMP covers SQL Server datetime, datetime2 and smalldatetime;
+                // DATE is date and TIME is time.
                 val jdbcType = field.jdbcType()
                 val temporalConverter: ((Any?) -> Any?)? =
                     when (jdbcType) {
