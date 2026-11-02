@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.77 | 2026-11-01 | [PR_TBD](https://github.com/airbytehq/airbyte/pull/PR_TBD) | Simplify rate-limit error handler configuration; no behavior change |
 | 0.0.76 | 2026-10-27 | [90024](https://github.com/airbytehq/airbyte/pull/90024) | Update dependencies |
 | 0.0.75 | 2026-10-20 | [89358](https://github.com/airbytehq/airbyte/pull/89358) | Update dependencies |
 | 0.0.74 | 2026-10-13 | [88756](https://github.com/airbytehq/airbyte/pull/88756) | Update dependencies |
