@@ -29,7 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.5 | 2026-11-01 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Simplify error handling on the members and candidates streams; behavior unchanged |
+| 0.1.5 | 2026-11-01 | [90374](https://github.com/airbytehq/airbyte/pull/90374) | Simplify error handling on the members and candidates streams; behavior unchanged |
 | 0.1.4 | 2026-10-27 | [89962](https://github.com/airbytehq/airbyte/pull/89962) | Update dependencies |
 | 0.1.3 | 2026-10-20 | [89252](https://github.com/airbytehq/airbyte/pull/89252) | Update dependencies |
 | 0.1.2 | 2026-10-13 | [88653](https://github.com/airbytehq/airbyte/pull/88653) | Update dependencies |
