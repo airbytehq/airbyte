@@ -38,7 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.67 | 2026-11-01 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Simplify error handling; the `api_keys` stream now reports rate limits with the same message as the other streams |
+| 0.0.67 | 2026-11-01 | [90326](https://github.com/airbytehq/airbyte/pull/90326) | Simplify error handling; the `api_keys` stream now reports rate limits with the same message as the other streams |
 | 0.0.66 | 2026-10-27 | [89890](https://github.com/airbytehq/airbyte/pull/89890) | Update dependencies |
 | 0.0.65 | 2026-10-20 | [89186](https://github.com/airbytehq/airbyte/pull/89186) | Update dependencies |
 | 0.0.64 | 2026-10-13 | [88591](https://github.com/airbytehq/airbyte/pull/88591) | Update dependencies |
