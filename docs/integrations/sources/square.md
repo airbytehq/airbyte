@@ -96,7 +96,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.8.1 | 2026-11-01 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Simplify stream error handling configuration with no change in behavior |
+| 1.8.1 | 2026-11-01 | [90392](https://github.com/airbytehq/airbyte/pull/90392) | Simplify stream error handling configuration with no change in behavior |
 | 1.8.0 | 2026-10-22 | [85911](https://github.com/airbytehq/airbyte/pull/85911) | Migrate the `shifts` stream to Square's Timecards API (Labor Shift endpoints retired) and paginate it with `cursor`; `employee_id` is now populated from `team_member_id` |
 | 1.7.34 | 2026-10-20 | [89448](https://github.com/airbytehq/airbyte/pull/89448) | Update dependencies |
 | 1.7.33 | 2026-10-13 | [88838](https://github.com/airbytehq/airbyte/pull/88838) | Update dependencies |
