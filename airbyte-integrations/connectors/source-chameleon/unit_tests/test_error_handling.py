@@ -1,19 +1,17 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-from pathlib import Path
 from typing import Any
 
 import pytest
 import requests_mock
 import yaml
-from unit_tests.conftest import get_source
+from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
-_MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 _STREAM_NAMES = [
     pytest.param("helpbars", id="helpbars"),
     pytest.param("segments", id="segments"),
@@ -53,7 +51,7 @@ _EXPECTED_ERROR_HANDLER = {
 
 @pytest.fixture
 def manifest() -> dict[str, Any]:
-    return yaml.safe_load(_MANIFEST_PATH.read_text())
+    return yaml.safe_load(_YAML_FILE_PATH.read_text())
 
 
 @pytest.mark.parametrize("stream_name", _STREAM_NAMES)
