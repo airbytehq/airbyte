@@ -24,6 +24,8 @@ The custom backoff strategy computes wait time as the reciprocal of the `Retry-A
 
 **Why this matters:** If you see a `Retry-After` value of 0.5, the connector waits 2 seconds (1/0.5), not 0.5 seconds. This inverted interpretation is specific to Amazon's rate limit header semantics and would produce incorrect wait times if applied to other APIs.
 
+`download_target_requester` retries 429 responses up to 30 times / 3600s through a `CustomErrorHandler` wrapping the CDK `DefaultErrorHandler`. This wrapper sets `max_time`, which the manifest schema does not expose; waits for the shared API budget count toward that limit.
+
 ## 4. Regression Tests Will Not Run for This Connector
 
 The OAuth token refresh flow fails when running "locally" or via regression tests due to an issue in the CDK's [`abstract_oauth.py` refresh method](https://github.com/airbytehq/airbyte-python-cdk/blob/9ec30dc780ffc44ef132aee7c728bbc23c77afca/airbyte_cdk/sources/streams/http/requests_native_auth/abstract_oauth.py#L195). This is **only** an issue in local/regression test environments, not in Cloud.
