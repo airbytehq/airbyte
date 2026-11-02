@@ -35,7 +35,7 @@ This page contains the setup guide and reference information for the [SharePoint
 1. Click Sources and then click + New source.
 2. On the Set up the source page, select SharePoint Enterprise from the Source type dropdown.
 3. Enter a name for the SharePoint Enterprise connector.
-4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. 'SHARED_ITEMS' and 'ALL' use Microsoft's sharedWithMe API, which stops returning data after November 2026. Files shared from a SharePoint site can still be synced by selecting 'ACCESSIBLE_DRIVES' and entering that site's Site URL (this syncs the whole document library). Files shared from another user's OneDrive can't be synced after the retirement.
 5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -94,7 +94,7 @@ If you plan to use the Replicate Permissions ACL feature, you must also add thes
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. 'SHARED_ITEMS' and 'ALL' use Microsoft's sharedWithMe API, which stops returning data after November 2026. Files shared from a SharePoint site can still be synced by selecting 'ACCESSIBLE_DRIVES' and entering that site's Site URL (this syncs the whole document library). Files shared from another user's OneDrive can't be synced after the retirement.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
 8. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_).
@@ -323,7 +323,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.3.3 | 2026-10-30 | [476](https://github.com/airbytehq/airbyte-enterprise/pull/476) | Handle Microsoft Graph `sharedWithMe` deprecation: skip shared items under `ALL` and raise a config error for `SHARED_ITEMS` on Graph 4xx responses |
+| 0.3.3 | 2026-10-30 | [476](https://github.com/airbytehq/airbyte-enterprise/pull/476) | Handle Microsoft Graph `sharedWithMe` deprecation: clearer errors for shared items, skip shared items for Service Key auth |
 | 0.3.2 | 2026-03-30 | [392](https://github.com/airbytehq/airbyte-enterprise/pull/392) | Support `start_date` format without microseconds |
 | 0.3.1 | 2026-02-11 | [381](https://github.com/airbytehq/airbyte-enterprise/pull/381) | Bump CDK to 7.9.3 to fix permissions stream primary key |
 | 0.3.0 | 2025-05-21 | [161](https://github.com/airbytehq/airbyte-enterprise/pull/161) | Add permissions sync support |
