@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.54 | 2026-11-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Consolidate per-stream error handling into a single handler; retryable errors (including HTTP 429) now retry up to 10 times instead of 5 |
+| 0.10.54 | 2026-11-01 | [90376](https://github.com/airbytehq/airbyte/pull/90376) | Consolidate per-stream error handling into a single handler; retryable errors (including HTTP 429) now retry up to 10 times instead of 5 |
 | 0.10.53 | 2026-10-27 | [89839](https://github.com/airbytehq/airbyte/pull/89839) | Update dependencies |
 | 0.10.52 | 2026-10-20 | [89159](https://github.com/airbytehq/airbyte/pull/89159) | Update dependencies |
 | 0.10.51 | 2026-10-13 | [88525](https://github.com/airbytehq/airbyte/pull/88525) | Update dependencies |
