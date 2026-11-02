@@ -347,16 +347,40 @@ function main() {
         continue;
       }
       const filePath = path.join(outputDir, fileName);
-      if (fs.readFileSync(filePath, "utf8").includes(GENERATED_MARKER)) {
+      let existingContent;
+      try {
+        existingContent = fs.readFileSync(filePath, "utf8");
+      } catch (error) {
+        if (error.code === "ENOENT") {
+          continue;
+        }
+        throw error;
+      }
+      if (!existingContent.includes(GENERATED_MARKER)) {
+        continue;
+      }
+      try {
         fs.unlinkSync(filePath);
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
       }
     }
 
     for (const page of pages) {
       const filePath = path.join(outputDir, `${page.slug}.md`);
+      let existingContent;
+      try {
+        existingContent = fs.readFileSync(filePath, "utf8");
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
+      }
       if (
-        fs.existsSync(filePath) &&
-        !fs.readFileSync(filePath, "utf8").includes(GENERATED_MARKER)
+        existingContent !== undefined &&
+        !existingContent.includes(GENERATED_MARKER)
       ) {
         throw new Error(
           `Refusing to overwrite non-generated file: ${filePath}`,
