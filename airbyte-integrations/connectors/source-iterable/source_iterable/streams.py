@@ -7,6 +7,7 @@ import json
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
@@ -27,6 +28,7 @@ from source_iterable.utils import dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
+TEMPLATES_PAGE_SIZE = 1000
 
 
 class IterableStream(HttpStream, ABC):
@@ -616,6 +618,27 @@ class Templates(IterableExportStreamRanged):
 
     def path(self, **kwargs) -> str:
         return "templates"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: StreamSlice,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        """
+        Always paginate: the unpaginated GET /api/templates behaviour is deprecated.
+        https://api.iterable.com/api/docs#templates_getTemplates
+        """
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["page"] = (next_page_token or {}).get("page", 1)
+        params["pageSize"] = TEMPLATES_PAGE_SIZE
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if len(response.json().get(self.data_field, [])) < TEMPLATES_PAGE_SIZE:
+            return None
+        current_page = int(parse_qs(urlparse(response.request.url).query).get("page", ["1"])[0])
+        return {"page": current_page + 1}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for template in self.template_types:
