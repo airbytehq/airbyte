@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.27 | 2026-11-01 | [90382](https://github.com/airbytehq/airbyte/pull/90382) | Simplify error handler configuration with no change in retry or error behavior |
 | 0.3.26 | 2026-10-27 | [90029](https://github.com/airbytehq/airbyte/pull/90029) | Update dependencies |
 | 0.3.25 | 2026-10-20 | [78853](https://github.com/airbytehq/airbyte/pull/78853) | Update dependencies |
 | 0.3.24 | 2026-10-14 | [88958](https://github.com/airbytehq/airbyte/pull/88958) | Update to CDK v7 and base image 4.1.1 |
