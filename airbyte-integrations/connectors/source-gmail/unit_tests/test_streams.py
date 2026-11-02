@@ -113,6 +113,14 @@ def _schema_at(schema, *path):
     return node
 
 
+def _schema_nodes(schema, path=()):
+    yield path, schema
+    for key, subschema in schema.get("properties", {}).items():
+        yield from _schema_nodes(subschema, path + (key,))
+    if "items" in schema:
+        yield from _schema_nodes(schema["items"], path + ("[]",))
+
+
 _QUOTA_PATHS = ["threads/t1", "messages/m1", "threads", "messages", "drafts", "labels", "labels/l1", "profile"]
 
 
@@ -441,6 +449,56 @@ def test_profile_read_emits_record(base_config, requests_mock):
     output = _read_stream("profile", SyncMode.full_refresh, base_config)
 
     assert len(output.records) == 1
+
+
+def test_profile_primary_key_and_integer_schema_types(base_config):
+    source = build_source(base_config)
+    catalog = source.discover(logging.getLogger("test"), base_config)
+    discovered_streams = {stream.name: stream for stream in catalog.streams}
+    assert discovered_streams["profile"].source_defined_primary_key == [["emailAddress"]]
+    schemas = {stream.name: stream.json_schema for stream in catalog.streams}
+    number_typed_paths = [
+        (stream_name, path)
+        for stream_name, schema in schemas.items()
+        for path, node in _schema_nodes(schema)
+        if "number" in (node.get("type") if isinstance(node.get("type"), list) else [node.get("type")])
+    ]
+    assert number_typed_paths == []
+
+    expected_integer_paths = {
+        "profile": {
+            ("messagesTotal",),
+            ("threadsTotal",),
+        },
+        "labels_details": {
+            ("messagesTotal",),
+            ("messagesUnread",),
+            ("threadsTotal",),
+            ("threadsUnread",),
+        },
+        "messages_details": {
+            ("sizeEstimate",),
+            ("payload", "body", "size"),
+            ("payload", "parts", "[]", "body", "size"),
+            ("payload", "parts", "[]", "parts", "[]", "body", "size"),
+            ("payload", "parts", "[]", "parts", "[]", "parts", "[]", "body", "size"),
+        },
+        "threads_details": {
+            ("messages", "[]", "sizeEstimate"),
+            ("messages", "[]", "payload", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "parts", "[]", "body", "size"),
+            ("messages", "[]", "payload", "parts", "[]", "parts", "[]", "parts", "[]", "body", "size"),
+        },
+    }
+    for stream_name, expected_paths in expected_integer_paths.items():
+        integer_paths = set()
+        for path, node in _schema_nodes(schemas[stream_name]):
+            node_type = node.get("type")
+            if node_type == "integer" or (isinstance(node_type, list) and "integer" in node_type):
+                assert node_type == ["integer", "null"]
+                integer_paths.add(path)
+        assert integer_paths == expected_paths
 
 
 def test_labels_read_emits_records(base_config, requests_mock):
@@ -923,9 +981,27 @@ def test_messages_details_parent_follows_next_page_token(base_config, requests_m
     second_params = parse_qs(urlparse(list_calls[1].url).query)
     assert "pageToken" not in first_params
     assert second_params["pageToken"] == ["page-2"]
-    assert first_params["maxResults"] == second_params["maxResults"] == ["100"]
+    assert first_params["maxResults"] == second_params["maxResults"] == ["500"]
     assert first_params["q"] == second_params["q"]
     assert sorted(record.record.data["id"] for record in output.records) == ["m1", "m2"]
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "list_url", "response_key"),
+    [
+        ("messages", _MESSAGES_LIST_URL, "messages"),
+        ("threads", _THREADS_LIST_URL, "threads"),
+        ("drafts", _DRAFTS_LIST_URL, "drafts"),
+    ],
+)
+def test_list_streams_request_500_items_per_page(stream_name, list_url, response_key, base_config, requests_mock):
+    requests_mock.get(list_url, json={response_key: [{"id": "stub"}]})
+
+    _read_stream(stream_name, SyncMode.full_refresh, base_config)
+
+    list_calls = [request for request in _gmail_calls(requests_mock, list_url) if urlparse(request.url).path == urlparse(list_url).path]
+    assert len(list_calls) == 1
+    assert parse_qs(urlparse(list_calls[0].url).query)["maxResults"] == ["500"]
 
 
 @pytest.mark.parametrize("include_spam_and_trash, expected", [(False, "False"), (True, "True")])
