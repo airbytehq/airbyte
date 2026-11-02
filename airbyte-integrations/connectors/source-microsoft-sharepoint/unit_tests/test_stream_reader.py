@@ -1155,6 +1155,7 @@ def test_shared_items_scope_raises_config_error_when_shared_with_me_returns_no_i
     assert exc_info.value.failure_type == FailureType.config_error
     assert "sharedWithMe" in exc_info.value.message
     assert "ACCESSIBLE_DRIVES" in exc_info.value.message
+    assert "glob patterns" in exc_info.value.message
 
 
 def test_service_auth_skips_shared_with_me_for_all_scope(caplog):

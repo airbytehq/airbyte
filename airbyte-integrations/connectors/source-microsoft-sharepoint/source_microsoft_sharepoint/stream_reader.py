@@ -484,7 +484,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         if not items_processed:
             if self.config.search_scope == "SHARED_ITEMS":
-                message = f"No matching files were found in items shared with you. {SHARED_WITH_ME_DEPRECATION_HINT}"
+                message = (
+                    "No matching files were found in items shared with you. Check the glob patterns and start date. "
+                    f"If you expected files, note: {SHARED_WITH_ME_DEPRECATION_HINT}"
+                )
             else:
                 message = "Drive is empty or does not exist."
             raise AirbyteTracedException(
