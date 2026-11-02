@@ -207,6 +207,7 @@ jobs:
       # Link only: the oncall ticket never copies community text, and `skip-triage` keeps the oncall
       # AI triage from reading the item. `intake/pending-human` keeps the sweep from picking it again.
       - name: Hold the item for a human
+        id: hold
         if: steps.screen.outputs.flagged == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -242,6 +243,7 @@ jobs:
       # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
       # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
       - name: Start the intake session
+        id: devin
         if: steps.screen.outputs.flagged == 'false'
         uses: airbytehq/devin-action@main
         with:
@@ -261,3 +263,42 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           NUMBER: ${{ matrix.number }}
         run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started
+
+      # Reports the outcome on the `/ai-intake` comment. Holds the screening reason (scores), never community text.
+      - name: Summarize the outcome
+        id: outcome
+        if: always() && inputs.comment-id != ''
+        env:
+          SCREEN: ${{ steps.screen.outcome }}
+          FLAGGED: ${{ steps.screen.outputs.flagged }}
+          REASON: ${{ steps.screen.outputs.reason }}
+          HOLD: ${{ steps.hold.outcome }}
+          DEVIN: ${{ steps.devin.outcome }}
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+        run: |
+          set -euo pipefail
+          dry=""
+          [[ "$DRY_RUN" == "true" ]] && dry=" (dry run)"
+          if [[ "$SCREEN" != "success" ]]; then
+            text="Could not screen the item; nothing was held and no session started. See the run."
+          elif [[ "$FLAGGED" == "true" && "$HOLD" == "success" ]]; then
+            text="Held for human review$dry: $REASON. No session started."
+          elif [[ "$FLAGGED" == "true" ]]; then
+            text="Flagged ($REASON), but holding it failed. See the run."
+          elif [[ "$DEVIN" == "success" ]]; then
+            text="Screened clean; intake session started$dry."
+          else
+            text="Screened clean, but the session did not start. See the run."
+          fi
+          echo "text=$text" >> "$GITHUB_OUTPUT"
+
+      - name: Report the outcome
+        if: always() && steps.outcome.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          edit-mode: append
+          body: |
+            >
+            > **Result:** ${{ steps.outcome.outputs.text }}

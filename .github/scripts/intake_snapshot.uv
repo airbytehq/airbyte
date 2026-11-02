@@ -46,6 +46,7 @@ ATTEMPTS = 3
 RETRY_SECONDS = 5
 BUILD_SECONDS = 14 * 60  # stays under the intake job's 20-minute timeout
 MAX_COMMITS = 250  # the commits endpoint returns no more than this
+MAX_DIFF_FILES = 300  # the diff endpoint answers HTTP 406 above this
 MAX_DIFF_CHARS = 300_000
 MAX_LINKED = 5
 INTAKE_STATES = [
@@ -209,6 +210,8 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
         pr = json.loads(gh(f"repos/{REPO}/pulls/{number}"))
         if pr.get("commits", 0) > MAX_COMMITS:
             raise Flagged(f"more than {MAX_COMMITS} commits")
+        if pr.get("changed_files", 0) > MAX_DIFF_FILES:
+            raise Flagged(f"more than {MAX_DIFF_FILES} changed files")
         commits = gh_pages(f"repos/{REPO}/pulls/{number}/commits", limit_pages=3)
         reviews = gh_pages(f"repos/{REPO}/pulls/{number}/reviews")
         review_comments = gh_pages(f"repos/{REPO}/pulls/{number}/comments")
