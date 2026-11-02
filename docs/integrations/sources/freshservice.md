@@ -84,6 +84,7 @@ This connector uses the [Freshservice REST API v2](https://api.freshservice.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.75 | 2026-11-02 | [90340](https://github.com/airbytehq/airbyte/pull/90340) | Simplify error handling while preserving permission skips and retry behavior. |
 | 1.4.74 | 2026-10-27 | [89870](https://github.com/airbytehq/airbyte/pull/89870) | Update dependencies |
 | 1.4.73 | 2026-10-20 | [89231](https://github.com/airbytehq/airbyte/pull/89231) | Update dependencies |
 | 1.4.72 | 2026-10-13 | [88607](https://github.com/airbytehq/airbyte/pull/88607) | Update dependencies |
