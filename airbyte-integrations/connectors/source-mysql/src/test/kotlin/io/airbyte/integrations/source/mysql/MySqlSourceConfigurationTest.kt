@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.sockets.MEDIUM_PROPERTY
 import io.airbyte.cdk.output.sockets.SOCKET_PATHS_PROPERTY
@@ -38,7 +39,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     fun testParseJdbcParameters() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
@@ -89,7 +91,7 @@ class MySqlSourceConfigurationTest {
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
         Assertions.assertEquals(
             cdcCursor.invalidCdcCursorPositionBehavior,
-            InvalidCdcCursorPositionBehavior.RESET_SYNC
+            InvalidCdcCursorPositionBehavior.RESET_SYNC,
         )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
@@ -112,10 +114,50 @@ class MySqlSourceConfigurationTest {
         } catch (e: ConfigErrorException) {
             // Here we verify that the caught exception has the expected message
             Assertions.assertEquals(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
-                e.message
+                "Airbyte Cloud does not allow unencrypted database connections. " +
+                    "Either enable TLS on the MySQL server and select SSL mode required, " +
+                    "verify_ca or verify_identity, or configure an SSH tunnel; " +
+                    "the preferred SSL mode is accepted on Airbyte Cloud only together with an SSH tunnel.",
+                e.message,
             )
         }
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_V2)
+    fun testCloudRejectionForPreferredWithoutTunnelNamesBothOptions() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        // Built explicitly with the Cloud feature flag, independently of the Micronaut environment.
+        val cloudFactory =
+            MySqlSourceConfigurationFactory(
+                featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+            )
+        val e: ConfigErrorException =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                cloudFactory.makeWithoutExceptionHandling(pojo)
+            }
+        val message: String = e.message!!
+        // Option 1: TLS on the server with an encrypting SSL mode.
+        Assertions.assertTrue(message.contains("enable TLS on the MySQL server"), message)
+        Assertions.assertTrue(message.contains("required, verify_ca or verify_identity"), message)
+        // Option 2: an SSH tunnel.
+        Assertions.assertTrue(message.contains("configure an SSH tunnel"), message)
+        Assertions.assertTrue(
+            message.contains("accepted on Airbyte Cloud only together with an SSH tunnel"),
+            message,
+        )
+
+        // Outside Airbyte Cloud the same configuration is accepted as-is.
+        val config: MySqlSourceConfiguration =
+            MySqlSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+        Assertions.assertEquals("preferred", config.jdbcProperties["sslMode"])
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 
     @Test
@@ -128,7 +170,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.max_db_connections", value = "2")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     fun testConcurrencySettingMigrationLegacyMode() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
@@ -145,7 +188,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
     @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
@@ -165,7 +209,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
     @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
@@ -186,7 +231,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
     @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
@@ -220,29 +266,30 @@ class MySqlSourceConfigurationTest {
             Path.of(URI.create(config.jdbcProperties["trustCertificateKeyStoreUrl"])).toString()
         Assertions.assertEquals(
             "verify_ca",
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE],
         )
         Assertions.assertEquals(
             truststorePath,
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE],
         )
         Assertions.assertTrue(Files.exists(Path.of(truststorePath)))
         Assertions.assertEquals(
             "client-pass",
             config.debeziumSslProperties[
-                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE_PASS]
+                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE_PASS],
         )
 
         val keystorePath: String =
             Path.of(URI.create(config.jdbcProperties["clientCertificateKeyStoreUrl"])).toString()
         Assertions.assertEquals(
             keystorePath,
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE],
         )
         Assertions.assertTrue(Files.exists(Path.of(keystorePath)))
         Assertions.assertEquals(
             "client-pass",
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS]
+            config.debeziumSslProperties[
+                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS],
         )
     }
 
@@ -260,27 +307,28 @@ class MySqlSourceConfigurationTest {
 
         Assertions.assertEquals(
             "verify_ca",
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE],
         )
 
         val truststorePath: String =
             Path.of(URI.create(config.jdbcProperties["trustCertificateKeyStoreUrl"])).toString()
         Assertions.assertEquals(
             truststorePath,
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE],
         )
         Assertions.assertTrue(Files.exists(Path.of(truststorePath)))
         Assertions.assertFalse(
             config.debeziumSslProperties[
                     MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE_PASS]
-                .isNullOrBlank()
+                .isNullOrBlank(),
         )
 
         Assertions.assertNull(
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE],
         )
         Assertions.assertNull(
-            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS]
+            config.debeziumSslProperties[
+                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS],
         )
     }
 
@@ -298,7 +346,7 @@ class MySqlSourceConfigurationTest {
 
         Assertions.assertEquals(
             mapOf(MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE to "required"),
-            config.debeziumSslProperties
+            config.debeziumSslProperties,
         )
     }
 

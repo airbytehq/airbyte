@@ -6,6 +6,21 @@ This page contains the setup guide and reference information for the Square sour
 
 - A [Square Developer account](https://developer.squareup.com/apps) with an application created.
 - A personal access token or OAuth credentials (Client ID, Client Secret, and refresh token). See [Square access tokens](https://developer.squareup.com/docs/build-basics/access-tokens) for details.
+- If you authenticate with OAuth, the refresh token must be authorized for the [permissions](https://developer.squareup.com/docs/oauth-api/square-permissions) required by the streams you want to sync. A personal access token grants full access to the seller account's resources.
+
+  | Permission | Streams |
+  | :--- | :--- |
+  | `ITEMS_READ` | Items, Categories, Discounts, Taxes, Modifier Lists |
+  | `PAYMENTS_READ` | Payments, Refunds |
+  | `ORDERS_READ` | Orders |
+  | `MERCHANT_PROFILE_READ` | Locations (also used to list locations for the Orders stream) |
+  | `EMPLOYEES_READ` | Team Members, Team Member Wages |
+  | `TIMECARDS_READ` | Shifts |
+  | `CUSTOMERS_READ` | Customers |
+  | `INVENTORY_READ` | Inventory |
+  | `BANK_ACCOUNTS_READ` | Bank Accounts |
+  | `CASH_DRAWER_READ` | Cash Drawers |
+  | `LOYALTY_READ` | Loyalty |
 
 ## Setup guide
 
@@ -22,8 +37,8 @@ This page contains the setup guide and reference information for the Square sour
    - **API Key**: Enter the access token from your Square Application settings page (under **Credentials**).
    - **OAuth**: Enter the Client ID and Client Secret from your Square Application settings page (under **OAuth**), along with the refresh token obtained during the authorization flow.
 4. Set **Sandbox** to `true` if you are using a Square sandbox environment.
-5. Set a **Start Date** (UTC, format `YYYY-MM-DD`). Data before this date is not replicated.
-6. Optionally enable **Include Deleted Objects** to sync deleted Items, Categories, Discounts, and Taxes.
+5. Set a **Start Date** (UTC, format `YYYY-MM-DD`). Defaults to `2021-01-01`. The incremental streams don't replicate data before this date. Full refresh streams ignore it.
+6. Optionally enable **Include Deleted Objects** to sync deleted Items, Categories, Discounts, Taxes, and Modifier Lists.
 
 ## Supported sync modes
 
@@ -48,7 +63,7 @@ The Square source connector supports the following [sync modes](https://docs.air
 - [Team Members](https://developer.squareup.com/reference/square/team-api/search-team-members)
 - [Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
-- [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
+- [Shifts](https://developer.squareup.com/reference/square/labor-api/search-timecards)
 - [Inventory](https://developer.squareup.com/reference/square/inventory-api/batch-retrieve-inventory-counts)
 - [Bank Accounts](https://developer.squareup.com/reference/square/bank-accounts-api/list-bank-accounts)
 - [Cash Drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
@@ -57,6 +72,10 @@ The Square source connector supports the following [sync modes](https://docs.air
 ## Limitations and considerations
 
 Square uses dynamic rate limiting that varies by endpoint and current API load. The connector handles `429 Too Many Requests` responses with a 30-second constant backoff before retrying. For more details, see [Square's rate limit guidance](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449).
+
+If Square returns `403 Forbidden` or `404 Not Found` for a stream, the connector skips that stream and the sync continues without an error. If a stream unexpectedly syncs zero records, check that your credentials have the permission listed in [Prerequisites](#prerequisites).
+
+The Shifts stream reads from Square's [Search Timecards](https://developer.squareup.com/reference/square/labor-api/search-timecards) endpoint, which replaces the retired Shift endpoints. Square no longer returns `employee_id` on timecards, so the connector populates `employee_id` with the value of `team_member_id`.
 
 The Orders stream is partitioned by location. Each location's orders are fetched independently via the [SearchOrders](https://developer.squareup.com/reference/square/orders-api/search-orders) endpoint with a page size of 1,000 records per request.
 
@@ -77,6 +96,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.8.0 | 2026-10-22 | [85911](https://github.com/airbytehq/airbyte/pull/85911) | Migrate the `shifts` stream to Square's Timecards API (Labor Shift endpoints retired) and paginate it with `cursor`; `employee_id` is now populated from `team_member_id` |
+| 1.7.34 | 2026-10-20 | [89448](https://github.com/airbytehq/airbyte/pull/89448) | Update dependencies |
 | 1.7.33 | 2026-10-13 | [88838](https://github.com/airbytehq/airbyte/pull/88838) | Update dependencies |
 | 1.7.32 | 2026-10-06 | [88067](https://github.com/airbytehq/airbyte/pull/88067) | Update dependencies |
 | 1.7.31 | 2026-09-29 | [87389](https://github.com/airbytehq/airbyte/pull/87389) | Update dependencies |

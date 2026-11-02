@@ -37,6 +37,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-27 | [89898](https://github.com/airbytehq/airbyte/pull/89898) | Update dependencies |
+| 0.0.66 | 2026-10-20 | [89206](https://github.com/airbytehq/airbyte/pull/89206) | Update dependencies |
 | 0.0.65 | 2026-10-13 | [88623](https://github.com/airbytehq/airbyte/pull/88623) | Update dependencies |
 | 0.0.64 | 2026-10-07 | [88185](https://github.com/airbytehq/airbyte/pull/88185) | Fix `marketnews` category config key typo (always sent empty `category`, breaking `check`) and send `from`/`to` as `YYYY-MM-DD` for `basic_financial_report` and `sec_filings` |
 | 0.0.63 | 2026-10-06 | [87869](https://github.com/airbytehq/airbyte/pull/87869) | Update dependencies |

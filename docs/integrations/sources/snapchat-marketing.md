@@ -167,6 +167,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.8 | 2026-10-27 | [90055](https://github.com/airbytehq/airbyte/pull/90055) | Update dependencies |
+| 1.6.7 | 2026-10-21 | [89614](https://github.com/airbytehq/airbyte/pull/89614) | Report not-found organization and ad account IDs as configuration errors with actionable messages |
+| 1.6.6 | 2026-10-20 | [89417](https://github.com/airbytehq/airbyte/pull/89417) | Update dependencies |
 | 1.6.5 | 2026-10-13 | [88812](https://github.com/airbytehq/airbyte/pull/88812) | Update dependencies |
 | 1.6.4 | 2026-10-06 | [88076](https://github.com/airbytehq/airbyte/pull/88076) | Update dependencies |
 | 1.6.3 | 2026-09-29 | [87377](https://github.com/airbytehq/airbyte/pull/87377) | Update dependencies |
@@ -265,6 +268,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.4.0 | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media` |
 | 0.3.2 | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
+| 0.3.1 | 2024-02-12 | [35170](https://github.com/airbytehq/airbyte/pull/35170) | Adopt the Airbyte Python base image |
 | 0.3.0 | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
 | 0.2.0 | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema |
 | 0.1.16 | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema |

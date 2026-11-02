@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.60 | 2026-10-20 | [89372](https://github.com/airbytehq/airbyte/pull/89372) | Update dependencies |
 | 0.0.59 | 2026-10-13 | [88780](https://github.com/airbytehq/airbyte/pull/88780) | Update dependencies |
 | 0.0.58 | 2026-10-07 | [88235](https://github.com/airbytehq/airbyte/pull/88235) | Add error handling: honour `Retry-After` on 429 rate limits, retry 5xx, and return a clear config error on 403 |
 | 0.0.57 | 2026-10-06 | [88011](https://github.com/airbytehq/airbyte/pull/88011) | Update dependencies |

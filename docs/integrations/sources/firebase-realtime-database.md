@@ -83,6 +83,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.53 | 2026-10-27 | [89874](https://github.com/airbytehq/airbyte/pull/89874) | Update dependencies |
+| 0.1.52 | 2026-10-20 | [89214](https://github.com/airbytehq/airbyte/pull/89214) | Update dependencies |
 | 0.1.51 | 2026-10-13 | [79248](https://github.com/airbytehq/airbyte/pull/79248) | Update dependencies |
 | 0.1.50 | 2026-10-07 | [88178](https://github.com/airbytehq/airbyte/pull/88178) | Support databases outside `us-central1` by accepting a full database URL/hostname (`*.firebasedatabase.app`) in **Database Name**; upgrade to airbyte-cdk 7 / Python 3.13 so the image builds on the current base image |
 | 0.1.49 | 2026-06-02 | [78673](https://github.com/airbytehq/airbyte/pull/78673) | Update dependencies |

@@ -29,6 +29,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.73 | 2026-10-27 | [90065](https://github.com/airbytehq/airbyte/pull/90065) | Update dependencies |
+| 0.0.72 | 2026-10-20 | [89456](https://github.com/airbytehq/airbyte/pull/89456) | Update dependencies |
 | 0.0.71 | 2026-10-13 | [88810](https://github.com/airbytehq/airbyte/pull/88810) | Update dependencies |
 | 0.0.70 | 2026-10-07 | [88225](https://github.com/airbytehq/airbyte/pull/88225) | Fix syncs failing with `Too Many Attempts`: retry UpPromote rate-limit errors (returned as HTTP 400) and request 100 records per page |
 | 0.0.69 | 2026-10-06 | [88057](https://github.com/airbytehq/airbyte/pull/88057) | Update dependencies |

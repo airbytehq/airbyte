@@ -111,6 +111,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.5.4 | 2026-10-27 | [89913](https://github.com/airbytehq/airbyte/pull/89913) | Update dependencies |
+| 1.5.3 | 2026-10-20 | [89233](https://github.com/airbytehq/airbyte/pull/89233) | Update dependencies |
+| 1.5.2 | 2026-10-19 | [89089](https://github.com/airbytehq/airbyte/pull/89089) | Add `date-time` format to `start_date` so the setup form renders a datepicker |
 | 1.5.1 | 2026-10-13 | [88636](https://github.com/airbytehq/airbyte/pull/88636) | Update dependencies |
 | 1.5.0 | 2026-10-05 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema (`parties[].context`, `media`) and add missing `reviewMethod` and `conferencingProviders` fields |
 | 1.4.4 | 2026-10-06 | [87873](https://github.com/airbytehq/airbyte/pull/87873) | Update dependencies |

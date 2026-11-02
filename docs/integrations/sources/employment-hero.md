@@ -103,6 +103,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.3 | 2026-10-27 | [89884](https://github.com/airbytehq/airbyte/pull/89884) | Update dependencies |
+| 0.1.2 | 2026-10-20 | [89183](https://github.com/airbytehq/airbyte/pull/89183) | Update dependencies |
 | 0.1.1 | 2026-10-13 | [88611](https://github.com/airbytehq/airbyte/pull/88611) | Update dependencies |
 | 0.1.0 | 2026-10-09 | [88211](https://github.com/airbytehq/airbyte/pull/88211) | Replace static access-token auth with OAuth 2.0 refresh-token flow (access tokens expire after 15 minutes) |
 | 0.0.66 | 2026-10-06 | [87860](https://github.com/airbytehq/airbyte/pull/87860) | Update dependencies |

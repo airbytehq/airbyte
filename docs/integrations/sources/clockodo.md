@@ -44,6 +44,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.71 | 2026-10-27 | [89830](https://github.com/airbytehq/airbyte/pull/89830) | Update dependencies |
+| 0.0.70 | 2026-10-20 | [89176](https://github.com/airbytehq/airbyte/pull/89176) | Update dependencies |
 | 0.0.69 | 2026-10-13 | [88576](https://github.com/airbytehq/airbyte/pull/88576) | Update dependencies |
 | 0.0.68 | 2026-10-07 | [88255](https://github.com/airbytehq/airbyte/pull/88255) | Migrate streams off the retired Clockodo v2/legacy endpoints (HTTP 410) to the current v2/v3/v4 endpoints, fix `work_times` date parameters, and stop pagination on empty result sets |
 | 0.0.67 | 2026-10-06 | [87783](https://github.com/airbytehq/airbyte/pull/87783) | Update dependencies |

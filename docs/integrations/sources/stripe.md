@@ -168,7 +168,9 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector automatically manages API rate limits, including retries and backoff for HTTP 429 responses. Stripe enforces a limit of [25 requests per second for sandbox keys and 100 requests per second for live keys](https://stripe.com/docs/rate-limits). The connector respects these limits and adjusts its request rate accordingly.
+
+If you experience rate limiting, you can reduce the **Number of concurrent threads** setting in the connector configuration. The default is 10 for live keys and 4 for sandbox keys. You can also configure a **Max number of API calls per second** to set a stricter limit. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit issues that are not automatically retried successfully.
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
@@ -334,6 +336,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.0.3 | 2026-10-20 | [89581](https://github.com/airbytehq/airbyte/pull/89581) | Read `bank_accounts` full refreshes from 30-day `customers` slices instead of one partition per customer, and fail on HTTP 400 instead of silently skipping a slice |
+| 7.0.2 | 2026-10-20 | [89447](https://github.com/airbytehq/airbyte/pull/89447) | Update dependencies |
+| 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
 | 7.0.0 | 2026-10-13 | [87765](https://github.com/airbytehq/airbyte/pull/87765) | Use Stripe's current `il_` line item IDs for `invoice_line_items` on incremental syncs. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700). |
 | 6.0.23 | 2026-10-13 | [88809](https://github.com/airbytehq/airbyte/pull/88809) | Update dependencies |
 | 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |

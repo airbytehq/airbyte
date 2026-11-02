@@ -28,6 +28,7 @@ Some output streams are available from this source. A list of these streams can 
 
 Getting oauth credentials require contacting Outreach to request an account. Check out [here](https://www.outreach.io/lp/watch-demo#request-demo).
 Once you have an API application, you can follow the steps [here](https://api.outreach.io/api/v2/docs#authentication) to obtain a refresh token.
+Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings. The connector fills them in and saves each new refresh token that Outreach returns.
 
 ## Streams
 
@@ -68,6 +69,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
+| 1.1.50 | 2026-10-20 | [89080](https://github.com/airbytehq/airbyte/pull/89080) | Save rotated OAuth tokens and refresh the access token on 401 |
+| 1.1.49 | 2026-10-20 | [89347](https://github.com/airbytehq/airbyte/pull/89347) | Update dependencies |
 | 1.1.48 | 2026-10-13 | [88737](https://github.com/airbytehq/airbyte/pull/88737) | Update dependencies |
 | 1.1.47 | 2026-10-06 | [87971](https://github.com/airbytehq/airbyte/pull/87971) | Update dependencies |
 | 1.1.46 | 2026-09-29 | [87292](https://github.com/airbytehq/airbyte/pull/87292) | Update dependencies |

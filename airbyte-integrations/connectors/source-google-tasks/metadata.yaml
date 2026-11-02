@@ -14,11 +14,11 @@ data:
       enabled: false
       packageName: airbyte-source-google-tasks
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
   connectorSubtype: api
   connectorType: source
   definitionId: 751c2519-1446-416e-9736-9b98585f8125
-  dockerImageTag: 0.0.72
+  dockerImageTag: 0.0.74
   dockerRepository: airbyte/source-google-tasks
   githubIssueLabel: source-google-tasks
   icon: icon.svg

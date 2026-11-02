@@ -80,6 +80,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.65 | 2026-10-27 | [89790](https://github.com/airbytehq/airbyte/pull/89790) | Update dependencies |
+| 2.2.64 | 2026-10-20 | [89135](https://github.com/airbytehq/airbyte/pull/89135) | Update dependencies |
 | 2.2.63 | 2026-10-13 | [88544](https://github.com/airbytehq/airbyte/pull/88544) | Update dependencies |
 | 2.2.62 | 2026-10-06 | [88134](https://github.com/airbytehq/airbyte/pull/88134) | Replace the custom `item_collection` record extractor with built-in declarative transformations; record output is unchanged |
 | 2.2.61 | 2026-10-06 | [87770](https://github.com/airbytehq/airbyte/pull/87770) | Update dependencies |

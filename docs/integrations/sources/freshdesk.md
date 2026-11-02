@@ -90,6 +90,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.11 | 2026-10-27 | [89767](https://github.com/airbytehq/airbyte/pull/89767) | Show clear error messages when the satisfaction_ratings or surveys streams return 403 because the Freshdesk plan lacks the Surveys feature. |
+| 3.3.10 | 2026-10-27 | [89902](https://github.com/airbytehq/airbyte/pull/89902) | Update dependencies |
+| 3.3.9 | 2026-10-20 | [89212](https://github.com/airbytehq/airbyte/pull/89212) | Update dependencies |
 | 3.3.8 | 2026-10-13 | [88631](https://github.com/airbytehq/airbyte/pull/88631) | Update dependencies |
 | 3.3.7 | 2026-10-09 | [88407](https://github.com/airbytehq/airbyte/pull/88407) | Cast `sla_policies` ids back to integers: the API currently returns them as strings, which Freshdesk's docs do not mention |
 | 3.3.6 | 2026-10-06 | [87870](https://github.com/airbytehq/airbyte/pull/87870) | Update dependencies |

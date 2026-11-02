@@ -382,6 +382,7 @@ The `list_memberships` stream reads memberships for every list returned by the `
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
+If a custom object has the same name as a built-in stream (for example, a custom object named `form_submissions`), discover returns two streams with that name and connection setup fails with a duplicate stream name error. To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`) in the source configuration and refresh the source schema. The custom object is then exposed as `custom_object_<name>`. Custom objects with other names are not renamed. If you were already syncing the built-in stream with that name, it may have been receiving the custom object's records. After enabling the setting and refreshing the schema, clear that stream's data so its destination table contains only the built-in stream's records.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
@@ -505,6 +506,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
+| 6.12.2 | 2026-10-20 | [89246](https://github.com/airbytehq/airbyte/pull/89246) | Update dependencies |
 | 6.12.1 | 2026-10-13 | [87204](https://github.com/airbytehq/airbyte/pull/87204) | Update dependencies |
 | 6.12.0 | 2026-09-12 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
 | 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |

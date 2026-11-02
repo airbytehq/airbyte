@@ -32,6 +32,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.72 | 2026-10-27 | [90106](https://github.com/airbytehq/airbyte/pull/90106) | Update dependencies |
+| 0.0.71 | 2026-10-20 | [89470](https://github.com/airbytehq/airbyte/pull/89470) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88878](https://github.com/airbytehq/airbyte/pull/88878) | Update dependencies |
 | 0.0.69 | 2026-10-07 | [88187](https://github.com/airbytehq/airbyte/pull/88187) | Fix `ParentHash` on `report_widgets` stream (was always empty due to wrong partition field) |
 | 0.0.68 | 2026-10-06 | [88088](https://github.com/airbytehq/airbyte/pull/88088) | Update dependencies |

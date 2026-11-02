@@ -181,12 +181,12 @@ This connector outputs the following full refresh streams:
 
 This connector outputs the following incremental streams:
 
-- [Board issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get)
+- [Board issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-software-1-0-board-boardid-issue-get)
 - [Issue changelogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-changelog-get)
 - [Issue comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get)
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
-- [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
+- [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-software-1-0-sprint-sprintid-issue-get)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -218,7 +218,11 @@ In the list above, a subset of streams makes one HTTP request per issue. These s
 
 Jira returns only the records the authenticating user or service account can see, so a missing stream is usually a permissions problem rather than a connector problem. Check that the account has Jira app access, the project permissions for the projects you sync, and, for the full `workflows` stream, the **Administer Jira** global permission.
 
-The connector also skips any request that Jira answers with HTTP 400 instead of failing the sync. Jira returns 400 for requests it considers invalid, such as a stream that queries a Jira feature your site doesn't have enabled, so a stream can finish successfully with no records. Check the sync logs for 400 responses if a stream returns less data than you expect.
+The connector also skips any request that Jira answers with HTTP 400 instead of failing the sync. Jira returns 400 for requests it considers invalid, such as a stream that queries a Jira feature your site doesn't have enabled, so a stream can finish successfully with no records. Check the sync logs for 400 responses if a stream returns less data than you expect. `board_issues` is the exception: it fails the sync on HTTP 400, except for boards that Jira reports as having no columns with a mapped status, which it skips.
+
+### Recently updated issues are late or missing in `issues`, `board_issues`, or `sprint_issues`
+
+The `issues`, `board_issues`, and `sprint_issues` streams read from Jira's issue search, which is [eventually consistent](https://developer.atlassian.com/cloud/jira/platform/search-and-reconcile/): most changes become searchable within seconds, but bulk edits can take minutes. With **Lookback window** (`lookback_window_minutes`) set to `0`, a change that isn't searchable yet when the connector queries a board, a sprint, or the issue search arrives one sync later. If a later change from the same board, sprint, or search was already synced, the earlier change is skipped until the issue is updated again. Set **Lookback window** to a few minutes, for example `5`, so each incremental sync re-reads recent changes. Records in that window are emitted again.
 
 ### The sync is slow
 
@@ -262,6 +266,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-10-20 | [80198](https://github.com/airbytehq/airbyte/pull/80198) | Migrate `board_issues` and `sprint_issues` from the deprecated `/rest/agile/1.0/` issue endpoints to `/rest/software/1.0/` before Atlassian removes them after 2026-11-01. `board_issues` now retries HTTP 500 errors instead of skipping the board; boards with no columns with a mapped status are still skipped |
 | 6.0.4 | 2026-10-13 | [88409](https://github.com/airbytehq/airbyte/pull/88409) | Type rendered comment bodies in `issues` (`renderedFields.comment.comments[].body`) as HTML strings. Avro/Parquet destinations now receive this value (previously null) as a string instead of a struct |
 | 6.0.3 | 2026-09-17 | [86357](https://github.com/airbytehq/airbyte/pull/86357) | Fix `issues` stream failing with `UndefinedError` when an issue has no `fields.project` |
 | 6.0.2 | 2026-09-10 | [85802](https://github.com/airbytehq/airbyte/pull/85802) | Stop config migration from adding empty `api_token`, `email`, and `domain` fields to OAuth or partially-migrated configs |

@@ -22,7 +22,15 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 - **Client Secret** (`client_secret`): The Consumer Secret that can be found when viewing your app in Salesforce
 
-- **Refresh Token** (`refresh_token`): Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
+- **Refresh Token** (`refresh_token`): Salesforce refresh token that Airbyte uses to access your Account Engagement data. To get one:
+  1. In Salesforce Setup, create an [External Client App](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5) with OAuth enabled. Since Spring '26, Salesforce no longer lets you create new connected apps by default. Existing connected apps keep working.
+  2. Select the **Manage Pardot services (`pardot_api`)** and **Perform requests at any time (`refresh_token`, `offline_access`)** OAuth scopes. Account Engagement rejects tokens that don't have the `pardot_api` scope. See [Account Engagement API authentication](https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html).
+  3. Use the OAuth web server (authorization code) flow to get a refresh token for a user who has access to Account Engagement.
+  4. Don't turn on **Refresh Token Rotation** or **Immediately expire refresh token** for this app. The connector stores one refresh token and can't save a new one that Salesforce issues on every refresh.
+
+:::caution Refresh tokens expire after 30 days without use
+Starting November 4, 2026, Salesforce expires production refresh tokens that haven't been used for 30 days. Every sync uses the refresh token and restarts that 30-day window. A connection that syncs at least once every 30 days keeps working. If a connection is paused, or scheduled to sync less often than every 30 days, its refresh token expires and syncs fail to authenticate. To recover, generate a new refresh token and update the source.
+:::
 
 ### Optional configuration options
 
@@ -97,6 +105,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.61 | 2026-10-27 | [89997](https://github.com/airbytehq/airbyte/pull/89997) | Update dependencies |
+| 1.0.60 | 2026-10-20 | [89350](https://github.com/airbytehq/airbyte/pull/89350) | Update dependencies |
 | 1.0.59 | 2026-10-13 | [88747](https://github.com/airbytehq/airbyte/pull/88747) | Update dependencies |
 | 1.0.58 | 2026-10-06 | [87980](https://github.com/airbytehq/airbyte/pull/87980) | Update dependencies |
 | 1.0.57 | 2026-09-29 | [87294](https://github.com/airbytehq/airbyte/pull/87294) | Update dependencies |

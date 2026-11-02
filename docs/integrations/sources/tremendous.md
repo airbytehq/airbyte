@@ -35,6 +35,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.72 | 2026-10-27 | [90062](https://github.com/airbytehq/airbyte/pull/90062) | Update dependencies |
+| 0.0.71 | 2026-10-20 | [89429](https://github.com/airbytehq/airbyte/pull/89429) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88849](https://github.com/airbytehq/airbyte/pull/88849) | Update dependencies |
 | 0.0.69 | 2026-10-07 | [88230](https://github.com/airbytehq/airbyte/pull/88230) | Fix infinite pagination on non-paginated endpoints (`products`, `funding_sources`, `members`, `account_members`, `campaigns`, `organizations`), send explicit `limit` for `rewards`, and populate the empty `invoices` schema |
 | 0.0.68 | 2026-10-06 | [88064](https://github.com/airbytehq/airbyte/pull/88064) | Update dependencies |

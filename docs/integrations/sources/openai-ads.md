@@ -15,7 +15,9 @@ This page contains the setup guide and reference information for the OpenAI Ads 
 2. Open the [**Settings**](https://ads.openai.com/settings) page and create a new Advertiser API key.
 3. Copy the key. Each key is scoped to one ad account. To replicate several ad accounts, create one key per account and set up one source per account.
 
-The `spend_limit_windows` stream requires a key with permission to manage billing for the ad account, such as a key created by an ad account admin. If the key lacks this permission, the API returns HTTP 403, the stream returns no records, and the sync continues. OpenAI offers account spending limits only to ad accounts on postpaid invoice billing.
+The `spend_limit_windows` stream needs an ad account on postpaid invoice billing and an API key with permission to manage billing for that account (see [Account spending limits](https://developers.openai.com/ads/api-reference/ad-account)). If the API answers 403, the stream returns no records, the sync continues, and the sync log shows the API's message.
+
+The `conversion_pixels` stream requires pixel management to be enabled for the ad account. If it is not enabled, the stream returns no records and the sync continues.
 
 For more information, see [OpenAI's quickstart](https://developers.openai.com/ads/api-quickstart).
 
@@ -28,9 +30,9 @@ For more information, see [OpenAI's quickstart](https://developers.openai.com/ad
 3. On the Set up the source page, select **OpenAI Ads** from the Source type dropdown.
 4. Enter a name for the OpenAI Ads connector.
 5. Enter the **API Key**.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DD format. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that.
-7. (Optional) Enter the **End Date** in YYYY-MM-DD format. Data after this date will not be replicated. If not set, data is synced through today.
-8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. Set it to the longest `attribution_window_days` among your conversion event settings. OpenAI's API docs prescribe 30 for that field, which is the default. See [Lookback window](#lookback-window).
+6. (Optional) Enter the **Start Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data before this date will not be replicated. The default is 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps a limited history of report data, so older days may no longer be available. See [Report Tables](#report-tables).
+7. (Optional) Enter the **End Date** in YYYY-MM-DD format, as a date in the ad account's time zone. Data after this date will not be replicated. OpenAI rejects report requests that end in the future, so if you leave this empty or enter a date later than the current date in UTC-12, report streams sync through the current date in UTC-12. The newest day in the account's time zone can arrive a day late, and a later sync picks it up.
+8. (Optional) Enter the **Lookback Window** in days, from 0 to 90. The default of 32 covers OpenAI's 30-day click attribution window plus 2 days, because OpenAI needs at least one day to process conversions. See [Lookback window](#lookback-window).
 9. (Optional) Enter the **Number of concurrent workers**, from 1 to 20. The default is 3.
 10. Click **Set up source**.
 
@@ -59,16 +61,16 @@ The OpenAI Ads source connector supports the following [sync modes](https://docs
 
 ### Main Tables
 
-| Stream                                                                                        | Primary key | Sync modes   | Notes                                                           |
-| :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------- |
-| [ad_account](https://developers.openai.com/ads/api-reference/ad-account)                      | id          | Full Refresh | The ad account the key belongs to                               |
-| [campaigns](https://developers.openai.com/ads/api-reference/campaigns)                        | id          | Full Refresh |                                                                 |
-| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups)                        | id          | Full Refresh | Listed per campaign, `campaign_id` added to each record         |
-| [ads](https://developers.openai.com/ads/api-reference/ads)                                    | id          | Full Refresh | Listed per ad group, `ad_group_id` added to each record         |
-| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id          | Full Refresh | Conversion definitions of the account                           |
-| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup)         | id          | Full Refresh | Conversion data sources referenced by conversion_event_settings |
-| [custom_audiences](https://developers.openai.com/ads/custom-audiences)                        | id          | Full Refresh | Custom audiences of the account                                 |
-| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account)             | window_id   | Full Refresh | Date range spend limits. Billing permission required            |
+| Stream                                                                                        | Primary key | Sync modes   | Notes                                                                             |
+| :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------------------------- |
+| [ad_account](https://developers.openai.com/ads/api-reference/ad-account)                      | id          | Full Refresh | The ad account the key belongs to                                                 |
+| [campaigns](https://developers.openai.com/ads/api-reference/campaigns)                        | id          | Full Refresh |                                                                                   |
+| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups)                        | id          | Full Refresh | Listed per campaign, `campaign_id` added to each record                           |
+| [ads](https://developers.openai.com/ads/api-reference/ads)                                    | id          | Full Refresh | Listed per ad group, `ad_group_id` added to each record                           |
+| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id          | Full Refresh | Conversion definitions of the account                                             |
+| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup)         | id          | Full Refresh | Conversion data sources referenced by conversion_event_settings                   |
+| [custom_audiences](https://developers.openai.com/ads/custom-audiences)                        | id          | Full Refresh | Custom audiences of the account                                                   |
+| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account)             | window_id   | Full Refresh | Date range spend limits. Postpaid invoice billing and billing permission required |
 
 ### Report Tables
 
@@ -88,13 +90,13 @@ All report tables are built on the [insights](https://developers.openai.com/ads/
 | ad_group_conversions          | entity_id, date                                      | Full Refresh, Incremental | Attributed conversions per ad group and day |
 | ad_conversions                | entity_id, date                                      | Full Refresh, Incremental | Attributed conversions per ad and day       |
 
-Every insights stream requests all attribute fields the API allows at its level, for its own entity and every level above it: account id, name, url and budgets; campaign id, name, description, status, start and end time and budgets; ad group id, name, description and status; ad id, name, title, copy, link, status and review status. Attributes that are unset for an entity are omitted from the row. The metrics are `impressions`, `clicks`, `spend`, `ctr`, `cpc`, `cpm`, with the same names at every level and for every segment. Days on which an entity had no impressions are not returned, so missing days mean zero delivery. The API's own row `id` is kept on the record but is not the primary key, because it embeds a query plan token that changes with the requested fields.
+Every insights stream requests all attribute fields the API allows at its level, for its own entity and every level above it: account id, name, url and budgets; campaign id, name, description, status, start and end time and budgets; ad group id, name, description and status; ad id, name, title, copy, link, status and review status. Attributes that are unset for an entity are omitted from the row. The metrics are `impressions`, `clicks`, `spend`, `ctr`, `cpc`, `cpm`, with the same names at every level and for every segment. Days on which an entity had no impressions are not returned, so missing days mean zero delivery, as long as they are inside OpenAI's retention: the most recent 365 days for daily insights and about 30 days for `campaign_insights_by_product` (see [Historical availability](https://developers.openai.com/ads/reporting)). The connector cannot read older days whatever the Start Date, so a refresh or a Full Refresh | Overwrite sync keeps only what OpenAI still has. The API's own row `id` is kept on the record but is not the primary key, because it embeds a query plan token that changes with the requested fields.
 
 The conversions streams come from the [conversions insights](https://developers.openai.com/ads/api-reference/insights) endpoint and return `conversions`, `click_through_conversions`, `view_through_conversions`, `order_created_attributed_sales` and `order_created_attributed_sales_currency` per entity (`entity_id`) and `date`, at campaign, ad group and ad level. Unlike the insights endpoint, this endpoint returns a row for every entity and every day of the requested range, zeros included, also for days before the entity was created. The connector keeps these rows as delivered, so each entity has a complete daily series from the start date. Set the Start Date to when the account began advertising to avoid rows for days before that; rows before an entity's own creation can be removed downstream with `created_at` from the `campaigns`, `ad_groups` and `ads` streams.
 
 ## Lookback window
 
-Conversions are attributed to the click that caused them for as long as the attribution window of the conversion event, so the conversions of a past day keep changing for that many days. Each conversion event setting carries its window in `attribution_window_days` (the `conversion_event_settings` stream shows them); OpenAI's API docs prescribe 30. On every sync, incremental report streams re-read the data inside the lookback window (default 30 days) and update those rows. Use the **Incremental | Append + Deduped** sync mode so the updated rows replace the earlier ones. Lower the window only if you sync delivery metrics without conversions and want fewer requests.
+OpenAI credits a conversion to the ad click or view that led to it for as long as the report's attribution window, so the conversions of a past day keep changing after that day. The connector doesn't set attribution parameters on its requests, so OpenAI applies its [defaults](https://developers.openai.com/ads/reporting#understand-attribution): a 30-day click window and a 1-day view window. OpenAI also needs at least one day to process conversions, and spend can be finalized later than impressions and clicks (see [Data Freshness & Retention](https://developers.openai.com/ads/reporting#data-freshness--retention)). On every sync, incremental report streams re-read the data inside the lookback window and update those rows. The default of 32 days covers the 30-day click window plus 2 days of processing. Use the **Incremental | Append + Deduped** sync mode so the updated rows replace the earlier ones. Lower the window only if you sync delivery metrics without conversions and want fewer requests.
 
 ## IP allow list
 
@@ -102,9 +104,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Performance considerations
 
-The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff.
+The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff, or after the wait in the `Retry-After` header when the API sends one.
 
-Insights are requested in 14 day slices with up to 2,000 rows per page and cursor pagination beyond that. The conversions endpoint has no pagination cursor and rejects requests whose response would exceed 2,000 rows, so the connector asks it for one entity and one 14 day slice at a time (at most 14 rows per request). This makes the conversions streams the most request-intensive part of the connector: each incremental sync issues about three requests per campaign, ad group and ad (a 30 day lookback covers three 14 day slices), and the first sync one request per entity for every 14 days between the start date and today. An account with 5,000 ads needs roughly 15,000 requests per incremental sync for `ad_conversions` alone, about 25 minutes at the rate limit, and writes one row per ad per day. If that is too much, deselect `ad_conversions` and `ad_group_conversions` and keep `campaign_conversions`, which needs three requests per campaign.
+Insights are requested in 14 day slices with up to 2,000 rows per page and cursor pagination beyond that. The conversions endpoint has no pagination cursor and rejects requests whose response would exceed 2,000 rows, so the connector asks it for one entity and one 14 day slice at a time (at most 14 rows per request). This makes the conversions streams the most request-intensive part of the connector: each incremental sync issues about three requests per campaign, ad group and ad (a 32 day lookback covers three 14 day slices), and the first sync one request per entity for every 14 days between the start date and the end date. An account with 5,000 ads needs roughly 15,000 requests per incremental sync for `ad_conversions` alone, about 25 minutes at the rate limit, and writes one row per ad per day. If that is too much, deselect `ad_conversions` and `ad_group_conversions` and keep `campaign_conversions`, which needs three requests per campaign.
 
 Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as `campaign_budget_daily`) are in the account currency. Fields ending in `_micros` on the entity and spend limit streams are in micros (1,000,000 micros equal one unit of currency). An `ad_account_budget_lifetime` of 1,000,000,000 means no lifetime limit is set.
 
@@ -113,8 +115,13 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
+| 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare the documented `custom_audiences` and `ad_account` name fields, and type nested landing page, bid multiplier, product set filter, and conversion event campaign fields |
+| 0.1.5 | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled, report rate limiting, honor `Retry-After`, and correct the `spend_limit_windows` 403 message |
+| 0.1.4 | 2026-10-21 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12 so requests never end in the future, and raise the default lookback window to 32 days |
+| 0.1.3 | 2026-10-20 | [89337](https://github.com/airbytehq/airbyte/pull/89337) | Update dependencies |
 | 0.1.2 | 2026-10-13 | [88750](https://github.com/airbytehq/airbyte/pull/88750) | Update dependencies |
 | 0.1.1 | 2026-10-09 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests and fix README symlink, test config end date, and release date |
 | 0.1.0 | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |

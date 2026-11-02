@@ -126,6 +126,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.30 | 2026-10-27 | [90033](https://github.com/airbytehq/airbyte/pull/90033) | Update dependencies |
+| 4.0.29 | 2026-10-20 | [89299](https://github.com/airbytehq/airbyte/pull/89299) | Update dependencies |
 | 4.0.28 | 2026-10-13 | [88131](https://github.com/airbytehq/airbyte/pull/88131) | Replace custom record transformations for the users, pages and data_sources streams with declarative components (no change to record output) |
 | 4.0.27 | 2026-10-13 | [88718](https://github.com/airbytehq/airbyte/pull/88718) | Update dependencies |
 | 4.0.26 | 2026-10-06 | [87944](https://github.com/airbytehq/airbyte/pull/87944) | Update dependencies |

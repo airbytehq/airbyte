@@ -26,6 +26,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-10-27 | [89854](https://github.com/airbytehq/airbyte/pull/89854) | Update dependencies |
+| 0.0.45 | 2026-10-20 | [89160](https://github.com/airbytehq/airbyte/pull/89160) | Update dependencies |
 | 0.0.44 | 2026-10-13 | [88579](https://github.com/airbytehq/airbyte/pull/88579) | Update dependencies |
 | 0.0.43 | 2026-10-07 | [88190](https://github.com/airbytehq/airbyte/pull/88190) | Surface Customerly access-token errors (returned as HTTP 500) as config errors instead of retrying |
 | 0.0.42 | 2026-10-06 | [87811](https://github.com/airbytehq/airbyte/pull/87811) | Update dependencies |

@@ -58,6 +58,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.67 | 2026-10-27 | [89853](https://github.com/airbytehq/airbyte/pull/89853) | Update dependencies |
+| 0.0.66 | 2026-10-20 | [89152](https://github.com/airbytehq/airbyte/pull/89152) | Update dependencies |
 | 0.0.65 | 2026-10-13 | [88561](https://github.com/airbytehq/airbyte/pull/88561) | Update dependencies |
 | 0.0.64 | 2026-10-07 | [88296](https://github.com/airbytehq/airbyte/pull/88296) | Fix Netherlands API and OAuth URLs and allowed hosts. |
 | 0.0.63 | 2026-10-06 | [87800](https://github.com/airbytehq/airbyte/pull/87800) | Update dependencies |

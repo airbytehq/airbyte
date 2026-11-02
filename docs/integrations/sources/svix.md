@@ -32,6 +32,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-10-27 | [90059](https://github.com/airbytehq/airbyte/pull/90059) | Update dependencies |
+| 0.0.49 | 2026-10-20 | [89411](https://github.com/airbytehq/airbyte/pull/89411) | Update dependencies |
 | 0.0.48 | 2026-10-13 | [88826](https://github.com/airbytehq/airbyte/pull/88826) | Update dependencies |
 | 0.0.47 | 2026-10-07 | [88278](https://github.com/airbytehq/airbyte/pull/88278) | Select the Svix regional API server from the API key region suffix instead of always using the EU server; accept `updatedAt`/`createdAt` values without fractional seconds |
 | 0.0.46 | 2026-10-06 | [88060](https://github.com/airbytehq/airbyte/pull/88060) | Update dependencies |

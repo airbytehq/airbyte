@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-10-20 | [89435](https://github.com/airbytehq/airbyte/pull/89435) | Update dependencies |
 | 0.0.41 | 2026-10-13 | [88832](https://github.com/airbytehq/airbyte/pull/88832) | Update dependencies |
 | 0.0.40 | 2026-10-07 | [88245](https://github.com/airbytehq/airbyte/pull/88245) | Fix OAuth2: request the documented `tasks:read` scope (was the malformed `tasks: read`) and use the OAuth access token directly instead of a misconfigured `OAuthAuthenticator` (invalid `client_secret` template, unsupported `client_credentials` grant, no refresh endpoint) |
 | 0.0.39 | 2026-10-06 | [88072](https://github.com/airbytehq/airbyte/pull/88072) | Update dependencies |

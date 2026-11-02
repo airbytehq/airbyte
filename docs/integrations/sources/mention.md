@@ -37,6 +37,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.72 | 2026-10-27 | [89995](https://github.com/airbytehq/airbyte/pull/89995) | Update dependencies |
+| 0.0.71 | 2026-10-20 | [89286](https://github.com/airbytehq/airbyte/pull/89286) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88682](https://github.com/airbytehq/airbyte/pull/88682) | Update dependencies |
 | 0.0.69 | 2026-10-07 | [88288](https://github.com/airbytehq/airbyte/pull/88288) | Send the API key as `Authorization: Bearer <token>` as required by the Mention API (previously sent as a raw header value, so every request failed with 401) |
 | 0.0.68 | 2026-10-06 | [87935](https://github.com/airbytehq/airbyte/pull/87935) | Update dependencies |

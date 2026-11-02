@@ -215,7 +215,7 @@ class BigQueryReadApiPartitionsCreator(
                 val queries: BigQueryReadApiSnapshotQueries =
                     snapshotQueries
                         ?: throw IllegalStateException(
-                            "incremental snapshot without snapshot queries"
+                            "incremental snapshot without snapshot queries",
                         )
                 val snapshotTime: Instant = queries.pickSnapshotTime()
                 val bound: JsonNode? = queries.cursorUpperBound(stream, c, snapshotTime)
@@ -251,7 +251,7 @@ class BigQueryReadApiPartitionsCreator(
         val maxReadStreams: Int =
             bySize.coerceIn(
                 config.maxConcurrency,
-                constants.maxReadStreams.coerceAtLeast(config.maxConcurrency)
+                constants.maxReadStreams.coerceAtLeast(config.maxConcurrency),
             )
         log.info {
             "'${stream.label}': requesting up to $maxReadStreams read streams " +

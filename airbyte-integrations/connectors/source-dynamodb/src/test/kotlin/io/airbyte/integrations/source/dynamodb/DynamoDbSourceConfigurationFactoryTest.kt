@@ -58,7 +58,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(Region.EU_WEST_1, config.region)
         Assertions.assertEquals(
             listOf("name", "field.name", "field-name"),
-            config.reservedAttributeNames
+            config.reservedAttributeNames,
         )
         Assertions.assertTrue(config.ignoreMissingReadPermissionsTables)
         Assertions.assertEquals("localhost", config.realHost)
@@ -90,7 +90,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertTrue(config.assumesRole)
         Assertions.assertEquals(
             "arn:aws:iam::123456789012:role/path/airbyte-reader",
-            config.roleArn
+            config.roleArn,
         )
         Assertions.assertEquals("ext-123", config.externalId)
         Assertions.assertNull(config.sessionToken)
@@ -129,7 +129,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(
             4,
             make(
-                    """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}"""
+                    """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}""",
                 )
                 .maxConcurrency,
         )
@@ -152,7 +152,7 @@ class DynamoDbSourceConfigurationFactoryTest {
             """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
         val four: DynamoDbSourceConfigurationSpecification =
             parse(
-                """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}"""
+                """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}""",
             )
         Assertions.assertEquals(
             1,
@@ -168,7 +168,7 @@ class DynamoDbSourceConfigurationFactoryTest {
             1,
             DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock", "/tmp/b.sock"))
                 .makeWithoutExceptionHandling(
-                    parse("""{"credentials": $credentials, "region": "us-east-1"}""")
+                    parse("""{"credentials": $credentials, "region": "us-east-1"}"""),
                 )
                 .maxConcurrency,
         )
@@ -177,8 +177,8 @@ class DynamoDbSourceConfigurationFactoryTest {
                 DynamoDbSourceConfigurationFactory()
                     .makeWithoutExceptionHandling(
                         parse(
-                            """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 0}"""
-                        )
+                            """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 0}""",
+                        ),
                     )
             }
         Assertions.assertTrue(e.message!!.contains("'max_db_connections' must be positive"))
@@ -196,7 +196,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(
             java.time.Duration.ofSeconds(45),
             make(
-                    """{"credentials": $credentials, "region": "us-east-1", "checkpoint_target_interval_seconds": 45}"""
+                    """{"credentials": $credentials, "region": "us-east-1", "checkpoint_target_interval_seconds": 45}""",
                 )
                 .checkpointTargetInterval,
         )
@@ -257,7 +257,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         assertConfigError("""{"credentials": $credentials}""", "'region' property is required")
         assertConfigError(
             """{"credentials": $credentials, "region": ""}""",
-            "'region' property is required"
+            "'region' property is required",
         )
     }
 
@@ -277,7 +277,7 @@ class DynamoDbSourceConfigurationFactoryTest {
                 }
             Assertions.assertTrue(
                 e.message!!.contains("role_arn") || e.message!!.contains("IAM role ARN"),
-                e.message
+                e.message,
             )
         }
     }
@@ -291,7 +291,7 @@ class DynamoDbSourceConfigurationFactoryTest {
                 "http://bad host", // # ignore-https-check
                 "localhost:8000",
                 "ftp://host",
-                "dynamodb.us-east-1.amazonaws.com"
+                "dynamodb.us-east-1.amazonaws.com",
             )) {
             assertConfigError(
                 """{"credentials": $credentials, "region": "us-east-1", "endpoint": "$endpoint"}""",
@@ -320,7 +320,7 @@ class DynamoDbSourceConfigurationFactoryTest {
             "localhost" to 80,
             DynamoDbSourceConfigurationFactory.hostAndPort(
                 URI.create("http://localhost"),
-                Region.US_EAST_1
+                Region.US_EAST_1,
             ),
         )
         Assertions.assertEquals(

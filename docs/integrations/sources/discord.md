@@ -126,6 +126,8 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 
 | Version | Date       | Pull Request | Subject                         |
 | :------ | :--------- | :----------- | :------------------------------ |
+| 0.1.19 | 2026-10-27 | [89841](https://github.com/airbytehq/airbyte/pull/89841) | Update dependencies |
+| 0.1.18 | 2026-10-20 | [89174](https://github.com/airbytehq/airbyte/pull/89174) | Update dependencies |
 | 0.1.17 | 2026-10-13 | [88566](https://github.com/airbytehq/airbyte/pull/88566) | Update dependencies |
 | 0.1.16 | 2026-10-07 | [88179](https://github.com/airbytehq/airbyte/pull/88179) | Skip channels where the bot lacks `MANAGE_THREADS` for private archived threads instead of failing the whole `messages` stream |
 | 0.1.15 | 2026-10-06 | [87822](https://github.com/airbytehq/airbyte/pull/87822) | Update dependencies |

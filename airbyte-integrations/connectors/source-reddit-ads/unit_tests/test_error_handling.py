@@ -14,6 +14,8 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 _TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 _TOKEN_REQUEST_BODY = "grant_type=refresh_token&refresh_token=test-refresh-token"
 _ADS_URL = "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ads"
+_AD_ACCOUNT_URL = "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123"
+_AD_GROUP_URL = f"{_AD_ACCOUNT_URL}/ad_groups"
 
 
 def _mock_token(
@@ -31,12 +33,14 @@ def _mock_token(
 def _read_ads(
     response: HttpResponse | list[HttpResponse],
     token_response: HttpResponse | list[HttpResponse] | None = None,
+    stream_name: str = "ad",
+    url: str = _ADS_URL,
 ):
     config = base_config()
-    catalog = CatalogBuilder().with_stream("ad", SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     with HttpMocker() as http_mocker:
         token_request = _mock_token(http_mocker, token_response)
-        ads_request = HttpRequest(_ADS_URL)
+        ads_request = HttpRequest(url)
         http_mocker.get(ads_request, response)
         output = read(get_source(config, catalog), config, catalog)
     return output, http_mocker, token_request, ads_request
@@ -145,15 +149,29 @@ def test_token_endpoint_503_is_retried(monkeypatch) -> None:
             FailureType.system_error,
             "Reddit rejected the request as invalid (HTTP 400): no error message returned.",
         ),
+        (
+            400,
+            '{"error":{"code":400,"message":"Bad Request",'
+            '"fields":[{"field":"breakdowns","message":"Please restrict the number of breakdowns to 3"}]}}',
+            FailureType.system_error,
+            "Reddit rejected the request as invalid (HTTP 400): Bad Request (Please restrict the number of breakdowns to 3).",
+        ),
     ],
 )
+@pytest.mark.parametrize("stream_name,url", [("ad", _ADS_URL), ("ad_account", _AD_ACCOUNT_URL), ("ad_group", _AD_GROUP_URL)])
 def test_http_errors_are_classified(
     status_code: int,
     body: str,
     expected_failure_type: FailureType,
     expected_message: str,
+    stream_name: str,
+    url: str,
 ) -> None:
-    output, http_mocker, token_request, ads_request = _read_ads(HttpResponse(body=body, status_code=status_code))
+    output, http_mocker, token_request, ads_request = _read_ads(
+        HttpResponse(body=body, status_code=status_code),
+        stream_name=stream_name,
+        url=url,
+    )
     error = _first_error(output)
 
     assert error.failure_type == expected_failure_type

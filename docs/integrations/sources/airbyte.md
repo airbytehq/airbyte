@@ -32,6 +32,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.40 | 2026-10-27 | [89800](https://github.com/airbytehq/airbyte/pull/89800) | Update dependencies |
+| 0.1.39 | 2026-10-20 | [89102](https://github.com/airbytehq/airbyte/pull/89102) | Update dependencies |
 | 0.1.38 | 2026-10-13 | [88512](https://github.com/airbytehq/airbyte/pull/88512) | Update dependencies |
 | 0.1.37 | 2026-10-06 | [87758](https://github.com/airbytehq/airbyte/pull/87758) | Update dependencies |
 | 0.1.36 | 2026-10-03 | [87640](https://github.com/airbytehq/airbyte/pull/87640) | Fix OAuth token URL (`applications//token` returned 401) |

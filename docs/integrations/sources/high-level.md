@@ -51,6 +51,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.70 | 2026-10-27 | [89927](https://github.com/airbytehq/airbyte/pull/89927) | Update dependencies |
+| 0.0.69 | 2026-10-20 | [89281](https://github.com/airbytehq/airbyte/pull/89281) | Update dependencies |
 | 0.0.68 | 2026-10-13 | [88665](https://github.com/airbytehq/airbyte/pull/88665) | Update dependencies |
 | 0.0.67 | 2026-10-07 | [88182](https://github.com/airbytehq/airbyte/pull/88182) | Archive connector: the third-party proxy service (`api.leadconnectorpro.co`) it depended on has shut down |
 | 0.0.66 | 2026-10-06 | [87894](https://github.com/airbytehq/airbyte/pull/87894) | Update dependencies |

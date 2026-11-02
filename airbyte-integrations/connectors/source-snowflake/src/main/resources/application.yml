@@ -43,11 +43,20 @@ airbyte:
             output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
 
           - pattern: (?i)JWT token is invalid
-            input-example: "JWT token is invalid. [a1b2c3d4-0000-0000-0000-000000000000]"
+            # 390144: Snowflake rejected the key pair login. The driver signs a new JWT, valid for 60
+            # seconds, for each login and uses it only to log in, so this is never an expired session
+            # (the driver renews session tokens itself). The causes are a private key that does not
+            # match the RSA public key registered on the user, a wrong username or account, or a host
+            # clock that is off. The driver does not retry a rejected login, and a retry would sign a
+            # new token with the same key, user, account and clock and be rejected again, so it is not
+            # transient. The ID in brackets is the login request ID that
+            # SYSTEM$GET_LOGIN_FAILURE_DETAILS takes to report the exact cause.
+            input-example: "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]"
             error: config
             group: Authentication Error
-            output: Key pair authentication failed. Check that the username is correct and that the private key matches the RSA public key registered on that user (DESCRIBE USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a new one).
+            output: Key pair authentication failed. Check that the Username and Server URL are correct and that the Private Key matches the RSA public key registered on that user (DESCRIBE USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a new one). If they match, check that the clock on the machine running Airbyte is correct. For the exact cause, an administrator can run SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>') with the ID shown in brackets after "JWT token is invalid" in the error details.
             reference-links:
+              - https://docs.snowflake.com/en/user-guide/key-pair-auth
               - https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting
 
       jdbc:
@@ -56,8 +65,14 @@ airbyte:
         rules:
           # --- Configuration Errors ---
 
+          - code: 390100
+            # Incorrect username or password was specified (observed from snowflake-jdbc 4.x).
+            error: config
+            group: Connection Error
+            output: Invalid credentials. Please check your username and password.
+
           - code: 260004
-            # Incorrect username or password was specified.
+            # Incorrect username or password was specified (legacy code).
             error: config
             group: Connection Error
             output: Invalid credentials. Please check your username and password.
@@ -67,6 +82,12 @@ airbyte:
             error: config
             group: Configuration Error
             output: A selected view could not be queried because it is invalid or inaccessible. Please deselect the view or fix its definition in Snowflake.
+
+          - code: 904
+            # SQL compilation error: invalid identifier '<column>'. Seen when a view's definition references a column that was dropped or renamed in its base table, so every query on the view fails to compile.
+            error: config
+            group: Configuration Error
+            output: A selected table or view references a column that no longer exists. If it is a view, update or recreate it in Snowflake so that it only references existing columns, or deselect the stream. Then refresh the source schema.
 
           - code: 2003
             # SQL compilation error: ... object ... does not exist or not authorized.

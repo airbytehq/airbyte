@@ -1,8 +1,13 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.searchads.apple.com
+      - appleid.apple.com
+      - "${token_refresh_endpoint}"
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 1.1.20
+  dockerImageTag: 1.1.22
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -53,12 +58,23 @@ data:
             alias: airbyte-connector-testing-secret-store
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
+  suggestedStreams:
+    streams:
+      - campaigns_report_daily
+      - campaigns
+      - adgroups_report_daily
   externalDocumentationUrls:
-    - title: API reference
-      url: https://developer.apple.com/documentation/apple_search_ads
+    - title: Apple Ads Campaign Management API reference
+      url: https://developer.apple.com/documentation/apple_ads
       type: api_reference
-    - title: Authentication
-      url: https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api
+    - title: Implementing OAuth for the Apple Ads API
+      url: https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api
       type: authentication_guide
+    - title: Calling the Apple Ads API (rate limits)
+      url: https://developer.apple.com/documentation/apple_ads/calling-the-apple-search-ads-api
+      type: rate_limits
+    - title: Apple Ads Campaign Management API 5 release notes
+      url: https://developer.apple.com/documentation/apple_ads/apple-search-ads-campaign-management-api-5
+      type: api_release_history
 metadataSpecVersion: "1.0"

@@ -119,19 +119,21 @@ class StateManagerStreamStatesTest {
                 Jsons.readTree("{\"cursor_incremental\":\"initial_sync_ongoing\"}"),
                 123L,
                 null,
-                null
+                null,
             )
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"STREAM",
                     |"stream":{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
                     |"stream_state":{"cursor_incremental":"initial_sync_ongoing"}},
                     |"sourceStats":{"recordCount":123.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -181,13 +183,15 @@ class StateManagerStreamStatesTest {
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
             listOf(
-                    """{
+                    """
+                    |{
                     |"type":"STREAM",
                     |"stream":{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
                     |"stream_state":{"cursor_incremental":"cursor_checkpoint"}},
                     |"sourceStats":{"recordCount":456.0}
                     |}
-                """.trimMargin(),
+                    """
+                        .trimMargin(),
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },

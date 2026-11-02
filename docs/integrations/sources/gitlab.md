@@ -130,7 +130,7 @@ Incremental streams request data in 180-day windows, so a first sync of a long-l
 `jobs`, `pipelines_extended`, and `pipeline_trigger_jobs` make one request per pipeline. In Incremental mode, a sync only makes these requests for the pipelines returned by the incremental `pipelines` query, which are the pipelines whose `updated_at` is at or after the previous sync's cursor. All three streams use `pipeline_updated_at`, the pipeline's `updated_at` as returned by `pipelines`, as their cursor. Keep the following in mind:
 
 - Changes that don't update the parent pipeline's `updated_at`, such as erasing a job or job artifacts expiring, aren't picked up. Use Full Refresh for these streams if you need those changes.
-- When a job is retried, GitLab returns only the new attempt, under a new job `id`. The row for the earlier attempt keeps the status it had when it was last synced, which can be `running` or `pending`. To get one row per job, keep the highest `id` per `pipeline_id` and `name`. Deleted pipelines and their jobs are not removed from the destination.
+- When a job is retried, GitLab creates a new attempt under a new job `id`. The `jobs` stream returns every attempt, including earlier attempts of retried jobs, so a pipeline can have several rows with the same `name`. To get only the latest attempt of each job, keep the highest `id` per `pipeline_id` and `name`. Deleted pipelines and their jobs are not removed from the destination.
 - In `pipeline_trigger_jobs`, the `downstream_pipeline` fields, such as `status`, reflect the downstream pipeline when the upstream pipeline last changed. A trigger job without `strategy: depend` finishes as soon as the downstream pipeline is created, so later status changes in the downstream pipeline don't update the upstream pipeline, and the row isn't read again. To get the downstream pipeline's current status, join `downstream_pipeline_id` to the `pipelines` stream, or use Full Refresh for `pipeline_trigger_jobs`.
 - The cursor has one-second precision and GitLab's `updated_after` filter includes the boundary. On every sync, the most recently updated regular pipeline and the most recently updated child pipeline in each project are requested again, so up to two pipelines per project. Use **Incremental | Append + Deduped** to avoid duplicate rows.
 - A project that first appears after the first incremental sync starts from the latest `pipelines` cursor minus the duration of the previous sync, not from **Start date**. This applies to projects added to the connector configuration and to projects created in or moved into a configured group. Older pipelines in that project aren't read. Refresh these streams to backfill them.
@@ -158,7 +158,9 @@ The connector respects per-endpoint rate limits based on [GitLab.com's documente
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers and backs off when GitLab returns HTTP 429. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Starting October 19, 2026, GitLab.com also applies rate limits by subscription tier: Free namespaces get 5,000 requests per hour and 100 requests per minute per user, and Premium and Ultimate follow in January 2027. See [rate limits on GitLab.com](https://docs.gitlab.com/user/gitlab_com/rate_limits/). Under these limits, syncs can pause for long periods while the connector waits for the limit to reset.
+
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers. When GitLab returns HTTP 429, the connector waits for the time in the `Retry-After` header, up to about one hour, and then retries. If the header is missing, it retries with exponential backoff. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
@@ -186,6 +188,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.5.6 | 2026-10-27 | [89911](https://github.com/airbytehq/airbyte/pull/89911) | Update dependencies |
+| 4.5.5 | 2026-10-22 | [88981](https://github.com/airbytehq/airbyte/pull/88981) | Normalize epics due_date_from_milestones and start_date_from_milestones from datetime strings to YYYY-MM-DD dates (typed date columns are unchanged; raw JSON values change); add work_item_id, imported and imported_from to the epics schema |
+| 4.5.4 | 2026-10-20 | [89088](https://github.com/airbytehq/airbyte/pull/89088) | Include earlier attempts of retried jobs in the `jobs` stream |
+| 4.5.3 | 2026-10-20 | [89217](https://github.com/airbytehq/airbyte/pull/89217) | Update dependencies |
+| 4.5.2 | 2026-10-13 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
 | 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |

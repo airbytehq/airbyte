@@ -32,6 +32,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.73 | 2026-10-27 | [89944](https://github.com/airbytehq/airbyte/pull/89944) | Update dependencies |
+| 0.0.72 | 2026-10-20 | [89261](https://github.com/airbytehq/airbyte/pull/89261) | Update dependencies |
 | 0.0.71 | 2026-10-13 | [88661](https://github.com/airbytehq/airbyte/pull/88661) | Update dependencies |
 | 0.0.70 | 2026-10-07 | [88307](https://github.com/airbytehq/airbyte/pull/88307) | Use the configured `domain` (region) and `user` in requests instead of hard-coding the EU West 2 host; paginate `appresults_files`; cap file-stream page size at the API maximum (1000) |
 | 0.0.69 | 2026-10-06 | [87890](https://github.com/airbytehq/airbyte/pull/87890) | Update dependencies |

@@ -37,6 +37,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-27 | [89892](https://github.com/airbytehq/airbyte/pull/89892) | Update dependencies |
+| 0.0.69 | 2026-10-20 | [89223](https://github.com/airbytehq/airbyte/pull/89223) | Update dependencies |
 | 0.0.68 | 2026-10-13 | [88617](https://github.com/airbytehq/airbyte/pull/88617) | Update dependencies |
 | 0.0.67 | 2026-10-07 | [88330](https://github.com/airbytehq/airbyte/pull/88330) | Fail `check`/`read` with a config error when the API returns an `error` body (e.g. `Invalid key`) instead of silently succeeding with 0 records |
 | 0.0.66 | 2026-10-06 | [87858](https://github.com/airbytehq/airbyte/pull/87858) | Update dependencies |

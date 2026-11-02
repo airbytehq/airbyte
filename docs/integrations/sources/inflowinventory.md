@@ -44,6 +44,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-27 | [89960](https://github.com/airbytehq/airbyte/pull/89960) | Update dependencies |
+| 0.0.67 | 2026-10-20 | [89249](https://github.com/airbytehq/airbyte/pull/89249) | Update dependencies |
 | 0.0.66 | 2026-10-13 | [88674](https://github.com/airbytehq/airbyte/pull/88674) | Update dependencies |
 | 0.0.65 | 2026-10-07 | [88259](https://github.com/airbytehq/airbyte/pull/88259) | Fix authentication: send the API key as `Authorization: Bearer <key>` as required by the inFlow API; add `skip`/`count` pagination so all records are returned |
 | 0.0.64 | 2026-10-06 | [87896](https://github.com/airbytehq/airbyte/pull/87896) | Update dependencies |

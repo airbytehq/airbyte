@@ -210,8 +210,9 @@ class GlobalAsyncStateManagerTest {
             )
         }
         // because no state message has been tracked, there is nothing to flush yet.
-        val stateWithStats =
-            emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+        val stateWithStats = emittedStatesFromDestination.associateWith {
+            it.state?.destinationStats
+        }
         assertEquals(0, stateWithStats.size)
 
         stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
@@ -222,8 +223,9 @@ class GlobalAsyncStateManagerTest {
         }
 
         val expectedDestinationStats = AirbyteStateStats().withRecordCount(2.0)
-        val stateWithStats2 =
-            emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+        val stateWithStats2 = emittedStatesFromDestination.associateWith {
+            it.state?.destinationStats
+        }
         assertEquals(
             setOf(
                 attachDestinationStateStats(
@@ -263,8 +265,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             //
             assertEquals(
                 setOf(
@@ -325,8 +328,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(30.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -357,8 +361,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -383,8 +388,9 @@ class GlobalAsyncStateManagerTest {
                     e,
                 )
             }
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -415,8 +421,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -439,8 +446,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -467,8 +475,9 @@ class GlobalAsyncStateManagerTest {
                     e,
                 )
             }
-            val stateWithStats3 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats3 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -502,8 +511,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(20.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -529,8 +539,9 @@ class GlobalAsyncStateManagerTest {
                     e,
                 )
             }
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -563,8 +574,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -604,8 +616,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -631,8 +644,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(10.0)
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -666,8 +680,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -689,8 +704,9 @@ class GlobalAsyncStateManagerTest {
                     e,
                 )
             }
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
             assertEquals(
                 setOf(
@@ -718,8 +734,9 @@ class GlobalAsyncStateManagerTest {
                     e,
                 )
             }
-            val stateWithStats3 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats3 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             val expectedDestinationStats3 = AirbyteStateStats().withRecordCount(10.0)
             assertEquals(
                 setOf(
@@ -756,8 +773,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
-            val stateWithStats =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(
@@ -789,8 +807,9 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(7.0)
-            val stateWithStats2 =
-                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
+            val stateWithStats2 = emittedStatesFromDestination.associateWith {
+                it.state?.destinationStats
+            }
             assertEquals(
                 setOf(
                     attachDestinationStateStats(

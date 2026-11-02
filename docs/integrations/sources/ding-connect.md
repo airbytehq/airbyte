@@ -33,6 +33,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-10-27 | [89842](https://github.com/airbytehq/airbyte/pull/89842) | Update dependencies |
+| 0.0.44 | 2026-10-20 | [89161](https://github.com/airbytehq/airbyte/pull/89161) | Update dependencies |
 | 0.0.43 | 2026-10-13 | [88540](https://github.com/airbytehq/airbyte/pull/88540) | Update dependencies |
 | 0.0.42 | 2026-10-07 | [88262](https://github.com/airbytehq/airbyte/pull/88262) | Fix never-ending syncs: the Ding API does not support `Skip` offset pagination, so stop paginating and read each endpoint's full `Items` list once |
 | 0.0.41 | 2026-10-06 | [87817](https://github.com/airbytehq/airbyte/pull/87817) | Update dependencies |

@@ -65,6 +65,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 0.1.4 | 2026-10-27 | [89957](https://github.com/airbytehq/airbyte/pull/89957) | Update dependencies |
+| 0.1.3 | 2026-10-20 | [89262](https://github.com/airbytehq/airbyte/pull/89262) | Update dependencies |
 | 0.1.2 | 2026-10-13 | [88671](https://github.com/airbytehq/airbyte/pull/88671) | Update dependencies |
 | 0.1.1 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret` |
 | 0.1.0 | 2026-10-09 | [88299](https://github.com/airbytehq/airbyte/pull/88299) | Require the company subdomain, correct pagination, and allow authentication requests. |

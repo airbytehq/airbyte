@@ -31,6 +31,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-10-27 | [90056](https://github.com/airbytehq/airbyte/pull/90056) | Update dependencies |
+| 0.0.48 | 2026-10-20 | [89414](https://github.com/airbytehq/airbyte/pull/89414) | Update dependencies |
 | 0.0.47 | 2026-10-13 | [88833](https://github.com/airbytehq/airbyte/pull/88833) | Update dependencies |
 | 0.0.46 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88326) | Fix dead external documentation URL and document how to obtain API credentials |
 | 0.0.45 | 2026-10-06 | [88061](https://github.com/airbytehq/airbyte/pull/88061) | Update dependencies |
