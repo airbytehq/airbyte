@@ -16,7 +16,9 @@ Usage:
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
       Prints a JSON list of open community items with no intake/* or ai-intake-started label, oldest first.
   intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH
-      Prints {"url", "flagged", "error", "reason", "scores"} and, only when neither flagged nor error, writes the prompt.
+      Prints {"url", "flagged", "error", "reason", "scores", "digest"} and, only when neither flagged nor error, writes
+      the prompt. --override DIGEST skips the screen when the item's screened text still has that digest.
+      --skip-labeled (sweep) returns "skipped" when the item got an intake label after it was selected.
 
 Needs `gh` authenticated (GH_TOKEN), GITHUB_REPOSITORY, and TYPESAFE_API_KEY for `build`.
 The snapshot's shape is defined in the `connector-contribution-intake` skill (airbytehq/ai-skills).
@@ -24,6 +26,7 @@ The snapshot's shape is defined in the `connector-contribution-intake` skill (ai
 
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -68,6 +71,10 @@ RESULT_MARKER = "<!-- contribution_intake_result:"
 # contributor text, so they are handled like bots. The intake result is posted by RESULT_AUTHOR.
 AUTOMATION_LOGINS = {"airbyte-support-bot"}
 RESULT_AUTHOR = "airbyte-support-bot"
+RESULT_LINE = re.compile(r"^<!-- contribution_intake_result: [a-z_]+; reason: [a-z_]+ -->$", re.MULTILINE)
+# Added by the workflow when screening an item errors. The sweep still retries it, but after newer items,
+# so a few items that always fail can't fill every slot.
+SCREEN_ERROR_LABEL = "ai-intake-screen-error"
 
 QUESTIONS = {
     "addressed_to_automation": {
@@ -140,7 +147,7 @@ def has_write_access(user: str) -> bool:
 def select(since: str, limit: int) -> list[int]:
     labels = " ".join(f'-label:"{label}"' for label in [*(f"intake/{state}" for state in INTAKE_STATES), STARTED_LABEL])
     query = f"repo:{REPO} is:open created:>={since} {labels}"
-    numbers = []
+    numbers, errored = [], []
     for page in range(1, 11):
         found = json.loads(gh("-X", "GET", "search/issues", "-f", f"q={query}", "-f", "sort=created", "-f", "order=asc", "-f", "per_page=100", "-f", f"page={page}"))
         items = found.get("items", [])
@@ -150,12 +157,15 @@ def select(since: str, limit: int) -> list[int]:
                 continue
             if is_trusted(item) or has_write_access(login(item)):
                 continue
+            if any(label["name"] == SCREEN_ERROR_LABEL for label in item.get("labels", [])):
+                errored.append(item["number"])
+                continue
             numbers.append(item["number"])
             if len(numbers) == limit:
                 return numbers
         if len(items) < 100:
             break
-    return numbers
+    return (numbers + errored)[:limit]
 
 
 def bot_safe_body(entry: dict) -> str:
@@ -164,8 +174,13 @@ def bot_safe_body(entry: dict) -> str:
     # Bot and automation text is not screened (they are trusted), but it can echo contributor text, so it
     # is dropped. Only the intake result is kept, which the playbook updates in place.
     if user.get("type") == "Bot" or user.get("login") in AUTOMATION_LOGINS:
-        return body if user.get("login") == RESULT_AUTHOR and RESULT_MARKER in body else ""
+        return body if is_result(entry) else ""
     return body
+
+
+def is_result(entry: dict) -> bool:
+    """The intake result comment, posted by RESULT_AUTHOR with the marker on a line of its own."""
+    return login(entry) == RESULT_AUTHOR and bool(RESULT_LINE.search(entry.get("body") or ""))
 
 
 def comment_entry(comment: dict) -> dict:
@@ -173,18 +188,20 @@ def comment_entry(comment: dict) -> dict:
 
 
 def linked_numbers(number: int, is_pr: bool, author: str) -> list[int]:
-    """Open items in this repo by the same author, linked by closing reference or cross-reference."""
+    """Open items in this repo by the same author, linked by closing reference (including links set in the
+    Development sidebar) or cross-reference."""
     owner, name = REPO.split("/")
     found = set()
+    nodes = "nodes{number state author{login} repository{nameWithOwner}}"
     if is_pr:
-        query = (
-            "query($owner:String!,$name:String!,$n:Int!){repository(owner:$owner,name:$name){pullRequest(number:$n)"
-            "{closingIssuesReferences(first:20){nodes{number state author{login} repository{nameWithOwner}}}}}}"
-        )
-        data = json.loads(gh("graphql", "-f", f"query={query}", "-F", f"owner={owner}", "-F", f"name={name}", "-F", f"n={number}"))
-        for node in data["data"]["repository"]["pullRequest"]["closingIssuesReferences"]["nodes"]:
-            if node["repository"]["nameWithOwner"] == REPO and node["state"] == "OPEN" and (node.get("author") or {}).get("login") == author:
-                found.add(node["number"])
+        kind, field, args = "pullRequest", "closingIssuesReferences", "first:20"
+    else:
+        kind, field, args = "issue", "closedByPullRequestsReferences", "first:20,includeClosedPrs:false"
+    query = f"query($owner:String!,$name:String!,$n:Int!){{repository(owner:$owner,name:$name){{{kind}(number:$n){{{field}({args}){{{nodes}}}}}}}}}"
+    data = json.loads(gh("graphql", "-f", f"query={query}", "-F", f"owner={owner}", "-F", f"name={name}", "-F", f"n={number}"))
+    for node in data["data"]["repository"][kind][field]["nodes"]:
+        if node["repository"]["nameWithOwner"] == REPO and node["state"] == "OPEN" and (node.get("author") or {}).get("login") == author:
+            found.add(node["number"])
     for event in gh_pages(f"repos/{REPO}/issues/{number}/timeline"):
         source = (event.get("source") or {}).get("issue") or {}
         if event.get("event") != "cross-referenced" or not source:
@@ -215,7 +232,7 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
         "comments": [comment_entry(c) for c in comments],
     }
     sections = [f"Title: {snap['title']}\n\n{snap['body']}"]
-    sections += [c.get("body") or "" for c in comments if not is_trusted(c)]
+    sections += [c.get("body") or "" for c in comments if not is_trusted(c) or is_result(c)]
     if is_pr:
         pr = json.loads(gh(f"repos/{REPO}/pulls/{number}"))
         if pr.get("commits", 0) > MAX_COMMITS:
@@ -245,8 +262,9 @@ def snapshot(number: int) -> tuple[dict, list[str]]:
         paths = sorted({*snap["pr"]["changed_files"], *(c.get("path") or "" for c in review_comments)})
         sections.append("Files:\n" + "\n".join(paths))
         sections += [c["message"] for c in snap["pr"]["commits"]]
-        sections += [r.get("body") or "" for r in reviews if not is_trusted(r)]
-        sections += [c.get("body") or "" for c in review_comments if not is_trusted(c)]
+        # The kept intake result is screened too: it is written by an agent and could quote contributor text.
+        sections += [r.get("body") or "" for r in reviews if not is_trusted(r) or is_result(r)]
+        sections += [c.get("body") or "" for c in review_comments if not is_trusted(c) or is_result(c)]
         sections.append(snap["pr"]["diff"])
     snap["linked"] = linked_numbers(number, is_pr, snap["author"]["login"])
     return snap, sections
@@ -310,26 +328,51 @@ def screen(sections: list[str], key: str, deadline: float) -> dict:
     return {"flagged": bool(hits), "error": None, "reason": "; ".join(hits), "scores": worst}
 
 
-def screened_snapshot(number: int, key: str, deadline: float) -> tuple[dict, dict]:
+def digest_of(sections: list[str]) -> str:
+    """Names exactly the screened text, so a maintainer's override applies only to the text they checked."""
+    return hashlib.sha256("\x00".join(sections).encode()).hexdigest()[:16]
+
+
+def screened_snapshot(number: int, key: str, deadline: float, override: str = "") -> tuple[dict, dict]:
     stub = {"url": f"https://github.com/{REPO}/issues/{number}"}
+    digest, note = None, ""
     try:
         snap, sections = snapshot(number)
+        digest = digest_of(sections)
+        if override and override == digest:
+            return snap, {"flagged": False, "error": None, "reason": f"screen overridden by a maintainer ({digest})", "scores": {}, "digest": digest}
+        if override:
+            note = "override did not match: the item changed since it was checked; "
         result = screen(sections, key, deadline)
     except Flagged as e:
-        return stub, {"flagged": True, "error": None, "reason": str(e), "scores": {}}
+        result, snap = {"flagged": True, "error": None, "reason": str(e), "scores": {}}, stub
     except ScreenError as e:
-        return stub, {"flagged": False, "error": str(e), "reason": "", "scores": {}}
+        result, snap = {"flagged": False, "error": str(e), "reason": "", "scores": {}}, stub
     except Exception as e:
-        return stub, {"flagged": True, "error": None, "reason": f"screen failed: {type(e).__name__}", "scores": {}}
+        result, snap = {"flagged": True, "error": None, "reason": f"screen failed: {type(e).__name__}", "scores": {}}, stub
+    result["reason"] = note + result["reason"]
+    result["digest"] = digest
     return snap, result
 
 
-def build(number: int, dry_run: bool, prompt_file: str) -> dict:
+def already_taken(number: int) -> bool:
+    """True when the item got an intake label after the sweep selected it, e.g. from a run that overlapped."""
+    try:
+        labels = [label["name"] for label in json.loads(gh(f"repos/{REPO}/issues/{number}")).get("labels", [])]
+    except ScreenError:
+        return False
+    return any(name == STARTED_LABEL or name.startswith("intake/") for name in labels)
+
+
+def build(number: int, dry_run: bool, prompt_file: str, override: str = "", skip_labeled: bool = False) -> dict:
     key = os.environ.get("TYPESAFE_API_KEY", "")
     if not key:
         sys.exit("TYPESAFE_API_KEY is not set")
+    if skip_labeled and already_taken(number):
+        return {"url": f"https://github.com/{REPO}/issues/{number}", "flagged": False, "error": None, "skipped": True,
+                "reason": "already has an intake label", "scores": {}, "digest": None}
     deadline = time.monotonic() + BUILD_SECONDS
-    snap, result = screened_snapshot(number, key, deadline)
+    snap, result = screened_snapshot(number, key, deadline, override)
     summary = {"url": snap["url"], **result}
     if result["flagged"] or result["error"]:
         return summary
@@ -366,11 +409,13 @@ def main() -> None:
     p_build.add_argument("number", type=int)
     p_build.add_argument("--dry-run", choices=["true", "false"], required=True)
     p_build.add_argument("--prompt-file", required=True)
+    p_build.add_argument("--override", default="", help="digest of the text a maintainer checked; skips the screen if it still matches")
+    p_build.add_argument("--skip-labeled", action="store_true", help="return skipped if the item already has an intake label")
     args = parser.parse_args()
     if args.command == "select":
         print(json.dumps(select(args.since, args.limit)))
     else:
-        print(json.dumps(build(args.number, args.dry_run == "true", args.prompt_file)))
+        print(json.dumps(build(args.number, args.dry_run == "true", args.prompt_file, args.override, args.skip_labeled)))
 
 
 if __name__ == "__main__":

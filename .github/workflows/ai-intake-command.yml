@@ -8,8 +8,10 @@
 # TypeSafe's Jev classifier, and writes a prompt holding exactly the screened text. Only items that
 # pass start a session, one session per item, and get the `ai-intake-started` label so the sweep
 # doesn't start another. A flagged item gets a link-only oncall ticket with `skip-triage` instead
-# and is never shown to an agent. If GitHub or Jev keeps failing, the job fails and holds nothing;
-# the next sweep tries again.
+# and is never shown to an agent; the ticket carries a digest of the screened text, and
+# `/ai-intake override=<digest>` starts the intake while that text is unchanged. If GitHub or Jev keeps
+# failing, the job fails, holds nothing, and labels the item `ai-intake-screen-error`; the sweep retries
+# it after newer items.
 #
 # Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
 # INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
@@ -29,6 +31,10 @@ on:
         type: string
       dry-run:
         description: "true: the playbook writes nothing. Empty: the INTAKE_DRY_RUN repo variable decides (default true)."
+        required: false
+        type: string
+      override:
+        description: "Digest from a held item's oncall ticket: skips the screen if the item's text hasn't changed since it was checked."
         required: false
         type: string
       comment-id:
@@ -190,9 +196,21 @@ jobs:
           NUMBER: ${{ matrix.number }}
           DRY_RUN: ${{ needs.select.outputs.dry-run }}
           PROMPT_FILE: ${{ runner.temp }}/intake-prompt.md
+          OVERRIDE: ${{ inputs.override }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          result=$(.github/scripts/intake_snapshot.uv build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE")
+          args=(build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE")
+          if [[ -n "$OVERRIDE" ]]; then
+            if ! [[ "$OVERRIDE" =~ ^[0-9a-f]{16}$ ]]; then
+              echo "::error::override must be the 16-character digest from the oncall ticket."
+              exit 1
+            fi
+            args+=(--override "$OVERRIDE")
+          fi
+          # A run that overlapped this one may have labeled the item since the sweep selected it.
+          [[ "$EVENT_NAME" == "schedule" ]] && args+=(--skip-labeled)
+          result=$(.github/scripts/intake_snapshot.uv "${args[@]}")
           # The result carries scores and a reason, never the item's text.
           echo "$result" | jq .
           error=$(jq -r '.error // empty' <<<"$result")
@@ -202,9 +220,19 @@ jobs:
           fi
           {
             echo "flagged=$(jq -r .flagged <<<"$result")"
+            echo "skipped=$(jq -r '.skipped // false' <<<"$result")"
             echo "reason=$(jq -r .reason <<<"$result")"
             echo "url=$(jq -r .url <<<"$result")"
+            echo "digest=$(jq -r '.digest // empty' <<<"$result")"
           } >> "$GITHUB_OUTPUT"
+
+      # The sweep still retries the item, but after newer ones (see `select`). Removed once it screens.
+      - name: Mark the screening error
+        if: failure() && steps.screen.outcome == 'failure' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-screen-error
 
       # Link only: the oncall ticket never copies community text, and `skip-triage` keeps the oncall
       # AI triage from reading the item. `intake/pending-human` keeps the sweep from picking it again.
@@ -216,6 +244,7 @@ jobs:
           NUMBER: ${{ matrix.number }}
           ITEM_URL: ${{ steps.screen.outputs.url }}
           REASON: ${{ steps.screen.outputs.reason }}
+          DIGEST: ${{ steps.screen.outputs.digest }}
           DRY_RUN: ${{ needs.select.outputs.dry-run }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -225,15 +254,23 @@ jobs:
             echo "::notice::Dry run: would hold $ITEM_URL ($REASON) in oncall as \"$title\"."
             exit 0
           fi
+          if [[ -n "$DIGEST" ]]; then
+            next="If it is a false positive, check it holds no instructions aimed at automation, then run \`/ai-intake override=$DIGEST\` on it. The override applies only while the item's text is unchanged; an edit since then is screened again."
+          else
+            next="It could not be screened at all, so take it through intake by hand."
+          fi
           body=$(printf '%s\n' \
             "Community item held before AI intake: $ITEM_URL" \
             "" \
             "- Screening result: $REASON" \
             "- Run: $RUN_URL" \
             "" \
-            "No AI session was started. Evaluate the item by hand. If it is a false positive, check it holds no instructions aimed at automation, remove \`intake/pending-human\` from it, and run \`/ai-intake\` there.")
+            "No AI session was started. Evaluate the item by hand. $next")
+          # One intake/* label at a time: the board sync skips items with several.
+          current=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER" --jq '.labels[].name')
+          remove=$(grep -E '^(intake/|ai-intake-screen-error$)' <<<"$current" | grep -vx 'intake/pending-human' | paste -sd, - || true)
           # Label first: if it is missing, the step fails before filing a ticket the next sweep would repeat.
-          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human"
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human" ${remove:+--remove-label "$remove"}
           existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
             | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
           if [[ -n "$existing" ]]; then
@@ -246,17 +283,21 @@ jobs:
       # the label still stops the sweep from starting one every hour. Retry by removing it and running /ai-intake.
       - name: Mark the item as started
         id: started
-        if: steps.screen.outputs.flagged == 'false' && needs.select.outputs.dry-run == 'false'
+        if: steps.screen.outputs.flagged == 'false' && steps.screen.outputs.skipped != 'true' && needs.select.outputs.dry-run == 'false'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           NUMBER: ${{ matrix.number }}
-        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER" --jq '.labels[].name')
+          remove=$(grep -x 'ai-intake-screen-error' <<<"$current" || true)
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started ${remove:+--remove-label "$remove"}
 
       # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
       # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
       - name: Start the intake session
         id: devin
-        if: steps.screen.outputs.flagged == 'false'
+        if: steps.screen.outputs.flagged == 'false' && steps.screen.outputs.skipped != 'true'
         uses: airbytehq/devin-action@main
         with:
           playbook-macro: "!oss_contribution_intake"
