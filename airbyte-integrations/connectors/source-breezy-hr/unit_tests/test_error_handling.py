@@ -1,12 +1,14 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
+import logging
 from pathlib import Path
 from typing import cast
 
 import pytest
 import requests
 import yaml
+from requests_mock import Mocker
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -14,16 +16,17 @@ from airbyte_cdk.sources.declarative.models import DefaultErrorHandler as Defaul
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 CONFIG = {"api_key": "test-api-key", "company_id": "test-company"}
 AUTH_MESSAGE = (
     "Breezy HR access token is missing or invalid. Set API Key to a valid Personal Access Token from Breezy HR's My Settings > API Keys."
 )
-ACCESS_MESSAGE = (
-    "Breezy HR denied access to the configured company. Verify Company ID is the company's _id and the API Key's user has access to that company."
-)
+ACCESS_MESSAGE = "Breezy HR denied access to the configured company. Verify Company ID is the company's _id and the API Key's user has access to that company."
 RATE_LIMIT_MESSAGE = "Breezy HR API rate limit exceeded for the candidates stream."
 
 
@@ -77,9 +80,7 @@ def test_error_classification(
 
 @pytest.mark.parametrize("body", [None, [], "invalid token", {"error": None}, {"error": "invalid token"}])
 @pytest.mark.parametrize("status_code", [400, 401, 403])
-def test_unexpected_error_body(
-    error_handler: DefaultErrorHandler | CompositeErrorHandler, status_code: int, body: object
-) -> None:
+def test_unexpected_error_body(error_handler: DefaultErrorHandler | CompositeErrorHandler, status_code: int, body: object) -> None:
     result = error_handler.interpret_response(response(status_code, body))
 
     assert result.response_action == ResponseAction.FAIL
@@ -88,7 +89,7 @@ def test_unexpected_error_body(
     assert "{{" not in result.error_message
 
 
-def test_candidates_rate_limit(error_handler: DefaultErrorHandler | CompositeErrorHandler) -> None:
+def test_rate_limit(error_handler: DefaultErrorHandler | CompositeErrorHandler) -> None:
     result = error_handler.interpret_response(response(429, {"error": {"message": "Rate limit exceeded"}}))
 
     assert result.failure_type == FailureType.transient_error
@@ -101,9 +102,7 @@ def test_candidates_rate_limit(error_handler: DefaultErrorHandler | CompositeErr
 
 
 @pytest.mark.parametrize("retry_after", ["1", "45", "120"])
-def test_retry_after_precedes_other_backoffs(
-    error_handler: DefaultErrorHandler | CompositeErrorHandler, retry_after: str
-) -> None:
+def test_retry_after_precedes_other_backoffs(error_handler: DefaultErrorHandler | CompositeErrorHandler, retry_after: str) -> None:
     result = response(429, {}, {"Retry-After": retry_after, "X-RateLimit-Reset": "9999999999"})
     assert error_handler.backoff_strategies
 
@@ -116,11 +115,11 @@ def test_retry_after_precedes_other_backoffs(
 
 
 @pytest.mark.parametrize("headers", [{}, {"Retry-After": "invalid"}])
+@pytest.mark.parametrize("error_handler", ["candidates"], indirect=True)
 def test_candidates_preserves_five_second_fallback(
     error_handler: DefaultErrorHandler | CompositeErrorHandler, headers: dict[str, str]
 ) -> None:
-    if not isinstance(error_handler, CompositeErrorHandler):
-        return
+    assert error_handler.backoff_strategies
 
     for strategy in error_handler.backoff_strategies:
         delay = strategy.backoff_time(response(429, {}, headers), attempt_count=0)
@@ -135,3 +134,51 @@ def test_other_responses_preserve_default_behavior(
     error_handler: DefaultErrorHandler | CompositeErrorHandler, status_code: int, action: ResponseAction
 ) -> None:
     assert error_handler.interpret_response(response(status_code, {})).response_action == action
+
+
+@pytest.mark.parametrize("status_code,message", [(401, AUTH_MESSAGE), (403, ACCESS_MESSAGE)])
+def test_user_message_preserves_internal_diagnostics(
+    error_handler: DefaultErrorHandler | CompositeErrorHandler, requests_mock: Mocker, status_code: int, message: str
+) -> None:
+    url = "https://example.com/test-company/candidates"
+    requests_mock.get(url, status_code=status_code, json={"error": {"message": "upstream-detail"}})
+    client = HttpClient(name="candidates", logger=logging.getLogger(__name__), error_handler=error_handler)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        client.send_request(http_method="GET", url=url, request_kwargs={})
+
+    assert exc_info.value.message == message
+    assert exc_info.value.internal_message
+    assert "upstream-detail" in exc_info.value.internal_message
+    assert url in exc_info.value.internal_message
+
+
+@pytest.mark.parametrize("error_handler", ["candidates"], indirect=True)
+def test_exhausted_rate_limit_preserves_diagnostic_message(
+    error_handler: DefaultErrorHandler | CompositeErrorHandler, requests_mock: Mocker
+) -> None:
+    url = "https://example.com/candidates"
+    requests_mock.get(url, status_code=429, json={}, headers={"Retry-After": "45"})
+    client = HttpClient(
+        name="candidates",
+        logger=logging.getLogger(__name__),
+        error_handler=error_handler,
+        backoff_strategy=error_handler.backoff_strategies,
+        disable_retries=True,
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        client.send_request(http_method="GET", url=url, request_kwargs={})
+
+    assert exc_info.value.message == "API rate limit exceeded."
+    assert exc_info.value.internal_message
+    assert RATE_LIMIT_MESSAGE in exc_info.value.internal_message
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert requests_mock.call_count == 1
+
+
+def test_manifest_validates_and_instantiates_all_streams() -> None:
+    manifest_path = Path(__file__).resolve().parents[1] / "manifest.yaml"
+    source = YamlDeclarativeSource(path_to_yaml=str(manifest_path), config=CONFIG)
+
+    assert {stream.name for stream in source.streams(config=CONFIG)} == {"positions", "candidates", "pipelines"}

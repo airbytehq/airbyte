@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.66 | 2026-11-02 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Honor rate-limit retry delays and clarify authentication, access, and request errors. |
+| 0.0.66 | 2026-11-02 | [90332](https://github.com/airbytehq/airbyte/pull/90332) | Honor rate-limit retry delays and clarify authentication, access, and request errors. |
 | 0.0.65 | 2026-10-27 | [89816](https://github.com/airbytehq/airbyte/pull/89816) | Update dependencies |
 | 0.0.64 | 2026-10-20 | [89138](https://github.com/airbytehq/airbyte/pull/89138) | Update dependencies |
 | 0.0.63 | 2026-10-13 | [88510](https://github.com/airbytehq/airbyte/pull/88510) | Update dependencies |
