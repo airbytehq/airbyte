@@ -511,7 +511,7 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 3
-        group: names
+        group: advanced
       combine_number_word_pairs:
         type: boolean
         title: Combine Number-Word Pairs
@@ -521,7 +521,7 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 4
-        group: names
+        group: advanced
       remove_special_characters:
         type: boolean
         title: Remove All Special Characters
@@ -531,7 +531,7 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 5
-        group: names
+        group: advanced
       combine_letter_number_pairs:
         type: boolean
         title: Combine Letter-Number Pairs
@@ -541,7 +541,7 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 6
-        group: names
+        group: advanced
       allow_leading_numbers:
         type: boolean
         title: Allow Leading Numbers
@@ -551,7 +551,7 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 7
-        group: names
+        group: advanced
       read_empty_header_columns:
         type: boolean
         title: Read Empty Header Columns

@@ -56,16 +56,17 @@ def test_spec_declares_groups_and_sections():
         "credentials": "spreadsheet",
         "spreadsheet_id": "spreadsheet",
         "names_conversion": "names",
-        "remove_leading_trailing_underscores": "names",
-        "combine_number_word_pairs": "names",
-        "remove_special_characters": "names",
-        "combine_letter_number_pairs": "names",
-        "allow_leading_numbers": "names",
+        "remove_leading_trailing_underscores": "advanced",
+        "combine_number_word_pairs": "advanced",
+        "remove_special_characters": "advanced",
+        "combine_letter_number_pairs": "advanced",
+        "allow_leading_numbers": "advanced",
         "read_empty_header_columns": "advanced",
         "stream_name_overrides": "advanced",
         "batch_size": "advanced",
         "num_workers": "advanced",
     }
+    assert [name for name, prop in schema["properties"].items() if prop["group"] == "names"] == ["names_conversion"]
     # The required fields all belong to the first section, so its check can validate them.
     assert {schema["properties"][name]["group"] for name in schema["required"]} == {"spreadsheet"}
     # The authentication shows as radio tiles; the SQL-compliant names toggle stays visible on the review step.
