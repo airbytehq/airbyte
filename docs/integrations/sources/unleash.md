@@ -62,7 +62,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                               |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
-| 0.2.24 | 2026-11-01 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Show actionable error messages for invalid (401) or unauthorized (403) API tokens and rate limits (429) |
+| 0.2.24 | 2026-11-01 | [90373](https://github.com/airbytehq/airbyte/pull/90373) | Show actionable error messages for invalid (401) or unauthorized (403) API tokens and rate limits (429) |
 | 0.2.23 | 2025-05-24 | [60769](https://github.com/airbytehq/airbyte/pull/60769) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59915](https://github.com/airbytehq/airbyte/pull/59915) | Update dependencies |
 | 0.2.21 | 2025-05-04 | [59529](https://github.com/airbytehq/airbyte/pull/59529) | Update dependencies |
