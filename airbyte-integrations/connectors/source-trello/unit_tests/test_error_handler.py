@@ -57,14 +57,15 @@ def _iter_error_handlers(value):
             yield from _iter_error_handlers(nested_value)
 
 
-def _contains_composite_error_handler(value) -> bool:
+def _iter_error_handler_types(value):
     if isinstance(value, dict):
-        return value.get("type") == "".join(("Composite", "ErrorHandler")) or any(
-            _contains_composite_error_handler(nested_value) for nested_value in value.values()
-        )
-    if isinstance(value, list):
-        return any(_contains_composite_error_handler(nested_value) for nested_value in value)
-    return False
+        if str(value.get("type", "")).endswith("ErrorHandler"):
+            yield value["type"]
+        for nested_value in value.values():
+            yield from _iter_error_handler_types(nested_value)
+    elif isinstance(value, list):
+        for nested_value in value:
+            yield from _iter_error_handler_types(nested_value)
 
 
 def test_manifest_uses_only_default_error_handlers() -> None:
@@ -82,7 +83,7 @@ def test_manifest_uses_only_default_error_handlers() -> None:
         ]
         * 37
     )
-    assert not _contains_composite_error_handler(manifest)
+    assert set(_iter_error_handler_types(manifest)) == {"DefaultErrorHandler"}
 
 
 @HttpMocker()
