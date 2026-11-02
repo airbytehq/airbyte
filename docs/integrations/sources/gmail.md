@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Gmail](htt
 
 </HideInUI>
 
-Gmail is the email service provided by Google. The Gmail source connector replicates messages, drafts, threads, labels, and the authenticated user's profile from Gmail's [REST API](https://developers.google.com/gmail/api/reference/rest).
+Gmail is the email service provided by Google. The Gmail source connector replicates messages, drafts, threads, labels, and the authenticated user's profile from Gmail's [REST API](https://developers.google.com/workspace/gmail/api/reference/rest).
 
 ## Prerequisites
 
@@ -106,7 +106,7 @@ When **Start date** is set, the connector applies the Gmail `after:<epoch_second
 
 ## Performance considerations
 
-The Gmail API enforces a per-project and a per-user rate limit, measured in [quota units](https://developers.google.com/gmail/api/reference/quota). The limits and the cost of each call depend on when the Google Cloud project behind your credentials started using the Gmail API:
+The Gmail API enforces a per-project and a per-user rate limit, measured in [quota units](https://developers.google.com/workspace/gmail/api/reference/quota). The limits and the cost of each call depend on when the Google Cloud project behind your credentials started using the Gmail API:
 
 | Quota                                    | Earlier projects (used the API November 2025 to April 2026) | Projects created on or after May 1, 2026 |
 |------------------------------------------|-------------------------------------------------------------|------------------------------------------|

@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List
@@ -10,13 +11,13 @@ import yaml
 from airbyte_protocol_dataclasses.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
 from components import LinkedInAdsErrorHandler
+from requests.exceptions import InvalidURL
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import ResponseAction
 from airbyte_cdk.sources.streams import Stream
@@ -135,33 +136,89 @@ class TestAllStreams:
 
             assert http_error_handler is not None
             assert type(http_error_handler) not in (HttpStatusErrorHandler, DefaultErrorHandler)
-            if stream.name == "creatives":
-                assert isinstance(error_handler, CompositeErrorHandler)
-                handlers = error_handler.error_handlers
-                linkedin_handler = next(handler for handler in handlers if isinstance(handler, LinkedInAdsErrorHandler))
-            else:
-                assert isinstance(error_handler, LinkedInAdsErrorHandler)
-                linkedin_handler = error_handler
+            assert isinstance(error_handler, LinkedInAdsErrorHandler)
 
             assert any(
                 isinstance(strategy, ExponentialBackoffStrategy) and float(strategy.factor) == 5
-                for strategy in linkedin_handler.backoff_strategies
+                for strategy in error_handler.backoff_strategies
             )
 
-    def test_creatives_error_handler_maps_http_responses(self):
-        """Verify creatives rate limits and server errors use the intended actions."""
+    @pytest.mark.parametrize(
+        "status_code, action, failure_type",
+        [
+            (200, ResponseAction.SUCCESS, None),
+            (400, ResponseAction.FAIL, FailureType.system_error),
+            (401, ResponseAction.FAIL, FailureType.config_error),
+            (403, ResponseAction.FAIL, FailureType.config_error),
+            (404, ResponseAction.FAIL, FailureType.system_error),
+            (410, ResponseAction.RETRY, FailureType.system_error),
+            (429, ResponseAction.RATE_LIMITED, FailureType.transient_error),
+            (500, ResponseAction.RETRY, FailureType.transient_error),
+            (502, ResponseAction.RETRY, FailureType.transient_error),
+            (503, ResponseAction.RETRY, FailureType.transient_error),
+        ],
+    )
+    def test_creatives_error_handler_maps_http_responses(
+        self, status_code: int, action: ResponseAction, failure_type: FailureType | None
+    ) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = b"{}"
+
+        resolution = requester.error_handler.interpret_response(response)
+
+        assert resolution.response_action == action
+        assert resolution.failure_type == failure_type
+
+    @pytest.mark.parametrize(
+        "message, expected_message",
+        [
+            ("Rate limit exceeded for LinkedIn API.", "HTTP Status Code: 429. Error: Too many requests."),
+            (
+                "The data request limit has been exceeded. More than 45 million metric values were requested in a 5-minute window.",
+                "LinkedIn Ads metric-value rate limit is exceeded.",
+            ),
+        ],
+        ids=["generic", "data-volume"],
+    )
+    def test_creatives_error_handler_rate_limit_messages(self, message: str, expected_message: str) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+        response = requests.Response()
+        response.status_code = 429
+        response._content = json.dumps({"message": message}).encode()
+
+        resolution = requester.error_handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RATE_LIMITED
+        assert resolution.failure_type == FailureType.transient_error
+        assert resolution.error_message == expected_message
+
+    def test_creatives_error_handler_invalid_url(self) -> None:
+        stream = find_stream("creatives", TEST_CONFIG)
+        requester = stream._stream_partition_generator._partition_factory._retriever.requester
+
+        resolution = requester.error_handler.interpret_response(InvalidURL("Invalid URL"))
+
+        assert resolution.response_action == ResponseAction.RETRY
+        assert resolution.failure_type == FailureType.transient_error
+        assert resolution.error_message == "source-linkedin-ads has faced a temporary DNS resolution issue. Retrying..."
+
+    def test_creatives_error_handler_retry_configuration(self) -> None:
         stream = find_stream("creatives", TEST_CONFIG)
         requester = stream._stream_partition_generator._partition_factory._retriever.requester
         error_handler = requester.error_handler
 
-        assert isinstance(error_handler, CompositeErrorHandler)
-        default_handler = next(handler for handler in error_handler.error_handlers if type(handler) is DefaultErrorHandler)
-        response_filters = default_handler.response_filters
-        filter_429 = next(response_filter for response_filter in response_filters if 429 in response_filter.http_codes)
-        filter_5xx = next(response_filter for response_filter in response_filters if 500 in response_filter.http_codes)
-
-        assert filter_429.action == ResponseAction.RATE_LIMITED
-        assert filter_5xx.action == ResponseAction.RETRY
+        assert isinstance(error_handler, LinkedInAdsErrorHandler)
+        assert error_handler.max_retries == 5
+        assert error_handler.max_time == 600
+        assert len(error_handler.backoff_strategies) == 1
+        strategy = error_handler.backoff_strategies[0]
+        assert isinstance(strategy, ExponentialBackoffStrategy)
+        assert float(strategy.factor) == 5
+        assert strategy.backoff_time(None, attempt_count=1) == 10
 
     def test_ad_analytics_error_handler_configuration(self):
         manifest_path = Path(__file__).parent.parent / "manifest.yaml"
