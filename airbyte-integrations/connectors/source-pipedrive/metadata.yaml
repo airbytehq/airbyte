@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 300
-    sl: 100
+    sl: 200
   allowedHosts:
     hosts:
       - api.pipedrive.com
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 5.0.0
+  dockerImageTag: 5.0.1
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -103,7 +103,7 @@ data:
         strategy: fast
       enableProgressiveRollout: true
   releaseDate: 2021-07-19
-  releaseStage: alpha
+  releaseStage: generally_available
   suggestedStreams:
     streams:
       - deals
@@ -114,7 +114,7 @@ data:
       - pipelines
       - stages
       - users
-  supportLevel: community
+  supportLevel: certified
   tags:
     - cdk:low-code
     - language:manifest-only
