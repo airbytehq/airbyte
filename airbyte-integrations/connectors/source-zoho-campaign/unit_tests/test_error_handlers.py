@@ -8,6 +8,7 @@ import pytest
 import requests
 import requests_mock
 import yaml
+from conftest import MANIFEST_PATH, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from conftest import MANIFEST_PATH, get_source
 
 
 _CONFIG = {
