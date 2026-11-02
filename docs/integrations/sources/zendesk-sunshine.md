@@ -100,6 +100,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.28 | 2026-11-01 | TBD | Simplify error handler configuration; no behavior change. |
 | 0.4.27 | 2026-10-27 | [90080](https://github.com/airbytehq/airbyte/pull/90080) | Update dependencies |
 | 0.4.26 | 2026-10-20 | [89483](https://github.com/airbytehq/airbyte/pull/89483) | Update dependencies |
 | 0.4.25 | 2026-10-13 | [88868](https://github.com/airbytehq/airbyte/pull/88868) | Update dependencies |
