@@ -23,15 +23,13 @@ definitions:
           path: /members
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,15 +249,13 @@ definitions:
           path: /candidates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
