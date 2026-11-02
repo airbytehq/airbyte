@@ -17,16 +17,14 @@ definitions:
       aws_secret_key: "{{config['aws_secret_key']}}"
       aws_region_name: "{{config['aws_region_name']}}"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-      - type: DefaultErrorHandler
-        backoff_strategies:
-        - type: ExponentialBackoffStrategy
-        response_filters:
-        - type: HttpResponseFilter
-          action: RETRY
-          http_codes:
-          - 400
+      type: DefaultErrorHandler
+      backoff_strategies:
+      - type: ExponentialBackoffStrategy
+      response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+        - 400
   incremental_sync_base:
     type: DatetimeBasedCursor
     datetime_format: "%s"
@@ -143,16 +141,14 @@ definitions:
           aws_secret_key: "{{config['aws_secret_key']}}"
           aws_region_name: "{{config['aws_region_name']}}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            backoff_strategies:
-            - type: ExponentialBackoffStrategy
-            response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-              - 400
+          type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ExponentialBackoffStrategy
+          response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+            - 400
         request_headers:
           x-amz-target: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents"
         request_body_json:
@@ -316,16 +312,14 @@ streams:
         aws_secret_key: "{{config['aws_secret_key']}}"
         aws_region_name: "{{config['aws_region_name']}}"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-          - type: ExponentialBackoffStrategy
-          response_filters:
-          - type: HttpResponseFilter
-            action: RETRY
-            http_codes:
-            - 400
+        type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ExponentialBackoffStrategy
+        response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+          - 400
       request_headers:
         x-amz-target: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents"
       request_body_json:
