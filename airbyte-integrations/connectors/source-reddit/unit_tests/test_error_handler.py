@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from pathlib import Path
 from typing import Any, Dict, Iterable
 from unittest import TestCase
 from unittest.mock import patch
@@ -13,11 +12,10 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from unit_tests.conftest import get_source
+from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 
-_MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
-_MANIFEST = yaml.safe_load(_MANIFEST_PATH.read_text())
+_MANIFEST = yaml.safe_load(_YAML_FILE_PATH.read_text())
 _STREAM_NAMES = ["search", "subreddit_search", "message_inbox", "subreddit_popular", "subreddit_explore"]
 _COMPOSITE_ERROR_HANDLER = "".join(("Composite", "ErrorHandler"))
 _POPULAR_REQUEST = HttpRequest(
