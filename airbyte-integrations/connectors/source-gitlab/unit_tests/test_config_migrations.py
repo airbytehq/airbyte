@@ -5,7 +5,6 @@
 import json
 import os
 from typing import Any, Mapping
-from unittest.mock import patch
 
 import pytest
 
@@ -16,9 +15,8 @@ TEST_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_config.json"
 
 
 @pytest.fixture(autouse=True)
-def mock_is_cloud_environment():
-    with patch("airbyte_cdk.utils.is_cloud_environment", return_value=True):
-        yield
+def mock_is_cloud_environment(monkeypatch):
+    monkeypatch.setenv("DEPLOYMENT_MODE", "cloud")
 
 
 class TestMigrations:
