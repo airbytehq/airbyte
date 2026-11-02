@@ -91,7 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| 0.3.49 | 2026-11-01 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Wait for the `X-Ratelimit-App-Global-Minute-Reset` header value before retrying rate-limited (HTTP 429) requests, instead of default exponential backoff |
+| 0.3.49 | 2026-11-01 | [90389](https://github.com/airbytehq/airbyte/pull/90389) | Wait for the `X-Ratelimit-App-Global-Minute-Reset` header value before retrying rate-limited (HTTP 429) requests, instead of default exponential backoff |
 | 0.3.48 | 2026-02-24 | [73720](https://github.com/airbytehq/airbyte/pull/73720) | fix(source-surveymonkey): use lowercase sort_order parameter to match SurveyMonkey API validation |
 | 0.3.47 | 2025-10-21 | [68542](https://github.com/airbytehq/airbyte/pull/68542) | Update dependencies |
 | 0.3.46 | 2025-10-14 | [67916](https://github.com/airbytehq/airbyte/pull/67916) | Update dependencies |
