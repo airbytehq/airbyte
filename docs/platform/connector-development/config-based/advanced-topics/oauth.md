@@ -805,7 +805,7 @@ You can apply the `in-variable` tranformations based on your use-case and use th
 | urldecode         | URL-decodes a string.                          | `{{ 'hello%20world'\|urlencode }}`                 | `'hello world'`                                                           |
 | b64encode         | Encodes a string using Base64.                 | `{{ 'hello'\|b64encode }}`                         | `aGVsbG8=`                                                                     |
 | b64decode         | Decodes a Base64 encoded string.               | `{{ 'aGVsbG8='\|b64decode }}`                      | `hello`                                                                        |
-| codechallengeS256 | Encodes the input string using `base64` + `SHA-256`. | `{{ 'id_123:secret_456'\|codechallengeS256 }}` | `kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY` |
+| codechallengeS256 | PKCE S256 challenge: unpadded `base64url` of the `SHA-256` digest (RFC 7636). | `{{ 'id_123:secret_456'\|codechallengeS256 }}` | `kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY` |
 
 #### Commonly used `Jinja2` in-variables interpolation methods available (the list is not exhaustive)
 

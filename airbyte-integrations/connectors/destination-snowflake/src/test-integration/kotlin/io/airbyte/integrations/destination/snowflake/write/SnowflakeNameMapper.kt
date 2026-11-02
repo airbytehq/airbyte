@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 
 class SnowflakeNameMapper : NameMapper {
-    override fun mapFieldName(path: List<String>): List<String> =
-        path.map { it.toSnowflakeCompatibleName() }
+    override fun mapFieldName(path: List<String>): List<String> = path.map {
+        it.toSnowflakeCompatibleName()
+    }
 }

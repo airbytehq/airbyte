@@ -2,14 +2,12 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+This connector is manifest-only: `manifest.yaml` serves every stream (with every JSON schema inline) and runs on the `source-declarative-manifest` base image. `components.py` holds the custom components the manifest names by `class_name`; `unit_tests/` is a self-contained poetry project (`cd unit_tests && poetry install --no-root && poetry run pytest`). See `AGENTS.md` for the details a change needs to respect.
+
 ## Incremental Stream Considerations
 
-The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting. The connector is a Python CDK connector with stream classes extending `GithubStream`.
+The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
 
-**Connector type:** Python CDK
+**Connector type:** manifest-only — every stream in `manifest.yaml`, plus `components.py` for the custom components
 
-**Analysis status:** Pure Python CDK connector. Full stream-by-stream analysis requires Python code review.
-
-### Future incremental stream candidates
-
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+**Analysis status:** Every stream is in the manifest; the stream-by-stream table is in `AGENTS.md`.

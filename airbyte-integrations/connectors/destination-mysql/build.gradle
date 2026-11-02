@@ -28,7 +28,7 @@ application {
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'com.mysql:mysql-connector-j:9.6.0'
     integrationTestJavaImplementation 'org.testcontainers:mysql:1.21.4'
     testFixturesApi 'org.testcontainers:mysql:1.21.4'
 }

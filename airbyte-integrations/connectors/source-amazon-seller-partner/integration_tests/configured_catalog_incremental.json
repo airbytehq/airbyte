@@ -50,7 +50,7 @@
     },
     {
       "stream": {
-        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

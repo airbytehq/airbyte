@@ -28,7 +28,7 @@ from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_s3.v4.config import Config
+from source_s3.v4.config import Config, IAMRoleCredentials, IAMUserCredentials
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
@@ -74,15 +74,18 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             if self.config.region_name:
                 client_kv_args["region_name"] = self.config.region_name
 
-            if self.config.role_arn:
+            credentials = self.config.credentials
+            if isinstance(credentials, IAMRoleCredentials):
                 self._s3_client = self._get_iam_s3_client(client_kv_args)
-            else:
+            elif isinstance(credentials, IAMUserCredentials):
                 self._s3_client = boto3.client(
                     "s3",
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    aws_access_key_id=credentials.aws_access_key_id,
+                    aws_secret_access_key=credentials.aws_secret_access_key,
                     **client_kv_args,
                 )
+            else:
+                self._s3_client = boto3.client("s3", **client_kv_args)
 
         return self._s3_client
 
@@ -95,21 +98,22 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         :param client_kv_args: A dictionary of key-value pairs for the boto3 S3 client constructor.
         :return: An instance of a boto3 S3 client with the assumed role credentials.
 
-        The method assumes a role specified in the `self.config.role_arn` and creates a session with the S3 service.
+        The method assumes the role specified in `self.config.credentials.role_arn` and creates a session with the S3 service.
         If `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable is set, it will be used during the role assumption for additional security.
         """
+        role_arn = self.config.credentials.role_arn
 
         def refresh():
             client = boto3.client("sts")
             if AWS_EXTERNAL_ID:
                 role = client.assume_role(
-                    RoleArn=self.config.role_arn,
+                    RoleArn=role_arn,
                     RoleSessionName="airbyte-source-s3",
                     ExternalId=AWS_EXTERNAL_ID,
                 )
             else:
                 role = client.assume_role(
-                    RoleArn=self.config.role_arn,
+                    RoleArn=role_arn,
                     RoleSessionName="airbyte-source-s3",
                 )
 

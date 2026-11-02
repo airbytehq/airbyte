@@ -31,6 +31,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,6 +56,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,6 +81,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -100,6 +106,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -123,6 +131,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -146,6 +156,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -169,6 +181,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -192,6 +206,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -215,6 +231,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -238,6 +256,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -261,6 +281,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -284,6 +306,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -307,6 +331,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -330,6 +356,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -353,6 +381,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -376,6 +406,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -399,6 +431,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -422,6 +456,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -445,6 +481,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -468,6 +506,8 @@ definitions:
           request_headers:
             Accept: application/json;version=2024-03-12
             Content-Type: application/json
+        paginator:
+          $ref: "#/definitions/paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -481,12 +521,23 @@ definitions:
     type: HttpRequester
     url_base: https://cloudapi.inflowinventory.com/
     authenticator:
-      type: ApiKeyAuthenticator
+      type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
-      inject_into:
-        type: RequestOption
-        field_name: Authorization
-        inject_into: header
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: skip
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+      inject_on_first_request: true
 
 streams:
   - $ref: "#/definitions/streams/adjustment reasons"

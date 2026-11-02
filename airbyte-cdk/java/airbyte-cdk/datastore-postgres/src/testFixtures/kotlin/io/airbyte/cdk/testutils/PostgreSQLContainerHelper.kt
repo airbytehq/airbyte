@@ -22,7 +22,7 @@ object PostgreSQLContainerHelper {
                 db.username,
                 "-a",
                 "-f",
-                scriptPath
+                scriptPath,
             )
         } catch (e: InterruptedException) {
             throw RuntimeException(e)
