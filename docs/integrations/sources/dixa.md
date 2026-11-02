@@ -58,7 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
-| 0.4.23-rc.1 | 2026-11-02 |  | Simplified error handling without changing conversation export retry behavior. |
+| 0.4.23-rc.1 | 2026-11-02 | [90342](https://github.com/airbytehq/airbyte/pull/90342) | Simplified error handling without changing conversation export retry behavior. |
 | 0.4.21 | 2025-05-24 | [60427](https://github.com/airbytehq/airbyte/pull/60427) | Update dependencies |
 | 0.4.20 | 2025-05-10 | [60042](https://github.com/airbytehq/airbyte/pull/60042) | Update dependencies |
 | 0.4.19 | 2025-05-03 | [59378](https://github.com/airbytehq/airbyte/pull/59378) | Update dependencies |
