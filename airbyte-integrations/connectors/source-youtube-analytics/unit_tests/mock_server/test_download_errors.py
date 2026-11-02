@@ -57,9 +57,7 @@ def test_report_download_permission_denied_is_config_error() -> None:
             YoutubeAnalyticsRequestBuilder.download_endpoint(report_id).build(),
             HttpResponse(
                 status_code=403,
-                body=json.dumps(
-                    {"error": {"code": 403, "message": "The caller does not have permission", "status": "PERMISSION_DENIED"}}
-                ),
+                body=json.dumps({"error": {"code": 403, "message": "The caller does not have permission", "status": "PERMISSION_DENIED"}}),
             ),
         )
         output = read(get_source(config=config, state=state), config=config, catalog=catalog, state=state)
