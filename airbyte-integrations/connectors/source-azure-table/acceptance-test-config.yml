@@ -30,3 +30,4 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+# Throwaway change to trigger connector CI (airbytehq/airbyte-internal-issues#17137). Do not merge.
