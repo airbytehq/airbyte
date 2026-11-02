@@ -37,19 +37,17 @@ definitions:
               Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
               (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -91,19 +89,17 @@ definitions:
               Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
               (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
