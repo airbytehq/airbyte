@@ -268,6 +268,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.59 | 2026-11-01 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Simplify error handling configuration with no change to retry, backoff, or window-splitting behavior |
 | 2.6.58 | 2026-10-27 | [89998](https://github.com/airbytehq/airbyte/pull/89998) | Update dependencies |
 | 2.6.57 | 2026-10-20 | [89356](https://github.com/airbytehq/airbyte/pull/89356) | Update dependencies |
 | 2.6.56 | 2026-10-14 | [85249](https://github.com/airbytehq/airbyte/pull/85249) | Wait 100 seconds before each retry of a failed `transactions` request, such as on HTTP 429 or 5xx, as the other streams already do |
