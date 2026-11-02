@@ -2,18 +2,18 @@
 
 ## `airbyte_configs_migrations`
 
-| Column Name     | Datatype      | Description                                     |
-| --------------- | ------------- | ----------------------------------------------- |
-| installed_rank  | INT           | Primary key. Rank of the installed migration.   |
-| version        | VARCHAR(50)    | Version number of the migration.                |
-| description    | VARCHAR(200)   | Description of the migration.                   |
-| type          | VARCHAR(20)     | Type of migration.                              |
-| script        | VARCHAR(1000)   | Script executed for the migration.              |
-| checksum      | INT             | Checksum of the migration script.               |
-| installed_by  | VARCHAR(100)    | User who installed the migration.               |
-| installed_on  | TIMESTAMP       | Timestamp when the migration was installed.     |
-| execution_time | INT            | Time taken to execute the migration.            |
-| success       | BOOLEAN         | Indicates whether the migration was successful. |
+| Column Name    | Datatype      | Description                                     |
+| -------------- | ------------- | ----------------------------------------------- |
+| installed_rank | INT           | Primary key. Rank of the installed migration.   |
+| version        | VARCHAR(50)   | Version number of the migration.                |
+| description    | VARCHAR(200)  | Description of the migration.                   |
+| type           | VARCHAR(20)   | Type of migration.                              |
+| script         | VARCHAR(1000) | Script executed for the migration.              |
+| checksum       | INT           | Checksum of the migration script.               |
+| installed_by   | VARCHAR(100)  | User who installed the migration.               |
+| installed_on   | TIMESTAMP     | Timestamp when the migration was installed.     |
+| execution_time | INT           | Time taken to execute the migration.            |
+| success        | BOOLEAN       | Indicates whether the migration was successful. |
 
 ### Indexes and Constraints
 
@@ -23,11 +23,11 @@
 
 ## `application`
 
-| Column Name    | Datatype  | Description                                         |
-| -------------- | --------- | --------------------------------------------------- |
-| id             | UUID      | Primary key. Unique identifier for the application. |
+| Column Name   | Datatype  | Description                                         |
+| ------------- | --------- | --------------------------------------------------- |
+| id            | UUID      | Primary key. Unique identifier for the application. |
 | user_id       | UUID      | Foreign key referencing `user(id)`.                 |
-| name           | VARCHAR   | Name of the application.                            |
+| name          | VARCHAR   | Name of the application.                            |
 | client_id     | VARCHAR   | Client ID for authentication.                       |
 | client_secret | VARCHAR   | Secret key for authentication.                      |
 | created_at    | TIMESTAMP | Timestamp when the record was created.              |
@@ -41,13 +41,13 @@
 
 ## `auth_refresh_token`
 
-| Column Name  | Datatype  | Description                                     |
-| ------------ | --------- | ----------------------------------------------- |
-| value        | VARCHAR   | Primary key. Refresh token value.               |
-| session_id   | VARCHAR   | ID of the session associated with the token.    |
-| revoked      | BOOLEAN   | Indicates whether the token has been revoked.   |
-| created_at   | TIMESTAMP | Timestamp when the record was created.          |
-| updated_at   | TIMESTAMP | Timestamp when the record was last modified.    |
+| Column Name | Datatype  | Description                                   |
+| ----------- | --------- | --------------------------------------------- |
+| value       | VARCHAR   | Primary key. Refresh token value.             |
+| session_id  | VARCHAR   | ID of the session associated with the token.  |
+| revoked     | BOOLEAN   | Indicates whether the token has been revoked. |
+| created_at  | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at  | TIMESTAMP | Timestamp when the record was last modified.  |
 
 ### Indexes and Constraints
 
@@ -58,9 +58,9 @@
 
 ## `auth_user`
 
-| Column Name    | Datatype  | Description                                       |
-| -------------- | --------- | ------------------------------------------------- |
-| id             | UUID      | Primary key. Unique identifier for the auth user. |
+| Column Name   | Datatype  | Description                                       |
+| ------------- | --------- | ------------------------------------------------- |
+| id            | UUID      | Primary key. Unique identifier for the auth user. |
 | user_id       | UUID      | Foreign key referencing `user(id)`.               |
 | auth_user_id  | VARCHAR   | ID of the authenticated user.                     |
 | auth_provider | ENUM      | Authentication provider used.                     |
@@ -77,16 +77,16 @@
 
 ## `dataplane`
 
-| Column Name        | Datatype  | Description                                      |
-| ------------------ | --------- | ------------------------------------------------ |
-| id                | UUID      | Primary key. Unique identifier for the dataplane. |
-| dataplane_group_id | UUID      | Foreign key referencing `dataplane_group(id)`.   |
-| name              | VARCHAR   | Name of the dataplane.                           |
-| enabled           | BOOLEAN   | Indicates if the dataplane is enabled.           |
-| created_at        | TIMESTAMP | Timestamp when the record was created.           |
-| updated_at        | TIMESTAMP | Timestamp when the record was last modified.     |
-| updated_by        | UUID      | Foreign key referencing `user(id)`.              |
-| tombstone         | BOOLEAN   | Indicates if the record is deleted.              |
+| Column Name        | Datatype  | Description                                       |
+| ------------------ | --------- | ------------------------------------------------- |
+| id                 | UUID      | Primary key. Unique identifier for the dataplane. |
+| dataplane_group_id | UUID      | Foreign key referencing `dataplane_group(id)`.    |
+| name               | VARCHAR   | Name of the dataplane.                            |
+| enabled            | BOOLEAN   | Indicates if the dataplane is enabled.            |
+| created_at         | TIMESTAMP | Timestamp when the record was created.            |
+| updated_at         | TIMESTAMP | Timestamp when the record was last modified.      |
+| updated_by         | UUID      | Foreign key referencing `user(id)`.               |
+| tombstone          | BOOLEAN   | Indicates if the record is deleted.               |
 
 ### Indexes and Constraints
 
@@ -99,16 +99,16 @@
 
 ## `dataplane_group`
 
-| Column Name      | Datatype  | Description                                      |
-| --------------- | --------- | ------------------------------------------------ |
-| id             | UUID      | Primary key. Unique identifier for the group.    |
-| organization_id | UUID      | Foreign key referencing `organization(id)`.      |
-| name           | VARCHAR   | Name of the dataplane group.                     |
-| enabled        | BOOLEAN   | Indicates if the group is enabled.               |
-| created_at     | TIMESTAMP | Timestamp when the record was created.           |
-| updated_at     | TIMESTAMP | Timestamp when the record was last modified.     |
-| updated_by     | UUID      | Foreign key referencing `user(id)`.              |
-| tombstone      | BOOLEAN   | Indicates if the record is deleted.              |
+| Column Name     | Datatype  | Description                                   |
+| --------------- | --------- | --------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the group. |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.   |
+| name            | VARCHAR   | Name of the dataplane group.                  |
+| enabled         | BOOLEAN   | Indicates if the group is enabled.            |
+| created_at      | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at      | TIMESTAMP | Timestamp when the record was last modified.  |
+| updated_by      | UUID      | Foreign key referencing `user(id)`.           |
+| tombstone       | BOOLEAN   | Indicates if the record is deleted.           |
 
 ### Indexes and Constraints
 
@@ -121,15 +121,15 @@
 
 ## `organization`
 
-| Column Name  | Datatype  | Description                                      |
-| ------------ | --------- | ------------------------------------------------ |
+| Column Name | Datatype  | Description                                          |
+| ----------- | --------- | ---------------------------------------------------- |
 | id          | UUID      | Primary key. Unique identifier for the organization. |
-| name        | VARCHAR   | Name of the organization.                         |
-| user_id     | UUID      | Foreign key referencing `user(id)`.               |
-| email       | VARCHAR   | Contact email for the organization.              |
-| created_at  | TIMESTAMP | Timestamp when the record was created.            |
-| updated_at  | TIMESTAMP | Timestamp when the record was last modified.      |
-| tombstone   | BOOLEAN   | Indicates if the organization is deleted.         |
+| name        | VARCHAR   | Name of the organization.                            |
+| user_id     | UUID      | Foreign key referencing `user(id)`.                  |
+| email       | VARCHAR   | Contact email for the organization.                  |
+| created_at  | TIMESTAMP | Timestamp when the record was created.               |
+| updated_at  | TIMESTAMP | Timestamp when the record was last modified.         |
+| tombstone   | BOOLEAN   | Indicates if the organization is deleted.            |
 
 ### Indexes and Constraints
 
@@ -140,12 +140,12 @@
 
 ## `organization_email_domain`
 
-| Column Name      | Datatype  | Description                                     |
-| ---------------- | --------- | ----------------------------------------------- |
-| id              | UUID      | Primary key. Unique identifier for the record.  |
-| organization_id | UUID      | Foreign key referencing `organization(id)`.     |
-| email_domain   | VARCHAR   | Email domain associated with the organization.  |
-| created_at     | TIMESTAMP | Timestamp when the record was created.          |
+| Column Name     | Datatype  | Description                                    |
+| --------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the record. |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.    |
+| email_domain    | VARCHAR   | Email domain associated with the organization. |
+| created_at      | TIMESTAMP | Timestamp when the record was created.         |
 
 ### Indexes and Constraints
 
@@ -158,16 +158,16 @@
 
 ## `organization_payment_config`
 
-| Column Name               | Datatype  | Description                                    |
-| ------------------------- | --------- | ---------------------------------------------- |
-| organization_id           | UUID      | Primary key. Unique identifier for the organization payment configuration. |
-| payment_provider_id       | VARCHAR   | Payment provider ID.                          |
-| payment_status            | ENUM      | Status of the organization's payment.        |
-| grace_period_end_at       | TIMESTAMP | End timestamp for the grace period.          |
-| usage_category_override   | ENUM      | Override for usage category.                 |
-| created_at                | TIMESTAMP | Timestamp when the record was created.       |
-| updated_at                | TIMESTAMP | Timestamp when the record was last modified. |
-| subscription_status       | ENUM      | Status of the organization's subscription.   |
+| Column Name             | Datatype  | Description                                                                |
+| ----------------------- | --------- | -------------------------------------------------------------------------- |
+| organization_id         | UUID      | Primary key. Unique identifier for the organization payment configuration. |
+| payment_provider_id     | VARCHAR   | Payment provider ID.                                                       |
+| payment_status          | ENUM      | Status of the organization's payment.                                      |
+| grace_period_end_at     | TIMESTAMP | End timestamp for the grace period.                                        |
+| usage_category_override | ENUM      | Override for usage category.                                               |
+| created_at              | TIMESTAMP | Timestamp when the record was created.                                     |
+| updated_at              | TIMESTAMP | Timestamp when the record was last modified.                               |
+| subscription_status     | ENUM      | Status of the organization's subscription.                                 |
 
 ### Indexes and Constraints
 
@@ -181,15 +181,15 @@
 
 ## `permission`
 
-| Column Name        | Datatype  | Description                                    |
-| ------------------ | --------- | ---------------------------------------------- |
-| id                | UUID      | Primary key. Unique identifier for the permission. |
-| user_id          | UUID      | Foreign key referencing `user(id)`.            |
-| workspace_id     | UUID      | Foreign key referencing `workspace(id)`.       |
-| created_at       | TIMESTAMP | Timestamp when the record was created.        |
-| updated_at       | TIMESTAMP | Timestamp when the record was last modified.  |
-| organization_id  | UUID      | Foreign key referencing `organization(id)`.    |
-| permission_type  | ENUM      | Type of permission assigned.                   |
+| Column Name     | Datatype  | Description                                        |
+| --------------- | --------- | -------------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the permission. |
+| user_id         | UUID      | Foreign key referencing `user(id)`.                |
+| workspace_id    | UUID      | Foreign key referencing `workspace(id)`.           |
+| created_at      | TIMESTAMP | Timestamp when the record was created.             |
+| updated_at      | TIMESTAMP | Timestamp when the record was last modified.       |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.        |
+| permission_type | ENUM      | Type of permission assigned.                       |
 
 ### Indexes and Constraints
 
@@ -206,22 +206,22 @@
 
 ## `scoped_configuration`
 
-| Column Name      | Datatype  | Description                                    |
-| --------------- | --------- | ---------------------------------------------- |
-| id              | UUID      | Primary key. Unique identifier for the scoped configuration. |
-| key            | VARCHAR   | Configuration key.                            |
-| resource_type  | ENUM      | Type of resource associated with the configuration. |
-| resource_id    | UUID      | Identifier of the associated resource.        |
-| scope_type     | ENUM      | Type of scope (e.g., workspace, organization). |
-| scope_id       | UUID      | Identifier for the scope of the configuration. |
-| value          | VARCHAR   | Value of the configuration.                   |
-| description    | TEXT      | Description of the configuration setting.     |
-| reference_url  | VARCHAR   | URL reference for more information.           |
-| origin_type    | ENUM      | Type of origin for the configuration setting. |
-| origin        | VARCHAR   | Source of the configuration setting.          |
-| expires_at     | DATE      | Expiration date of the configuration.         |
-| created_at     | TIMESTAMP | Timestamp when the record was created.        |
-| updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
+| Column Name   | Datatype  | Description                                                  |
+| ------------- | --------- | ------------------------------------------------------------ |
+| id            | UUID      | Primary key. Unique identifier for the scoped configuration. |
+| key           | VARCHAR   | Configuration key.                                           |
+| resource_type | ENUM      | Type of resource associated with the configuration.          |
+| resource_id   | UUID      | Identifier of the associated resource.                       |
+| scope_type    | ENUM      | Type of scope (e.g., workspace, organization).               |
+| scope_id      | UUID      | Identifier for the scope of the configuration.               |
+| value         | VARCHAR   | Value of the configuration.                                  |
+| description   | TEXT      | Description of the configuration setting.                    |
+| reference_url | VARCHAR   | URL reference for more information.                          |
+| origin_type   | ENUM      | Type of origin for the configuration setting.                |
+| origin        | VARCHAR   | Source of the configuration setting.                         |
+| expires_at    | DATE      | Expiration date of the configuration.                        |
+| created_at    | TIMESTAMP | Timestamp when the record was created.                       |
+| updated_at    | TIMESTAMP | Timestamp when the record was last modified.                 |
 
 ### Indexes and Constraints
 
@@ -232,15 +232,15 @@
 
 ## `secret_persistence_config`
 
-| Column Name                           | Datatype  | Description                                       |
-| ------------------------------------- | --------- | ------------------------------------------------- |
-| id                                    | UUID      | Primary key. Unique identifier for secret persistence configuration. |
-| scope_id                              | UUID      | Identifier for the scope of the secret.          |
-| scope_type                            | ENUM      | Scope type (`organization`, `workspace`, etc.).  |
-| secret_persistence_config_coordinate | VARCHAR   | Coordinate for secret persistence configuration. |
-| secret_persistence_type               | ENUM      | Type of secret persistence method.               |
-| created_at                            | TIMESTAMP | Timestamp when the record was created.           |
-| updated_at                            | TIMESTAMP | Timestamp when the record was last modified.     |
+| Column Name                          | Datatype  | Description                                                          |
+| ------------------------------------ | --------- | -------------------------------------------------------------------- |
+| id                                   | UUID      | Primary key. Unique identifier for secret persistence configuration. |
+| scope_id                             | UUID      | Identifier for the scope of the secret.                              |
+| scope_type                           | ENUM      | Scope type (`organization`, `workspace`, etc.).                      |
+| secret_persistence_config_coordinate | VARCHAR   | Coordinate for secret persistence configuration.                     |
+| secret_persistence_type              | ENUM      | Type of secret persistence method.                                   |
+| created_at                           | TIMESTAMP | Timestamp when the record was created.                               |
+| updated_at                           | TIMESTAMP | Timestamp when the record was last modified.                         |
 
 ### Indexes and Constraints
 
@@ -251,13 +251,13 @@
 
 ## `sso_config`
 
-| Column Name       | Datatype  | Description                                    |
-| ---------------- | --------- | ---------------------------------------------- |
+| Column Name     | Datatype  | Description                                               |
+| --------------- | --------- | --------------------------------------------------------- |
 | id              | UUID      | Primary key. Unique identifier for the SSO configuration. |
-| organization_id | UUID      | Foreign key referencing `organization(id)`.    |
-| keycloak_realm | VARCHAR   | Keycloak realm associated with the organization. |
-| created_at     | TIMESTAMP | Timestamp when the record was created.         |
-| updated_at     | TIMESTAMP | Timestamp when the record was last modified.   |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.               |
+| keycloak_realm  | VARCHAR   | Keycloak realm associated with the organization.          |
+| created_at      | TIMESTAMP | Timestamp when the record was created.                    |
+| updated_at      | TIMESTAMP | Timestamp when the record was last modified.              |
 
 ### Indexes and Constraints
 
@@ -272,18 +272,18 @@
 
 ## `user`
 
-| Column Name           | Datatype  | Description                                      |
-| --------------------- | --------- | ------------------------------------------------ |
-| id                   | UUID      | Primary key. Unique identifier for the user.     |
-| name                 | VARCHAR   | Name of the user.                                |
-| default_workspace_id | UUID      | Foreign key referencing `workspace(id)`.        |
-| status              | ENUM      | Status of the user account.                     |
-| company_name        | VARCHAR   | Name of the company associated with the user.   |
-| email               | VARCHAR   | Email address of the user.                      |
-| news                | BOOLEAN   | Whether the user subscribes to newsletters.     |
-| ui_metadata         | JSONB     | UI metadata associated with the user.           |
-| created_at          | TIMESTAMP | Timestamp when the record was created.          |
-| updated_at          | TIMESTAMP | Timestamp when the record was last modified.    |
+| Column Name          | Datatype  | Description                                   |
+| -------------------- | --------- | --------------------------------------------- |
+| id                   | UUID      | Primary key. Unique identifier for the user.  |
+| name                 | VARCHAR   | Name of the user.                             |
+| default_workspace_id | UUID      | Foreign key referencing `workspace(id)`.      |
+| status               | ENUM      | Status of the user account.                   |
+| company_name         | VARCHAR   | Name of the company associated with the user. |
+| email                | VARCHAR   | Email address of the user.                    |
+| news                 | BOOLEAN   | Whether the user subscribes to newsletters.   |
+| ui_metadata          | JSONB     | UI metadata associated with the user.         |
+| created_at           | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at           | TIMESTAMP | Timestamp when the record was last modified.  |
 
 ### Indexes and Constraints
 
@@ -297,20 +297,20 @@
 
 ## `user_invitation`
 
-| Column Name       | Datatype  | Description                                         |
-| ---------------- | --------- | --------------------------------------------------- |
-| id              | UUID      | Primary key. Unique identifier for the invitation.  |
-| invite_code     | VARCHAR   | Unique code for the invitation.                     |
-| inviter_user_id | UUID      | Foreign key referencing `user(id)`.                 |
-| invited_email   | VARCHAR   | Email of the invited user.                          |
-| permission_type | ENUM      | Type of permission granted to the invited user.    |
-| status         | ENUM      | Status of the invitation (`pending`, `accepted`, etc.). |
-| created_at     | TIMESTAMP | Timestamp when the record was created.              |
-| updated_at     | TIMESTAMP | Timestamp when the record was last modified.        |
-| scope_id       | UUID      | Scope ID for the invitation.                        |
-| scope_type     | ENUM      | Type of scope (`organization`, `workspace`, etc.).  |
-| accepted_by_user_id | UUID  | Foreign key referencing `user(id)`.                 |
-| expires_at     | TIMESTAMP | Expiration timestamp of the invitation.             |
+| Column Name         | Datatype  | Description                                             |
+| ------------------- | --------- | ------------------------------------------------------- |
+| id                  | UUID      | Primary key. Unique identifier for the invitation.      |
+| invite_code         | VARCHAR   | Unique code for the invitation.                         |
+| inviter_user_id     | UUID      | Foreign key referencing `user(id)`.                     |
+| invited_email       | VARCHAR   | Email of the invited user.                              |
+| permission_type     | ENUM      | Type of permission granted to the invited user.         |
+| status              | ENUM      | Status of the invitation (`pending`, `accepted`, etc.). |
+| created_at          | TIMESTAMP | Timestamp when the record was created.                  |
+| updated_at          | TIMESTAMP | Timestamp when the record was last modified.            |
+| scope_id            | UUID      | Scope ID for the invitation.                            |
+| scope_type          | ENUM      | Type of scope (`organization`, `workspace`, etc.).      |
+| accepted_by_user_id | UUID      | Foreign key referencing `user(id)`.                     |
+| expires_at          | TIMESTAMP | Expiration timestamp of the invitation.                 |
 
 ### Indexes and Constraints
 
@@ -329,28 +329,28 @@
 
 ## `workspace`
 
-| Column Name               | Datatype  | Description                                   |
-| ------------------------ | --------- | --------------------------------------------- |
-| id                      | UUID      | Primary key. Unique identifier for the workspace. |
-| customer_id             | UUID      | Customer associated with the workspace.      |
-| name                    | VARCHAR   | Name of the workspace.                       |
-| slug                    | VARCHAR   | Slug identifier for the workspace.           |
-| email                   | VARCHAR   | Contact email for the workspace.             |
-| initial_setup_complete  | BOOLEAN   | Whether the initial setup is complete.       |
-| anonymous_data_collection | BOOLEAN | Whether anonymous data collection is enabled. |
-| send_newsletter         | BOOLEAN   | Whether the user is subscribed to newsletters. |
-| send_security_updates   | BOOLEAN   | Whether security updates are sent.           |
-| display_setup_wizard    | BOOLEAN   | Whether the setup wizard should be displayed. |
-| tombstone               | BOOLEAN   | Whether the workspace is deleted.            |
-| notifications           | JSONB     | Notification settings.                        |
-| first_sync_complete    | BOOLEAN   | Whether the first sync has completed.        |
-| feedback_complete      | BOOLEAN   | Whether feedback collection is completed.    |
-| created_at             | TIMESTAMP | Timestamp when the record was created.       |
-| updated_at             | TIMESTAMP | Timestamp when the record was last modified. |
-| geography              | ENUM      | Geography associated with the workspace.     |
-| webhook_operation_configs | JSONB  | Webhook operation configurations.            |
-| notification_settings  | JSONB     | Notification settings for the workspace.     |
-| organization_id        | UUID      | Foreign key referencing `organization(id)`.  |
+| Column Name               | Datatype  | Description                                       |
+| ------------------------- | --------- | ------------------------------------------------- |
+| id                        | UUID      | Primary key. Unique identifier for the workspace. |
+| customer_id               | UUID      | Customer associated with the workspace.           |
+| name                      | VARCHAR   | Name of the workspace.                            |
+| slug                      | VARCHAR   | Slug identifier for the workspace.                |
+| email                     | VARCHAR   | Contact email for the workspace.                  |
+| initial_setup_complete    | BOOLEAN   | Whether the initial setup is complete.            |
+| anonymous_data_collection | BOOLEAN   | Whether anonymous data collection is enabled.     |
+| send_newsletter           | BOOLEAN   | Whether the user is subscribed to newsletters.    |
+| send_security_updates     | BOOLEAN   | Whether security updates are sent.                |
+| display_setup_wizard      | BOOLEAN   | Whether the setup wizard should be displayed.     |
+| tombstone                 | BOOLEAN   | Whether the workspace is deleted.                 |
+| notifications             | JSONB     | Notification settings.                            |
+| first_sync_complete       | BOOLEAN   | Whether the first sync has completed.             |
+| feedback_complete         | BOOLEAN   | Whether feedback collection is completed.         |
+| created_at                | TIMESTAMP | Timestamp when the record was created.            |
+| updated_at                | TIMESTAMP | Timestamp when the record was last modified.      |
+| geography                 | ENUM      | Geography associated with the workspace.          |
+| webhook_operation_configs | JSONB     | Webhook operation configurations.                 |
+| notification_settings     | JSONB     | Notification settings for the workspace.          |
+| organization_id           | UUID      | Foreign key referencing `organization(id)`.       |
 
 ### Indexes and Constraints
 
@@ -361,15 +361,15 @@
 
 ## `workspace_service_account`
 
-| Column Name            | Datatype  | Description                                      |
-| ---------------------- | --------- | ------------------------------------------------ |
-| workspace_id          | UUID      | Foreign key referencing `workspace(id)`.       |
-| service_account_id    | VARCHAR   | Service account ID.                             |
-| service_account_email | VARCHAR   | Email associated with the service account.      |
-| json_credential      | JSONB     | JSON blob storing credentials.                  |
-| hmac_key             | JSONB     | JSON blob storing HMAC keys.                    |
-| created_at           | TIMESTAMP | Timestamp when the record was created.          |
-| updated_at           | TIMESTAMP | Timestamp when the record was last modified.    |
+| Column Name           | Datatype  | Description                                  |
+| --------------------- | --------- | -------------------------------------------- |
+| workspace_id          | UUID      | Foreign key referencing `workspace(id)`.     |
+| service_account_id    | VARCHAR   | Service account ID.                          |
+| service_account_email | VARCHAR   | Email associated with the service account.   |
+| json_credential       | JSONB     | JSON blob storing credentials.               |
+| hmac_key              | JSONB     | JSON blob storing HMAC keys.                 |
+| created_at            | TIMESTAMP | Timestamp when the record was created.       |
+| updated_at            | TIMESTAMP | Timestamp when the record was last modified. |
 
 ### Indexes and Constraints
 
