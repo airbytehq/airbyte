@@ -520,7 +520,7 @@ The connector maps aliases over the following base types the same way as the bas
 | `datetime2`     | `TIMESTAMP` | timestamp      |
 | `smalldatetime` | `TIMESTAMP` | timestamp      |
 
-Aliases over other base types follow the mapping for their JDBC type, which may not match the mapping for the built-in type. For example, an alias over `datetimeoffset` syncs as a plain string instead of timestamp with timezone.
+Aliases over base types not listed above may cause mapping issues, because their JDBC type may not map the same way as the built-in type.
 
 We recommend using built-in SQL Server types instead of alias types for columns you sync with Airbyte.
 
