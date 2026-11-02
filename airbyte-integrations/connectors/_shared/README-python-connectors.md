@@ -11,7 +11,3 @@ For Python CDK API reference, see the [Python CDK docs](https://airbytehq.github
 ## Connector-Specific Guidance
 
 Connectors may have connector-specific troubleshooting and testing guidance documented within `CONTRIBUTING.md` files. To review or append to these guides, please see [`CONTRIBUTING.md`](./CONTRIBUTING.md) within this connector's directory.
-
-<!-- Throwaway change to trigger connector CI (airbytehq/airbyte-internal-issues#17137). Do not merge. -->
-
-<!-- Throwaway change to trigger connector CI (airbytehq/airbyte-internal-issues#17137). Do not merge. -->
