@@ -23,7 +23,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response, response_with_status
-from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
+from .utils import (
+    assert_message_in_log_output,
+    assert_no_rate_limited_status,
+    config,
+    find_template,
+    get_stream_by_name,
+    mock_auth,
+    read_output,
+)
 
 
 _DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
@@ -2320,3 +2328,97 @@ class TestReportOptions:
 
         output = self._read(stream_name, _config)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+def _mock_report_flow_with_requester_error(
+    http_mocker: HttpMocker,
+    report_name: str,
+    requester_name: str,
+    status_code: HTTPStatus,
+) -> RequestBuilder:
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+    create_request = _create_report_request(report_name).build()
+    create_responses = [_create_report_response(_REPORT_ID)]
+    if requester_name == "creation_requester":
+        create_responses.insert(0, response_with_status(status_code=status_code))
+    http_mocker.post(create_request, create_responses)
+
+    polling_request = _check_report_status_request(_REPORT_ID).build()
+    polling_responses = [_check_report_status_response(report_name, report_document_id=_REPORT_DOCUMENT_ID)]
+    if requester_name == "polling_requester":
+        polling_responses.insert(0, response_with_status(status_code=status_code))
+    http_mocker.get(polling_request, polling_responses)
+
+    document_request = _get_document_download_url_request(_REPORT_DOCUMENT_ID).build()
+    document_responses = [_get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID)]
+    if requester_name == "download_target_requester":
+        document_responses.insert(0, response_with_status(status_code=status_code))
+    http_mocker.get(document_request, document_responses)
+
+    download_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
+    http_mocker.get(download_request, _download_document_response(report_name))
+    return {
+        "creation_requester": create_request,
+        "polling_requester": polling_request,
+        "download_target_requester": document_request,
+    }[requester_name]
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@pytest.mark.parametrize(
+    "requester_name",
+    ["creation_requester", "polling_requester", "download_target_requester"],
+)
+@HttpMocker()
+def test_given_forbidden_once_when_report_requester_runs_then_retried_and_records_emitted(
+    requester_name: str,
+    http_mocker: HttpMocker,
+) -> None:
+    http_mocker.clear_all_matchers()
+    report_name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+    request = _mock_report_flow_with_requester_error(
+        http_mocker,
+        report_name,
+        requester_name,
+        HTTPStatus.FORBIDDEN,
+    )
+
+    output = read_output(
+        config_builder=config(),
+        stream_name=report_name,
+        sync_mode=SyncMode.full_refresh,
+    )
+
+    assert len(output.errors) == 0
+    assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+    http_mocker.assert_number_of_calls(request, 2)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_creation_requester_is_throttled_once_when_report_created_then_retried_without_rate_limited_status(
+    http_mocker: HttpMocker,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    http_mocker.clear_all_matchers()
+    report_name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+    request = _mock_report_flow_with_requester_error(
+        http_mocker,
+        report_name,
+        "creation_requester",
+        HTTPStatus.TOO_MANY_REQUESTS,
+    )
+
+    output = read_output(
+        config_builder=config(),
+        stream_name=report_name,
+        sync_mode=SyncMode.full_refresh,
+    )
+
+    assert len(output.errors) == 0
+    assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+    assert_no_rate_limited_status(capsys.readouterr().out)
+    http_mocker.assert_number_of_calls(request, 2)
