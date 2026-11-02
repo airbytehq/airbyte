@@ -137,7 +137,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
-| 1.6.1 | 2026-11-02 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Simplify report download error handling and update to the latest base image |
+| 1.6.1 | 2026-11-02 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Simplify report download error handling and update to the latest base image |
 | 1.6.0 | 2026-10-30 | [89627](https://github.com/airbytehq/airbyte/pull/89627) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
 | 1.5.0 | 2026-10-27 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
 | 1.4.7 | 2026-10-27 | [90075](https://github.com/airbytehq/airbyte/pull/90075) | Update dependencies |
