@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.71 | 2026-11-02 | [PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER) | Simplify rate-limit error handling configuration; no change in behavior |
 | 0.0.70 | 2026-10-27 | [90044](https://github.com/airbytehq/airbyte/pull/90044) | Update dependencies |
 | 0.0.69 | 2026-10-20 | [89295](https://github.com/airbytehq/airbyte/pull/89295) | Update dependencies |
 | 0.0.68 | 2026-10-13 | [88702](https://github.com/airbytehq/airbyte/pull/88702) | Update dependencies |
