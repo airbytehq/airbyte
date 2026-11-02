@@ -72,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
-| 1.4.12 | 2026-11-02 | [PR](https://github.com/airbytehq/airbyte/pulls) | Simplify error handling for content and rows while preserving existing sync behavior. |
+| 1.4.12 | 2026-11-02 | [90346](https://github.com/airbytehq/airbyte/pull/90346) | Simplify error handling for content and rows while preserving existing sync behavior. |
 | 1.4.11 | 2026-10-27 | [89822](https://github.com/airbytehq/airbyte/pull/89822) | Update dependencies |
 | 1.4.10 | 2026-10-20 | [89151](https://github.com/airbytehq/airbyte/pull/89151) | Update dependencies |
 | 1.4.9 | 2026-10-13 | [88570](https://github.com/airbytehq/airbyte/pull/88570) | Update dependencies |
