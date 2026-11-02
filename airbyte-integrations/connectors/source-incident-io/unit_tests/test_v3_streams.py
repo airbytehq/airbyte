@@ -907,9 +907,8 @@ def test_incident_attachments_error_handler_reuses_base_filters():
     raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
     manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
     definitions = manifest["definitions"]
-    base_requester_handlers = definitions["base_requester"]["error_handler"]["error_handlers"]
-    assert len(base_requester_handlers) == 1
-    base_handler = base_requester_handlers[0]
+    base_handler = definitions["base_requester"]["error_handler"]
+    assert base_handler["type"] == "DefaultErrorHandler"
 
     attachment_requester = definitions["streams"]["incident_attachments"]["retriever"]["requester"]
     attachment_handler = attachment_requester["error_handler"]
@@ -924,6 +923,15 @@ def test_incident_attachments_error_handler_reuses_base_filters():
     assert [(filter["action"], filter["http_codes"]) for filter in attachment_filters[1:]] == [
         (filter["action"], filter["http_codes"]) for filter in base_filters
     ]
+
+
+def test_base_requester_error_handler_is_base_default_error_handler():
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    definitions = manifest["definitions"]
+
+    assert definitions["base_requester"]["error_handler"] == definitions["base_error_handler"]
+    assert "Composite" + "ErrorHandler" not in _MANIFEST_PATH.read_text()
 
 
 def test_catalog_entries_partitions_and_follows_all_pages():
