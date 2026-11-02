@@ -595,9 +595,9 @@ class TestFutureSinceParamErrorHandling(TestCase):
 
         # The handler's error_message should appear in logs, proving it fired
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            "Skipping time window with future 'since' date" in msg for msg in log_messages
-        ), f"Expected 'Skipping time window with future 'since' date' in logs but got: {log_messages}"
+        assert any("Skipping time window with future 'since' date" in msg for msg in log_messages), (
+            f"Expected 'Skipping time window with future 'since' date' in logs but got: {log_messages}"
+        )
 
         # State should still be emitted (sync completes normally)
         assert len(output.state_messages) >= 1
@@ -649,9 +649,9 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            "Insights error for business_account_id" in msg for msg in log_messages
-        ), f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
+        assert any("Insights error for business_account_id" in msg for msg in log_messages), (
+            f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
+        )
 
     @HttpMocker()
     @freezegun.freeze_time(_FROZEN_TIME)
@@ -676,9 +676,9 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            "Check provided permissions for" in msg for msg in log_messages
-        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        assert any("Check provided permissions for" in msg for msg in log_messages), (
+            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        )
 
     @HttpMocker()
     @freezegun.freeze_time(_FROZEN_TIME)
@@ -703,6 +703,6 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            "Check provided permissions for" in msg for msg in log_messages
-        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        assert any("Check provided permissions for" in msg for msg in log_messages), (
+            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        )

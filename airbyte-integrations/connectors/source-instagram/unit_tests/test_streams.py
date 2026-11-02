@@ -8,20 +8,18 @@ import freezegun
 import pytest
 
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget
 
-from .conftest import GRAPH_URL, account_url, find_stream, mock_fb_account_response
+from .conftest import GRAPH_URL, account_url, find_stream
 from .utils import read_full_refresh
 
 
 # can we make this only initialized once
 def mock_accounts_request(requests_mock, some_config):
-    fb_account_response = mock_fb_account_response("unknown_account", some_config, requests_mock)
-
     requests_mock.register_uri(
         "GET",
         account_url,
-        json=[fb_account_response],
+        json={"data": [{"id": "page_id", "instagram_business_account": {"id": "instagram_business_account_id"}}]},
     )
 
 
@@ -50,8 +48,7 @@ def mock_user_insights_day_request(requests_mock, values, error_response: Option
 
     requests_mock.register_uri(
         "GET",
-        f"{GRAPH_URL}/instagram_business_account_id/insights?"
-        f"period=day&metric=follower_count%2Creach&since=2025-07-01T00%3A00%3A00%2B00%3A00&until=2025-07-01T23%3A59%3A59%2B00%3A00",
+        f"{GRAPH_URL}/instagram_business_account_id/insights?period=day&metric=follower_count%2Creach",
         responses,
     )
 
@@ -78,8 +75,7 @@ def mock_user_insights_requests(requests_mock, values):
 
         requests_mock.register_uri(
             "GET",
-            f"{GRAPH_URL}/instagram_business_account_id/insights?"
-            f"period={period}&metric={metrics}&since=2025-07-01T00%3A00%3A00%2B00%3A00&until=2025-07-01T23%3A59%3A59%2B00%3A00",
+            f"{GRAPH_URL}/instagram_business_account_id/insights?period={period}&metric={metrics}",
             json=response,
         )
 
@@ -98,15 +94,23 @@ def mock_user_insights_requests(requests_mock, values):
                     {"cursor": {"date": "2025-07-01T07:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
                 ],
                 "use_global_cursor": False,
+                "parent_state": {},
             },
             id="test_normal_state_flow",
         ),
-        # the state is taken from `start_date`
+        # the state checkpoints at `start_date` for the partition
         pytest.param(
             {"end_time": None, "value": {"two": 2}},
             {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
-            # state from `start_date` is expected
-            {"lookback_window": 0, "state": {}, "states": [], "use_global_cursor": False},
+            # the state checkpoints at `start_date` for the partition
+            {
+                "lookback_window": 0,
+                "parent_state": {},
+                "states": [
+                    {"cursor": {"date": "2025-07-01T00:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
+                ],
+                "use_global_cursor": False,
+            },
             id="test_no_end_time_value_in_record",
         ),
         # the state is updated to the value of `end_time`
@@ -120,14 +124,22 @@ def mock_user_insights_requests(requests_mock, values):
                     {"cursor": {"date": "2025-07-01T07:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
                 ],
                 "use_global_cursor": False,
+                "parent_state": {},
             },
             id="test_no_value_in_record",
         ),
-        # the state is taken from `start_date`
+        # the state checkpoints at `start_date` for the partition
         pytest.param(
             {"end_time": None, "value": None},
             {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
-            {"lookback_window": 0, "state": {}, "states": [], "use_global_cursor": False},
+            {
+                "lookback_window": 0,
+                "parent_state": {},
+                "states": [
+                    {"cursor": {"date": "2025-07-01T00:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
+                ],
+                "use_global_cursor": False,
+            },
             id="test_no_end_time_and_no_value_in_record",
         ),
     ],
@@ -143,22 +155,31 @@ def test_user_insights_state(requests_mock, values, slice_dates, expected):
     config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
 
     mock_accounts_request(requests_mock=requests_mock, some_config=config)
-    mock_user_insights_day_request(requests_mock=requests_mock, values=values)
-    mock_user_insights_requests(requests_mock=requests_mock, values=values)
+    requests_mock.register_uri(
+        "GET",
+        f"{GRAPH_URL}/instagram_business_account_id/insights",
+        json={
+            "data": [
+                {
+                    "description": "test_insight",
+                    "id": "123",
+                    "name": "test_insight_metric",
+                    "period": "day",
+                    "title": "Test Insight",
+                    "values": [values],
+                }
+            ]
+        },
+    )
 
     # UserInsights stream
     stream = find_stream(stream_name="user_insights", config=config)
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state={}))
-
-    assert len(stream_slices) == 1
-
-    list(
-        stream.read_records(
-            sync_mode=SyncMode.incremental,
-            stream_slice=stream_slices[0],
-        )
-    )
-    assert stream.state == expected
+    for partition in stream.generate_partitions():
+        for record in partition.read():
+            stream.cursor.observe(record)
+        stream.cursor.close_partition(partition)
+    stream.cursor.ensure_at_least_one_state_emitted()
+    assert stream.cursor.state == expected
 
 
 @pytest.mark.parametrize(
@@ -189,7 +210,9 @@ def test_user_insights_state(requests_mock, values, slice_dates, expected):
     ],
 )
 @freezegun.freeze_time("2025-07-01T23:59:59Z")
-def test_common_error_retry(components_module, error_response, requests_mock, account_id):
+def test_common_error_retry(components_module, error_response, requests_mock, account_id, mocker):
+    # The API budget's 429 handling waits on a real monotonic clock; budget throttling is not under test here
+    mocker.patch.object(HttpAPIBudget, "update_from_response")
     config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
     mock_accounts_request(requests_mock=requests_mock, some_config=config)
     mock_user_insights_day_request(requests_mock, {"end_time": "2025-07-01 07:00:00+0000", "value": 4}, error_response)
