@@ -199,7 +199,7 @@ How the connector treats Customer.io HTTP errors:
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
-| 1.1.5 | 2026-11-01 | TBD | Consolidate substream error handling into a single error handler; no behavior change. |
+| 1.1.5 | 2026-11-01 | [90331](https://github.com/airbytehq/airbyte/pull/90331) | Consolidate substream error handling into a single error handler; no behavior change. |
 | 1.1.4 | 2026-10-27 | [89851](https://github.com/airbytehq/airbyte/pull/89851) | Update dependencies |
 | 1.1.3 | 2026-10-20 | [89499](https://github.com/airbytehq/airbyte/pull/89499) | Mark the connector as certified |
 | 1.1.2 | 2026-10-20 | [89495](https://github.com/airbytehq/airbyte/pull/89495) | Add the Customer.io OpenAPI spec to the documentation URLs |
