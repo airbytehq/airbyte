@@ -5,13 +5,12 @@ import json
 import pytest
 import requests
 import yaml
+from conftest import _YAML_FILE_PATH
 
 from airbyte_cdk.sources.declarative.models import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-
-from conftest import _YAML_FILE_PATH
 
 
 _STREAM_NAMES = list(yaml.safe_load(_YAML_FILE_PATH.read_text())["definitions"]["streams"])
