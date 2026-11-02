@@ -43,3 +43,11 @@ data:
     - title: Rate limits
       url: https://www.algolia.com/doc/guides/scaling/servers-clusters/#rate-limits
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
