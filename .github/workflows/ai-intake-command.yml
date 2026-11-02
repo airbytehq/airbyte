@@ -56,6 +56,12 @@ run-name: "AI Intake ${{ github.event_name == 'schedule' && 'sweep' || format('#
 
 permissions: {}
 
+# Sweeps never overlap, so a sweep job can't queue behind another sweep on the same item and cancel a
+# maintainer's queued `/ai-intake` run there (a group keeps only one pending job). Manual runs don't share it.
+concurrency:
+  group: ${{ github.event_name == 'schedule' && format('{0}-sweep', github.workflow) || format('{0}-run-{1}', github.workflow, github.run_id) }}
+  cancel-in-progress: false
+
 env:
   # Items created before this date are not swept; `/ai-intake` works on any item.
   SWEEP_SINCE: "2026-11-01"
@@ -102,6 +108,7 @@ jobs:
           INPUT_NUMBER: ${{ inputs.number || inputs.pr }}
           INPUT_COMMENT_ID: ${{ inputs.comment-id }}
           INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          INPUT_OVERRIDE: ${{ inputs.override }}
           DEFAULT_DRY_RUN: ${{ vars.INTAKE_DRY_RUN != 'false' }}
         run: |
           set -euo pipefail
@@ -109,6 +116,12 @@ jobs:
           # Without the key every item would be held; fail once instead of filing a ticket per item.
           if [[ -z "$TYPESAFE_API_KEY" ]]; then
             echo "::error::TYPESAFE_API_KEY is not set; intake needs it to screen items."
+            exit 1
+          fi
+
+          # Checked here, not in the intake job, so a typo isn't reported as a screening error.
+          if [[ -n "$INPUT_OVERRIDE" && ! "$INPUT_OVERRIDE" =~ ^[0-9a-f]{16}$ ]]; then
+            echo "::error::override must be the 16-character digest from the oncall ticket, got '$INPUT_OVERRIDE'."
             exit 1
           fi
 
@@ -201,13 +214,8 @@ jobs:
         run: |
           set -euo pipefail
           args=(build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE")
-          if [[ -n "$OVERRIDE" ]]; then
-            if ! [[ "$OVERRIDE" =~ ^[0-9a-f]{16}$ ]]; then
-              echo "::error::override must be the 16-character digest from the oncall ticket."
-              exit 1
-            fi
-            args+=(--override "$OVERRIDE")
-          fi
+          # Checked in `select`.
+          [[ -n "$OVERRIDE" ]] && args+=(--override "$OVERRIDE")
           # A run that overlapped this one may have labeled the item since the sweep selected it.
           [[ "$EVENT_NAME" == "schedule" ]] && args+=(--skip-labeled)
           result=$(.github/scripts/intake_snapshot.uv "${args[@]}")
@@ -255,7 +263,7 @@ jobs:
             exit 0
           fi
           if [[ -n "$DIGEST" ]]; then
-            next="If it is a false positive, check it holds no instructions aimed at automation, then run \`/ai-intake override=$DIGEST\` on it. The override applies only while the item's text is unchanged; an edit since then is screened again."
+            next="If it is a false positive, check the raw text for instructions aimed at automation: what Jev read includes hidden HTML comments, commit messages, the branch and fork names, and the diff, so read the source (\`gh issue view --json body,comments\`, the commits, the diff), not the rendered page. Then run \`/ai-intake override=$DIGEST\` on it. The override applies only while that text is unchanged; an edit since then is screened again."
           else
             next="It could not be screened at all, so take it through intake by hand."
           fi

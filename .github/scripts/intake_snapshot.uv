@@ -14,7 +14,8 @@ is held and no prompt is written, so the next sweep tries again. This is a filte
 
 Usage:
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
-      Prints a JSON list of open community items with no intake/* or ai-intake-started label, oldest first.
+      Prints a JSON list of open community items with no intake/* or ai-intake-started label, oldest first,
+      with items labeled ai-intake-screen-error after the rest.
   intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH
       Prints {"url", "flagged", "error", "reason", "scores", "digest"} and, only when neither flagged nor error, writes
       the prompt. --override DIGEST skips the screen when the item's screened text still has that digest.
@@ -339,16 +340,21 @@ def screened_snapshot(number: int, key: str, deadline: float, override: str = ""
     try:
         snap, sections = snapshot(number)
         digest = digest_of(sections)
+        chunk(sections)  # an item too large to screen is held even with an override
         if override and override == digest:
             return snap, {"flagged": False, "error": None, "reason": f"screen overridden by a maintainer ({digest})", "scores": {}, "digest": digest}
         if override:
             note = "override did not match: the item changed since it was checked; "
         result = screen(sections, key, deadline)
     except Flagged as e:
+        # Too large to screen, or Jev rejected the text: nothing was scored, so no override is offered.
+        digest = None
         result, snap = {"flagged": True, "error": None, "reason": str(e), "scores": {}}, stub
     except ScreenError as e:
+        digest = None
         result, snap = {"flagged": False, "error": str(e), "reason": "", "scores": {}}, stub
     except Exception as e:
+        digest = None
         result, snap = {"flagged": True, "error": None, "reason": f"screen failed: {type(e).__name__}", "scores": {}}, stub
     result["reason"] = note + result["reason"]
     result["digest"] = digest
