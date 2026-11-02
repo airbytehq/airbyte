@@ -31,7 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.69 | 2026-11-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Simplify stream error handling configuration; no change to retry behavior |
+| 0.0.69 | 2026-11-01 | [90377](https://github.com/airbytehq/airbyte/pull/90377) | Simplify stream error handling configuration; no change to retry behavior |
 | 0.0.68 | 2026-10-20 | [89418](https://github.com/airbytehq/airbyte/pull/89418) | Update dependencies |
 | 0.0.67 | 2026-10-13 | [88851](https://github.com/airbytehq/airbyte/pull/88851) | Update dependencies |
 | 0.0.66 | 2026-10-07 | [88218](https://github.com/airbytehq/airbyte/pull/88218) | Fix `message_events` pagination (`links.next` is an object, not a list), make the stream incremental so `start_date` is honored via `from`/`to`, fix `allowedHosts` |
