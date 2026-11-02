@@ -71,6 +71,22 @@ definitions:
         Ashby rejected the stream's stored sync token
         ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }}).
         Refresh this stream in the connection to clear its state and re-read it in full.
+    candidates_sync_token_rejected:
+      type: HttpResponseFilter
+      action: RESET_SYNC_TOKEN
+      predicate: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set errors = response.get('errors') or [] -%}
+        {%- set codes = [info.get('code')] + (errors | select('string') | list)
+        + (errors | select('mapping') | map(attribute='code') | list) -%}
+        {{ response.get('success', true) == false and (codes | select('in', [
+        'sync_token_expired', 'sync_token_invalid'
+        ]) | list | length > 0) }}
+      error_message: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set first = (response.get('errors') or [{}])[0] -%}
+        Ashby rejected the stored sync token
+        ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }})
     success_false:
       type: HttpResponseFilter
       action: FAIL
@@ -121,6 +137,23 @@ definitions:
       - $ref: "#/definitions/response_filters/server_error"
       - $ref: "#/definitions/response_filters/incremental_sync_too_large"
       - $ref: "#/definitions/response_filters/sync_token_rejected"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/success_false"
+  candidates_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/response_filters/rate_limited"
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/incremental_sync_too_large"
+      - $ref: "#/definitions/response_filters/candidates_sync_token_rejected"
       - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/missing_endpoint_permission"
       - $ref: "#/definitions/response_filters/forbidden"
@@ -879,7 +912,7 @@ streams:
         path: /candidate.list
         http_method: POST
         error_handler:
-          $ref: "#/definitions/error_handler"
+          $ref: "#/definitions/candidates_error_handler"
       record_selector:
         type: RecordSelector
         extractor:

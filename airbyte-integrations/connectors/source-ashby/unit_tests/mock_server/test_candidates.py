@@ -153,20 +153,40 @@ class TestCandidates(TestCase):
         assert output.most_recent_state.stream_state.__dict__["token"] == "tok3"
         http_mocker.assert_number_of_calls(request, 1)
 
-    def test_expired_token_fails_the_stream_and_keeps_the_stored_token(self):
+    def test_expired_token_restarts_without_a_token_and_commits_the_new_token(self):
         token_request = _candidates_request(sync_token="tok_old")
+        bootstrap_request = _candidates_request()
         with HttpMocker() as http_mocker:
             http_mocker.post(token_request, _error("sync_token_expired", "Token expired"))
+            http_mocker.post(
+                bootstrap_request,
+                _page([{"id": "candidate-1"}], more_data_available=False, sync_token="tok_new"),
+            )
+
+            with self.assertLogs(logging.getLogger().name, level="WARNING") as captured:
+                output = _read(_cursor_state("tok_old"))
+
+        assert output.errors == []
+        assert len(output.records) == 1
+        assert output.most_recent_state.stream_state.__dict__["token"] == "tok_new"
+        assert "sync_token_expired" in "\n".join(captured.output)
+        http_mocker.assert_number_of_calls(token_request, 1)
+        http_mocker.assert_number_of_calls(bootstrap_request, 1)
+
+    def test_second_token_rejection_fails_without_emitting_a_different_token(self):
+        token_request = _candidates_request(sync_token="tok_old")
+        bootstrap_request = _candidates_request()
+        with HttpMocker() as http_mocker:
+            http_mocker.post(token_request, _error("sync_token_expired", "Token expired"))
+            http_mocker.post(bootstrap_request, _error("sync_token_invalid", "Token invalid"))
 
             output = _read(_cursor_state("tok_old"))
 
         assert output.errors
-        error = output.errors[0].trace.error
-        assert error.failure_type == FailureType.config_error
-        assert "sync_token_expired" in error.message
-        assert "Refresh this stream" in error.message
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
         assert all(token == "tok_old" for token in _emitted_tokens(output))
         http_mocker.assert_number_of_calls(token_request, 1)
+        http_mocker.assert_number_of_calls(bootstrap_request, 1)
 
     def test_non_token_error_mid_pagination_does_not_replace_the_committed_token(self):
         first_page = _candidates_request(sync_token="tok0")
