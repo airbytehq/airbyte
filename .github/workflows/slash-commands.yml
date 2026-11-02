@@ -58,7 +58,6 @@ jobs:
 
           commands: |
             ai-breaking-change-review
-            ai-breaking-change-ready
             ai-canary-prerelease
             ai-create-docs-pr
             ai-dev
@@ -69,6 +68,7 @@ jobs:
             ai-resolve-conflicts
             ai-review
             approve-regression-tests
+            breaking-change-ready
             build-connector-images
             bump-progressive-rollout-version
             bump-version

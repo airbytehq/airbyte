@@ -22,7 +22,7 @@ from unittest import TestCase
 
 import pytest
 
-from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -34,10 +34,13 @@ from unit_tests.conftest import get_source
 _BASE_URL = "https://api.zoom.us/v2"
 
 _CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": "https://zoom.us/oauth/token",
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": "https://zoom.us/oauth/token",
+    }
 }
 
 _TOKEN_REQUEST = HttpRequest(
@@ -203,3 +206,29 @@ def test_child_streams_skip_deleted_resource_3001(stream_name, parent_resource, 
 
     assert output.errors == []
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
+
+
+_MISSING_SCOPE = _zoom_error(4711, "Invalid access token, does not contain scopes:[meeting:read:list_meetings:admin].")
+
+
+# `users` uses the shared handler alone; the meetings chain puts it last in a composite handler.
+@pytest.mark.parametrize(
+    "stream_name, mocks",
+    [
+        ("users", [(_USERS_REQUEST, _MISSING_SCOPE)]),
+        ("meetings", [(_USERS_REQUEST, _ONE_USER_RESPONSE), (_user_meetings_request("u1"), _MISSING_SCOPE)]),
+    ],
+)
+def test_missing_scope_4711_is_a_config_error(stream_name, mocks):
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        for request, response in mocks:
+            http_mocker.get(request, response)
+
+        output = _read(stream_name)
+
+    assert output.errors
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+    assert any(
+        error.trace.error.message.startswith("Zoom access token lacks a required scope ('Invalid access token") for error in output.errors
+    )

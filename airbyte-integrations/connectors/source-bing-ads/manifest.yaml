@@ -2608,6 +2608,16 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  download_requester_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        error_message_contains: "Signature not valid in the specified time frame"
+        error_message: "Bing Ads file download URL is expired."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2654,6 +2664,7 @@ definitions:
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_requester_error_handler"
       report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
@@ -2721,6 +2732,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_requester_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
@@ -2824,8 +2836,7 @@ definitions:
       - "%Y-%m-%dT%H:%M:%S.%_ms%z"
       - "%m/%d/%Y %H:%M:%S.%_ms"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
-    # No lookback_window: LastSyncTimeInUTC already returns every entity changed since the cursor, and moving it back
-    # only pushes it past the Bulk API's 30-day limit, which turns the sync into a full download.
+    # Bulk entity deltas do not need the reporting lookback window.
     start_datetime:
       type: MinMaxDatetime
       # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
@@ -17798,10 +17809,12 @@ spec:
         order: 6
       lookback_window:
         title: Lookback window
-        description: Also known as attribution or conversion window. How far into the
-          past to look for records (in days). If your conversion window has an hours/minutes
-          granularity, round it up to the number of days exceeding. Used only for report
-          streams in incremental mode.
+        description: Number of days before the saved report cursor to re-read during
+          incremental syncs, for example to capture late conversions or corrected metrics.
+          Round conversion windows measured in hours or minutes up to whole days.
+          Applies only to report streams, including budget summary and custom reports,
+          whether or not Reports Start Date is set. Reports Start Date remains the earliest
+          date to read. Bulk entity streams do not use this setting.
         type: integer
         default: 0
         minimum: 0

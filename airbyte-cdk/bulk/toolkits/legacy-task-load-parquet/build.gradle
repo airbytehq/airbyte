@@ -3,17 +3,36 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro')
 
+    // Floor for the netty that hadoop pulls in: CVE-2026-75595 (netty-handler, critical 9.1) and the
+    // 4.1.135/136 codec fixes. Micronaut's BOM resolves higher (4.2.x) when it is on the graph.
+    api platform('io.netty:netty-bom:4.1.139.Final')
+
+    // 1.8.1 (CVE-2025-12183 fix) is POM-only on Maven Central, no jar: stay on 1.8.0.
     implementation("org.lz4:lz4-java:1.8.0")
     runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
-    api ('org.apache.hadoop:hadoop-common:3.4.0') {
+    // Destinations only use hadoop's Configuration/FileSystem classes; Hadoop's embedded Jetty HTTP
+    // server is never started, so its 9.4 line (CVE-2024-13009, CVE-2026-2332, CVE-2026-10050) is dropped.
+    api ('org.apache.hadoop:hadoop-common:3.4.3') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'org.eclipse.jetty.websocket'
     }
-    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
+    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.3') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'org.eclipse.jetty.websocket'
     }
-    api 'org.apache.parquet:parquet-avro:1.15.1'
+    // 1.18.x is the first parquet line whose shaded parquet-jackson carries a jackson (2.22.x) without
+    // CVE-2026-68494/-68497/-89407/-89425/-91776/-91777; parquet-avro itself fixes CVE-2025-46762.
+    api 'org.apache.parquet:parquet-avro:1.18.1'
+
+    constraints {
+        api('org.jline:jline:3.30.17') {
+            because('CVE-2026-56740/-56741/-77422 in the jline-builtins and jline-remote-telnet bundled in jline < 3.30.15 (via hadoop-auth -> kerby)')
+        }
+    }
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
 }

@@ -36,11 +36,20 @@ _MANIFEST_PATH = _MANIFEST_DIR / "manifest.yaml"
 _TOKEN_URL = "https://zoom.us/oauth/token"
 _USERS_URL = "https://api.zoom.us/v2/users"
 _ZOOM_ERROR_HANDLER_REF = "#/definitions/zoom_error_handler"
+_HANDLER_PATHS_WITH_STREAM_FILTERS = {
+    "/report/users/{{ stream_partition.parent_id }}/meetings",
+    "/report/daily",
+    "/chat/users/{{ stream_partition.parent_id }}/channels",
+    "/zoom_events/events",
+}
 _CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": _TOKEN_URL,
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": _TOKEN_URL,
+    }
 }
 
 
@@ -71,7 +80,11 @@ def test_manifest_has_no_custom_components():
     assert "CustomAuthenticator" not in manifest_text
     assert not (_MANIFEST_DIR / "components.py").exists()
     manifest = yaml.safe_load(manifest_text)
-    assert manifest["definitions"]["authenticator"]["type"] == "OAuthAuthenticator"
+    authenticator = manifest["definitions"]["authenticator"]
+    assert authenticator["type"] == "SelectiveAuthenticator"
+    authenticators = authenticator["authenticators"]
+    assert set(authenticators) == {"oauth2.0", "server_to_server"}
+    assert all(branch["type"] == "OAuthAuthenticator" for branch in authenticators.values())
 
 
 def test_token_is_requested_with_account_credentials_grant_and_used_as_bearer():
@@ -142,11 +155,7 @@ def _requesters(node):
 
 
 def test_every_requester_uses_the_shared_authenticator_and_token_refresh_handler():
-    """The manifest inlines every requester, so a copy that misses the shared blocks would ship silently.
-
-    In a CompositeErrorHandler only SUCCESS/RETRY/IGNORE stop early, so the 124 handler must be the last child,
-    otherwise the default 401 >> FAIL of a later child overrides REFRESH_TOKEN_THEN_RETRY.
-    """
+    """The manifest inlines every requester, so a copy that misses the shared blocks would ship silently."""
     requesters = list(_requesters(yaml.safe_load(_MANIFEST_PATH.read_text())))
     assert requesters
     for requester in requesters:
@@ -154,7 +163,17 @@ def test_every_requester_uses_the_shared_authenticator_and_token_refresh_handler
         error_handler = requester.get("error_handler")
         if isinstance(error_handler, dict):
             assert error_handler["type"] == "CompositeErrorHandler"
-            assert error_handler["error_handlers"][-1] == _ZOOM_ERROR_HANDLER_REF
+            if requester.get("path") in _HANDLER_PATHS_WITH_STREAM_FILTERS:
+                assert error_handler["error_handlers"][0] == _ZOOM_ERROR_HANDLER_REF
+                final_handler = error_handler["error_handlers"][-1]
+                assert final_handler["type"] == "DefaultErrorHandler"
+                assert any(
+                    response_filter.get("predicate") == "{{ response.code == 124 }}"
+                    and response_filter.get("action") == "REFRESH_TOKEN_THEN_RETRY"
+                    for response_filter in final_handler["response_filters"]
+                )
+            else:
+                assert error_handler["error_handlers"][-1] == _ZOOM_ERROR_HANDLER_REF
         else:
             assert error_handler == _ZOOM_ERROR_HANDLER_REF
 
@@ -202,3 +221,23 @@ def test_token_expired_mid_sync_is_refreshed_behind_a_composite_error_handler(_s
     assert output.errors == []
     assert [record.record.data["id"] for record in output.records] == [1]
     assert user_meetings_mock.call_count == 2
+
+
+@patch("time.sleep")
+def test_token_expired_mid_sync_is_refreshed_behind_a_stream_specific_error_handler(_sleep):
+    with requests_mock.Mocker() as mocker:
+        token_mock = mocker.post(_TOKEN_URL, _token_responses())
+        mocker.get(_USERS_URL, json={"users": [{"id": "u1"}], "next_page_token": ""})
+        channels_mock = mocker.get(
+            "https://api.zoom.us/v2/chat/users/u1/channels",
+            [
+                {"status_code": 401, "json": {"code": 124, "message": "Access token is expired."}},
+                {"json": {"channels": [], "next_page_token": ""}},
+            ],
+        )
+
+        output = _read("chat_channels")
+
+    assert output.errors == []
+    assert token_mock.call_count == 3
+    assert channels_mock.call_count == 2
