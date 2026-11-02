@@ -1,6 +1,46 @@
 # Airbyte Cloud release notes
 
+## November 2, 2026
+
+Connections
+
+- When you authenticate a source or destination, the setup form now shows **Authentication successful** with a check mark after you finish, and keeps **Re-authenticate** available. This confirmation stays in the form instead of appearing only in a temporary notification.
+- Schema discovery during your syncs now uses the intended 30-minute time limit instead of stopping after nine minutes. If discovery times out, your error message shows the time limit that was applied.
+
+Platform
+
+- Your billing grace-period countdown and, during a Standard trial, your trial countdown now show the correct number of days remaining across daylight-saving time changes.
+- On the Standard and Plus plans, if you can manage billing, the **Update** link in **Payment method** on your organization's **Billing** page now opens the full billing portal, where you can replace or remove a saved payment method. Previously, it opened a page that only let you add one.
+
+## October 30, 2026
+
+Connections
+
+- Notes, tips, and warnings in a connector's setup guide now display correctly when they have a title or appear inside a numbered or bulleted step. Previously, some of these callouts showed up as plain text or broke the layout of the step they were in.
+
+Platform
+
+- When several informational notices appear at the top of Airbyte, you can now collapse them with a single toggle and expand them again with **Show more**. Airbyte remembers your choice, and warnings and errors always stay visible. If a new notice appears, the group expands so you see it.
+- If SCIM provisioning with Microsoft Entra ID is enabled for your organization, Airbyte now accepts user provisioning requests that include Entra ID's enterprise user extension. Previously, Airbyte rejected these requests, so Entra ID couldn't create or update those users.
+
+## October 29, 2026
+
+Connections
+
+- Your connection's schema table now labels the **Primary key** and **Cursor** columns and includes tooltips explaining how each is used, making it easier to configure your streams.
+- You can now load available dbt Cloud jobs without an error when your workspace already has saved dbt Cloud credentials.
+
+Platform
+
+- On Pro and Enterprise Flex plans, when you compare your organization's Data Worker usage with the previous period, the chart's date labels now stay within your selected current period, even when the previous period is longer.
+
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
+
+## October 28, 2026
+
+Platform
+
+- The **Billing** and **Plan** pages in your organization settings now fill the width of large windows, like the other organization settings pages. Previously, they stopped at a fixed width and left empty space on the right.
 
 ## October 27, 2026
 

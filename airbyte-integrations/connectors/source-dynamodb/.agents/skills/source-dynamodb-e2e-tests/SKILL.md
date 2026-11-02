@@ -97,7 +97,7 @@ table entry contains a `create` object accepted by `CreateTable
 - Both containers share Docker's default `bridge` network. The engine shim
   sets `CONFIG_HOST_JQ` so the shared
   [`render-config.sh`](../../../../../db-harness-lib/scripts/render-config.sh)
-  rewrites `.endpoint` to `http://<bridge-ip>:8000` at runtime. The AWS CLI
+  rewrites `.endpoint` to `http://<bridge-ip>:8000` at runtime. The AWS CLI <!-- # ignore-https-check -->
   helper resolves the same bridge IP for its endpoint.
 - DynamoDB Local is pinned to `amazon/dynamodb-local:3.3.2`. Override with
   `BACKEND_IMAGE=…` for a version-specific reproduction. The AWS CLI helper
