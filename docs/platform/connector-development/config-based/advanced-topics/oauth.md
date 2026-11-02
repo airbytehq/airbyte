@@ -1277,4 +1277,4 @@ authenticator:
 ```
   </details>
 
-For more information see [OAuthAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/OAuthAuthenticator)
+For more information see [OAuthAuthenticator Reference](../understanding-the-yaml-file/reference/OAuthAuthenticator.md)

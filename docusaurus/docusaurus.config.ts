@@ -240,6 +240,7 @@ const config: Config = {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
   },
   clientModules: [
+    require.resolve("./src/scripts/yaml-reference-redirect.js"),
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),

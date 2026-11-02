@@ -122,3 +122,4 @@ airbyte-integrations/connectors/**/airbyte-cdk-load/
 # AI
 AGENT.md
 .claude/settings.local.json
+/docs/platform/connector-development/config-based/understanding-the-yaml-file/reference/
