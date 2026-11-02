@@ -48,6 +48,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-11-01 | [90394](https://github.com/airbytehq/airbyte/pull/90394) | Simplify error handler configuration with no change in retry behavior |
 | 0.0.69 | 2026-10-20 | [89428](https://github.com/airbytehq/airbyte/pull/89428) | Update dependencies |
 | 0.0.68 | 2026-10-13 | [88086](https://github.com/airbytehq/airbyte/pull/88086) | Update dependencies |
 | 0.0.67 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88220) | Fix zero-success syncs: honor `symbol`/`exchange` config in `stocks` (and derived per-symbol streams), skip symbols unavailable on the plan (403/404) instead of failing, validate the API key during check |
