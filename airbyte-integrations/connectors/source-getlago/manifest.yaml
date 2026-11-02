@@ -328,16 +328,14 @@ definitions:
             /customers/{{stream_partition.customer_id}}/current_usage?external_subscription_id={{stream_partition.extra_fields.external_id}}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{response.status == 405 and response.code ==
-                      'no_active_subscription' }}
-                    http_codes: []
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{response.status == 405 and response.code ==
+                  'no_active_subscription' }}
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -418,16 +416,14 @@ definitions:
             /customers/{{stream_partition.customer_id}}/past_usage?external_subscription_id={{stream_partition.extra_fields.external_id}}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{response.status == 405 and response.code ==
-                      'no_active_subscription' }}
-                    http_codes: []
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{response.status == 405 and response.code ==
+                  'no_active_subscription' }}
+                http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
