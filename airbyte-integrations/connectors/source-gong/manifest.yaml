@@ -23,19 +23,17 @@ definitions:
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -73,19 +71,17 @@ definitions:
           path: /calls
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -138,19 +134,17 @@ definitions:
           path: calls/extensive
           http_method: POST
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             contentSelector:
               context: "Extended"
@@ -257,19 +251,17 @@ definitions:
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -307,19 +299,17 @@ definitions:
           path: /stats/activity/scorecards
           http_method: POST
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,19 +367,17 @@ definitions:
           path: /calls/transcript
           http_method: POST
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message_contains: found corresponding to the provided filters
-                  - $ref: "#/definitions/auth_error_filter"
-                  - $ref: "#/definitions/rate_limit_filter"
-                  - $ref: "#/definitions/transient_error_filter"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/auth_error_filter"
+              - $ref: "#/definitions/rate_limit_filter"
+              - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             filter:
               # stream_partition.call_id is a list of up to `group_size` call

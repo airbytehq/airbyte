@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.5.5 | 2026-11-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Simplify error handling configuration with no change to retry behavior |
 | 1.5.4 | 2026-10-27 | [89913](https://github.com/airbytehq/airbyte/pull/89913) | Update dependencies |
 | 1.5.3 | 2026-10-20 | [89233](https://github.com/airbytehq/airbyte/pull/89233) | Update dependencies |
 | 1.5.2 | 2026-10-19 | [89089](https://github.com/airbytehq/airbyte/pull/89089) | Add `date-time` format to `start_date` so the setup form renders a datepicker |
