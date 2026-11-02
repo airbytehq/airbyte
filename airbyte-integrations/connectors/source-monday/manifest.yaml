@@ -11,6 +11,38 @@ definitions:
         - "data"
         - "{{ parameters['name'] }}"
 
+  oauth_authenticator:
+    # Wraps the OAuth 2.1 refresh-token authenticator; legacy (pre-2.6.0) credentials without a refresh_token are
+    # first exchanged through Monday's one-time migration endpoint, see MondayOAuthAuthenticator.
+    type: CustomAuthenticator
+    class_name: "source_declarative_manifest.components.MondayOAuthAuthenticator"
+    oauth:
+      # https://developer.monday.com/apps/docs/oauth
+      type: OAuthAuthenticator
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      grant_type: refresh_token
+      token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
+      # surface Monday's token-endpoint rejections as a re-authenticate config error instead of a system error
+      refresh_token_error_status_codes: [400, 401]
+      refresh_token_error_key: error
+      refresh_token_error_values: [invalid_grant, invalid_client, invalid_token, invalid_request]
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - credentials
+          - access_token
+        token_expiry_date_config_path:
+          - credentials
+          - token_expiry_date
+        refresh_token_config_path:
+          - credentials
+          - refresh_token
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_token'] }}"
+
   requester:
     type: CustomRequester
     class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
@@ -21,8 +53,11 @@ definitions:
         $ref: "#/schemas" # Load all schemas because variables can't exist in refs (ideally we do something like "#/schemas/{{ parameters['name'] }}")
     url_base: "https://api.monday.com/v2"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_type"]
+      authenticators:
+        oauth2.0: "#/definitions/oauth_authenticator"
+        api_token: "#/definitions/bearer_authenticator"
     limit: "{{ parameters['items_per_page'] }}"
     nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
     error_handler:
@@ -395,6 +430,17 @@ spec:
                 title: Access Token
                 description: Access Token for making authenticated requests.
                 airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token used to obtain new access tokens when the current one expires. Empty for sources authorized before version 2.6.0. On its next run before October 1, 2026 the connector migrates the legacy access token to the new OAuth flow; after that date the source must be re-authenticated.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token expires. Managed by the connector, do not edit.
+                format: date-time
+                airbyte_hidden: true
           - type: object
             title: API Token
             required:
@@ -436,6 +482,12 @@ spec:
           access_token:
             type: string
             path_in_connector_config: ["credentials", "access_token"]
+          refresh_token:
+            type: string
+            path_in_connector_config: ["credentials", "refresh_token"]
+          token_expiry_date:
+            type: string
+            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: true
@@ -455,6 +507,7 @@ spec:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
       oauth_connector_input_specification:
+        # https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
         scopes:
           - scope: me:read
           - scope: boards:read
@@ -465,9 +518,31 @@ spec:
           - scope: assets:read
           - scope: tags:read
           - scope: teams:read
-        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&subdomain={{subdomain}}
-        access_token_url: https://auth.monday.com/oauth2/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
-        extract_output: ["access_token"]
+        # PKCE (S256) is mandatory on the new flow; the random `state` doubles as the code_verifier.
+        # force_install_if_needed: accounts that do not own the Airbyte app must have it installed before they can
+        # authorize it; this makes monday prompt the admin to install it instead of rejecting the request
+        # (https://developer.monday.com/apps/changelog/upgraded-friction-free-oauth-flow)
+        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256&force_install_if_needed=true&subdomain={{subdomain}}
+        # code_verifier length per RFC 7636 section 4.1
+        state:
+          min: 43
+          max: 128
+        access_token_url: https://auth.monday.com/oauth_ms/oauth/token
+        access_token_headers:
+          Content-Type: application/json
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          code_verifier: "{{ state_value }}"
+        # expires_in (86400 s on the live endpoint) becomes token_expiry_date, so the first check after
+        # authorization uses the fresh access token instead of rotating the single-use refresh token
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
       oauth_user_input_from_connector_config_specification:
         type: object
         additionalProperties: false
@@ -475,6 +550,25 @@ spec:
           subdomain:
             type: string
             path_in_connector_config: ["credentials", "subdomain"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the legacy top-level api_token config format to the credentials format
+          OLD: {"api_token": ...}
+          NEW: {"credentials": {"api_token": ..., "auth_type": "api_token"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "api_token"
+            # evaluated per field on the mutating config, so test for the last field written
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}).get('auth_type') }}"
 
 check:
   stream_names:

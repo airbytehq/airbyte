@@ -58,23 +58,6 @@ In Airbyte's UI, click **User** > **User settings** > **Applications**. Click th
 If you deploy Airbyte with abctl, you can also [use the command line interface](../deploying-airbyte/abctl/#view-and-change-credentials) to see your client ID and client secret.
 
 </TabItem>
-<TabItem value="sme" label="Self-Managed Enterprise">
-
-1. In Airbyte's UI, click your name > **User settings** > **Applications**.
-
-    ![Create an Application](./assets/applications-ui.png)
-
-2. Click **Create an application**.
-
-3. Give your application a descriptive name and click **Submit**.
-
-    ![Name Application](./assets/applications-create.png)
-
-4. Click the <svg fill="none" data-icon="eye" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M21.92 11.6C19.9 6.91 16.1 4 12 4s-7.9 2.91-9.92 7.6a1 1 0 0 0 0 .8C4.1 17.09 7.9 20 12 20s7.9-2.91 9.92-7.6a1 1 0 0 0 0-.8M12 18c-3.17 0-6.17-2.29-7.9-6C5.83 8.29 8.83 6 12 6s6.17 2.29 7.9 6c-1.73 3.71-4.73 6-7.9 6m0-10a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4"></path></svg> icon to expose your client secret.
-
-    ![Get Application Client ID and Client Secret](./assets/applications-client-secret.png)
-
-</TabItem>
 </Tabs>
 
 ## Step 2: Get an access token

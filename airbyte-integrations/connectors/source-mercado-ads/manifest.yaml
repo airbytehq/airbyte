@@ -316,7 +316,7 @@ definitions:
             stream_partition.advertiser_campaign_id.split("-")[0]
             }}/brand_ads/campaigns/{{
             stream_partition.advertiser_campaign_id.split("-")[1]
-            }}//keywords/metrics
+            }}/keywords/metrics
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -1236,6 +1236,21 @@ definitions:
       refresh_request_body: {}
       token_refresh_endpoint: https://api.mercadolibre.com/oauth/token
       grant_type: refresh_token
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - token_expiry_date
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
 
 streams:
   - $ref: "#/definitions/streams/brand_advertisers"
@@ -1303,6 +1318,24 @@ spec:
         title: End Date
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      access_token:
+        type: string
+        order: 6
+        title: Access Token
+        description: >-
+          Access token issued by Mercado Libre. Managed automatically by the
+          connector after each token refresh; you do not need to fill it in.
+        airbyte_secret: true
+        airbyte_hidden: true
+      token_expiry_date:
+        type: string
+        order: 7
+        title: Token Expiry Date
+        description: >-
+          Expiry date of the access token. Managed automatically by the
+          connector after each token refresh; you do not need to fill it in.
+        format: date-time
+        airbyte_hidden: true
     additionalProperties: true
 
 metadata:

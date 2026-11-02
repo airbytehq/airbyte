@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.0.46"
+version = "0.0.48"
 name = "source-hardcoded-records"
 description = "Source implementation for hardcoded records."
 authors = [ "Airbyte <evan@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
-python = "^3.11,<3.13"
-airbyte-cdk = "6.46.0"
+python = "^3.11,<3.14"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-hardcoded-records = "source_hardcoded_records.run:run"

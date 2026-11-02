@@ -71,7 +71,7 @@ class S3KotlinClient(
                         bucket = bucketConfig.s3BucketName
                         this.prefix = prefix
                         continuationToken = token
-                    }
+                    },
                 )
             resp.contents?.forEach { emit(S3Object(it.key!!, bucketConfig)) }
             token = resp.nextContinuationToken
@@ -102,7 +102,7 @@ class S3KotlinClient(
             val inputStream =
                 it.body?.toInputStream()
                     ?: throw IllegalStateException(
-                        "S3 object body is null (this indicates a failure, not an empty object)"
+                        "S3 object body is null (this indicates a failure, not an empty object)",
                     )
             block(inputStream)
         }
@@ -151,7 +151,7 @@ class S3KotlinClient(
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<S3Object> {
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
@@ -182,11 +182,12 @@ class S3ClientFactory(
     companion object {
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
-        fun <T> make(config: T, assumeRoleCredentials: AwsAssumeRoleCredentials?) where
-        T : S3BucketConfigurationProvider,
-        T : AWSAccessKeyConfigurationProvider,
-        T : AWSArnRoleConfigurationProvider,
-        T : ObjectStorageUploadConfigurationProvider =
+        fun <T> make(config: T, assumeRoleCredentials: AwsAssumeRoleCredentials?)
+            where
+                T : S3BucketConfigurationProvider,
+                T : AWSAccessKeyConfigurationProvider,
+                T : AWSArnRoleConfigurationProvider,
+                T : ObjectStorageUploadConfigurationProvider =
             S3ClientFactory(config, config, config, assumeRoleCredentials).make()
     }
 
@@ -215,7 +216,7 @@ class S3ClientFactory(
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
-                    assumeRoleParameters = assumeRoleParams
+                    assumeRoleParameters = assumeRoleParams,
                 )
             } else {
                 DefaultChainCredentialsProvider()
