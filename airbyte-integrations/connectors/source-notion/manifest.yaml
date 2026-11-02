@@ -23,26 +23,24 @@ definitions:
     action: RATE_LIMITED
     http_codes:
       - 429
-  invalid_start_cursor_filter:
+  bad_request_filter:
     type: HttpResponseFilter
     action: IGNORE
     http_codes:
       - 400
-    error_message_contains: "The start_cursor provided is invalid:"
-  not_shared_with_integration_filter:
+  object_not_found_filter:
     type: HttpResponseFilter
     action: IGNORE
     http_codes:
       - 404
-    error_message_contains: "Make sure the relevant pages and databases are shared with your integration."
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
       - $ref: "#/definitions/retry_after_backoff"
     response_filters:
       - $ref: "#/definitions/rate_limited_filter"
-      - $ref: "#/definitions/invalid_start_cursor_filter"
-      - $ref: "#/definitions/not_shared_with_integration_filter"
+      - $ref: "#/definitions/bad_request_filter"
+      - $ref: "#/definitions/object_not_found_filter"
   record_selector:
     type: RecordSelector
     extractor:

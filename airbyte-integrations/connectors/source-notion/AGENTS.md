@@ -15,10 +15,10 @@ A single page with deeply nested content (e.g., toggles inside toggles inside co
 `definitions.error_handler` is one `DefaultErrorHandler` shared by `pages`, `data_sources`, `comments` and `blocks`. Its filters, in order:
 
 1. `rate_limited_filter`: 429 is `RATE_LIMITED`, waiting for the `Retry-After` header (`retry_after_backoff`).
-2. `invalid_start_cursor_filter`: `IGNORE` on 400.
-3. `not_shared_with_integration_filter`: `IGNORE` on 404.
+2. `bad_request_filter`: `IGNORE` on every 400, for example Notion's "The start_cursor provided is invalid" error.
+3. `object_not_found_filter`: `IGNORE` on every 404, for example pages and databases that are not shared with the integration.
 
-`HttpResponseFilter` matches on `http_codes` OR `error_message_contains`, so filters 2 and 3 skip every 400 and every 404, whatever the message, plus any other non-2xx whose `message` contains the Notion text (for example a 403 or 5xx carrying the sharing hint). Pages and blocks that are not shared with the integration therefore drop out silently instead of failing the sync. Keep the rate-limit filter first so a 429 is never ignored.
+Pages and blocks that are not shared with the integration therefore drop out silently instead of failing the sync. The filters match on status code only. Do not add `error_message_contains` to them: `HttpResponseFilter` matches on `http_codes` OR the message, so a message match would also skip a retryable 408, 5xx or 529 that carries the same text, and the sync would complete without those records. Keep the rate-limit filter first so a 429 is never ignored.
 
 `users` has its own `DefaultErrorHandler` and does not skip 400 or 404: it keeps the rate-limit filter and backoff, then fails with a `config_error` when Notion answers `code: restricted_resource` (the integration lacks the "Read user information" capability). All other statuses use the CDK default mapping (5xx and 408 retried, other 4xx fail, unmapped codes such as 409 and 529 retried), with the CDK default of 5 retries. `unit_tests/test_error_handling.py` pins each case.
 

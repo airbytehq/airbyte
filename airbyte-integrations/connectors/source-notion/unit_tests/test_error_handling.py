@@ -6,10 +6,13 @@ from pathlib import Path
 
 import pytest
 import requests
+import requests_mock
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from unit_tests.conftest import _YAML_FILE_PATH, get_source
 
 
@@ -61,11 +64,10 @@ def test_each_stream_uses_a_single_default_error_handler(stream_name):
     [
         pytest.param(200, None, None, ResponseAction.SUCCESS, id="200_success"),
         pytest.param(400, "validation_error", _INVALID_START_CURSOR_MESSAGE, ResponseAction.IGNORE, id="400_invalid_start_cursor_ignored"),
-        # HttpResponseFilter matches on status code OR message, so every 400 is ignored, as on 4.0.30.
         pytest.param(400, "validation_error", "body failed validation.", ResponseAction.IGNORE, id="400_other_message_ignored"),
         pytest.param(404, "object_not_found", _NOT_SHARED_MESSAGE, ResponseAction.IGNORE, id="404_not_shared_ignored"),
         pytest.param(404, "object_not_found", "Not found.", ResponseAction.IGNORE, id="404_other_message_ignored"),
-        pytest.param(403, "restricted_resource", _NOT_SHARED_MESSAGE, ResponseAction.IGNORE, id="403_not_shared_message_ignored"),
+        pytest.param(403, "restricted_resource", _NOT_SHARED_MESSAGE, ResponseAction.FAIL, id="403_not_shared_message_fails"),
         pytest.param(403, "restricted_resource", "Insufficient permissions.", ResponseAction.FAIL, id="403_fails"),
         pytest.param(401, "unauthorized", "API token is invalid.", ResponseAction.FAIL, id="401_fails"),
         pytest.param(429, "rate_limited", "You have been rate limited.", ResponseAction.RATE_LIMITED, id="429_rate_limited"),
@@ -77,6 +79,11 @@ def test_each_stream_uses_a_single_default_error_handler(stream_name):
         pytest.param(503, "service_unavailable", None, ResponseAction.RETRY, id="503_retried"),
         pytest.param(504, "gateway_timeout", None, ResponseAction.RETRY, id="504_retried"),
         pytest.param(529, "service_overload", None, ResponseAction.RETRY, id="529_retried"),
+        pytest.param(503, "service_unavailable", _NOT_SHARED_MESSAGE, ResponseAction.RETRY, id="503_with_not_shared_message_retried"),
+        pytest.param(
+            500, "internal_server_error", _INVALID_START_CURSOR_MESSAGE, ResponseAction.RETRY, id="500_with_start_cursor_message_retried"
+        ),
+        pytest.param(529, "service_overload", _NOT_SHARED_MESSAGE, ResponseAction.RETRY, id="529_with_not_shared_message_retried"),
     ],
 )
 def test_shared_error_handler_classifies_each_status(stream_name, status_code, code, message, expected_action):
@@ -120,3 +127,26 @@ def test_backoff_waits_for_retry_after_header(stream_name, status_code):
     response = _notion_response(status_code, headers={"Retry-After": "7"})
     (backoff_strategy,) = _error_handler(stream_name).backoff_strategies
     assert backoff_strategy.backoff_time(response, attempt_count=1) == 7
+
+
+def test_pages_read_retries_503_carrying_the_not_shared_message(mocker):
+    mocker.patch("time.sleep")
+    page = {"object": "page", "id": "page-1", "last_edited_time": "2024-01-01T00:00:00.000Z", "properties": {}}
+    with requests_mock.Mocker() as http_mocker:
+        search = http_mocker.post(
+            "https://api.notion.com/v1/search",
+            [
+                {
+                    "status_code": 503,
+                    "headers": {"Retry-After": "1"},
+                    "json": {"object": "error", "status": 503, "code": "service_unavailable", "message": _NOT_SHARED_MESSAGE},
+                },
+                {"status_code": 200, "json": {"object": "list", "results": [page], "has_more": False, "next_cursor": None}},
+            ],
+        )
+        catalog = CatalogBuilder().with_stream("pages", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), _CONFIG, catalog)
+
+    assert search.call_count == 2
+    assert [record.record.data["id"] for record in output.records] == ["page-1"]
+    assert not output.errors
