@@ -607,5 +607,16 @@
         "name": "customer_address"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deleted_products"
+      },
+      "stream_state": {
+        "deleted_at": "2099-10-27T14:28:50Z"
+      }
+    }
   }
 ]
