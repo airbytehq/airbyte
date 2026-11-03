@@ -13,10 +13,12 @@ from requests.exceptions import ConnectionError, RequestException, SSLError
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
+from .http_request import ShopifyConnectionCheckErrorHandler
 from .scopes import ShopifyScopes
 from .streams.streams import (
     AbandonedCheckouts,
@@ -71,7 +73,7 @@ from .streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
-from .utils import ShopifyWrongShopNameError
+from .utils import ShopifyNonRetryableErrors, ShopifyWrongShopNameError
 
 
 class ConnectionCheckTest:
@@ -79,6 +81,9 @@ class ConnectionCheckTest:
         self.config = config
         # use `Shop` as a test stream for connection check
         self.test_stream = Shop(self.config)
+        self.test_stream._http_client._error_handler = ShopifyConnectionCheckErrorHandler(
+            self.test_stream.logger, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.test_stream.name)
+        )
         # setting `max_retries` to 0 for the stage of `check connection`,
         # because it keeps retrying for wrong shop names,
         # but it should stop immediately
@@ -115,7 +120,11 @@ class ConnectionCheckTest:
             return False, self.describe_error("index_error", shop_name, response)
         except MissingAccessTokenError:
             return False, self.describe_error("missing_token_error")
-        except (BaseBackoffException, AirbyteTracedException) as error:
+        except AirbyteTracedException as error:
+            if error.failure_type == FailureType.config_error:
+                raise
+            return False, self.describe_error("connection_error", shop_name)
+        except BaseBackoffException as error:
             return False, self.describe_error("connection_error", shop_name) or str(error)
 
     def get_shop_id(self) -> str:
@@ -161,9 +170,12 @@ class SourceShopify(AbstractSource):
         # If a scheme is present, parse out the host; urlparse only fills netloc
         # when "://" is present.
         if "://" in value:
-            parsed = urlparse(value)
+            try:
+                parsed = urlparse(value)
+            except ValueError:
+                raise ShopifyWrongShopNameError(raw)
             host = parsed.netloc
-            if parsed.path not in ("", "/") or parsed.params or parsed.query or parsed.fragment:
+            if parsed.scheme not in ("http", "https") or parsed.path not in ("", "/") or parsed.params or parsed.query or parsed.fragment:
                 raise ShopifyWrongShopNameError(raw)
         else:
             host, _, path = value.partition("/")

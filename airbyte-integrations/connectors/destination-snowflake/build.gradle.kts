@@ -39,6 +39,7 @@ val hikariCpVersion = "7.0.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 val snowflakeJdbcThinVersion = "3.26.1"
+val bouncyCastleVersion = "1.86"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
@@ -47,7 +48,13 @@ dependencies {
     implementation("de.siegmar:fastcsv:4.0.0")
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
 
-    testImplementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
+    constraints {
+        implementation("org.jsoup:jsoup:1.23.2") {
+            because("CVE-2026-75140: snowflake-jdbc-thin $snowflakeJdbcThinVersion pulls jsoup 1.15.3")
+        }
+    }
+
+    testImplementation("org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion")
     testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
