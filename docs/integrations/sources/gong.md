@@ -61,6 +61,12 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 - **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes.
 
 </FieldAnchor>
+
+<FieldAnchor field="scorecards_review_method">
+
+- **Scorecards Review Method** (optional). Which answered scorecards to fetch: `MANUAL`, `AUTOMATIC` (scored by Gong's AI) or `BOTH`. The Gong API only returns manually reviewed scorecards unless asked otherwise, so choose `AUTOMATIC` or `BOTH` to sync AI-scored scorecards. The default is `MANUAL`, which keeps the previous behavior.
+
+</FieldAnchor>
 <HideInUI>
 
 ## Supported sync modes
@@ -111,6 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.6.0 | 2026-11-03 | [TBD](https://github.com/mirakl/airbyte/pulls) | Add `scorecards_review_method` option to fetch AI-scored (`AUTOMATIC`) answered scorecards; defaults to `MANUAL` |
 | 1.5.6 | 2026-11-03 | [90575](https://github.com/airbytehq/airbyte/pull/90575) | Update dependencies |
 | 1.5.5 | 2026-10-27 | [84435](https://github.com/airbytehq/airbyte/pull/84435) | Update external documentation URLs and enable autopilot rollouts |
 | 1.5.4 | 2026-10-27 | [89913](https://github.com/airbytehq/airbyte/pull/89913) | Update dependencies |
