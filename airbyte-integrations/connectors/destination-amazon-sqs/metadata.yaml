@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   dockerRepository: airbyte/destination-amazon-sqs
   githubIssueLabel: destination-amazon-sqs
   icon: awssqs.svg

@@ -129,6 +129,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                           |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.18 | 2026-10-28 | [90137](https://github.com/airbytehq/airbyte/pull/90137) | Add the `run` module the image entrypoint calls |
 | 0.1.17  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                  |
 | 0.1.16  | 2024-08-03 | [43278](https://github.com/airbytehq/airbyte/pull/43278) | Update dependencies |
 | 0.1.15  | 2024-07-27 | [42795](https://github.com/airbytehq/airbyte/pull/42795) | Update dependencies |
