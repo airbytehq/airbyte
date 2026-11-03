@@ -114,23 +114,6 @@ class BansRecordBuilder(ZendeskChatRecordBuilder):
         return self
 
 
-class ChatsRecordBuilder(ZendeskChatRecordBuilder):
-    """Builds one chat as returned in the `docs` map of `GET chats?ids=` (the read path since 2.0.0)."""
-
-    @classmethod
-    def chats_record(cls) -> "ChatsRecordBuilder":
-        record_template = cls.extract_record("chats", __file__, NestedPath(["docs", "2104.10414779.SVhDCJ9flq79a"]))
-        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
-
-    def with_id(self, id: str) -> "ChatsRecordBuilder":
-        self._record["id"] = id
-        return self
-
-    def with_timestamp(self, timestamp: str) -> "ChatsRecordBuilder":
-        self._record["timestamp"] = timestamp
-        return self
-
-
 class DepartmentsRecordBuilder(ZendeskChatRecordBuilder):
     @classmethod
     def departments_record(cls) -> "DepartmentsRecordBuilder":

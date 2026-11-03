@@ -11,10 +11,12 @@ from config_builder import ConfigBuilder
 from freezegun import freeze_time
 
 from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, TState, YamlDeclarativeSource
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -182,6 +184,40 @@ class ChatsTest(TestCase):
 
         assert sorted(r.record.data["id"] for r in output.records) == [c["id"] for c in chats]
         assert not output.errors
+
+    @HttpMocker()
+    def test_given_every_window_at_cap_when_read_then_fail_after_ten_splits(self, http_mocker: HttpMocker) -> None:
+        """The CDK splits a window at most ten times (a day shrinks to about 84 seconds), then the sync fails explicitly."""
+        at_cap = _search_response([_search_result(_chat_id(99), "2021-01-01T00:00:01Z")], count=10000, next_page=2)
+        any_search = HttpRequest(_SEARCH_URL, query_params=ANY_QUERY_PARAMS)
+        http_mocker.get(any_search, at_cap)
+
+        output = read(_config(), expecting_exception=True)
+
+        # The first window plus one first-half window per split level, before the sync stops.
+        http_mocker.assert_number_of_calls(any_search, 11)
+        assert len(output.records) == 0
+        assert any(
+            error.trace.error.failure_type == FailureType.transient_error
+            and "the chats stream cannot completely read a window" in error.trace.error.message
+            for error in output.errors
+        )
+
+    @HttpMocker()
+    def test_given_chat_found_in_two_windows_when_read_then_fetched_once(self, http_mocker: HttpMocker) -> None:
+        """The same id can come back from two search windows (lookback, split); the group deduplicates it."""
+        chat = _chat(_chat_id(1), "2021-01-01T23:59:59Z")
+        result = _search_result(chat["id"], chat["timestamp"])
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([result]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([result]))
+        _mock_empty_windows(http_mocker, _WINDOWS[2:])
+        fetch = _chats_request([chat["id"]])
+        http_mocker.get(fetch, _chats_response([chat]))
+
+        output = read(_config())
+
+        http_mocker.assert_number_of_calls(fetch, 1)
+        assert [r.record.data["id"] for r in output.records] == [chat["id"]]
 
     @HttpMocker()
     def test_given_missing_chat_in_fetch_when_read_then_null_doc_is_skipped(self, http_mocker: HttpMocker) -> None:
