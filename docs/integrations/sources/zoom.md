@@ -26,8 +26,6 @@ Both authentication methods use an account-level app. For the scopes to grant, s
 2. Create a **General** app and choose **Admin-managed**. A user-managed app cannot list account users.
 3. If Airbyte asks for a redirect URL, add the URL it provides to the app's OAuth redirect URL and OAuth allow list.
 
-If you set up your Zoom app before version 1.5.0, add the scopes for any of the four new streams you want to sync. OAuth2.0 users must then re-authenticate so the new token includes the scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection.
-
 #### Server-to-Server OAuth app
 
 1. In the Zoom App Marketplace, select **Develop** > **Build App**, then create a **Server-to-Server OAuth** app using [Zoom's instructions](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
