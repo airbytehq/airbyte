@@ -148,6 +148,42 @@ class TestSideConversationsStreamIncremental(TestCase):
         assert output.records[0].record.data["id"] == "new-record"
 
     @HttpMocker()
+    def test_given_6_0_state_newer_than_the_records_when_read_incremental_then_the_changed_ticket_re_emits_them(self, http_mocker):
+        """A ticket updated while the parent walk runs is first listed by the next sync, whose cursor is already past the
+        side conversations the ticket gained in between. The filter is bounded by `start_date` only, so they are emitted."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        previous = int(_NOW.subtract(timedelta(hours=2)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "side_conversations",
+                {
+                    "use_global_cursor": True,
+                    "state": {"updated_at": datetime_to_string(_NOW.subtract(timedelta(hours=2)))},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"updated_at": str(previous)}},
+                },
+            )
+            .build()
+        )
+        ticket_updated_at = ab_datetime_parse(previous + 600)
+        ticket = given_tickets_with_state(http_mocker, ticket_updated_at, ticket_updated_at, api_token_authenticator).build()
+        record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("older-than-the-cursor")
+            .with_field(FieldPath("updated_at"), datetime_to_string(_NOW.subtract(timedelta(hours=12))))
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(record).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.incremental, self._config, state)
+
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == ["older-than-the-cursor"]
+
+    @HttpMocker()
     def test_given_5_x_parent_state_when_read_incremental_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker):
         """`parent_state` written by 5.x carries the parent's old `generated_timestamp` cursor. The tickets
         state migration also runs on it: rewound by one hour onto `updated_at`, so a ticket updated shortly

@@ -1030,6 +1030,12 @@ definitions:
       name: "ticket_comments"
       cursor_field: "created_at"
 
+  # Per-ticket substream of `tickets`. Its record filter is bounded by `start_date` only, not by the
+  # cursor: the parent walk is newest first, so a ticket updated while the walk runs moves ahead of
+  # it and is first listed by the next sync, whose cursor (a new partition is seeded from the global
+  # value) is already past the side conversations that ticket gained in between. A changed ticket
+  # therefore re-emits all of its side conversations (`id` deduplicates), as the other per-ticket
+  # streams do; see `per_ticket_incremental_sync`.
   side_conversations_stream:
     $ref: "#/definitions/semi_incremental_stream"
     incremental_sync:
@@ -1042,6 +1048,10 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          condition: "{{ (timestamp(record['updated_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
