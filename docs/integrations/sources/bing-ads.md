@@ -60,15 +60,16 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
 9. For **Lookback window**, enter the number of days before the saved report cursor to re-read for late conversions or corrected metrics. Round conversion windows measured in hours or minutes up to whole days. This applies to all report streams in incremental mode, including budget summary and custom reports, whether or not **Reports Replication Start Date** is set. That start date remains the earliest date to read. Bulk entity streams ignore this setting. If you're not using incremental report streams, leave it at the default value of 0.
-10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
-11. For _Report Name_, enter the name that you want for your custom report.
-12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_, add the time aggregation. See the [report aggregation](#report-aggregation) section.
-15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
-16. Click **Authenticate your Bing Ads account**.
-17. Log in and authorize the Bing Ads account.
-18. Click **Set up source**.
+10. (Optional) For **Number of concurrent workers**, enter the number of worker threads to use during a sync, from 1 to 20. The default of 10 works for most accounts. Increase it to speed up syncs for accounts with many reports.
+11. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+12. For _Report Name_, enter the name that you want for your custom report.
+13. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+14. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+15. For _Aggregation_, add the time aggregation. See the [report aggregation](#report-aggregation) section.
+16. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
+17. Click **Authenticate your Bing Ads account**.
+18. Log in and authorize the Bing Ads account.
+19. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -84,13 +85,14 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
 9. For **Lookback window**, enter the number of days before the saved report cursor to re-read for late conversions or corrected metrics. Round conversion windows measured in hours or minutes up to whole days. This applies to all report streams in incremental mode, including budget summary and custom reports, whether or not **Reports Replication Start Date** is set. That start date remains the earliest date to read. Bulk entity streams ignore this setting. If you're not using incremental report streams, leave it at the default value of 0.
-10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
-11. For _Report Name_, enter the name that you want for your custom report.
-12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_, select the time aggregation. See the [report aggregation](#report-aggregation) section.
-15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
-16. Click **Set up source**.
+10. (Optional) For **Number of concurrent workers**, enter the number of worker threads to use during a sync, from 1 to 20. The default of 10 works for most accounts. Increase it to speed up syncs for accounts with many reports.
+11. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+12. For _Report Name_, enter the name that you want for your custom report.
+13. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+14. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+15. For _Aggregation_, select the time aggregation. See the [report aggregation](#report-aggregation) section.
+16. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
+17. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -302,7 +304,9 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 #### Bulk stream incremental behavior
 
-Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft Bulk API. In incremental mode, the Bulk API ignores `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download. This means the first sync after a gap of more than 30 days downloads all data regardless of state.
+Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft [Bulk API](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13). In incremental mode, the connector sends the saved cursor as `LastSyncTimeInUTC` so Microsoft returns only entities that changed since then. Microsoft doesn't accept a `LastSyncTimeInUTC` value older than 30 days, so when the saved cursor is more than 30 days old, the connector omits it and downloads all entities for that account.
+
+The cursor for these streams is the most recent `Modified Time` among synced records, not the time of the last sync. If none of an account's entities change for more than 30 days, the next incremental sync performs a full download even if the connection syncs regularly. The **Lookback window** setting doesn't apply to bulk streams.
 
 ### Troubleshooting
 
