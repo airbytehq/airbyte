@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import logging
 import time
 
 import pytest
@@ -8,7 +9,7 @@ import yaml
 from conftest import MANIFEST_PATH, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -41,7 +42,7 @@ def _error(output):
 @pytest.mark.parametrize(
     "status_code, response, expected_message",
     [
-        (401, {"message": "Invalid access token"}, "re-authenticate"),
+        (401, {"message": "Invalid access token"}, "Re-authenticate"),
         (403, {"message": "Not enough permissions"}, "ADMINISTRATOR"),
     ],
 )
@@ -73,7 +74,7 @@ def test_auth_error_with_unexpected_body_does_not_crash(body):
 
     error = _error(output)
     assert error.failure_type == FailureType.config_error
-    assert "re-authenticate" in error.message
+    assert "Re-authenticate" in error.message
     assert "{{" not in error.message
     assert endpoint.call_count == 1
 
@@ -200,7 +201,8 @@ def test_inactive_organization_is_a_config_error():
 
     error = _error(output)
     assert error.failure_type == FailureType.config_error
-    assert "Organization 12345678 is inactive" in error.message
+    assert "organization 12345678 was not found or is inaccessible" in error.message
+    assert "page is active" in error.message
     assert endpoint.call_count == 1
 
 
@@ -208,3 +210,71 @@ def test_manifest_does_not_use_composite_error_handlers():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
 
     assert "CompositeErrorHandler" not in str(manifest)
+
+
+@pytest.mark.parametrize(
+    "body, expected_scope",
+    [
+        ({"message": "Missing r_organization_social permission"}, "r_organization_social"),
+        ({"message": "Missing rw_organization_admin permission"}, "rw_organization_admin"),
+        ({"message": "Missing w_organization_social permission"}, "w_organization_social"),
+        ({"scope": "r_organization_social_feed"}, "r_organization_social_feed"),
+        ({}, "r_organization_social and rw_organization_admin"),
+        ({"message": None}, "r_organization_social and rw_organization_admin"),
+        ([], "r_organization_social and rw_organization_admin"),
+    ],
+)
+def test_forbidden_names_scope_without_echoing_response(body: object, expected_scope: str) -> None:
+    with requests_mock.Mocker() as mocker:
+        endpoint = mocker.get(_ORG_URL, status_code=403, json=body)
+        output = _read_organization()
+
+    error = _error(output)
+    assert error.failure_type == FailureType.config_error
+    assert f"Re-authenticate with {expected_scope} and ensure" in error.message
+    assert "ADMINISTRATOR role on organization 12345678" in error.message
+    assert endpoint.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "status_code, body, hint",
+    [
+        (401, {"message": "Expired token: sensitive-value"}, "Re-authenticate the source"),
+        (401, {}, "Re-authenticate the source"),
+        (403, {"message": "Missing rw_organization_admin for sensitive-value"}, "with rw_organization_admin and ensure"),
+        (403, {}, "with r_organization_social and rw_organization_admin"),
+        (404, {"message": "Inactive page sensitive-value"}, "was not found or is inaccessible"),
+        (404, {}, "Check the Organization ID"),
+    ],
+)
+def test_check_single_organization_errors(status_code: int, body: dict, hint: str) -> None:
+    with requests_mock.Mocker() as mocker:
+        endpoint = mocker.get(_ORG_URL, status_code=status_code, json=body)
+        result = get_source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
+
+    assert result.status == Status.FAILED
+    assert hint in result.message
+    assert "sensitive-value" not in result.message
+    assert endpoint.call_count == 1
+
+
+@pytest.mark.parametrize("status_code", [401, 403, 404])
+def test_check_non_json_errors(status_code: int) -> None:
+    with requests_mock.Mocker() as mocker:
+        endpoint = mocker.get(_ORG_URL, status_code=status_code, text="sensitive-value")
+        result = get_source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
+        output = _read_organization()
+
+    assert result.status == Status.FAILED
+    assert "sensitive-value" not in result.message
+    assert _error(output).failure_type == FailureType.config_error
+    assert endpoint.call_count == 2
+
+
+def test_check_single_organization_succeeds() -> None:
+    with requests_mock.Mocker() as mocker:
+        endpoint = mocker.get(_ORG_URL, json={"id": 12345678, "localizedName": "Test Org"})
+        result = get_source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
+
+    assert result.status == Status.SUCCEEDED
+    assert endpoint.call_count == 1
