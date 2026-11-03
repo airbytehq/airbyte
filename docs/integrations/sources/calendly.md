@@ -6,7 +6,7 @@ Calendly source syncs your organization members, groups, teams, invitations, eve
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. Select the read scopes of the streams you sync, listed under "Token scopes". | |
+| `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. If Developer is missing from the menu, use the Integrations page. Select the read scopes of the streams you sync, listed under "Token scopes". | |
 | `start_date` | `string` | Sync scheduled events starting on or after this time, in UTC ISO-8601 format, for example `2024-01-01T00:00:00Z`. | |
 | `lookback_days` | `number` | Days to subtract from the start time of the latest synced event when an incremental `scheduled_events` sync starts. | 0 |
 
