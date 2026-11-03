@@ -77,7 +77,7 @@ data:
           change only `generated_timestamp`, and a ticket's metric events are read only when the ticket
           itself changes. Incremental sync modes keep the rows already in your destination; a sync mode
           that replaces the table, or a cleared stream, rebuilds it without those records, so back up
-          such tables before upgrading if you need them. Connections still on an older version on 2026-12-02
+          such tables before upgrading if you need them. Connections still on an older version after 2026-12-02
           are upgraded automatically, so make that backup before then. Connections that sync only other streams are
           not affected. `ticket_events` records now carry the Ticket Audits
           API shape (`via` holds the channel name such as `web` instead of a label such as `Web form`,
