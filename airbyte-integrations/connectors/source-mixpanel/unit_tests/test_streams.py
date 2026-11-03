@@ -44,6 +44,19 @@ logger = logging.getLogger("airbyte")
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
+def test_backoff_strategy_uses_retry_after_header(config_raw):
+    stream = init_stream("export", config=config_raw)
+    backoff_strategy = MixpanelStreamBackoffStrategy(stream=stream)
+
+    response = requests.Response()
+    response.status_code = 429
+    response.headers["Retry-After"] = "12"
+
+    assert backoff_strategy.backoff_time(response) == 12.0
+    assert backoff_strategy.backoff_time(requests.Response()) is None
+    assert backoff_strategy.backoff_time(requests.RequestException()) is None
+
+
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)

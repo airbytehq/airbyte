@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -116,7 +115,6 @@ data class PerformanceTestSummary(
 typealias ValidationFunction = (List<PerformanceTestSummary>) -> Unit
 
 @Suppress("SameParameterValue")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
 @ExtendWith(SystemStubsExtension::class)
 abstract class BasicPerformanceTest(
     val defaultRecordsToInsert: Long,
@@ -231,24 +229,24 @@ abstract class BasicPerformanceTest(
                             NamedField(
                                 "tWithTz",
                                 TimeTypeWithTimezone,
-                                LocalTime.now().atOffset(ZoneOffset.UTC).toString()
+                                LocalTime.now().atOffset(ZoneOffset.UTC).toString(),
                             ),
                             NamedField("t", TimeTypeWithoutTimezone, LocalTime.now().toString()),
                             NamedField(
                                 "tsWithTz",
                                 TimestampTypeWithTimezone,
-                                OffsetDateTime.now().toString()
+                                OffsetDateTime.now().toString(),
                             ),
                             NamedField(
                                 "ts",
                                 TimestampTypeWithoutTimezone,
-                                OffsetDateTime.now().toLocalDateTime().toString()
+                                OffsetDateTime.now().toLocalDateTime().toString(),
                             ),
                             NamedField(
                                 "object",
                                 ObjectTypeWithoutSchema,
-                                Jsons.serialize(mapOf("object" to "value"))
-                            )
+                                Jsons.serialize(mapOf("object" to "value")),
+                            ),
                         ),
                     recordsToInsert = defaultRecordsToInsert,
                     randomizedNamespace = randomizedNamespace,
@@ -312,7 +310,7 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp")
+                stagingDirectory = Path.of("/tmp"),
             )
         scenario.setup()
         runSync(
@@ -331,7 +329,7 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp")
+                stagingDirectory = Path.of("/tmp"),
             )
         scenario.setup()
         runSync(
@@ -428,9 +426,9 @@ abstract class BasicPerformanceTest(
                     testScenario.catalog.streams.forEach {
                         destination.sendMessage(
                             InputStreamComplete(
-                                DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                                DestinationRecordStreamComplete(it, System.currentTimeMillis()),
                             ),
-                            broadcast = true
+                            broadcast = true,
                         )
                     }
                     destination.shutdown()
@@ -445,27 +443,26 @@ abstract class BasicPerformanceTest(
         log.info { "$testPrettyName: loaded ${"%.2f".format(recordPerSeconds)} rps" }
         log.info { "$testPrettyName: loaded ${"%.2f".format(megabytePerSeconds)} MBps" }
 
-        val totalRecordCount =
-            dataValidator?.let { validator ->
-                val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, testConfig)
-                val numStreams = testScenario.catalog.streams.size
+        val totalRecordCount = dataValidator?.let { validator ->
+            val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, testConfig)
+            val numStreams = testScenario.catalog.streams.size
 
-                testScenario.catalog.streams
-                    .map { stream ->
-                        val recordCount = validator.count(parsedConfig, stream)
+            testScenario.catalog.streams
+                .map { stream ->
+                    val recordCount = validator.count(parsedConfig, stream)
 
-                        recordCount?.also {
-                            log.info {
-                                "$testPrettyName: table ${stream.mappedDescriptor.name} contains $it records" +
-                                    " (expected ${summary.expectedRecordsCount / numStreams} records, " +
-                                    "emitted ${summary.records / numStreams} records)"
-                            }
+                    recordCount?.also {
+                        log.info {
+                            "$testPrettyName: table ${stream.mappedDescriptor.name} contains $it records" +
+                                " (expected ${summary.expectedRecordsCount / numStreams} records, " +
+                                "emitted ${summary.records / numStreams} records)"
                         }
-
-                        recordCount
                     }
-                    .sumOf { it ?: 0L }
-            }
+
+                    recordCount
+                }
+                .sumOf { it ?: 0L }
+        }
 
         val performanceTestSummary =
             listOf(
@@ -478,7 +475,7 @@ abstract class BasicPerformanceTest(
                     emittedRecordCount = summary.records,
                     recordPerSeconds = recordPerSeconds,
                     megabytePerSeconds = megabytePerSeconds,
-                )
+                ),
             )
         validation?.let { it(performanceTestSummary) }
         return performanceTestSummary

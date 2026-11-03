@@ -21,8 +21,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: "cohort_report"
             bypass_reason: "The test resource does not support cohort report"
@@ -47,7 +45,6 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 10800
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

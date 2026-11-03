@@ -56,8 +56,10 @@ class StateManager(
     fun scoped(feed: Feed): StateManagerScopedToFeed =
         when (feed) {
             is Global -> global ?: throw IllegalArgumentException("unknown global key")
-            is Stream -> global?.streamStateManagers?.get(feed.id)
-                    ?: nonGlobal[feed.id] ?: throw IllegalArgumentException("unknown stream key")
+            is Stream ->
+                global?.streamStateManagers?.get(feed.id)
+                    ?: nonGlobal[feed.id]
+                    ?: throw IllegalArgumentException("unknown stream key")
         }
 
     interface StateManagerScopedToFeed {
@@ -88,8 +90,7 @@ class StateManager(
      * are emitted).
      */
     fun checkpoint(): List<AirbyteStateMessage> {
-        return (global?.checkpoint()
-            ?: emptyList()) +
+        return (global?.checkpoint() ?: emptyList()) +
             nonGlobal
                 .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } }
                 .flatten()
@@ -112,6 +113,7 @@ private sealed class BaseStateManager<K : Feed>(
     // This is required by destinations in Socket mode
     private var pendingStateValues: MutableList<StateManager.StateForCheckpointWithPartitionId> =
         mutableListOf()
+
     @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
     @Synchronized
@@ -122,7 +124,7 @@ private sealed class BaseStateManager<K : Feed>(
         id: Int?,
     ) {
         pendingStateValues.add(
-            StateManager.StateForCheckpointWithPartitionId(state, partitionId, numRecords, id)
+            StateManager.StateForCheckpointWithPartitionId(state, partitionId, numRecords, id),
         )
     }
 
@@ -206,8 +208,10 @@ private data class Stale(
 ) : StateForCheckpoint {
     override val numRecords: Long
         get() = 0L
+
     override val id: Int?
         get() = null
+
     override val partitionId: String?
         get() = null
 }
@@ -228,7 +232,7 @@ private class GlobalStateManager(
      */
     private fun collectStatesForCheckpoints(
         pendingFreshStates: MutableMap<StreamIdentifier, ArrayDeque<StateForCheckpoint>>,
-        staleStates: MutableMap<StreamIdentifier, StateForCheckpoint>
+        staleStates: MutableMap<StreamIdentifier, StateForCheckpoint>,
     ) {
         // ensure that all streams have at least stale checkpoint
         // if a fresh state happens to be pending for a stream, add to fresh queue
@@ -246,6 +250,7 @@ private class GlobalStateManager(
             }
         }
     }
+
     fun checkpoint(): List<AirbyteStateMessage>? {
 
         var shouldCheckpoint = false
@@ -284,9 +289,9 @@ private class GlobalStateManager(
                             when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
                                 null,
                                 true -> Jsons.objectNode()
-                                false -> streamStateForCheckpoint.opaqueStateValue
-                                        ?: Jsons.objectNode()
-                            }
+                                false ->
+                                    streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                            },
                         )
                         // Only add id and partition_id if they are not null (stdio mode
                         // compatibility).

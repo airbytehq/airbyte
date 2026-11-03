@@ -15,7 +15,7 @@ class SamplingSizeEstimator(
     initialRowByteSize: Double,
     minFetchSize: Int,
     defaultFetchSize: Int,
-    maxFetchSize: Int
+    maxFetchSize: Int,
 ) :
     BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize),
     FetchSizeEstimator {

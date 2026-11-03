@@ -26,7 +26,7 @@ class TimeStringToIntegerTest {
             mapper
                 .mapTimestampWithTimezone(
                     TimestampWithTimezoneValue("2021-01-01T01:01:01Z"),
-                    AirbyteValueIdentityMapper.Context()
+                    AirbyteValueIdentityMapper.Context(),
                 )
                 .first,
         )
@@ -40,7 +40,7 @@ class TimeStringToIntegerTest {
             mapper
                 .mapTimestampWithoutTimezone(
                     TimestampWithoutTimezoneValue("2018-09-15T12:00:00"),
-                    AirbyteValueIdentityMapper.Context()
+                    AirbyteValueIdentityMapper.Context(),
                 )
                 .first,
         )
@@ -54,7 +54,7 @@ class TimeStringToIntegerTest {
             mapper
                 .mapTimeWithTimezone(
                     TimeWithTimezoneValue("12:00:00.000000+01:00"),
-                    AirbyteValueIdentityMapper.Context()
+                    AirbyteValueIdentityMapper.Context(),
                 )
                 .first,
         )
@@ -68,7 +68,7 @@ class TimeStringToIntegerTest {
             mapper
                 .mapTimeWithoutTimezone(
                     TimeWithoutTimezoneValue("01:01:01"),
-                    AirbyteValueIdentityMapper.Context()
+                    AirbyteValueIdentityMapper.Context(),
                 )
                 .first,
         )

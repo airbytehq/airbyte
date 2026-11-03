@@ -13,6 +13,7 @@ const val DATA_CHANNEL_PROPERTY_PREFIX = "airbyte.connector.data-channel"
 const val MEDIUM_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.medium"
 const val FORMAT_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.format"
 const val SOCKET_PATHS_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.socket-paths"
+
 /**
  * A [SocketDataChannelResourceHolder] holds a list of [SocketDataChannel] instances that are
  * initialized and once connected can be bound to for data transfer.
@@ -27,6 +28,7 @@ class SocketDataChannelResourceHolder(
 ) {
 
     val sockets: List<SocketDataChannel>
+
     init {
         sockets = List(socketPaths.size) { socketFactory.makeSocket(socketPaths[it]) }
         runBlocking { sockets.forEach { socket -> socket.initialize() } }

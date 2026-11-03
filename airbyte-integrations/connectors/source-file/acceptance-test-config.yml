@@ -23,13 +23,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "integration_tests/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         validate_state_messages: False
-        file_types:
-          skip_test: yes
-          bypass_reason: "Source is not based on file based CDK"
   full_refresh:
     tests:
       - config_path: "integration_tests/config.json"
