@@ -66,18 +66,18 @@ data:
           and call-leg exports these streams read from, and names no replacement endpoint for
           them. Zendesk blocks third-party integrations from these endpoints between
           December 2, 2026 and January 19, 2027 and deactivates API tokens on April 30, 2027,
-          so version 2.x has no lasting way to sync the two streams. Connections that don't
-          sync `calls` or `call_legs` are not affected and need no action. Data these streams
-          already synced stays in your destination. After upgrading, refresh the source schema
-          so the two streams leave the connection; no other stream needs a clear or re-sync.
-          Airbyte Cloud upgrades connections to 3.0.0 automatically on December 2, 2026. Only a
-          self-managed Airbyte deployment can keep version 2.x for a little longer; its Zendesk
-          admin can request a 60-day extension for Airbyte in Admin Center under
-          Apps & integrations > APIs > API Configuration, and the streams still stop working
-          when the extension ends. See the
+          so version 2.x has no supported way to sync the two streams. Connections that don't
+          sync `calls` or `call_legs` are not affected and need no action. Before upgrading,
+          remove `calls` and `call_legs` from the stream selection of every connection that
+          syncs them: a sync on 3.0.0 that still lists them can replace their destination
+          tables with empty ones in overwrite modes, and Zendesk can't provide that call
+          history again. Then upgrade and refresh the source schema so the two streams leave
+          the connection; no other stream needs a clear or re-sync, and the call history
+          already synced stays in your destination. On Airbyte Cloud, connections still using
+          version 2.x after December 2, 2026 are disabled until they upgrade. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/zendesk-talk-migrations#upgrading-to-300).
         upgradeDeadline: "2026-12-02"
-        deadlineAction: auto_upgrade
+        deadlineAction: disable
         scopedImpact:
           - scopeType: stream
             impactedScopes:

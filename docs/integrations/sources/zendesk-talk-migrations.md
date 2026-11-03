@@ -4,11 +4,15 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 3.0.0
 
+:::danger Risk of permanent data loss
+Turn off the `calls` and `call_legs` streams in every connection that syncs them before you upgrade. If a sync runs on version 3.0.0 while the two streams are still selected, the destination can replace their tables with empty ones in overwrite modes, and Zendesk can't provide that call history again.
+:::
+
 Version 3.0.0 removes the `calls` and `call_legs` streams. No other stream changes.
 
 ### What changed
 
-Zendesk is [ending access to its Incremental APIs for third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers), including the Talk incremental call export (`/stats/incremental/calls`) and call-leg export (`/stats/incremental/legs`) that the `calls` and `call_legs` streams read from. Zendesk [names no alternative endpoint](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/incremental-third-party/) for either path and confirmed to Airbyte that there is none. Enforcement starts on December 2, 2026 and completes on January 19, 2027, with a pause from December 17, 2026 to January 4, 2027. Once Zendesk blocks the integration's requests, the two streams stop working on version 2.x, while the connection test keeps passing because it reads a different endpoint. Zendesk also deactivates all API tokens on April 30, 2027, so version 2.x has no lasting way to sync them.
+Zendesk is [ending access to its Incremental APIs for third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers), including the Talk incremental call export (`/stats/incremental/calls`) and call-leg export (`/stats/incremental/legs`) that the `calls` and `call_legs` streams read from. Zendesk [names no alternative endpoint](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/incremental-third-party/) for either path and confirmed to Airbyte that there is none. Enforcement starts on December 2, 2026 and completes on January 19, 2027, with a pause from December 17, 2026 to January 4, 2027. Once Zendesk blocks the integration's requests, the two streams stop working on version 2.x, while the connection test keeps passing because it reads a different endpoint. Zendesk also deactivates all API tokens on April 30, 2027, so version 2.x has no supported way to sync them.
 
 The `start_date` field stays in the connector configuration, now optional, so existing sources keep validating, but no remaining stream uses it.
 
@@ -18,11 +22,12 @@ Connections that sync `calls` or `call_legs`. Connections that sync only the oth
 
 ### Upgrade steps
 
-1. Upgrade the Zendesk Talk source to version 3.0.0 (see the [connector upgrade guide](#connector-upgrade-guide) at the end of this page).
-2. Refresh the source schema for each affected connection and save. The `calls` and `call_legs` streams leave the connection. If a sync runs before the refresh, those two streams are reported as incomplete while every other stream syncs normally.
-3. Keep syncing. No stream needs to be cleared or re-synced: the remaining streams are unchanged, and the call history already written by `calls` and `call_legs` stays in your destination tables. Don't clear or delete those tables unless you no longer need the history, because Zendesk can't provide it again.
+1. In every connection that syncs `calls` or `call_legs`, turn the two streams off in the stream selection and save. Do this before upgrading: a sync on version 3.0.0 that still lists the two streams can replace their destination tables with empty ones in overwrite modes, and Zendesk can't provide that call history again.
+2. Upgrade the Zendesk Talk source to version 3.0.0 (see the [connector upgrade guide](#connector-upgrade-guide) at the end of this page).
+3. Refresh the source schema for each connection and save, so the two streams leave the catalog.
+4. Keep syncing. No stream needs to be cleared or re-synced: the remaining streams are unchanged, and the call history already written by `calls` and `call_legs` stays in your destination tables. Don't clear or delete those tables unless you no longer need the history.
 
-Airbyte Cloud upgrades connections to version 3.0.0 automatically on December 2, 2026. If you run a self-managed Airbyte deployment and need the two streams for a little longer, you can keep version 2.x and have your Zendesk admin request a 60-day extension for Airbyte in Admin Center under **Apps & integrations > APIs > API Configuration** (select Airbyte from the partner list and save). The extension only postpones the cutoff; upgrade before it ends.
+On Airbyte Cloud, connections still using version 2.x after December 2, 2026 are disabled until they upgrade. On self-managed Airbyte the upgrade is opt-in, but version 2.x has no supported way to keep syncing the two streams. Zendesk's announcement also offers a 60-day extension that a Zendesk admin can request in Admin Center under **Apps & integrations > APIs > API Configuration**; it applies to the partner's OAuth app and doesn't keep the two streams running in Airbyte, so don't rely on it.
 
 ### Update downstream queries
 
