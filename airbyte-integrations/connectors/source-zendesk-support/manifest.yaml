@@ -1016,7 +1016,8 @@ definitions:
           type: CustomRecordExtractor
           class_name: source_declarative_manifest.components.ZendeskSupportAuditCommentsExtractor
         record_filter:
-          condition: "{{ (timestamp(record['created_at']) | int) >= (stream_interval.get('start_time', 0) | int) }}"
+          # Bounded by the configured start date only, never by the saved cursor (see `per_ticket_incremental_sync`).
+          condition: "{{ (timestamp(record['created_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
         schema_normalization: Default
       paginator:
         $ref: "#/definitions/links_next_paginator"
@@ -1087,8 +1088,12 @@ definitions:
   # Cursor for the per-ticket substreams that carry a record cursor of their own (`ticket_events`,
   # `ticket_comments`, both on the audit's `created_at`): the parent `tickets` walk is bounded by
   # `parent_state`, and this cursor tracks the newest record seen. One global value is kept instead
-  # of one entry per ticket. Only usable with a record cursor that never lies in the future: a value
-  # past the clock leaves the next sync with an empty slice (see `ticket_metric_events_stream`).
+  # of one entry per ticket. The cursor never filters records: a changed ticket re-emits its whole
+  # audit history from `start_date` on, because the global value is not the time that ticket was last read (a ticket
+  # updated while the walk runs moves ahead of the walk and is first seen a sync later, when a
+  # filter on the global cursor would drop the audits it gained in between). Only usable with a
+  # record cursor that never lies in the future: a value past the clock leaves the next sync with
+  # an empty slice (see `ticket_metric_events_stream`).
   per_ticket_incremental_sync:
     $ref: "#/definitions/sorted_list_incremental_sync"
     global_substream_cursor: true
@@ -1096,8 +1101,8 @@ definitions:
   # One request per ticket the `tickets` stream returns (`incremental_dependency`), reading
   # `GET /tickets/{ticket_id}/audits.json`. Shared by `ticket_audits_per_ticket`, `ticket_events`
   # and `ticket_comments`; each stream supplies its own `record_selector`. The endpoint returns the
-  # whole audit history of the ticket, oldest first, so a changed ticket re-emits all of its audits
-  # and streams with a record cursor filter them client-side. Audits are the source of ticket events
+  # whole audit history of the ticket, oldest first, so a changed ticket re-emits all of its audits,
+  # comments and events from `start_date` on (no stream filters on the cursor, see `per_ticket_incremental_sync`). Audits are the source of ticket events
   # and comments since Zendesk stopped serving the Incremental Ticket Event Export to third-party
   # integrations. The error handler is keyed on the status code only: Zendesk does not guarantee a
   # JSON body on these responses, and a refusal is scoped to one ticket, not to the stream
@@ -1346,7 +1351,8 @@ definitions:
           type: DpathExtractor
           field_path: ["audits"]
         record_filter:
-          condition: "{{ (timestamp(record['created_at']) | int) >= (stream_interval.get('start_time', 0) | int) }}"
+          # Bounded by the configured start date only, never by the saved cursor (see `per_ticket_incremental_sync`).
+          condition: "{{ (timestamp(record['created_at']) | int) >= ((timestamp(config.get('start_date')) | int) if config.get('start_date') else (day_delta(-730, '%s') | int)) }}"
         schema_normalization: Default
     transformations:
       - type: AddFields

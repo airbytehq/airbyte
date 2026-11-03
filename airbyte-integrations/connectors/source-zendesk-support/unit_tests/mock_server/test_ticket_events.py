@@ -204,7 +204,7 @@ class TestTicketEventsStreamIncremental(TestCase):
     @HttpMocker()
     def test_given_5_x_state_when_read_then_the_parent_walk_starts_from_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
         """A 5.x state is the flat `{"timestamp": "<unix timestamp>"}` cursor of the export. The CDK seeds the
-        parent `tickets` cursor from that single value, and audits older than the lookback window are dropped."""
+        parent `tickets` cursor from that single value, and every audit of a visited ticket is emitted."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"timestamp": str(previous)}).build()
@@ -222,19 +222,20 @@ class TestTicketEventsStreamIncremental(TestCase):
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
         assert len(output.errors) == 0
-        # 1002 is within the one-hour lookback window of the saved cursor, so it is re-emitted.
-        assert sorted(record.record.data["id"] for record in output.records) == [1002, 1003]
+        # 1001 and 1002 predate the saved cursor and are emitted anyway: the cursor bounds the parent walk, not the audits.
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002, 1003]
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"timestamp": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
 
     @HttpMocker()
-    def test_given_6_0_state_when_read_then_only_changed_tickets_are_visited_and_audits_within_the_lookback_are_re_emitted(
+    def test_given_6_0_state_when_read_then_only_changed_tickets_are_visited_and_all_their_audits_are_re_emitted(
         self, http_mocker: HttpMocker
     ) -> None:
         """A second sync from a 6.0.0 global state: the parent walk resumes from `parent_state` (one hour of lookback),
-        unchanged tickets are not visited, and the visited ticket re-emits only the audits newer than the global
-        cursor minus the lookback window."""
+        unchanged tickets are not visited, and the visited ticket re-emits all of its audits, including ones older
+        than the global cursor (a ticket updated during the previous walk is first seen now, and its audits from
+        before that walk must not be lost)."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = (
@@ -265,7 +266,7 @@ class TestTicketEventsStreamIncremental(TestCase):
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
         assert len(output.errors) == 0
-        assert sorted(record.record.data["id"] for record in output.records) == [1002, 1003]
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002, 1003]
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"timestamp": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
