@@ -91,8 +91,11 @@ object SnowflakeLiveTestSupport {
         return DriverManager.getConnection(String.format(config.jdbcUrlFmt, config.realHost), props)
     }
 
+    /**
+     * Serialized per connection: a class's concurrently running tests share its admin connection.
+     */
     fun execute(conn: Connection, sql: String) {
-        conn.createStatement().use { it.execute(sql) }
+        synchronized(conn) { conn.createStatement().use { it.execute(sql) } }
     }
 
     /** Runs a `;`-terminated SQL script from the test resources with `${VAR}` substitution. */
