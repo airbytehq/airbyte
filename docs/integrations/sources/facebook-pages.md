@@ -80,8 +80,8 @@ You can choose which metrics each insights stream requests with the **Page Insig
 
 - `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
 - `post_insights`: `post_media_view`, `post_total_media_view_unique`, `post_clicks`, `post_clicks_by_type`, `post_reactions_by_type_total`
-- `video_insights`: `total_video_views`, `total_video_views_unique`, `total_video_complete_views`, `total_video_avg_time_watched`, `total_video_view_total_time`, `total_video_impressions`, `total_video_impressions_unique`, `total_video_reactions_by_type_total`
-- `reel_insights`: `blue_reels_play_count`, `fb_reels_total_plays`, `fb_reels_replay_count`, `post_impressions_unique`, `post_video_avg_time_watched`, `post_video_view_time`, `post_video_likes_by_reaction_type`, `post_video_social_actions`
+- `video_insights`: `total_video_views`, `total_video_complete_views`, `total_video_avg_time_watched`, `total_video_view_total_time`, `total_video_reactions_by_type_total`
+- `reel_insights`: `blue_reels_play_count`, `fb_reels_total_plays`, `fb_reels_replay_count`, `post_video_avg_time_watched`, `post_video_view_time`, `post_video_likes_by_reaction_type`, `post_video_social_actions`
 
 By default, Facebook returns every period it supports for each `page_insights` metric, usually `day`, `week` and `days_28`, so each metric produces about three records per request. If you only need one, set **Page Insights Period** to that period and the stream requests only it.
 

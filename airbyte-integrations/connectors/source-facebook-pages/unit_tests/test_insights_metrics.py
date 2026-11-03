@@ -34,7 +34,7 @@ def _requested(stream, path, param, edge, config):
 STREAMS = [
     ("page_insights", "insights", "metric", None, "{}", "page_total_actions,page_post_engagements"),
     ("post_insights", "feed", "fields", "insights", "insights.metric({})", "post_media_view,post_total_media_view_unique"),
-    ("video_insights", "videos", "fields", "video_insights", "video_insights.metric({})", "total_video_views,total_video_views_unique"),
+    ("video_insights", "videos", "fields", "video_insights", "video_insights.metric({})", "total_video_views,total_video_complete_views"),
     ("reel_insights", "video_reels", "fields", "video_insights", "video_insights.metric({})", "blue_reels_play_count,fb_reels_total_plays"),
 ]
 
