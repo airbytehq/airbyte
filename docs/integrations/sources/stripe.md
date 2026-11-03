@@ -67,11 +67,13 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 10. (Optional) For **Streams with API Data Retention Validation**, select the streams whose cursor age the connector checks against Stripe's 30-day [Events API retention limit](https://stripe.com/docs/api/events). If a selected stream's cursor is older than 30 days, the connector runs a full refresh for that stream instead of an incremental sync that would miss older changes. By default, no streams are selected, so the connector never overrides a stream's configured sync mode based on cursor age. For advice on which streams benefit from this check, see [Cursor age validation and automatic full refresh](#cursor-age-validation-and-automatic-full-refresh).
 
-11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+11. (Optional) For **Accounts start date**, enter the UTC date and time from which the `Accounts` stream reads connected accounts, in the format `YYYY-MM-DDTHH:mm:ssZ`. The default, `2010-01-01T00:00:00Z`, reads every connected account; a later date leaves out the accounts created before it, on full refreshes too.
 
-12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+12. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
-13. Click **Set up source** and wait for the tests to complete.
+13. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- markdownlint-enable MD029 -->
 <HideInUI>
@@ -297,7 +299,7 @@ The `Accounts` stream lists the connected accounts of a Stripe Connect platform.
 
 Since version 7.1.0:
 
-- A full refresh reads `/v1/accounts` in 30-day `created` windows from January 2010 to now, and reads up to **Number of Concurrent Threads** windows at the same time. Stripe allows 50 in-progress requests per live-mode account, shared by all streams (see [Stripe's rate limits](https://docs.stripe.com/rate-limits)), so values above about 25 gain little and can trigger rate-limit retries.
+- A full refresh reads `/v1/accounts` in 30-day `created` windows from the **Accounts start date** (January 2010 by default) to now, and reads up to **Number of Concurrent Threads** windows at the same time. Stripe allows 50 in-progress requests per live-mode account, shared by all streams (see [Stripe's rate limits](https://docs.stripe.com/rate-limits)), so values above about 25 gain little and can trigger rate-limit retries.
 - A full refresh saves its bookmark only when the whole read completes, so a failed attempt starts again from the first window on retry rather than resuming.
 - After a full read the stream's bookmark is stored in the same form `Bank Accounts` uses since 7.0.3; earlier connector versions read it without error.
 - Stripe doesn't return `created` for Standard connected accounts; their `updated` value is the sync time, as in earlier versions.

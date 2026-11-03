@@ -199,14 +199,15 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   # A Connect platform's /v1/events never carries connected-account events, so accounts reads the list by created.
-  # Fixed start so a full refresh keeps covering every account; fixed step so num_workers reads windows in parallel.
+  # The start defaults to 2010 so a full refresh keeps covering every account, and accounts_start_date lets a user
+  # move it; fixed step so num_workers reads windows in parallel.
   accounts_cursor:
     $ref: "#/definitions/entity_with_slice_cursor"
     step: P30D
     start_datetime:
       type: MinMaxDatetime
-      datetime: "2010-01-01T00:00:00Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime: "{{ format_datetime(config.get('accounts_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
 
   # Events flow components
   events_based_stream:
@@ -2082,6 +2083,19 @@ spec:
         uniqueItems: true
         default: []
         order: 7
+      accounts_start_date:
+        type: string
+        title: Accounts start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2010-01-01T00:00:00Z. The Accounts stream reads the connected
+          accounts created on or after this date. Keep the default to read every connected account; a later
+          date leaves out the accounts created before it, on full refreshes too.
+        default: "2010-01-01T00:00:00Z"
+        examples:
+          - "2010-01-01T00:00:00Z"
+        format: date-time
+        order: 8
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:

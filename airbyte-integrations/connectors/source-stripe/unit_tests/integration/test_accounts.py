@@ -187,6 +187,23 @@ class AccountsTest(TestCase):
         assert _bookmark(actual_messages) == str(created_inside_window(WINDOW_COUNT - 1))
 
     @HttpMocker()
+    def test_given_accounts_start_date_when_full_refresh_then_windows_start_there(self, http_mocker: HttpMocker) -> None:
+        accounts_start_date = _NOW - timedelta(days=20)
+        (window,) = windows_from(accounts_start_date.replace(microsecond=0))
+        request = request_for_window(_create_accounts_request(), *window).build()
+        created = int((accounts_start_date + timedelta(days=1)).timestamp())
+        http_mocker.get(request, _a_page_with(_create_record().with_cursor(created)))
+        config = _create_config().with_accounts_start_date(accounts_start_date).build()
+
+        source = get_source(config=config, state=_NO_STATE)
+        actual_messages = read(source, config=config, catalog=_create_catalog())
+
+        assert len(actual_messages.records) == 1
+        http_mocker.assert_number_of_calls(request, 1)
+        assert len(actual_messages.state_messages) == 1
+        assert _bookmark(actual_messages) == str(created)
+
+    @HttpMocker()
     def test_standard_account_without_created_gets_sync_time(self, http_mocker: HttpMocker) -> None:
         standard_account = _create_record().with_id("acct_standard").build()
         standard_account.pop("created")
