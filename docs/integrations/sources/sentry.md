@@ -78,7 +78,7 @@ The authentication token must include the scopes required by the streams you syn
 
 If the token is missing a scope, the corresponding stream returns an HTTP 403 error. See the Sentry [permissions and scopes](https://docs.sentry.io/api/permissions/) reference for details.
 
-Airbyte tests the connection by reading the configured project's details, so setup fails without `project:read` on that project, even if you plan to sync only organization-level streams.
+Airbyte tests the connection by reading the details of the first project in **Projects**, so setup fails without `project:read` on that project, even if you plan to sync only organization-level streams.
 
 ## Limitations and troubleshooting
 
@@ -109,11 +109,11 @@ If setup or a sync fails with the error `Sentry organization or project is missi
 
 Airbyte rejects empty or whitespace-only values for **Organization** and **Projects** before contacting Sentry.
 
-:::note Version 1.1.0
+### Pinning a connection to version 1.0.16 or earlier
 
-**Project** became **Projects**, a list. Existing connections are converted to a one-item list automatically on their first sync. If you pin a connection back to version 1.0.16 or earlier afterwards, edit **Projects** back to a single slug.
+In version 1.1.0, the **Project** setting became **Projects**, a list. The connector converts an existing single slug to a one-item list the first time version 1.1.0 runs, and Airbyte saves the converted setting. Existing connections keep their `events` and `issues` cursors and don't need any action.
 
-:::
+If you pin a connection back to version 1.0.16 or earlier after that conversion, the connection fails until you edit **Projects** back to a single slug. Earlier versions can't read the per-project cursors that 1.1.0 saves, so the first sync after the rollback re-reads the `events` and `issues` streams in full.
 
 ## IP allow list
 
@@ -126,7 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-10-29 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Sync multiple projects (existing single-project settings are migrated automatically), and add the **Events start date** (`start_date`) and **Events full payload** (`events_full_payload`) options |
+| 1.1.0 | 2026-10-30 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Sync multiple projects (existing single-project settings are migrated automatically), and add the **Events start date** (`start_date`) and **Events full payload** (`events_full_payload`) options |
 | 1.0.16 | 2026-10-20 | [89398](https://github.com/airbytehq/airbyte/pull/89398) | Update dependencies |
 | 1.0.15 | 2026-10-13 | [88408](https://github.com/airbytehq/airbyte/pull/88408) | Type the `sentry:replay_rage_click_issues` project option as boolean in `project_detail` and `all_projects_detail` |
 | 1.0.14 | 2026-10-13 | [88806](https://github.com/airbytehq/airbyte/pull/88806) | Update dependencies |
