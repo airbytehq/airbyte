@@ -19,6 +19,3 @@ acceptance_tests:
       - config_path: "secrets/config.json"
   incremental:
     bypass_reason: "Test workspace has a single day of activity data; enable once more test data is seeded"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
