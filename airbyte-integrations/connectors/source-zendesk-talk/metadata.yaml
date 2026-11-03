@@ -64,14 +64,16 @@ data:
           The `calls` and `call_legs` streams are removed. Zendesk is ending access to its
           Incremental APIs for third-party integrations, including the Talk incremental call
           and call-leg exports these streams read from, and names no replacement endpoint for
-          them. Zendesk starts blocking these requests on December 2, 2026 and finishes the
-          rollout on January 19, 2027, so on version 2.x the two streams stop syncing during
-          that window. Connections that don't sync `calls` or `call_legs` are not affected and
-          need no action. Data these streams already synced stays in your destination. After
-          upgrading, refresh the source schema so the two streams leave the connection; no
-          other stream needs a clear or re-sync. If you need more time on 2.x, your Zendesk
+          them. Zendesk blocks third-party integrations from these endpoints between
+          December 2, 2026 and January 19, 2027 and deactivates API tokens on April 30, 2027,
+          so version 2.x has no lasting way to sync the two streams. Connections that don't
+          sync `calls` or `call_legs` are not affected and need no action. Data these streams
+          already synced stays in your destination. After upgrading, refresh the source schema
+          so the two streams leave the connection; no other stream needs a clear or re-sync.
+          Airbyte Cloud upgrades connections to 3.0.0 automatically on December 2, 2026. Only a
+          self-managed Airbyte deployment can keep version 2.x for a little longer; its Zendesk
           admin can request a 60-day extension for Airbyte in Admin Center under
-          Apps & integrations > APIs > API Configuration; the streams still stop working
+          Apps & integrations > APIs > API Configuration, and the streams still stop working
           when the extension ends. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/zendesk-talk-migrations#upgrading-to-300).
         upgradeDeadline: "2026-12-02"

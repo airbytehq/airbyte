@@ -46,7 +46,8 @@ def test_removed_streams_are_gone_everywhere():
 def test_no_stream_uses_an_incremental_export_endpoint():
     manifest = _manifest()
     for name, stream in manifest["definitions"]["streams"].items():
-        path = stream["retriever"]["requester"]["path"]
+        requester = stream["retriever"]["requester"]
+        path = requester.get("path") or requester.get("url") or ""
         assert "incremental" not in path, f"{name} reads an incremental export: {path}"
 
 

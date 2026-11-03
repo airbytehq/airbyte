@@ -1,9 +1,9 @@
 # Zendesk Talk
 
 :::caution The `calls` and `call_legs` streams are removed in version 3.0.0 (notice from November 3, 2026)
-Zendesk is [ending access to its Incremental APIs for third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers), including the Talk incremental call and call-leg exports behind the `calls` and `call_legs` streams, and names no replacement endpoint for them. Zendesk starts blocking these requests on December 2, 2026 and completes the rollout on January 19, 2027 (with a pause from December 17, 2026 to January 4, 2027). Connector version 3.0.0 removes both streams; on version 2.x they stop syncing during that window while the connection test keeps passing. Data already synced stays in your destination. See the [migration guide](zendesk-talk-migrations.md#upgrading-to-300).
+Zendesk is [ending access to its Incremental APIs for third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers), including the Talk incremental call and call-leg exports behind the `calls` and `call_legs` streams, and names no replacement endpoint for them. Zendesk blocks third-party integrations from these endpoints starting December 2, 2026 and completes the rollout on January 19, 2027 (with a pause from December 17, 2026 to January 4, 2027). Connector version 3.0.0 removes both streams. On version 2.x the two streams stop working once Zendesk blocks the integration's requests, while the connection test keeps passing because it reads a different endpoint. Data already synced stays in your destination. See the [migration guide](zendesk-talk-migrations.md#upgrading-to-300).
 
-If you need the two streams for a little longer, stay on version 2.x and have your Zendesk admin request a 60-day extension for Airbyte in Admin Center under **Apps & integrations > APIs > API Configuration** (select Airbyte from the partner list and save). The extension only postpones the cutoff. Separately, Zendesk deactivates all API tokens on April 30, 2027, so switch API token sources to OAuth before then.
+Airbyte Cloud upgrades connections to version 3.0.0 automatically on December 2, 2026. If you run a self-managed Airbyte deployment and need the two streams for a little longer, you can keep version 2.x and have your Zendesk admin request a 60-day extension for Airbyte in Admin Center under **Apps & integrations > APIs > API Configuration** (select Airbyte from the partner list and save). The extension only postpones the cutoff. Separately, Zendesk deactivates all API tokens on April 30, 2027, so switch API token sources to OAuth before then.
 :::
 
 ## Prerequisites
@@ -43,7 +43,7 @@ Register an OAuth client in your Zendesk Admin Center under **Apps and integrati
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
 5. Choose your **Authentication** method and enter the required credentials. Use **OAuth 2.0** unless you already have an active API token.
-6. Enter a **Start Date**. The field is kept for compatibility with existing configurations; none of the current streams filters by date.
+6. (Optional) Enter a **Start Date**. The field is kept for compatibility with existing configurations; none of the current streams filters by date.
 7. Click **Set up source**.
 
 <!-- /env:cloud -->

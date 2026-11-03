@@ -491,7 +491,6 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - subdomain
-      - start_date
     properties:
       subdomain:
         type: string
@@ -614,9 +613,9 @@ spec:
       start_date:
         type: string
         description: >-
-          The date from which you'd like to replicate data for Zendesk Talk API,
-          in the format YYYY-MM-DDT00:00:00Z. All data generated after this date
-          will be replicated.
+          Kept for compatibility with existing configurations. No current stream
+          filters by date, so this value has no effect. Format:
+          YYYY-MM-DDT00:00:00Z.
         order: 2
         title: Start Date
         format: date-time
