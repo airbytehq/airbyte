@@ -244,7 +244,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Data replication platform",
+      label: "Platform",
       link: {
         type: "doc",
         id: "readme",
@@ -402,6 +402,10 @@ module.exports = {
               label: "Access management",
               items: [
                 {
+                  type: "doc",
+                  id: "access-management/manage-users",
+                },
+                {
                   type: "category",
                   label: "Single Sign-On (SSO)",
                   link: {
@@ -471,6 +475,7 @@ module.exports = {
             "airbyte-mcp/self-managed",
           ],
         },
+        "airbyte-knowledge-mcp",
         {
           type: "category",
           label: "Context layer",
