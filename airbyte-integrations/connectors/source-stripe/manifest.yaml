@@ -1173,16 +1173,14 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Data was not found. Error message: {{ response['error']['message'] }}
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: >-
+                  Data was not found. Error message: {{ response['error']['message'] }}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1199,16 +1197,14 @@ definitions:
                     $ref: "#/definitions/base_requester"
                     # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
-                              error_message: >-
-                                Data was not found. Error message: {{ response['error']['message'] }}
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          http_codes:
+                            - 404
+                          error_message: >-
+                            Data was not found. Error message: {{ response['error']['message'] }}
                   $parameters:
                     path: customers
                 incremental_sync:
@@ -1233,19 +1229,17 @@ definitions:
                     path: events
                     # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
-                              error_message: >-
-                                Data was not found. Error message: {{ response['error']['message'] }}
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: IGNORE
+                          http_codes:
+                            - 404
+                          error_message: >-
+                            Data was not found. Error message: {{ response['error']['message'] }}
                   $parameters:
                     request_parameters:
-                      types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+                      types[]: '{{["customer.updated", "customer.deleted"]}}'
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
@@ -1258,6 +1252,9 @@ definitions:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
         global_substream_cursor: true
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.CustomerBalanceTransactionsEventsParentStateMigration
       transformations:
         - type: RemoveFields
           field_pointers:
