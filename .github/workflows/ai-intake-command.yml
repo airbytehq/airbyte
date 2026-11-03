@@ -68,7 +68,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Items created before this date are not swept; `/ai-intake` works on any item.
+  # The sweep reads items created in the last 30 days, never before this date; `/ai-intake` works on any item.
   SWEEP_SINCE: "2026-11-01"
   SWEEP_LIMIT: "5"
 
@@ -179,7 +179,7 @@ jobs:
           title="[OSS Intake] Sessions that never posted a result"
           items=$(jq -r --arg repo "$GITHUB_REPOSITORY" '.[] | "- [ ] https://github.com/\($repo)/issues/\(.)"' <<<"$STALE")
           body=$(printf '%s\n' \
-            "These community items got an intake session (label \`ai-intake-started\`) more than 6 hours ago, but no \`intake/*\` label: the session failed or died." \
+            "These community items got an intake session (label \`ai-intake-started\`) more than 6 hours ago, and no \`intake/*\` label since: the session failed or died." \
             "" \
             "$items" \
             "" \

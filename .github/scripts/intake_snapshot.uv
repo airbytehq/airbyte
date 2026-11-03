@@ -21,9 +21,10 @@ Usage:
       Screens a fixed benign sentence. Fails if Jev errors, rejects it, or flags it, so a broken or changed API
       fails the run once instead of holding every item.
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
-      Prints {"numbers": [...], "stale": [...]}. `numbers`: open community items with no intake/* or
-      ai-intake-started label, oldest first, with items labeled ai-intake-screen-error after the rest. `stale`:
-      items labeled ai-intake-started more than STALE_HOURS ago that still have no intake/* label.
+      Prints {"numbers": [...], "stale": [...]}. `numbers`: open community items created in the last SWEEP_DAYS
+      (and not before --since) with no intake/* or ai-intake-started label, oldest first, with items labeled
+      ai-intake-screen-error after the rest. `stale`: items labeled ai-intake-started more than STALE_HOURS ago
+      that got no intake/* label since.
   intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH --details-file PATH
       Prints {"url", "flagged", "error", "skipped", "holds"} and, only when neither flagged nor error, writes the
       prompt. The details file lists `holds`: the submission when it is flagged, otherwise any flagged linked
@@ -65,6 +66,12 @@ MAX_DIFF_CHARS = 300_000
 MAX_LINKED = 5
 # A session that hasn't set an intake/* label this long after it started is reported as stuck.
 STALE_HOURS = 6
+# Started items that kept an older intake/* label are checked while they were updated this recently.
+STALE_DAYS = 30
+# The sweep reads items created this recently (and not before --since).
+SWEEP_DAYS = 30
+# Bot authors whose items the sweep never picks, left out of the search so they don't fill its 1000-result cap.
+SKIPPED_APPS = ["devin-ai-integration", "dependabot", "octavia-bot", "octavia-bot-hoard"]
 CANARY_TEXT = "source-faker fails with a 401 error when syncing the users stream after upgrading to 6.2.0. Steps: create a connection, run a sync."
 INTAKE_STATES = [
     "pending-human",
@@ -166,16 +173,27 @@ def search(query: str) -> list[dict]:
         found += items
         if len(items) < 100:
             break
+    if result.get("total_count", 0) > len(found):
+        # The search API returns at most 1000 results; with oldest first, the newest are the ones cut off.
+        print(f"::warning::search matched {result['total_count']} items, only {len(found)} were read", file=sys.stderr)
     return found
 
 
+def days_ago(days: int) -> str:
+    return (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)).date().isoformat()
+
+
 def select(since: str, limit: int) -> dict:
-    return {"numbers": pick(since, limit), "stale": stale_started(since)}
+    return {"numbers": pick(since, limit), "stale": stale_started()}
 
 
 def pick(since: str, limit: int) -> list[int]:
     labels = " ".join(f'-label:"{label}"' for label in [*(f"intake/{state}" for state in INTAKE_STATES), STARTED_LABEL])
-    query = f"repo:{REPO} is:open created:>={since} {labels}"
+    # Bot and staff items are never labeled, so with a fixed start date they pile up past the search API's
+    # 1000-result cap. A rolling window and the known bot authors keep the result set small.
+    window = max(since, days_ago(SWEEP_DAYS))
+    bots = " ".join(f"-author:app/{app}" for app in SKIPPED_APPS)
+    query = f"repo:{REPO} is:open created:>={window} {bots} {labels}"
     numbers, errored = [], []
     covered: set[int] = set()  # linked items the picked items' sessions will evaluate
     for item in search(query):
@@ -211,22 +229,30 @@ def links_of(item: dict) -> set[int]:
         return set()
 
 
-def stale_started(since: str) -> list[int]:
-    """Items whose session started STALE_HOURS ago or more and never set an intake/* label: the session failed
-    or died. The sweep doesn't retry them (that could loop on a session that always fails), it reports them."""
-    labels = " ".join(f'-label:"intake/{state}"' for state in INTAKE_STATES)
+def stale_started() -> list[int]:
+    """Items whose session started STALE_HOURS ago or more and set no intake/* label since: the session failed
+    or died. The sweep doesn't retry them (that could loop on a session that always fails), it reports them.
+    Covers `/ai-intake` runs too: items created before SWEEP_SINCE, and items that already had an intake/*
+    label (an override, or a re-run), which the session replaces only when it finishes."""
+    no_state = " ".join(f'-label:"intake/{state}"' for state in INTAKE_STATES)
+    candidates = {item["number"]: item for item in search(f'repo:{REPO} is:open label:"{STARTED_LABEL}" {no_state}')}
+    # Items that kept an older intake/* label. Bounded by recent activity: a started label updates the item.
+    for item in search(f'repo:{REPO} is:open label:"{STARTED_LABEL}" updated:>={days_ago(STALE_DAYS)}'):
+        candidates.setdefault(item["number"], item)
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=STALE_HOURS)
     stale = []
-    for item in search(f'repo:{REPO} is:open created:>={since} label:"{STARTED_LABEL}" {labels}'):
-        if any(label["name"].startswith("intake/") for label in item.get("labels", [])):
-            continue
+    for number in sorted(candidates):
         try:
-            events = gh_pages(f"repos/{REPO}/issues/{item['number']}/timeline")
+            events = gh_pages(f"repos/{REPO}/issues/{number}/timeline")
         except (ScreenError, Flagged):
             continue
-        started = [e["created_at"] for e in events if e.get("event") == "labeled" and (e.get("label") or {}).get("name") == STARTED_LABEL]
-        if started and datetime.datetime.fromisoformat(started[-1].replace("Z", "+00:00")) < cutoff:
-            stale.append(item["number"])
+        labeled = [(e["created_at"], (e.get("label") or {}).get("name") or "") for e in events if e.get("event") == "labeled"]
+        started = [at for at, name in labeled if name == STARTED_LABEL]
+        if not started or datetime.datetime.fromisoformat(started[-1].replace("Z", "+00:00")) >= cutoff:
+            continue
+        # ISO timestamps in the same format compare as strings.
+        if not any(name.startswith("intake/") and at >= started[-1] for at, name in labeled):
+            stale.append(number)
     return stale
 
 
