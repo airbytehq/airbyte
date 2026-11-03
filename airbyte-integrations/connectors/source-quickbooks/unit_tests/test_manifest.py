@@ -19,6 +19,18 @@ MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 TOKEN_REFRESH_ENDPOINT = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 
+REFERENCE_STREAM_NAMES = {
+    "accounts",
+    "classes",
+    "departments",
+    "employees",
+    "payment_methods",
+    "tax_agencies",
+    "tax_codes",
+    "tax_rates",
+    "terms",
+}
+
 
 @pytest.fixture(scope="module")
 def manifest():
@@ -56,6 +68,26 @@ def test_every_stream_shares_the_error_handler(manifest):
     for stream in manifest["streams"]:
         error_handler = stream["retriever"]["requester"]["error_handler"]
         assert error_handler["$ref"] == "#/definitions/error_handler", stream["name"]
+
+
+def test_only_reference_streams_drop_the_30_day_window(manifest):
+    for streams in (manifest["definitions"]["streams"].values(), manifest["streams"]):
+        seen_reference_names = set()
+        for stream in streams:
+            incremental_sync = stream.get("incremental_sync")
+            if incremental_sync is None:
+                continue
+
+            name = stream["name"]
+            if name in REFERENCE_STREAM_NAMES:
+                seen_reference_names.add(name)
+                assert "step" not in incremental_sync, name
+                assert "cursor_granularity" not in incremental_sync, name
+            else:
+                assert incremental_sync["step"] == "P30D", name
+                assert incremental_sync["cursor_granularity"] == "PT0S", name
+
+        assert seen_reference_names == REFERENCE_STREAM_NAMES
 
 
 def test_fault_code_filters_do_not_use_error_message_contains(response_filters):

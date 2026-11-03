@@ -160,8 +160,72 @@ jobs:
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
         run: uv tool install airbyte-internal-ops
 
-      - name: Install Cloud SQL Proxy
+      - name: Resolve Variables
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
+        id: resolve-vars
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          master_version="$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>/dev/null || true)"
+          merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/master...$(git rev-parse HEAD)" --jq '.merge_base_commit.sha' 2>/dev/null || true)"
+          base_version=""
+          if [[ -n "${merge_base}" ]]; then
+            base_version="$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref "${merge_base}" 2>/dev/null || true)"
+          fi
+          pr_version="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${GITHUB_WORKSPACE}" 2>/dev/null || true)"
+
+          # Unchanged only when a readable PR version equals a readable master or merge-base version.
+          version_changed="true"
+          if [[ -n "${pr_version}" && ( "${pr_version}" == "${master_version}" || "${pr_version}" == "${base_version}" ) ]]; then
+            version_changed="false"
+            echo "::notice::${CONNECTOR_NAME} version ${pr_version} is not changed by this PR (master: ${master_version:-unknown}, merge-base ${merge_base:-unknown}: ${base_version:-unknown}); merging publishes no new version, so the progressive rollout gate is skipped."
+          fi
+
+          cleanup_stale="false"
+          if [[ "${version_changed}" == "false" && -n "${PR_NUMBER}" ]]; then
+            cleanup_stale="true"
+          fi
+
+          {
+            printf "master-version=%s\n" "${master_version}"
+            printf "merge-base=%s\n" "${merge_base}"
+            printf "base-version=%s\n" "${base_version}"
+            printf "pr-version=%s\n" "${pr_version}"
+            printf "version-changed=%s\n" "${version_changed}"
+            printf "cleanup-stale=%s\n" "${cleanup_stale}"
+          } | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Find stale progressive rollout gate comment
+        if: steps.resolve-vars.outputs.cleanup-stale == 'true'
+        id: stale-rollout-comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: github-actions[bot]
+          body-includes: "<!-- progressive-rollout-gate:${{ matrix.connector }} -->"
+
+      - name: Mark stale progressive rollout gate comment as skipped
+        if: >
+          steps.resolve-vars.outputs.cleanup-stale == 'true' &&
+          steps.stale-rollout-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.stale-rollout-comment.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          edit-mode: replace
+          body: |
+            <!-- progressive-rollout-gate:${{ matrix.connector }} -->
+            > **Progressive rollout gate for `${{ matrix.connector }}`: skipped**
+            >
+            > This PR doesn't change the `${{ matrix.connector }}` version (`${{ steps.resolve-vars.outputs.pr-version }}` on this branch), so merging publishes no new version. No rollout acknowledgement is needed.
+            >
+            > If this PR's description still has a rollout bypass checkbox for `${{ matrix.connector }}`, you can delete it.
+            >
+            > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Install Cloud SQL Proxy
+        if: steps.resolve-vars.outputs.version-changed == 'true'
         env:
           CLOUD_SQL_PROXY_VERSION: v2.15.0
           CLOUD_SQL_PROXY_SHA256: cf3e9d069ea0d09cdfddce77daa36811bb0b963b1169e9c3f1586433ca7325fa
@@ -177,14 +241,14 @@ jobs:
           cloud-sql-proxy --version
 
       - name: Start Cloud SQL Proxy
-        if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
+        if: steps.resolve-vars.outputs.version-changed == 'true'
         env:
           # Local Cloud SQL Proxy port for prod DB queries.
           DB_PORT: "15432"
         run: airbyte-ops cloud db start-proxy --port "${DB_PORT}"
 
       - name: Get rollout status
-        if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
+        if: steps.resolve-vars.outputs.version-changed == 'true'
         id: rollout-status
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
@@ -197,25 +261,12 @@ jobs:
             echo "EOF"
           } | tee -a "${GITHUB_OUTPUT}"
 
-      - name: Get master connector version
-        if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
-        id: master-version
-        env:
-          CONNECTOR_NAME: ${{ matrix.connector }}
-        run: |
-          if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>/dev/null); then
-            echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
-          else
-            echo "Connector ${CONNECTOR_NAME} not found on master (net-new connector). Skipping version check."
-            echo "version=" | tee -a "${GITHUB_OUTPUT}"
-          fi
-
       - name: Resolve rollout gate state
-        if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
+        if: steps.resolve-vars.outputs.version-changed == 'true'
         id: rollout-gate-state
         env:
           ROLLOUT_STATUS_JSON: ${{ steps.rollout-status.outputs.json }}
-          MASTER_VERSION: ${{ steps.master-version.outputs.version }}
+          MASTER_VERSION: ${{ steps.resolve-vars.outputs.master-version }}
         run: |
           retool_base_url="https://airbyte.retool.com/apps/7aa774a0-8750-11ef-896b-236cbc10fa7e/Connector%20Rollout%20Manager"
           actor_definition_id="$(jq -r '.actor_definition_id // empty' <<< "${ROLLOUT_STATUS_JSON}")"
@@ -296,8 +347,8 @@ jobs:
           APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || steps.rollout-bypass-dispatch.outputs.approved == 'true' }}
           EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || steps.rollout-bypass-dispatch.outputs.exists == 'true' }}
         run: |
-          echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
-          echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
+          echo "approved=${APPROVED}" | tee -a "$GITHUB_OUTPUT"
+          echo "exists=${EXISTS}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Find progressive rollout gate comment
         if: >
@@ -341,8 +392,8 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           COMMENT_ID="${EXISTING_COMMENT_ID:-${CREATED_COMMENT_ID}}"
-          echo "id=${COMMENT_ID}" | tee -a $GITHUB_OUTPUT
-          echo "url=https://github.com/${REPOSITORY}/pull/${PR_NUMBER}#issuecomment-${COMMENT_ID}" | tee -a $GITHUB_OUTPUT
+          echo "id=${COMMENT_ID}" | tee -a "$GITHUB_OUTPUT"
+          echo "url=https://github.com/${REPOSITORY}/pull/${PR_NUMBER}#issuecomment-${COMMENT_ID}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Add rollout bypass checkbox to PR description
         if: >
@@ -418,8 +469,8 @@ jobs:
             active_rollout: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout }}
             rollout_docker_image_tag: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].rollout_docker_image_tag || 'none' }}
             rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
-            master_version: ${{ steps.master-version.outputs.version }}
-            master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
+            master_version: ${{ steps.resolve-vars.outputs.master-version }}
+            master_rc_marker: ${{ contains(steps.resolve-vars.outputs.master-version, '-rc.') }}
             rollout_updated_by: ${{ steps.rollout-gate-state.outputs.rollout-updated-by }}
             retool_url: ${{ steps.rollout-gate-state.outputs.retool-url }}
             bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
@@ -454,7 +505,7 @@ jobs:
           steps.rollout-gate-state.outputs.has-master-rc-marker == 'true' &&
           steps.bypass-state.outputs.approved != 'true'
         run: |
-          echo "::error::${{ matrix.connector }} has an RC marker on master (${{ steps.master-version.outputs.version }}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
+          echo "::error::${{ matrix.connector }} has an RC marker on master (${{ steps.resolve-vars.outputs.master-version }}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
           exit 1
 
   progressive-rollout-gate-summary:

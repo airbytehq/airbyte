@@ -28,6 +28,7 @@ internal class SnowflakeCheckerTest {
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
+            every { internalTableSchema } returns "airbyte_internal"
         }
 
         val columnManager = SnowflakeColumnManager(snowflakeConfiguration)
@@ -54,6 +55,7 @@ internal class SnowflakeCheckerTest {
                 snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
             }
         }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace("airbyte_internal") }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
@@ -68,6 +70,7 @@ internal class SnowflakeCheckerTest {
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
+            every { internalTableSchema } returns "airbyte_internal"
         }
 
         val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
@@ -95,6 +98,7 @@ internal class SnowflakeCheckerTest {
                 snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
             }
         }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace("airbyte_internal") }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }

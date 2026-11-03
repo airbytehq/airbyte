@@ -63,3 +63,18 @@ create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 grant ownership on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role INTEGRATION_TESTER_DESTINATION revoke current grants;
 grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role NO_ACTIVE_WAREHOUSE_ROLE;
 ```
+
+## Integration test layout and cleanup
+
+`SnowflakeInsertAcceptanceTest` runs the full CDK acceptance suite. The other `*AcceptanceTest`
+variants each cover one dimension (`QUOTED_IDENTIFIERS_IGNORE_CASE`, protobuf/socket input,
+`NUMBER(38,9)`, raw-tables mode) and only run the tests whose behavior depends on it; the rest are
+`@Disabled` with a reason. Keep it that way when adding tests: add to the full suite, and to a
+variant only if the variant's dimension changes the behavior.
+
+Every artifact the tests create lives in a `test`-prefixed schema: final tables in the per-test
+namespace, and raw tables, temp tables and stages in the per-JVM `test..._internal` schema that
+`SnowflakeMigrationConfigurationUpdater` points `raw_data_schema` at. `SnowflakeDataCleaner` runs
+once per test JVM and drops `test*` schemas older than 24 hours. Runs from before this scheme left
+`test*` tables and `airbyte_stage_test*` stages behind in `overridden_raw_dataset` and
+`AIRBYTE_INTERNAL`; those need a one-off manual `DROP`.
