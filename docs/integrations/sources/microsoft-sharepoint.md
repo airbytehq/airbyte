@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [Microsoft 
 ### Prerequisites
 
 - A Microsoft 365 work or school account with access to the SharePoint sites and document libraries you want to sync.
-- For OAuth authentication: permission to consent to the `Files.Read.All`, `Sites.Read.All`, and `Sites.Selected` delegated permissions, or an administrator who can grant consent for your organization.
+- For OAuth authentication: a Microsoft account that can consent to the delegated permissions the connector requests: `Files.Read.All`, `Sites.Read.All`, and `Sites.Selected`.
 - For Service Key authentication (Airbyte Open Source): an app registration in Microsoft Entra ID with its Application (client) ID, Directory (tenant) ID, and a client secret, plus the User Principal Name (UPN) of a user in your tenant. See [Step 1: Set up SharePoint application](#step-1-set-up-sharepoint-application).
 
 ## Setup guide
