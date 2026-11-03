@@ -5,10 +5,12 @@
 import io
 import json
 import logging
+from pathlib import Path
 from typing import Any, Dict
 
 import pytest
 import responses
+import tomllib
 from destination_convex.client import ConvexClient
 from destination_convex.config import ConvexConfig
 from destination_convex.destination import DestinationConvex
@@ -31,6 +33,17 @@ from airbyte_cdk.models import (
 
 DEDUP_TABLE_NAME = "dedup_stream"
 DEDUP_INDEX_FIELD = "int_col"
+
+
+def test_python_compatibility() -> None:
+    connector_directory = Path(__file__).resolve().parents[1]
+    with (connector_directory / "pyproject.toml").open("rb") as project_file:
+        project = tomllib.load(project_file)
+    with (connector_directory / "poetry.lock").open("rb") as lock_file:
+        lock = tomllib.load(lock_file)
+
+    assert project["tool"]["poetry"]["dependencies"]["python"] == ">=3.11,<3.13"
+    assert lock["metadata"]["python-versions"] == ">=3.11,<3.13"
 
 
 @pytest.fixture(name="config")
