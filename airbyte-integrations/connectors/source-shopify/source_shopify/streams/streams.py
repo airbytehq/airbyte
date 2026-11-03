@@ -442,8 +442,9 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
         # transactions have no `updatedAt`, so a status change (e.g. a refund going from PENDING to SUCCESS) is only
         # visible through the parent order's `updatedAt`. Transactions of offsite payments can also predate their order.
+        # compare against the lookback-adjusted state, so orders re-fetched only by the lookback window are not dropped.
         order_cursor = record.get("order_updated_at") or record.get("order_created_at")
-        return bool(order_cursor) and order_cursor >= state_value
+        return bool(order_cursor) and order_cursor >= self._apply_lookback_window(state_value)
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):

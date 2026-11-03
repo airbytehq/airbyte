@@ -222,7 +222,7 @@ def test_transactions_graphql_refund_status_change_is_captured_incrementally(
 ) -> None:
     state = {"created_at": "2026-10-22T14:16:17+00:00"}
     pending = _order_jsonl(
-        1, "2026-10-20T08:00:00Z", 1001, "2026-10-22T14:00:00Z", order_updated_at="2026-10-22T14:00:00Z", kind="REFUND", status="PENDING"
+        1, "2026-10-20T08:00:00Z", 1001, "2026-10-22T14:00:00Z", order_updated_at="2026-10-22T14:20:00Z", kind="REFUND", status="PENDING"
     )
     newer_sale = _order_jsonl(2, "2026-10-22T14:59:00Z", 1002, "2026-10-22T14:59:10Z", order_updated_at="2026-10-22T14:59:10Z")
     succeeded = _order_jsonl(
@@ -232,7 +232,7 @@ def test_transactions_graphql_refund_status_change_is_captured_incrementally(
     stream, first_sync = _read_transactions(
         requests_mock, bulk_job_completed_response, auth_config, [pending, newer_sale], state_value=state["created_at"]
     )
-    assert [record["id"] for record in first_sync] == [1002]
+    assert [(record["id"], record["status"]) for record in first_sync] == [(1001, "PENDING"), (1002, "SUCCESS")]
     for record in first_sync:
         state = stream.get_updated_state(state, record)
     assert state == {"created_at": "2026-10-22T14:59:10+00:00"}
@@ -241,3 +241,32 @@ def test_transactions_graphql_refund_status_change_is_captured_incrementally(
         requests_mock, bulk_job_completed_response, auth_config, [succeeded], state_value=state["created_at"]
     )
     assert [(record["id"], record["status"]) for record in second_sync] == [(1001, "SUCCESS")]
+
+
+@pytest.mark.parametrize(
+    "lookback_window_in_days, expected_ids",
+    [
+        pytest.param(1, [1001], id="order_updated_within_lookback_is_emitted"),
+        pytest.param(0, [], id="order_updated_before_state_without_lookback_is_dropped"),
+    ],
+)
+def test_transactions_graphql_older_than_state_respects_lookback_window(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    lookback_window_in_days,
+    expected_ids,
+) -> None:
+    # the refund succeeded after the previous BULK job exported its order, but a newer transaction moved the state past it
+    succeeded = _order_jsonl(
+        1, "2026-10-20T08:00:00Z", 1001, "2026-10-22T14:00:00Z", order_updated_at="2026-10-22T14:16:46Z", kind="REFUND", status="SUCCESS"
+    )
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        {**auth_config, "lookback_window_in_days": lookback_window_in_days},
+        [succeeded],
+        state_value="2026-10-22T14:30:00+00:00",
+    )
+
+    assert [record["id"] for record in test_records] == expected_ids

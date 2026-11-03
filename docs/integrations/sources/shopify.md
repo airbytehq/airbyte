@@ -309,7 +309,9 @@ Some payment methods, such as offsite or redirect gateways like Klarna, create t
 
 #### Transaction status changes
 
-Shopify transactions have no `updated_at` field, so the `transactions` stream uses `created_at` as its cursor. Starting in version 4.3.4, an incremental sync also emits every transaction of an order updated since the last sync, so status changes, such as a refund going from `PENDING` to `SUCCESS`, reach the destination. The stream re-emits unchanged transactions of updated orders, so use **Incremental | Append + Deduped** to keep one row per transaction. Upgrading doesn't update rows that earlier versions left stale, so refresh the `transactions` stream to correct them.
+Shopify transactions have no `updated_at` field, so the `transactions` stream uses `created_at` as its cursor. Starting in version 4.3.4, an incremental sync also emits every transaction of an order updated since the saved cursor, which is the newest transaction `created_at` already synced, minus the **Lookback Window** if one is set. This lets status changes, such as a refund going from `PENDING` to `SUCCESS`, reach the destination. Any edit to an order, such as a tag or fulfillment change, re-emits all of its transactions, and when no new transactions are created the cursor doesn't move, so the same transactions can be emitted on every sync. Use **Incremental | Append + Deduped** to keep one row per transaction. Upgrading doesn't update rows that earlier versions left stale, so refresh the `transactions` stream to correct them.
+
+This applies to the default GraphQL `transactions` stream. Status changes are not yet captured incrementally by the REST `transactions` stream, which is used when **Add `user_id` to Transactions (slower)** is enabled, or by the `order_refunds` stream. Refresh those streams to correct stale rows.
 
 #### Product category values
 
