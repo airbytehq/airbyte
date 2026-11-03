@@ -21,7 +21,8 @@ definitions:
     policies:
       - type: MovingWindowCallRatePolicy
         rates:
-          - limit: 120
+          # Aircall allows 120 requests per minute per company, shared with the company's other integrations.
+          - limit: 100
             interval: PT1M
         matchers:
           - type: HttpRequestRegexMatcher
@@ -37,20 +38,13 @@ definitions:
       password: '{{ config["api_token"] }}'
     error_handler:
       $ref: "#/definitions/error_handler"
-  error_handler:
-    type: DefaultErrorHandler
-    backoff_strategies:
-      - $ref: "#/definitions/backoff_strategy"
-    response_filters:
-      - $ref: "#/definitions/response_filters/unauthorized"
-      - $ref: "#/definitions/response_filters/forbidden"
-      - $ref: "#/definitions/response_filters/result_limit"
-      - $ref: "#/definitions/response_filters/rate_limited"
-      - $ref: "#/definitions/response_filters/server_error"
+  # The reference only calls X-AircallApi-Reset a timestamp: its first 10 digits are epoch seconds
+  # whether Aircall sends seconds or milliseconds. Resets come within a minute; a later one is a bad header.
   backoff_strategy:
     type: WaitUntilTimeFromHeader
     header: X-AircallApi-Reset
-    min_wait: 1
+    regex: "^[0-9]{10}"
+    max_waiting_time_in_seconds: 300
   response_filters:
     unauthorized:
       type: HttpResponseFilter
@@ -68,49 +62,32 @@ definitions:
       failure_type: config_error
       http_codes: [403]
       error_message: >-
-        Aircall rejected the API ID and API token (HTTP 403).
-        Create a new API key in the Aircall Dashboard (Integrations & API > API
-        Keys, https://dashboard.aircall.io/integrations/api-keys) and update
-        the connector.
+        Aircall returned HTTP 403 for {{ request_url }}. Check that the API ID
+        and API token are valid (Integrations & API > API Keys,
+        https://dashboard.aircall.io/integrations/api-keys) and that your
+        Aircall plan includes this data.
+    # Aircall answers page 201 of an oversized query with 400 and puts the reason in `errors`
+    # ("Your query is limited to 10k results ..."); `message` only says BAD_REQUEST.
     result_limit:
       type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
-      http_codes: [400]
-      error_message_contains: "limited to 10k results"
+      predicate: "{{ 'limited to 10k results' in (response.get('errors', '') | string) }}"
       error_message: >-
-        Aircall returns at most 10,000 calls or contacts per request window.
-        Lower the Window size (days) setting so each window holds fewer than
-        10,000 records.
-    rate_limited:
-      type: HttpResponseFilter
-      action: RATE_LIMITED
-      http_codes: [429]
-    server_error:
-      type: HttpResponseFilter
-      action: RETRY
-      http_codes: [500, 502, 503, 504]
+        Aircall returns at most 10,000 contacts per request window. Lower the
+        Contacts window size (days) setting (minimum 1) so each window holds
+        fewer than 10,000 contacts.
+    # The reference documents this 403 only as "The Conversations API is not enabled for this
+    # Company."; the gateway's {"message": "Forbidden"} for a revoked key does not say it.
     conversations_not_enabled:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'conversations' not in response and 'engagements' not in response
-        and 'conversations api is not enabled' in (response | string | lower) }}
+        and 'not enabled for this company' in (response | string | lower) }}
       error_message: >-
-        Skipping this stream: the Conversations API is not enabled for this
-        Aircall company (HTTP 403). Ask Aircall to enable it to sync
-        conversations.
-    conversations_result_limit:
-      type: HttpResponseFilter
-      action: FAIL
-      failure_type: config_error
-      predicate: >-
-        {{ response is mapping and 'conversations' not in response
-        and 'must not exceed 10000' in (response | string) }}
-      error_message: >-
-        Aircall returns at most 10,000 conversations per request window.
-        Lower the Window size (days) setting so each window holds fewer than
-        10,000 conversations.
+        Ignoring {{ request_url }}: the Conversations API is not enabled for
+        this Aircall company (HTTP 403).
     trackers_not_enabled:
       type: HttpResponseFilter
       action: IGNORE
@@ -120,15 +97,28 @@ definitions:
       error_message: >-
         Skipping the trackers stream: this Aircall company does not have the
         AI Assist or AI Assist Pro package (HTTP 403).
+    # Documented 403 bodies: "line is not configured to use whatsapp", "line does not belong to the
+    # company" (a number deleted during the sync); sibling WhatsApp endpoints say "line does not have
+    # WhatsApp capability".
     whatsapp_not_configured:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'templates' not in response
-        and 'not configured to use whatsapp' in (response | string | lower) }}
+        and ('not configured to use whatsapp' in (response | string | lower)
+        or 'does not have whatsapp capability' in (response | string | lower)
+        or 'does not belong to the company' in (response | string | lower)) }}
       error_message: >-
-        Skipping WhatsApp templates for a number that is not registered for
-        WhatsApp (HTTP 403).
+        Ignoring {{ request_url }}: this number is not registered for WhatsApp
+        or no longer belongs to the company (HTTP 403).
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - $ref: "#/definitions/backoff_strategy"
+    response_filters:
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/result_limit"
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -170,6 +160,19 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: SPLIT_REQUEST_WINDOW
+                predicate: "{{ 'limited to 10k results' in (response.get('errors', '') | string) }}"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
+        request_window_splitting:
+          type: RequestWindowSplitting
+          failure_message: >-
+            Lower the Window size (days) setting so each window holds fewer than
+            10,000 calls.
         record_selector:
           type: RecordSelector
           extractor:
@@ -238,8 +241,8 @@ definitions:
           path: /contacts
           http_method: GET
           request_parameters:
-            from: "{{ 1388534400 + (stream_partition['window_index'] | int) * config.get('window_in_days', 30) * 86400 }}"
-            to: "{{ 1388534400 + ((stream_partition['window_index'] | int) + 1) * config.get('window_in_days', 30) * 86400 - 1 }}"
+            from: "{{ 1388534400 + (stream_partition['window_index'] | int) * config.get('contacts_window_in_days', 30) * 86400 }}"
+            to: "{{ 1388534400 + ((stream_partition['window_index'] | int) + 1) * config.get('contacts_window_in_days', 30) * 86400 - 1 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -250,8 +253,10 @@ definitions:
           $ref: "#/definitions/paginator"
         partition_router:
           type: ListPartitionRouter
+          # One partition per window since 2014-01-01. The CDK Jinja sandbox has no range(),
+          # so the loop iterates over a string of window_count characters.
           values: >-
-            {% set window_days = config.get('window_in_days', 30) | int %}
+            {% set window_days = config.get('contacts_window_in_days', 30) | int %}
             {% set window_count = (((now_utc().timestamp() | int) - 1388534400) //
             (window_days * 86400)) + 1 %}
             [{% for _ in 'x' * window_count %}'{{ loop.index0 }}'{{ ',' if not loop.last }}{% endfor %}]
@@ -418,12 +423,8 @@ definitions:
               - $ref: "#/definitions/backoff_strategy"
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
-              - $ref: "#/definitions/response_filters/conversations_result_limit"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
-              - $ref: "#/definitions/response_filters/rate_limited"
-              - $ref: "#/definitions/response_filters/server_error"
         record_selector:
           type: RecordSelector
           extractor:
@@ -432,6 +433,15 @@ definitions:
               - conversations
         paginator:
           $ref: "#/definitions/paginator"
+        # Aircall rejects page 201 (page * per_page above 10,000). Records come sorted by
+        # last_engagement_at ascending (order=asc), so after 10,000 records the read restarts
+        # from the last record's timestamp instead of asking for page 201.
+        pagination_reset:
+          type: PaginationReset
+          action: SPLIT_USING_CURSOR
+          limits:
+            type: PaginationResetLimits
+            number_of_records: 10000
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last_engagement_at
@@ -447,7 +457,7 @@ definitions:
           type: RequestOption
           field_name: to
           inject_into: request_parameter
-        step: P{{ config.get('window_in_days', 30) }}D
+        step: P30D
         cursor_granularity: PT1S
         lookback_window: P3D
         start_datetime:
@@ -479,11 +489,25 @@ definitions:
               - $ref: "#/definitions/backoff_strategy"
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
+              # Engagements come newest first and stop at 10,000 per conversation (no date filter).
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ response is mapping and 'engagements' not in response
+                  and ('10000' in (response | string) or '10,000' in (response | string)
+                  or '10k results' in (response | string)) }}
+                error_message: >-
+                  Aircall returns at most the 10,000 most recent engagements of a
+                  conversation; older engagements of {{ request_url }} are not
+                  synced.
+              # The conversation was deleted after the conversations read
+              # (documented 404: "No Conversation exists with this id for the Company.").
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: "{{ response is mapping and 'conversation exists' in (response | string | lower) }}"
+                error_message: "Ignoring {{ request_url }}: the conversation no longer exists (HTTP 404)."
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
-              - $ref: "#/definitions/response_filters/rate_limited"
-              - $ref: "#/definitions/response_filters/server_error"
         record_selector:
           type: RecordSelector
           extractor:
@@ -498,8 +522,27 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: conversation_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        global_substream_cursor: true
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2014-01-01T00:00:00.000000+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        # The slices are never sent (no request options); a far end keeps an engagement dated in the
+        # future from leaving later syncs with an empty slice for every conversation.
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "2100-01-01T00:00:00.000000+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       transformations:
         - type: AddFields
           fields:
@@ -577,9 +620,6 @@ definitions:
               - $ref: "#/definitions/response_filters/trackers_not_enabled"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
-              - $ref: "#/definitions/response_filters/rate_limited"
-              - $ref: "#/definitions/response_filters/server_error"
         record_selector:
           type: RecordSelector
           extractor:
@@ -637,9 +677,6 @@ definitions:
               - $ref: "#/definitions/response_filters/whatsapp_not_configured"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
-              - $ref: "#/definitions/response_filters/rate_limited"
-              - $ref: "#/definitions/response_filters/server_error"
         record_selector:
           type: RecordSelector
           extractor:
@@ -725,13 +762,11 @@ spec:
       start_date:
         type: string
         description: >-
-          Not used since version 0.5.0. Calls are read from the six months of
-          history Aircall keeps; the other streams always return every record.
-        title: Start date (unused)
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{3})?Z$
-        examples:
-          - "2022-03-01T00:00:00.000Z"
-        format: date-time
+          Saved by versions before 0.5.0 and no longer used. Calls are read from
+          the six months of history Aircall keeps; the other streams always return
+          every record.
+        title: Start date (before 0.5.0)
+        airbyte_hidden: true
         order: 2
       window_in_days:
         type: integer
@@ -739,12 +774,22 @@ spec:
         maximum: 365
         title: Window size (days)
         description: >-
-          Days of records requested per API call for the calls, contacts and
-          conversations streams. Aircall returns at most 10,000 records per
-          request, so lower this if a sync fails with the 10,000-results error.
-          Leave empty for 1 day on calls and 30 days on contacts and
-          conversations.
+          Days of calls requested per window, read in pages of 50. Aircall
+          returns at most 10,000 records per window, and a calls window above
+          that is split and read again, so larger windows save requests only for
+          companies with few calls. Leave empty for 1 day.
         order: 3
+      contacts_window_in_days:
+        type: integer
+        minimum: 1
+        maximum: 365
+        title: Contacts window size (days)
+        description: >-
+          Days of new contacts requested per window, read in pages of 50.
+          Aircall returns at most 10,000 records per window; lower this if a
+          contacts sync fails with the 10,000-results error. Leave empty for 30
+          days.
+        order: 4
       num_workers:
         type: integer
         minimum: 1
@@ -752,9 +797,9 @@ spec:
         default: 2
         title: Concurrent workers
         description: >-
-          Parallel requests. All workers share Aircall's limit of 120 requests
-          per minute per company.
-        order: 4
+          Parallel requests. All workers share one budget of 100 requests per
+          minute, below Aircall's limit of 120 per company.
+        order: 5
     additionalProperties: true
 
 metadata:
@@ -768,6 +813,13 @@ metadata:
     users: false
     teams: false
     webhooks: false
+    conversations: false
+    conversation_engagements: false
+    campaigns: false
+    campaign_outcomes: false
+    trackers: false
+    sms_templates: false
+    whatsapp_templates: false
   testedStreams: {}
   assist: {}
 
@@ -849,6 +901,31 @@ schemas:
                   type:
                     - "null"
                     - string
+      conference_participants:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            phone_number:
+              type:
+                - "null"
+                - string
       contact:
         type:
           - "null"
@@ -924,6 +1001,47 @@ schemas:
             type:
               - "null"
               - boolean
+          messages:
+            type:
+              - "null"
+              - object
+            properties:
+              welcome:
+                type:
+                  - "null"
+                  - string
+              waiting:
+                type:
+                  - "null"
+                  - string
+              ivr:
+                type:
+                  - "null"
+                  - string
+              voicemail:
+                type:
+                  - "null"
+                  - string
+              closed:
+                type:
+                  - "null"
+                  - string
+              callback_later:
+                type:
+                  - "null"
+                  - string
+              unanswered_call:
+                type:
+                  - "null"
+                  - string
+              after_hours:
+                type:
+                  - "null"
+                  - string
+              ringing_tone:
+                type:
+                  - "null"
+                  - string
           name:
             type:
               - "null"
@@ -1133,6 +1251,10 @@ schemas:
         type:
           - "null"
           - number
+      description:
+        type:
+          - "null"
+          - string
       direct_link:
         type:
           - "null"
@@ -1325,6 +1447,10 @@ schemas:
         type:
           - "null"
           - string
+      direct_link:
+        type:
+          - "null"
+          - string
       color:
         type:
           - "null"
@@ -1392,10 +1518,6 @@ schemas:
           - "null"
           - string
       extension:
-        type:
-          - "null"
-          - string
-      state:
         type:
           - "null"
           - string
@@ -1468,6 +1590,22 @@ schemas:
               type:
                 - "null"
                 - string
+            availability_status:
+              type:
+                - "null"
+                - string
+            default_number_id:
+              type:
+                - "null"
+                - integer
+            language:
+              type:
+                - "null"
+                - string
+            wrap_up_time:
+              type:
+                - "null"
+                - integer
     title: Teams
   webhooks:
     type: object
@@ -1499,15 +1637,19 @@ schemas:
         type:
           - "null"
           - number
+      webhook_id:
+        type:
+          - "null"
+          - string
+      custom_name:
+        type:
+          - "null"
+          - string
       token:
         type:
           - "null"
           - string
       url:
-        type:
-          - "null"
-          - string
-      webhook_id:
         type:
           - "null"
           - string
@@ -1947,7 +2089,7 @@ schemas:
       id:
         type:
           - "null"
-          - integer
+          - string
       number_id:
         type:
           - "null"
