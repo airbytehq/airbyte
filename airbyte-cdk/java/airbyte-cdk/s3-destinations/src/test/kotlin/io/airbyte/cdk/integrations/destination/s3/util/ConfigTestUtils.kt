@@ -19,7 +19,7 @@ object ConfigTestUtils {
   "s3_bucket_region": "us-east-2",
   "access_key_id": "some-test-key-id",
   "secret_access_key": "some-test-access-key",
-  "format": $formatConfig}"""
+  "format": $formatConfig}""",
         )
     }
 

@@ -32,7 +32,7 @@ class ForwardFileRecordTask<T>(
 
     @VisibleForTesting
     suspend fun handleEvent(
-        event: PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>
+        event: PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>,
     ) {
         val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
             when (event) {

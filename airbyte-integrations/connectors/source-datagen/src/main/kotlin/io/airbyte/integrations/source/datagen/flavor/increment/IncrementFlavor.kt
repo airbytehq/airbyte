@@ -18,7 +18,7 @@ data object IncrementFlavor : Flavor {
             incrementTableName to
                 listOf(
                     EmittedField("id", IntegerFieldType),
-                )
+                ),
         )
     override val primaryKeys = mapOf(incrementTableName to listOf(listOf(("id"))))
 

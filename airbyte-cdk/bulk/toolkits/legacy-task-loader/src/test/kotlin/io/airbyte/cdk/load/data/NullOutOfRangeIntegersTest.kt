@@ -24,7 +24,7 @@ class NullOutOfRangeIntegersTest {
                     IntegerType,
                     NullValue,
                     nameOverride = "big_integer",
-                    nullable = true
+                    nullable = true,
                 )
                 .build()
         val (actualValue, changes) = NullOutOfRangeIntegers().map(valueIn, schemaIn)
@@ -36,7 +36,7 @@ class NullOutOfRangeIntegersTest {
                 Change.NULLED,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             ),
-            changes[0]
+            changes[0],
         )
     }
 
@@ -52,14 +52,14 @@ class NullOutOfRangeIntegersTest {
                     IntegerType,
                     NullValue,
                     nameOverride = "too_small",
-                    nullable = true
+                    nullable = true,
                 )
                 .with(
                     IntegerValue(300),
                     IntegerType,
                     NullValue,
                     nameOverride = "too_big",
-                    nullable = true
+                    nullable = true,
                 )
                 .build()
         val (actualValue, changes) =
@@ -77,9 +77,9 @@ class NullOutOfRangeIntegersTest {
                     Change.NULLED,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
-                changes[1]
+                changes[1],
             ),
-            changes.toSet()
+            changes.toSet(),
         )
     }
 }
