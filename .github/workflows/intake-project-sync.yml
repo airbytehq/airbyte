@@ -1,7 +1,8 @@
 # Mirrors the OSS intake state of community issues and PRs onto the intake project board.
 #
 # The intake playbooks (`oss_contribution_intake`, `oss_issue_triage` step 0 in airbytehq/ai-skills)
-# record their decision as one `intake/*` label. This workflow adds the labelled item to the
+# record their decision as one `intake/*` label; `ai-intake-command.yml` also sets `intake/pending-human`
+# on items it holds for a human after screening. This workflow adds the labelled item to the
 # project and sets its Status from that label, so the AI session never needs a project token and a
 # label changed by hand moves the card too. Closing an item sets Status "Closed" (or "Done").
 #
