@@ -28,7 +28,7 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 | --- | --- | --- | --- |
 | `api_key` | `string` | Required. The personal access token created during setup. | |
 | `start_date` | `string` | Required. Read scheduled events starting on or after this time. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
-| `lookback_days` | `number` | Optional. Days before the last synced `updated_at` value to reread during incremental `scheduled_events` syncs, plus a fixed five-minute buffer. Every sync scans from `start_date`, so the default of 0 is sufficient. | 0 |
+| `lookback_days` | `number` | Optional. Incremental `scheduled_events` syncs re-emit events whose `updated_at` falls within this many days before the last synced update, plus a fixed five minutes. Every sync pages through all events from the start date, so 0 is right for most connections. | 0 |
 
 ## Streams
 
@@ -45,9 +45,9 @@ The connector reads `event_invitees` for each new or changed scheduled event ret
 
 ### Incremental sync behavior
 
-Every incremental sync requests `scheduled_events` from the configured `start_date` using `min_start_time`. The connector uses `updated_at` as a client-side cursor and emits events whose update time changed since the previous sync, including upcoming events, cancellations, and reschedules. `lookback_days` rereads events updated within that many days before the last synced update, with a fixed five-minute buffer for updates made during a scan.
+Every incremental sync requests `scheduled_events` from the configured start date and emits the events whose `updated_at` changed since the previous sync, including upcoming events, cancellations and reschedules. Each sync therefore pages through all events from the start date, as many `scheduled_events` requests as a Full refresh; on the Free plan, large histories need a later start date or less frequent syncs. In every sync mode, an event updated after a sync starts is left out of that sync, with its invitees, and the next sync that reads it before it changes again emits it; in Full refresh | Overwrite its rows are missing from the destination until then.
 
-The default `lookback_days` value of 0 is sufficient because every sync scans from the start date and emits events whose `updated_at` changed. `event_invitees` follows the parent state and rereads all invitees for each new or changed event.
+`event_invitees` follows the parent state and reads all invitees of each new or changed event again. Calendly does not document which invitee changes, such as a no-show or one invitee leaving a group event, update the event's `updated_at`; an invitee change that leaves the event unchanged reaches the destination with the next change to that event or a Full refresh of `event_invitees`.
 
 ## Rate limits
 
@@ -62,7 +62,7 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 | HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
 | HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide scheduled events. Update the token in Airbyte. |
 | Invitee requests return HTTP 404 | The connector logs and skips invitees for an event that Calendly no longer returns, then continues with other events. A 404 on other endpoints fails the sync. |
-| New bookings or cancellations are missing | If upgrading to 1.0.0, follow the [migration guide](calendly-migrations.md#upgrading-to-100) and clear `scheduled_events` and `event_invitees`. Otherwise, confirm the connection's `start_date` covers the event. |
+| New bookings or cancellations are missing | Upgrade to 1.0.0; its first sync reads every event from your start date again. Confirm that the connection's start date covers the event. |
 
 ## Upgrading to 0.2.0
 

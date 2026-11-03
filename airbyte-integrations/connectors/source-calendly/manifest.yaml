@@ -217,6 +217,11 @@ definitions:
             type: DpathExtractor
             field_path:
               - collection
+          # Events updated after the sync started wait for the next sync, so the cursor never passes an
+          # update written to an already-read page during the scan.
+          record_filter:
+            type: RecordFilter
+            condition: "{{ timestamp(record['updated_at']) <= timestamp(stream_interval['end_time']) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -251,10 +256,12 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        # The request already starts at start_date (min_start_time); a start_date floor on updated_at
+        # would drop events booked before start_date for meetings after it.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "1970-01-01"
+          datetime_format: "%Y-%m-%d"
       transformations:
         - type: AddFields
           fields:
@@ -461,9 +468,9 @@ spec:
       lookback_days:
         type: number
         description: >-
-          Incremental syncs of scheduled_events re-read events updated within this many days
-          before the last synced update, plus a fixed five minutes. The default of 0 is enough
-          because each sync scans from the start date and emits events whose updated_at changed.
+          Incremental syncs of scheduled_events re-emit events whose updated_at falls within this many
+          days before the last synced update, plus a fixed five minutes. Every sync pages through all
+          events from the start date, so 0 is right for most connections.
         title: Lookback window (days)
         default: 0
         order: 2

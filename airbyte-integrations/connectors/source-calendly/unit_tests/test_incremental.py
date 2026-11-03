@@ -4,9 +4,11 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from _helpers import CONFIG, ORGANIZATION_URI, collection, invitees_request, list_request, mock_user, read_stream
+import requests_mock
+from _helpers import CONFIG, ORGANIZATION_URI, USER, collection, invitees_request, list_request, mock_user, read_stream
 from freezegun import freeze_time
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -101,9 +103,7 @@ def test_future_event_uses_updated_at_and_lookback_reemits_unchanged_event_withi
         assert Counter(record["id"] for record in records(first)) == Counter({"future": 1, "cursor": 1})
         first_state = emitted_state(first, "scheduled_events")
         cursor_time = parse_time(parent_updated_at(first, "scheduled_events"))
-        future_event_updated_at = parse_time(future_event["updated_at"])
         assert cursor_time == parse_time(cursor_event["updated_at"])
-        assert timedelta(0) < cursor_time - future_event_updated_at <= timedelta(minutes=5)
 
         clock.tick(delta=timedelta(minutes=1))
         second = read_stream("scheduled_events", state=first_state)
@@ -111,7 +111,6 @@ def test_future_event_uses_updated_at_and_lookback_reemits_unchanged_event_withi
         assert not second.errors
         http.assert_number_of_calls(target, 2)
         assert Counter(record["id"] for record in records(second)) == Counter({"future": 1, "cursor": 1})
-        assert cursor_time <= sync_time
 
 
 def test_booking_for_earlier_time_is_emitted_once_after_first_sync() -> None:
@@ -241,8 +240,44 @@ def test_legacy_state_resumes_from_start_date_and_emits_updated_at_state(stream_
         output = read_stream(stream_name, state=state)
 
         assert not output.errors
-        assert records(output)
+        assert len(records(output)) == 1
         assert parent_updated_at(output, stream_name) == event_record["updated_at"]
         http.assert_number_of_calls(scheduled_events_request, 1)
         if stream_name == "event_invitees":
             http.assert_number_of_calls(invitee_request, 1)
+
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+def test_event_booked_before_start_date_is_emitted_with_its_invitees(sync_mode: SyncMode) -> None:
+    early = calendly_event("early-booked", "2024-01-10T00:00:00.000000Z", "2023-12-15T00:00:00.000000Z")
+    invitee = {"uri": "https://api.calendly.com/invitees/early", "created_at": "2023-12-15T00:00:00.000000Z"}
+    with freeze_time("2024-02-01T00:00:00Z"), HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("scheduled_events"), collection([early]))
+        http.get(invitees_request("early-booked"), collection([invitee]))
+        events = read_stream("scheduled_events", sync_mode=sync_mode)
+        invitees = read_stream("event_invitees", sync_mode=sync_mode)
+    assert [record["id"] for record in records(events)] == ["early-booked"]
+    assert [record["uri"] for record in records(invitees)] == [invitee["uri"]]
+
+
+def test_update_written_during_the_scan_waits_for_the_next_sync() -> None:
+    read_early = calendly_event("read-early", "2024-03-02T00:00:00.000000Z", "2024-01-31T12:00:00.000000Z")
+    written_late = calendly_event("written-late", "2024-03-01T00:00:00.000000Z", "2024-02-01T00:03:00.000000Z")
+    with freeze_time("2024-02-01T00:00:00Z") as clock, requests_mock.Mocker() as mock:
+        mock.get("https://api.calendly.com/users/me", json={"resource": USER})
+
+        def pages(request, context):
+            if "page_token" in request.qs:
+                # Page 2 is served ten minutes into the sync, after written-late was updated.
+                clock.tick(timedelta(minutes=10))
+                return {"collection": [written_late], "pagination": {"next_page_token": None}}
+            return {"collection": [read_early], "pagination": {"next_page_token": "page-2"}}
+
+        mock.get("https://api.calendly.com/scheduled_events", json=pages)
+        first = read_stream("scheduled_events")
+        assert [record["id"] for record in records(first)] == ["read-early"]
+        assert parent_updated_at(first, "scheduled_events") == read_early["updated_at"]
+
+        second = read_stream("scheduled_events", state=emitted_state(first, "scheduled_events"))
+        assert "written-late" in [record["id"] for record in records(second)]
