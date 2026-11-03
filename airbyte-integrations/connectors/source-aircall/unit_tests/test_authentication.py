@@ -15,10 +15,15 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 _COMPANY_URL = "https://api.aircall.io/v1/company"
 _COMPANY_RESPONSE = HttpResponse(body=json.dumps({"company": {"name": "Airbyte"}}), status_code=200)
+# Digit-only keys stay strings because the migration sets `value_type: string`.
 _LEGACY_CONFIG = {
-    "api_id": "0123456789",
-    "api_token": "legacy-token",
+    "api_id": "1234567890",
+    "api_token": "9876543210",
     "start_date": "2022-03-01T00:00:00.000Z",
+}
+_MIGRATED_CONFIG = {
+    "start_date": "2022-03-01T00:00:00.000Z",
+    "credentials": {"auth_type": "api_key", "api_id": "1234567890", "api_token": "9876543210"},
 }
 _API_KEY_CONFIG = {
     "credentials": {"auth_type": "api_key", "api_id": "test-id", "api_token": "test-token"},
@@ -39,6 +44,11 @@ def _manifest() -> dict:
 
 def _basic(api_id: str, api_token: str) -> str:
     return "Basic " + base64.b64encode(f"{api_id}:{api_token}".encode()).decode()
+
+
+def _control_configs(stdout: str) -> list:
+    messages = [json.loads(line) for line in stdout.splitlines() if line.startswith("{")]
+    return [message["control"]["connectorConfig"]["config"] for message in messages if message.get("type") == "CONTROL"]
 
 
 def _check_with_authorization(config: dict, authorization: str) -> None:
@@ -99,13 +109,12 @@ def test_advanced_auth_uses_aircall_declarative_oauth_with_access_token_only() -
     }
 
 
-def test_legacy_api_key_config_migrates_into_credentials() -> None:
+def test_legacy_api_key_config_migrates_into_credentials(capsys: pytest.CaptureFixture) -> None:
     source = get_source(config=dict(_LEGACY_CONFIG))
 
-    assert source._config == {
-        "start_date": "2022-03-01T00:00:00.000Z",
-        "credentials": {"auth_type": "api_key", "api_id": "0123456789", "api_token": "legacy-token"},
-    }
+    assert source._config == _MIGRATED_CONFIG
+    # The platform saves the migrated config from this CONTROL message.
+    assert _control_configs(capsys.readouterr().out) == [_MIGRATED_CONFIG]
 
 
 def test_legacy_api_key_migration_is_persisted_to_config_file(tmp_path: Path) -> None:
@@ -114,14 +123,11 @@ def test_legacy_api_key_migration_is_persisted_to_config_file(tmp_path: Path) ->
 
     get_source(config=dict(_LEGACY_CONFIG), config_path=str(config_path))
 
-    assert json.loads(config_path.read_text()) == {
-        "start_date": "2022-03-01T00:00:00.000Z",
-        "credentials": {"auth_type": "api_key", "api_id": "0123456789", "api_token": "legacy-token"},
-    }
+    assert json.loads(config_path.read_text()) == _MIGRATED_CONFIG
 
 
 @pytest.mark.parametrize("config", [_API_KEY_CONFIG, _OAUTH_CONFIG], ids=["api_key", "oauth"])
-def test_credentials_configs_are_not_migrated(config: dict, tmp_path: Path) -> None:
+def test_credentials_configs_are_not_migrated(config: dict, tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config))
 
@@ -129,10 +135,19 @@ def test_credentials_configs_are_not_migrated(config: dict, tmp_path: Path) -> N
 
     assert source._config == config
     assert json.loads(config_path.read_text()) == config
+    assert _control_configs(capsys.readouterr().out) == []
+
+
+@pytest.mark.parametrize("config", [_API_KEY_CONFIG, _OAUTH_CONFIG], ids=["api_key", "oauth"])
+def test_top_level_api_key_is_removed_once_credentials_are_set(config: dict) -> None:
+    # An Airbyte API PATCH merges new credentials into a config saved before 1.1.0.
+    source = get_source(config={**json.loads(json.dumps(config)), "api_id": "old-id", "api_token": "old-token"})
+
+    assert source._config == config
 
 
 def test_legacy_api_key_config_authenticates_with_basic_auth() -> None:
-    _check_with_authorization(dict(_LEGACY_CONFIG), _basic("0123456789", "legacy-token"))
+    _check_with_authorization(dict(_LEGACY_CONFIG), _basic("1234567890", "9876543210"))
 
 
 def test_api_key_credentials_authenticate_with_basic_auth() -> None:
