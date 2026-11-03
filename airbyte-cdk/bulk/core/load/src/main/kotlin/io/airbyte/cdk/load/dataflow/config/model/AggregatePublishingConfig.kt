@@ -15,18 +15,20 @@ import kotlin.time.Duration.Companion.minutes
  * can handle a larger quantity of larger aggregates.
  *
  * Per aggregate configuration:
+ *
  * @property maxEstBytesPerAgg configures the size of each aggregate based on our estimated byte
- * counts. Once an aggregate reaches this size, we publish it.
+ *   counts. Once an aggregate reaches this size, we publish it.
  * @property maxRecordsPerAgg configures the max number of records in an aggregate. Once an
- * aggregate has accumulated this many records, we publish it.
+ *   aggregate has accumulated this many records, we publish it.
  * @property stalenessDeadlinePerAgg is how long we will wait to flush an aggregate after it stops
- * receiving data.
+ *   receiving data.
  *
  * Across all aggregate configuration:
+ *
  * @property maxEstBytesAllAggregates if the total accumulated estimated bytes for all open
- * aggregates is greater than this value, we will publish the largest aggregate.
+ *   aggregates is greater than this value, we will publish the largest aggregate.
  * @property maxBufferedAggregates configures the number of published aggregates we buffer before
- * backpressuring preventing further aggregate publishes.
+ *   backpressuring preventing further aggregate publishes.
  *
  * Memory considerations: The max memory consumption is maxEstBytesAllAggregates, but one should
  * make sure this is a multiple of maxEstBytesPerAgg.

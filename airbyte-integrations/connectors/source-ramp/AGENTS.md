@@ -111,7 +111,7 @@ docs explain how a terminated card disappears under Overwrite.
 stop being populated for some rows and the record set changes. Do it only as a planned major release,
 for example when Ramp removes the legacy route; it is tracked as a watch item, not a defect.
 
-## 6. Only three streams are incremental, and `transactions` relies on an undocumented filter
+## 6. Four streams are incremental, and `transactions` relies on an undocumented filter
 
 `transactions` and `reimbursements` are incremental on `updated_at`, sent as `updated_after`.
 `updated_after` is in Ramp's spec for `/reimbursements` but **not** for `/transactions`; the sandbox
@@ -121,12 +121,42 @@ receipts carry no `updated_at`. If Ramp matches a receipt to a transaction after
 that receipt keeps `transaction_id: null` downstream; `transactions.receipts` always has the current
 link.
 
+`vendors` is incremental on `updated_at` through `from_updated_at`. Ramp added `updated_at` to the
+Vendor schema between 2026-10-01 and 2026-10-13; before that the spec listed the filter but not the
+field. These details matter:
+
+- The cursor is set on the `streams:` entry, not on `definitions/streams/vendors`. `vendor_contacts`
+  uses the definition as its parent, so it still reads every vendor on each sync.
+- `from_updated_at` is sent only from saved state. It is a conditional `request_parameters` entry on the
+  definition, not a `start_time_option`. The cursor starts at a fixed `2000-01-01T00:00:00Z`, and when
+  the slice starts there (a full refresh or a first sync) the value renders empty and the CDK drops the
+  parameter. That keeps the full-refresh request identical to 1.0.2. `Vendor.updated_at` is nullable in
+  the spec, and an "after" filter may leave such vendors out; the sandbox has none to test with
+  (46 of 49 vendors have `updated_at` equal to `created_at`, so Ramp sets it on creation). The
+  parameter compares against the fixed start; change both together.
+- Ramp's spec calls `from_updated_at` "after". Ramp stores `updated_at` with fractions of a second but
+  returns it truncated to whole seconds: for a vendor shown as `T`, `from_updated_at=T+1µs` still returns
+  it and `T+0.5s` does not (probed 2026-10-14). The saved cursor is the truncated value, so it is never
+  above the stored one, and the boundary vendor is re-read, not lost. Do not add `step` with
+  `to_updated_at` ("on or before"): a vendor stored a fraction of a second after a window's end would fall
+  between two windows and be lost.
+- A deleted vendor stops appearing in the list, so incremental syncs keep its last row. Full Refresh -
+  Overwrite drops it.
+- The `total_spend_*` fields are running totals over moving windows (30 days, 365 days, year to date).
+  They change as days pass, and Ramp does not document that this moves `updated_at`, so they can go
+  stale under incremental syncs. The sandbox has no vendor spend to test it. The user docs say so and
+  point to Full Refresh.
+
 Every other stream is full refresh. `bills`, `funds` and `purchase_orders` can only be filtered by
-created date, and `vendors` accepts `from_updated_at` but its records carry no `updated_at` to use as a
-cursor.
+created date.
 
 **Why this matters:** Do not make a stream incremental on `created_at` unless its records never change
 after creation, or updates are lost. Watch Ramp's changelog for `updated_after` on `/transactions`.
+Moving the `vendors` cursor onto the shared definition would make `vendor_contacts` depend on it; a unit
+test fails if the parent request carries `from_updated_at`, and another fails if a request without state
+does. Re-diff each stream's schema against the
+current OpenAPI spec before a release: a field Ramp adds passes every schema check as an undeclared
+field, and only the platform's "unexpected fields" log line shows it.
 
 ## 7. `business_balance` has no primary key
 
@@ -152,3 +182,20 @@ on it first. The stream's key is `[vendor_id, id]`, with `vendor_id` added from 
 **Why this matters:** Moving the 404 filter into the shared handler would hide bad-token failures on
 every stream (see section 2). Putting the 404 handler last would make its generic default mapping the
 answer for every failure on this stream, losing the shared handler's actionable messages.
+
+## 9. Date fields are typed, except three that Ramp does not return in ISO 8601
+
+Every top-level field that Ramp returns as an ISO 8601 date or timestamp declares a `format`:
+`date-time` for timestamps, including `transactions.accounting_date` and `settlement_date`, which are full
+timestamps despite their names, and `date` for date-only values such as `reimbursements.transaction_date`
+and the `vendor_agreements` dates. The pairing follows
+[Airbyte's supported data types](https://docs.airbyte.com/platform/understanding-airbyte/supported-data-types),
+and it was checked against the values a full sandbox read returns, not inferred from field names. Three
+date-like fields stay plain strings: `cards.expiration` is `MMYY` (for example `0430`), and
+`business_balance.next_billing_date` and `prev_billing_date` are `MM/DD/YYYY`.
+
+**Why this matters:** Adding, removing or changing `format` on an existing field retypes the column in
+typed destinations. Not every destination can convert the existing values in place, so existing
+connections have to clear the stream, which makes it a breaking change (1.0.0 was exactly that change). A `format` that does not match the values is worse than none: destinations reject
+or null the values that do not parse. Type a new field when it is first declared, and check its values
+first.

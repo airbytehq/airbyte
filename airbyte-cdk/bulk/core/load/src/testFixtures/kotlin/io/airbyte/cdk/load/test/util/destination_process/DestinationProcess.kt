@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.Property
@@ -50,11 +49,13 @@ interface DestinationProcess {
      * unless you're trying to send a poison pill.
      */
     suspend fun sendMessage(string: String)
+
     suspend fun sendMessage(
         message: InputMessage,
         broadcast: Boolean = false,
-        useSingleSocket: Boolean = false
+        useSingleSocket: Boolean = false,
     )
+
     suspend fun sendMessages(vararg messages: InputMessage, useSingleSocket: Boolean = false) {
         messages.forEach { sendMessage(it, useSingleSocket = useSingleSocket) }
     }
@@ -73,7 +74,6 @@ interface DestinationProcess {
     fun verifyFileDeleted()
 }
 
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
 abstract class DestinationProcessFactory {
     /**
      * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
@@ -117,6 +117,7 @@ abstract class DestinationProcessFactory {
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
          * in a loop until it acks the state message, e.g.
+         *
          * ```
          * while (true) {
          *   val e = assertThrows<DestinationUncleanExitException> {
@@ -153,7 +154,8 @@ abstract class DestinationProcessFactory {
                 micronautProperties = micronautProperties,
                 dataChannelMedium = dataChannelMedium,
                 dataChannelFormat = dataChannelFormat,
-                namespaceMappingConfig = namespaceMappingConfig
+                namespaceMappingConfig =
+                    namespaceMappingConfig
                         ?: NamespaceMappingConfig(
                             NamespaceDefinitionType.SOURCE,
                         ),
@@ -167,11 +169,11 @@ abstract class DestinationProcessFactory {
                         when (streamStatus) {
                             AirbyteStreamStatus.COMPLETE ->
                                 InputStreamComplete(
-                                    DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                                    DestinationRecordStreamComplete(it, System.currentTimeMillis()),
                                 )
                             else ->
                                 throw IllegalStateException(
-                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
+                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus.",
                                 )
                         }
                     destination.sendMessage(
@@ -206,12 +208,12 @@ abstract class DestinationProcessFactory {
                             )
                     DockerizedDestinationFactory(
                         rawProperties["data.dockerRepository"] as String,
-                        "dev"
+                        "dev",
                     )
                 }
                 else ->
                     throw IllegalArgumentException(
-                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner"
+                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner",
                     )
             }
     }

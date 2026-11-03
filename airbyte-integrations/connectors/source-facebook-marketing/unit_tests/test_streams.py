@@ -2,11 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlencode
 
 import pytest
+from facebook_business.api import FacebookAdsApi
 from facebook_business.exceptions import FacebookRequestError
+from facebook_business.session import FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
@@ -959,3 +963,244 @@ def test_ad_account_list_objects_handles_facebook_and_traced_exceptions(
         elif expected_behavior == "remove_funding_source_details":
             stream.list_objects(params={}, account_id=account_id)
             assert mock_account_instance.api_get.call_count == 2
+
+
+def _object_story_spec_read_error(subcode):
+    """Build a Facebook 400 error body matching the Degrees-of-Freedom object_story_spec read failure."""
+    return {
+        "error": {
+            "message": "Invalid parameter",
+            "type": "OAuthException",
+            "code": 100,
+            "error_subcode": subcode,
+            "is_transient": False,
+            "error_user_title": "First Dof Value Should Match Object Story Spec Field",
+            "error_user_msg": "For a Degrees of freedom enabled ad, the first value of Asset Feed Spec field "
+            "should match the corresponding field in Object Story Spec.",
+        }
+    }
+
+
+def _facebook_request_error(error_body, status_code=400):
+    return FacebookRequestError(
+        message=error_body["error"]["message"],
+        request_context={},
+        http_status=status_code,
+        http_headers={},
+        body=json.dumps(error_body),
+    )
+
+
+def _graph_next_url(url, after, fields):
+    """Graph API `next` links repeat the whole request query, not only `after`."""
+    query = {"access_token": "unknown_token", "fields": fields, "limit": 100, "summary": "true", "after": after}
+    return f"{url}?{urlencode(query)}"
+
+
+@pytest.mark.parametrize("error_subcode", [2446211, 1443048])
+def test_fetch_creative_details_object_story_spec_fallback(api, some_config, error_subcode):
+    """A creative whose stored object_story_spec fails validation is re-fetched without that field."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    expected_data = {"id": "12345", "name": "Test Creative"}
+    exception = AirbyteTracedException(
+        message="Facebook error", exception=_facebook_request_error(_object_story_spec_read_error(error_subcode))
+    )
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.side_effect = [exception, mock_creative_instance]
+        mock_creative_instance.export_all_data.return_value = expected_data
+
+        result = stream._fetch_creative_details("12345")
+
+    assert result == expected_data
+    assert mock_creative_instance.api_get.call_count == 2
+    first_fields = mock_creative_instance.api_get.call_args_list[0].kwargs["fields"]
+    second_fields = mock_creative_instance.api_get.call_args_list[1].kwargs["fields"]
+    assert "object_story_spec" in first_fields
+    assert "object_story_spec" not in second_fields
+
+
+def test_fetch_creative_details_unrelated_400_does_not_fallback(api, some_config):
+    """A 400 with a different error_subcode still propagates and api_get is called only once."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    exception = AirbyteTracedException(message="Facebook error", exception=_facebook_request_error(_object_story_spec_read_error(33)))
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.side_effect = exception
+
+        with pytest.raises(AirbyteTracedException):
+            stream._fetch_creative_details("12345")
+
+    assert mock_creative_instance.api_get.call_count == 1
+
+
+def test_ad_creatives_object_story_spec_failed_page_reread(api, some_config, requests_mock, account_id):
+    """A page that fails on object_story_spec is re-read creative by creative without losing other records."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    fields_csv = ",".join(stream.fields())
+    base_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/"
+    creatives_url = f"{base_url}act_{account_id}/adcreatives"
+
+    page1 = {
+        "json": {
+            "data": [{"id": "c1"}, {"id": "c2"}],
+            "paging": {"cursors": {"after": "A"}, "next": _graph_next_url(creatives_url, "A", fields_csv)},
+        },
+        "status_code": 200,
+    }
+    failed_page = {"json": _object_story_spec_read_error(2446211), "status_code": 400}
+    id_page = {
+        "json": {
+            "data": [{"id": "c3"}, {"id": "c4"}],
+            "paging": {"cursors": {"after": "B"}, "next": _graph_next_url(creatives_url, "B", "id")},
+        },
+        "status_code": 200,
+    }
+    page_after_b = {"json": {"data": [{"id": "c5"}]}, "status_code": 200}
+    requests_mock.register_uri("GET", creatives_url, [page1, failed_page, id_page, page_after_b])
+
+    requests_mock.register_uri("GET", f"{base_url}c3/", json={"id": "c3", "object_story_spec": {"link_data": {"link": "x"}}})
+    requests_mock.register_uri(
+        "GET",
+        f"{base_url}c4/",
+        [
+            {"json": _object_story_spec_read_error(2446211), "status_code": 400},
+            {"json": {"id": "c4", "name": "creative 4"}},
+        ],
+    )
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            stream_state={},
+            stream_slice={"account_id": account_id},
+        )
+    )
+
+    assert [r["id"] for r in records] == ["c1", "c2", "c3", "c4", "c5"]
+    assert records[2]["object_story_spec"] == {"link_data": {"link": "x"}}
+    assert "object_story_spec" not in records[3]
+
+    edge_requests = [r for r in requests_mock.request_history if r.path.endswith("/adcreatives")]
+    assert len(edge_requests) == 4
+    assert edge_requests[0].qs["fields"] == [fields_csv]
+    assert "after" not in edge_requests[0].qs
+    assert edge_requests[0].qs["limit"] == ["100"]
+    assert edge_requests[1].qs["after"] == ["a"]
+    assert edge_requests[1].qs["fields"] == [fields_csv]
+    assert edge_requests[2].qs["fields"] == ["id"]
+    assert edge_requests[2].qs["after"] == ["a"]
+    assert edge_requests[2].qs["limit"] == ["100"]
+    assert edge_requests[3].qs["after"] == ["b"]
+    assert edge_requests[3].qs["fields"] == [fields_csv]
+
+    c4_requests = [r for r in requests_mock.request_history if r.path.endswith("/c4/")]
+    assert len(c4_requests) == 2
+    assert "object_story_spec" in c4_requests[0].qs["fields"][0]
+    assert "object_story_spec" not in c4_requests[1].qs["fields"][0]
+
+
+def test_ad_creatives_object_story_spec_last_page_fails(api, some_config, requests_mock, account_id):
+    """When the last page fails, the id page keeps the failed page's `after` (no `next`), so the stream ends instead of re-reading it."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    base_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/"
+    creatives_url = f"{base_url}act_{account_id}/adcreatives"
+
+    page1 = {
+        "json": {
+            "data": [{"id": "c1"}],
+            "paging": {"cursors": {"after": "A"}, "next": _graph_next_url(creatives_url, "A", ",".join(stream.fields()))},
+        },
+        "status_code": 200,
+    }
+    failed_page = {"json": _object_story_spec_read_error(2446211), "status_code": 400}
+    # Facebook keeps cursors.after on the last page and only omits "next".
+    id_page = {"json": {"data": [{"id": "c2"}], "paging": {"cursors": {"after": "Z"}}}, "status_code": 200}
+    requests_mock.register_uri("GET", creatives_url, [page1, failed_page, id_page, failed_page])
+    requests_mock.register_uri("GET", f"{base_url}c2/", json={"id": "c2"})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            stream_state={},
+            stream_slice={"account_id": account_id},
+        )
+    )
+
+    assert [r["id"] for r in records] == ["c1", "c2"]
+    edge_requests = [r for r in requests_mock.request_history if r.path.endswith("/adcreatives")]
+    assert len(edge_requests) == 3
+    assert edge_requests[2].qs["fields"] == ["id"]
+    assert edge_requests[2].qs["after"] == ["a"]
+
+
+def test_ad_creatives_object_story_spec_first_page_fails_no_next(api, some_config, requests_mock, account_id):
+    """When the very first page fails and the id page has no next, creatives are emitted and the stream ends."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    base_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/"
+    creatives_url = f"{base_url}act_{account_id}/adcreatives"
+
+    failed_page = {"json": _object_story_spec_read_error(2446211), "status_code": 400}
+    id_page = {"json": {"data": [{"id": "c1"}, {"id": "c2"}]}, "status_code": 200}
+    requests_mock.register_uri("GET", creatives_url, [failed_page, id_page])
+    requests_mock.register_uri("GET", f"{base_url}c1/", json={"id": "c1"})
+    requests_mock.register_uri("GET", f"{base_url}c2/", json={"id": "c2"})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            stream_state={},
+            stream_slice={"account_id": account_id},
+        )
+    )
+
+    assert [r["id"] for r in records] == ["c1", "c2"]
+
+
+def test_ad_creatives_pages_keep_cursor_patch_guards(api, some_config, requests_mock, account_id):
+    """ad_creatives pages are read through CursorPatch, so a malformed item in `data` is dropped instead of crashing the read."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    creatives_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_{account_id}/adcreatives"
+    requests_mock.register_uri("GET", creatives_url, json={"data": ["unexpected", {"id": "c1"}]})
+
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
+
+    assert [r["id"] for r in records] == ["c1"]
+
+
+def test_ad_creatives_empty_first_page_keeps_paging(api, some_config, requests_mock, account_id):
+    """Like get_ad_creatives(), an empty first page that still has a `next` link does not end the read."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    creatives_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_{account_id}/adcreatives"
+    empty_page = {
+        "json": {"data": [], "paging": {"cursors": {"after": "A"}, "next": _graph_next_url(creatives_url, "A", ",".join(stream.fields()))}},
+        "status_code": 200,
+    }
+    requests_mock.register_uri("GET", creatives_url, [empty_page, {"json": {"data": [{"id": "c1"}]}, "status_code": 200}])
+
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
+
+    assert [r["id"] for r in records] == ["c1"]
+
+
+@pytest.mark.parametrize(
+    "error_subcode, deselect_object_story_spec",
+    [(33, False), (2446211, True)],
+    ids=["unrelated_error", "object_story_spec_not_requested"],
+)
+def test_ad_creatives_page_error_without_reread(api, some_config, requests_mock, account_id, error_subcode, deselect_object_story_spec):
+    """A page error that dropping object_story_spec cannot fix fails the read as before, without re-reading the page."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    if deselect_object_story_spec:
+        stream.configured_json_schema = {"properties": {"id": {"type": ["null", "string"]}, "name": {"type": ["null", "string"]}}}
+    creatives_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_{account_id}/adcreatives"
+    requests_mock.register_uri("GET", creatives_url, json=_object_story_spec_read_error(error_subcode), status_code=400)
+
+    with pytest.raises(AirbyteTracedException):
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice={"account_id": account_id}))
+
+    assert len([r for r in requests_mock.request_history if r.path.endswith("/adcreatives")]) == 1

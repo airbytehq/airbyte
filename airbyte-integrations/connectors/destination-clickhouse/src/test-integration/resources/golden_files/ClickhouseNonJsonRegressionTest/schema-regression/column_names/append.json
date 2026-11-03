@@ -184,6 +184,6 @@
     }
   },
   "additionalInfo" : {
-    "tableEngine" : "MergeTree ORDER BY _airbyte_raw_id SETTINGS index_granularity = 8192"
+    "tableEngine" : "MergeTree ORDER BY (_airbyte_raw_id) SETTINGS index_granularity = 8192"
   }
 }
