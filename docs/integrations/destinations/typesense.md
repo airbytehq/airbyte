@@ -49,7 +49,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| 0.1.54 | 2026-11-03 | [PR](https://github.com/airbytehq/airbyte/pulls) | Require Python 3.11 while keeping existing dependencies and runtime behavior unchanged. |
+| 0.1.54 | 2026-11-03 | [90898](https://github.com/airbytehq/airbyte/pull/90898) | Require Python 3.11 while keeping existing dependencies and runtime behavior unchanged. |
 | 0.1.53 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret`; fix the image entrypoint |
 | 0.1.52 | 2025-05-17 | [60709](https://github.com/airbytehq/airbyte/pull/60709) | Update dependencies |
 | 0.1.51 | 2025-05-10 | [59776](https://github.com/airbytehq/airbyte/pull/59776) | Update dependencies |
