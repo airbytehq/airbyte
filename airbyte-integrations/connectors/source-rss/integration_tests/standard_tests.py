@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 """FAST Airbyte Standard Tests for source-rss, run in-process by `poe test-standard-tests`.
 
-The suite that `poe test-standard-tests` generates cannot build the source: its constructor requires
-`catalog`, `config` and `state`. This suite builds it the way `run.py` does.
+The suite that `poe test-standard-tests` generates builds the source with no arguments, but CDK 7
+builds the streams from the `config` passed to the constructor. This suite builds it the way `run.py` does.
 
 The file is not named `test_*.py`, so that `poe test-integration-tests` does not collect it.
 """
