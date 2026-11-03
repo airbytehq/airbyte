@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
-from .types import FieldMeta, ModuleMeta, ZohoPickListItem
+from .types import FieldMeta, ModuleMeta
 
 
 def parse_iso(value: Any) -> Any:
@@ -139,13 +139,7 @@ class ZohoStreamFactory:
 
     def _populate_fields_meta(self, module: ModuleMeta):
         fields_meta_json = self.api.fields_settings(module.api_name)
-        fields_meta = []
-        for field in fields_meta_json:
-            pick_list_values = field.get("pick_list_values", [])
-            if pick_list_values:
-                field["pick_list_values"] = [ZohoPickListItem.from_dict(pick_list_item) for pick_list_item in field["pick_list_values"]]
-            fields_meta.append(FieldMeta.from_dict(field))
-        module.fields = fields_meta
+        module.fields = [FieldMeta.from_dict(field) for field in fields_meta_json]
 
     def _populate_module_meta(self, module: ModuleMeta):
         module_meta_json = self.api.module_settings(module.api_name)

@@ -546,16 +546,29 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
 
 
 class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
+    """
+    The V2 settlement report writes timestamps as `2026-09-14 22:51:31 UTC`; they are converted to
+    ISO 8601 (`2026-09-14T22:51:31+00:00`), the format the V1 report used. Empty dates become null.
+    """
+
+    UTC_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S UTC"
+
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
         self.registerCustomTransform(self.get_transform_function())
 
-    @staticmethod
-    def get_transform_function():
+    @classmethod
+    def get_transform_function(cls):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value == "" and field_schema.get("format") == "date-time":
+            value_format = field_schema.get("format")
+            if original_value == "" and value_format in ("date", "date-time"):
                 return None
+            if isinstance(original_value, str) and value_format == "date-time":
+                try:
+                    return dt.strptime(original_value, cls.UTC_DATETIME_FORMAT).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+                except ValueError:
+                    pass
             return original_value
 
         return transform_function

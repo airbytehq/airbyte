@@ -49,5 +49,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: manifest.yaml
+        # 1.1.0 changes `project` from text to a list. The config migration in the manifest
+        # converts saved configs, which the spec diff doesn't take into account.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.16"
 connector_image: airbyte/source-sentry:dev
 test_strictness_level: high

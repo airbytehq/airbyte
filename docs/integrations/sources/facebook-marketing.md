@@ -533,6 +533,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.9 | 2026-10-21 | [89624](https://github.com/airbytehq/airbyte/pull/89624) | Keep the custom insights primary key in the configured breakdowns order so it no longer changes between syncs |
+| 6.1.8 | 2026-10-20 | [74884](https://github.com/airbytehq/airbyte/pull/74884) | Retry dropped connections, truncated responses, and read timeouts from the Facebook API, and report them as transient errors if retries are exhausted |
 | 6.1.7 | 2026-10-16 | [89019](https://github.com/airbytehq/airbyte/pull/89019) | Include Meta's user-facing error title and message, plus the error subcode, in otherwise generic Graph API error messages |
 | 6.1.6 | 2026-10-16 | [89047](https://github.com/airbytehq/airbyte/pull/89047) | Fix in-app setup guide rendering in Airbyte Cloud, update access token setup steps to match Meta's current docs, and correct field descriptions |
 | 6.1.5 | 2026-10-16 | [89006](https://github.com/airbytehq/airbyte/pull/89006) | Upgrade to Python 3.13 and python-connector-base 4.1.1 |
@@ -635,6 +637,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 3.3.2 | 2024-06-06 | [39174](https://github.com/airbytehq/airbyte/pull/39174) | [autopull] Upgrade base image to v1.2.2 |
 | 3.3.1 | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field |
 | 3.3.0 | 2024-06-30 | [33648](https://github.com/airbytehq/airbyte/pull/33648) | Add support to field `source_instagram_media_id` to `ad_creatives` report |
+| 3.2.1 | 2024-06-13 | [39439](https://github.com/airbytehq/airbyte/pull/39439) | Apply configured statuses to ads insight streams |
 | 3.2.0 | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth |
 | 3.1.0 | 2024-06-01 | [38845](https://github.com/airbytehq/airbyte/pull/38845) | Update AdsInsights fields - removed   `cost_per_conversion_lead` and `conversion_lead_rate` |
 | 3.0.0 | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema. |
