@@ -76,7 +76,7 @@ def test_check_of_the_bucket_section_still_validates_the_present_fields(tmp_path
 
 
 def test_check_of_the_files_section_requires_the_streams(tmp_path):
-    config = {**BUCKET_SECTION_CONFIG, "check-section": "files"}
+    config = {**BUCKET_SECTION_CONFIG, "check-section": "file_access"}
 
     status, s3_client = _run_check(tmp_path, config, MagicMock())
 
@@ -89,7 +89,7 @@ def test_check_of_an_unknown_section_fails(tmp_path):
 
     assert status == (
         Status.FAILED.value,
-        "Unknown check-section 'nope'; the connector specification declares: bucket_connection, files, review.",
+        "Unknown check-section 'nope'; the connector specification declares: bucket_connection, file_access, review.",
     )
     s3_client.list_objects_v2.assert_not_called()
 

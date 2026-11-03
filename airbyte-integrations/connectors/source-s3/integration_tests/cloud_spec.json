@@ -21,7 +21,7 @@
         "pattern_descriptor": "YYYY-MM-DD, YYYY-MM-DDTHH:mm:ssZ, or YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
         "order": 6,
         "type": "string",
-        "group": "start_date"
+        "group": "advanced_file_access"
       },
       "streams": {
         "title": "Streams",
@@ -391,7 +391,7 @@
           },
           "required": ["name", "format"]
         },
-        "group": "files"
+        "group": "file_access"
       },
       "delivery_method": {
         "title": "Delivery Method",
@@ -399,7 +399,7 @@
         "type": "object",
         "order": 4,
         "display_type": "radio",
-        "group": "files",
+        "group": "file_access",
         "oneOf": [
           {
             "title": "Replicate Records",
@@ -830,11 +830,11 @@
         "title": "Advanced"
       },
       {
-        "id": "files"
+        "id": "file_access"
       },
       {
-        "id": "start_date",
-        "title": "Start date"
+        "id": "advanced_file_access",
+        "title": "Advanced"
       }
     ],
     "sections": [
@@ -847,11 +847,11 @@
         "check": true
       },
       {
-        "id": "files",
+        "id": "file_access",
         "title": "Choose files",
         "order": 1,
         "description": "How files are delivered, and which files become streams.",
-        "groups": ["files", "start_date"],
+        "groups": ["file_access", "advanced_file_access"],
         "check": true
       },
       {

@@ -24,18 +24,18 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 # before creating the source covers it.
 GROUP_BUCKET = "connection"
 GROUP_ENDPOINT = "advanced_bucket_connection"
-GROUP_FILES = "files"
-GROUP_START_DATE = "start_date"
+GROUP_FILES = "file_access"
+GROUP_START_DATE = "advanced_file_access"
 
 SECTION_BUCKET = "bucket_connection"
-SECTION_FILES = "files"
+SECTION_FILES = "file_access"
 SECTION_REVIEW = "review"
 
 GROUPS: List[Dict[str, Any]] = [
     {"id": GROUP_BUCKET},
     {"id": GROUP_ENDPOINT, "title": "Advanced"},
     {"id": GROUP_FILES},
-    {"id": GROUP_START_DATE, "title": "Start date"},
+    {"id": GROUP_START_DATE, "title": "Advanced"},
 ]
 
 SECTIONS: List[Dict[str, Any]] = [

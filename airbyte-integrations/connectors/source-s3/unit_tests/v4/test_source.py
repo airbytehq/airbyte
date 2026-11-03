@@ -111,8 +111,8 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_groups_and_sections_are_kept_and_v3_fields_have_no_group(self) -> None:
         schema = self._source.spec().connectionSpecification
 
-        assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "files", "start_date"]
-        assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "files", "review"]
+        assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "file_access", "advanced_file_access"]
+        assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "file_access", "review"]
         assert all("group" not in schema["properties"][field] for field in _V3_FIELDS)
 
     def test_make_default_stream_returns_throttled_stream(self) -> None:
@@ -201,7 +201,7 @@ class CheckSectionTest(unittest.TestCase):
 
     def test_given_files_section_when_check_then_full_check(self) -> None:
         with patch("source_s3.v4.source.FileBasedSource.check_connection", return_value=(True, None)) as full_check:
-            assert self._source.check_section_connection(self._logger, "files", self.FULL_CONFIG) == (True, None)
+            assert self._source.check_section_connection(self._logger, "file_access", self.FULL_CONFIG) == (True, None)
 
         full_check.assert_called_once_with(self._logger, self.FULL_CONFIG)
         self._stream_reader.check_bucket_access.assert_not_called()
