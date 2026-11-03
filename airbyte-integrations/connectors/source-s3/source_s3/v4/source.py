@@ -108,6 +108,11 @@ class SourceS3(FileBasedSource):
         self.stream_reader.check_bucket_access(logger)  # type: ignore[attr-defined]  # the reader is a SourceS3StreamReader
         return True, None
 
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        normalized_config = dict(config)
+        normalized_config["bucket"] = Config.normalize_bucket(config.get("bucket"))
+        return super().check_connection(logger, normalized_config)
+
     def _make_default_stream(
         self,
         stream_config: FileBasedStreamConfig,
